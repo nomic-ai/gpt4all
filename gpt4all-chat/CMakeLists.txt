@@ -20,7 +20,7 @@ set(APP_VERSION_MAJOR 3)
 set(APP_VERSION_MINOR 1)
 set(APP_VERSION_PATCH 2)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
-set(APP_VERSION "${APP_VERSION_BASE}-dev0")
+set(APP_VERSION "${APP_VERSION_BASE}-web_search_beta_3")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 
@@ -108,6 +108,7 @@ endif()
 
 qt_add_executable(chat
     main.cpp
+    bravesearch.h bravesearch.cpp
     chat.h chat.cpp
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
@@ -116,13 +117,15 @@ qt_add_executable(chat
     database.h database.cpp
     download.h download.cpp
     embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
+    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp localdocssearch.h localdocssearch.cpp
     llm.h llm.cpp
     modellist.h modellist.cpp
     mysettings.h mysettings.cpp
     network.h network.cpp
+    sourceexcerpt.h sourceexcerpt.cpp
     server.h server.cpp
     logger.h logger.cpp
+    tool.h tool.cpp toolmodel.h toolmodel.cpp
     ${APP_ICON_RESOURCE}
     ${CHAT_EXE_RESOURCES}
 )
@@ -154,6 +157,7 @@ qt_add_qml_module(chat
       qml/ThumbsDownDialog.qml
       qml/Toast.qml
       qml/ToastManager.qml
+      qml/ToolSettings.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
       qml/MyCheckBox.qml

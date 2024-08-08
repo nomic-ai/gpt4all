@@ -1,8 +1,9 @@
 #include "chatllm.h"
 
+#include "bravesearch.h"
 #include "chat.h"
 #include "chatapi.h"
-#include "localdocs.h"
+#include "localdocssearch.h"
 #include "mysettings.h"
 #include "network.h"
 
@@ -10,7 +11,9 @@
 #include <QDebug>
 #include <QFile>
 #include <QGlobalStatic>
+#include <QGuiApplication>
 #include <QIODevice>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMutex>
@@ -113,6 +116,9 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_reloadingToChangeVariant(false)
     , m_processedSystemPrompt(false)
     , m_restoreStateFromText(false)
+    , m_checkToolCall(false)
+    , m_maybeToolCall(false)
+    , m_foundToolCall(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
@@ -123,11 +129,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
     connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &ChatLLM::handleForceMetalChanged);
     connect(MySettings::globalInstance(), &MySettings::deviceChanged, this, &ChatLLM::handleDeviceChanged);
-
-    // The following are blocking operations and will block the llm thread
-    connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
-        Qt::BlockingQueuedConnection);
-
     m_llmThread.setObjectName(parent->id());
     m_llmThread.start();
 }
@@ -708,7 +709,28 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     m_timer->inc();
     Q_ASSERT(!response.empty());
     m_response.append(response);
-    emit responseChanged(QString::fromStdString(remove_leading_whitespace(m_response)));
+
+    // If we're checking for a tool called and the response is equal or exceeds 11 chars
+    // then we check
+    if (m_checkToolCall && m_response.size() >= 11) {
+        if (m_response.starts_with("<tool_call>")) {
+            m_maybeToolCall = true;
+            m_response.erase(0, 11);
+        }
+        m_checkToolCall = false;
+    }
+
+    // Check if we're at the end of tool call and erase the end tag
+    if (m_maybeToolCall && m_response.ends_with("</tool_call>")) {
+        m_foundToolCall = true;
+        m_response.erase(m_response.length() - 12);
+        return false;
+    }
+
+    // If we're not checking for tool call and haven't detected one, then send along the response
+    if (!m_checkToolCall && !m_maybeToolCall)
+        emit responseChanged(QString::fromStdString(remove_leading_whitespace(m_response)));
+
     return !m_stopGenerating;
 }
 
@@ -735,28 +757,38 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
 }
 
 bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
-    int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-    int32_t repeat_penalty_tokens)
+        int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, bool isToolCallResponse)
 {
     if (!isModelLoaded())
         return false;
 
-    QList<ResultInfo> databaseResults;
-    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    if (!collectionList.isEmpty()) {
-        emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
-        emit databaseResultsChanged(databaseResults);
+    QList<SourceExcerpt> localDocsExcerpts;
+    if (!collectionList.isEmpty() && !isToolCallResponse) {
+        LocalDocsSearch localdocs;
+        QJsonObject parameters;
+        parameters.insert("text", prompt);
+        parameters.insert("count", MySettings::globalInstance()->localDocsRetrievalSize());
+        parameters.insert("collections", QJsonArray::fromStringList(collectionList));
+
+        // FIXME: This has to handle errors of the tool call
+        const QString localDocsResponse = localdocs.run(parameters, 2000 /*msecs to timeout*/);
+
+        QString parseError;
+        localDocsExcerpts = SourceExcerpt::fromJson(localDocsResponse, parseError);
+        if (!parseError.isEmpty()) {
+            qWarning() << "ERROR: Could not parse source excerpts for localdocs response:" << parseError;
+        } else if (!localDocsExcerpts.isEmpty()) {
+            emit sourceExcerptsChanged(localDocsExcerpts);
+        }
     }
 
     // Augment the prompt template with the results if any
     QString docsContext;
-    if (!databaseResults.isEmpty()) {
-        QStringList results;
-        for (const ResultInfo &info : databaseResults)
-            results << u"Collection: %1\nPath: %2\nExcerpt: %3"_s.arg(info.collection, info.path, info.text);
-
-        // FIXME(jared): use a Jinja prompt template instead of hardcoded Alpaca-style localdocs template
-        docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
+    if (!localDocsExcerpts.isEmpty()) {
+        // FIXME(adam): we should be using the new tool template if available otherwise this I guess
+        QString json = SourceExcerpt::toJson(localDocsExcerpts);
+        docsContext = u"### Context:\n%1\n\n"_s.arg(json);
     }
 
     int n_threads = MySettings::globalInstance()->threadCount();
@@ -788,8 +820,18 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
                                     /*allowContextShift*/ true, m_ctx);
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
+
+    // We can't handle recursive tool calls right now otherwise we always try to check if we have a
+    // tool call
+    m_checkToolCall = !isToolCallResponse;
+
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc,
                                 /*allowContextShift*/ true, m_ctx);
+
+    // After the response has been handled reset this state
+    m_checkToolCall = false;
+    m_maybeToolCall = false;
+
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -797,17 +839,98 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
     std::string trimmed = trim_whitespace(m_response);
-    if (trimmed != m_response) {
-        m_response = trimmed;
-        emit responseChanged(QString::fromStdString(m_response));
+
+    // If we found a tool call, then deal with it
+    if (m_foundToolCall) {
+        m_foundToolCall = false;
+
+        const QString toolCall = QString::fromStdString(trimmed);
+        const QString toolTemplate = MySettings::globalInstance()->modelToolTemplate(m_modelInfo);
+        if (toolTemplate.isEmpty()) {
+            qWarning() << "ERROR: No valid tool template for this model" << toolCall;
+            return handleFailedToolCall(trimmed, elapsed);
+        }
+
+        QJsonParseError err;
+        const QJsonDocument toolCallDoc = QJsonDocument::fromJson(toolCall.toUtf8(), &err);
+
+        if (toolCallDoc.isNull() || err.error != QJsonParseError::NoError || !toolCallDoc.isObject()) {
+            qWarning() << "ERROR: The tool call had null or invalid json " << toolCall;
+            return handleFailedToolCall(trimmed, elapsed);
+        }
+
+        QJsonObject rootObject = toolCallDoc.object();
+        if (!rootObject.contains("name") || !rootObject.contains("parameters")) {
+            qWarning() << "ERROR: The tool call did not have required name and argument objects " << toolCall;
+            return handleFailedToolCall(trimmed, elapsed);
+        }
+
+        const QString tool = toolCallDoc["name"].toString();
+        const QJsonObject args = toolCallDoc["parameters"].toObject();
+
+        // FIXME: In the future this will try to match the tool call to a list of tools that are supported
+        // according to MySettings, but for now only brave search is supported
+        if (tool != "brave_search" || !args.contains("query")) {
+            // FIXME: Need to surface errors to the UI
+            qWarning() << "ERROR: Could not find the tool and correct parameters for " << toolCall;
+            return handleFailedToolCall(trimmed, elapsed);
+        }
+
+        const QString query = args["query"].toString();
+
+        emit toolCalled(tr("searching web..."));
+        const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
+        Q_ASSERT(apiKey != "");
+        BraveSearch brave;
+
+        QJsonObject parameters;
+        parameters.insert("apiKey", apiKey);
+        parameters.insert("query", query);
+        parameters.insert("count", 2);
+
+        // FIXME: Need to surface errors to the UI
+        const QString braveResponse = brave.run(parameters, 2000 /*msecs to timeout*/);
+
+        QString parseError;
+        QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(braveResponse, parseError);
+        if (!parseError.isEmpty()) {
+            qWarning() << "ERROR: Could not parse source excerpts for brave response:" << parseError;
+        } else if (!sourceExcerpts.isEmpty()) {
+            emit sourceExcerptsChanged(sourceExcerpts);
+        }
+
+        m_promptResponseTokens = 0;
+        m_promptTokens = 0;
+        m_response = std::string();
+
+        // This is a recursive call but isToolCallResponse is checked above to arrest infinite recursive
+        // tool calls
+        return promptInternal(QList<QString>()/*collectionList*/, braveResponse, toolTemplate,
+            n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens,
+            true /*isToolCallResponse*/);
+
+    } else {
+        if (trimmed != m_response) {
+            m_response = trimmed;
+            emit responseChanged(QString::fromStdString(m_response));
+        }
+
+        SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
+        if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && (!localDocsExcerpts.isEmpty() || isToolCallResponse)))
+            generateQuestions(elapsed);
+        else
+            emit responseStopped(elapsed);
+        m_pristineLoadedState = false;
+        return true;
     }
+}
 
-    SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
-    if (mode == SuggestionMode::On || (!databaseResults.isEmpty() && mode == SuggestionMode::LocalDocsOnly))
-        generateQuestions(elapsed);
-    else
-        emit responseStopped(elapsed);
-
+bool ChatLLM::handleFailedToolCall(const std::string &response, qint64 elapsed)
+{
+    // Restore the strings that we excluded previously when detecting the tool call
+    m_response = "<tool_call>" + response + "</tool_call>";
+    emit responseChanged(QString::fromStdString(m_response));
+    emit responseStopped(elapsed);
     m_pristineLoadedState = false;
     return true;
 }

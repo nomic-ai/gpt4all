@@ -51,7 +51,7 @@ static const QVariantMap basicDefaults {
     { "saveChatsContext",         false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
-    { "suggestionMode",           QVariant::fromValue(SuggestionMode::LocalDocsOnly) },
+    { "suggestionMode",           QVariant::fromValue(SuggestionMode::SourceExcerptsOnly) },
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
@@ -193,6 +193,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelRepeatPenalty(info, info.m_repeatPenalty);
     setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
     setModelPromptTemplate(info, info.m_promptTemplate);
+    setModelToolTemplate(info, info.m_toolTemplate);
     setModelSystemPrompt(info, info.m_systemPrompt);
     setModelChatNamePrompt(info, info.m_chatNamePrompt);
     setModelSuggestedFollowUpPrompt(info, info.m_suggestedFollowUpPrompt);
@@ -295,6 +296,7 @@ int       MySettings::modelGpuLayers              (const ModelInfo &info) const 
 double    MySettings::modelRepeatPenalty          (const ModelInfo &info) const { return getModelSetting("repeatPenalty",           info).toDouble(); }
 int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens",     info).toInt(); }
 QString   MySettings::modelPromptTemplate         (const ModelInfo &info) const { return getModelSetting("promptTemplate",          info).toString(); }
+QString   MySettings::modelToolTemplate           (const ModelInfo &info) const { return getModelSetting("toolTemplate",            info).toString(); }
 QString   MySettings::modelSystemPrompt           (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
@@ -404,6 +406,11 @@ void MySettings::setModelPromptTemplate(const ModelInfo &info, const QString &va
     setModelSetting("promptTemplate", info, value, force, true);
 }
 
+void MySettings::setModelToolTemplate(const ModelInfo &info, const QString &value, bool force)
+{
+    setModelSetting("toolTemplate", info, value, force, true);
+}
+
 void MySettings::setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force)
 {
     setModelSetting("systemPrompt", info, value, force, true);
@@ -455,6 +462,7 @@ bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting
 QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
 QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
+QString     MySettings::braveSearchAPIKey() const       { return getBasicSetting("bravesearch/APIKey"   ).toString(); }
 
 ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
 FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
@@ -473,6 +481,7 @@ void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasic
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
+void MySettings::setBraveSearchAPIKey(const QString &value)           { setBasicSetting("bravesearch/APIKey",       value, "braveSearchAPIKey"); }
 
 void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
 void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }

@@ -68,6 +68,7 @@ struct ModelInfo {
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
+    Q_PROPERTY(QString toolTemplate READ toolTemplate WRITE setToolTemplate)
     Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
     Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
     Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
@@ -178,6 +179,8 @@ public:
     void setRepeatPenaltyTokens(int t);
     QString promptTemplate() const;
     void setPromptTemplate(const QString &t);
+    QString toolTemplate() const;
+    void setToolTemplate(const QString &t);
     QString systemPrompt() const;
     void setSystemPrompt(const QString &p);
     QString chatNamePrompt() const;
@@ -215,6 +218,7 @@ private:
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
     QString m_promptTemplate          = "### Human:\n%1\n\n### Assistant:\n";
+    QString m_toolTemplate            = "";
     QString m_systemPrompt            = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
@@ -339,6 +343,7 @@ public:
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
+        ToolTemplateRole,
         SystemPromptRole,
         ChatNamePromptRole,
         SuggestedFollowUpPromptRole,
@@ -393,6 +398,7 @@ public:
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";
+        roles[ToolTemplateRole] = "toolTemplate";
         roles[SystemPromptRole] = "systemPrompt";
         roles[ChatNamePromptRole] = "chatNamePrompt";
         roles[SuggestedFollowUpPromptRole] = "suggestedFollowUpPrompt";

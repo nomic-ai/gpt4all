@@ -21,9 +21,9 @@ namespace MySettingsEnums {
      *       ApplicationSettings.qml, as well as the corresponding name lists in mysettings.cpp */
 
     enum class SuggestionMode {
-        LocalDocsOnly = 0,
-        On            = 1,
-        Off           = 2,
+        SourceExcerptsOnly = 0,
+        On                 = 1,
+        Off                = 2,
     };
     Q_ENUM_NS(SuggestionMode)
 
@@ -72,6 +72,7 @@ class MySettings : public QObject
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
     Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
+    Q_PROPERTY(QString braveSearchAPIKey READ braveSearchAPIKey WRITE setBraveSearchAPIKey NOTIFY braveSearchAPIKeyChanged)
 
 public:
     static MySettings *globalInstance();
@@ -125,6 +126,8 @@ public:
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
     QString modelPromptTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelToolTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelToolTemplate(const ModelInfo &info, const QString &value, bool force = false);
     QString modelSystemPrompt(const ModelInfo &info) const;
     Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
     int modelContextLength(const ModelInfo &info) const;
@@ -185,6 +188,10 @@ public:
     QString localDocsEmbedDevice() const;
     void setLocalDocsEmbedDevice(const QString &value);
 
+    // Tool settings
+    QString braveSearchAPIKey() const;
+    void setBraveSearchAPIKey(const QString &value);
+
     // Network settings
     QString networkAttribution() const;
     void setNetworkAttribution(const QString &value);
@@ -212,6 +219,7 @@ Q_SIGNALS:
     void repeatPenaltyChanged(const ModelInfo &info);
     void repeatPenaltyTokensChanged(const ModelInfo &info);
     void promptTemplateChanged(const ModelInfo &info);
+    void toolTemplateChanged(const ModelInfo &info);
     void systemPromptChanged(const ModelInfo &info);
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);
@@ -239,6 +247,7 @@ Q_SIGNALS:
     void deviceChanged();
     void suggestionModeChanged();
     void languageAndLocaleChanged();
+    void braveSearchAPIKeyChanged();
 
 private:
     QSettings m_settings;
