@@ -187,7 +187,12 @@ Rectangle {
                 visible: false
                 MyComboBox {
                     id: comboSort
-                    model: [qsTr("Default"), qsTr("Likes"), qsTr("Downloads"), qsTr("Recent")]
+                    model: ListModel {
+                        ListElement { name: qsTr("Default") }
+                        ListElement { name: qsTr("Likes") }
+                        ListElement { name: qsTr("Downloads") }
+                        ListElement { name: qsTr("Recent") }
+                    }
                     currentIndex: ModelList.discoverSort
                     contentItem: Text {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -207,7 +212,10 @@ Rectangle {
                 }
                 MyComboBox {
                     id: comboSortDirection
-                    model: [qsTr("Asc"), qsTr("Desc")]
+                    model: ListModel {
+                        ListElement { name: qsTr("Asc") }
+                        ListElement { name: qsTr("Desc") }
+                    }
                     currentIndex: {
                         if (ModelList.discoverSortDirection === 1)
                             return 0
@@ -235,7 +243,15 @@ Rectangle {
                 }
                 MyComboBox {
                     id: comboLimit
-                    model: ["5", "10", "20", "50", "100", qsTr("None")]
+                    model: ListModel {
+                        ListElement { name: "5" }
+                        ListElement { name: "10" }
+                        ListElement { name: "20" }
+                        ListElement { name: "50" }
+                        ListElement { name: "100" }
+                        ListElement { name: qsTr("None") }
+                    }
+
                     currentIndex: {
                         if (ModelList.discoverLimit === 5)
                             return 0;
