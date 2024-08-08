@@ -109,15 +109,9 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of ChatTheme enum, keep them in sync
             model: ListModel {
-                ListElement {
-                    name: qsTr("Light")
-                }
-                ListElement {
-                    name: qsTr("Dark")
-                }
-                ListElement {
-                    name:  qsTr("LegacyDark")
-                }
+                ListElement { name: qsTr("Light") }
+                ListElement { name: qsTr("Dark") }
+                ListElement { name: qsTr("LegacyDark") }
             }
             Accessible.name: themeLabel.text
             Accessible.description: themeLabel.helpText
@@ -154,20 +148,13 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of FontSize enum, keep them in sync
             model: ListModel {
-                ListElement {
-                    name: qsTr("Small")
-                }
-                ListElement {
-                    name: qsTr("Medium")
-                }
-                ListElement {
-                    name:  qsTr("Large")
-                }
+                ListElement { name: qsTr("Small") }
+                ListElement { name: qsTr("Medium") }
+                ListElement { name: qsTr("Large") }
             }
             Accessible.name: fontLabel.text
             Accessible.description: fontLabel.helpText
             function updateModel() {
-                console.log("updating" + MySettings.fontSize)
                 fontBox.currentIndex = MySettings.fontSize;
             }
             Component.onCompleted: {
@@ -363,15 +350,9 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of SuggestionMode enum, keep them in sync
             model: ListModel {
-                ListElement {
-                    name: qsTr("When chatting with LocalDocs")
-                }
-                ListElement {
-                    name: qsTr("Whenever possible")
-                }
-                ListElement {
-                    name:  qsTr("Never")
-                }
+                ListElement { name: qsTr("When chatting with LocalDocs") }
+                ListElement { name: qsTr("Whenever possible") }
+                ListElement { name: qsTr("Never") }
             }
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText

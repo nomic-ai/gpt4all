@@ -188,18 +188,10 @@ Rectangle {
                 MyComboBox {
                     id: comboSort
                     model: ListModel {
-                        ListElement {
-                            name: qsTr("Default")
-                        }
-                        ListElement {
-                            name: qsTr("Likes")
-                        }
-                        ListElement {
-                            name:  qsTr("Downloads")
-                        }
-                        ListElement {
-                            name:  qsTr("Recent")
-                        }
+                        ListElement { name: qsTr("Default") }
+                        ListElement { name: qsTr("Likes") }
+                        ListElement { name: qsTr("Downloads") }
+                        ListElement { name: qsTr("Recent") }
                     }
                     currentIndex: ModelList.discoverSort
                     contentItem: Text {
@@ -221,12 +213,8 @@ Rectangle {
                 MyComboBox {
                     id: comboSortDirection
                     model: ListModel {
-                        ListElement {
-                            name: qsTr("Asc")
-                        }
-                        ListElement {
-                            name: qsTr("Desc")
-                        }
+                        ListElement { name: qsTr("Asc") }
+                        ListElement { name: qsTr("Desc") }
                     }
                     currentIndex: {
                         if (ModelList.discoverSortDirection === 1)
@@ -256,24 +244,12 @@ Rectangle {
                 MyComboBox {
                     id: comboLimit
                     model: ListModel {
-                        ListElement {
-                            name: "5"
-                        }
-                        ListElement {
-                            name: "10"
-                        }
-                        ListElement {
-                            name: "20"
-                        }
-                        ListElement {
-                            name: "50"
-                        }
-                        ListElement {
-                            name: "100"
-                        }
-                        ListElement {
-                            name: qsTr("None")
-                        }
+                        ListElement { name: "5" }
+                        ListElement { name: "10" }
+                        ListElement { name: "20" }
+                        ListElement { name: "50" }
+                        ListElement { name: "100" }
+                        ListElement { name: qsTr("None") }
                     }
 
                     currentIndex: {
