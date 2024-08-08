@@ -302,7 +302,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
                     if (match == 0) break;
                 }
             }
-        } else if (ranges::contains(stopSequences, new_piece)) {
+        } else if (ranges::find(stopSequences, new_piece) < std::end(stopSequences)) {
             // Special tokens must exactly match a stop sequence
             stop = true;
             lengthLimit = cachedResponse.size() - new_piece.size();
