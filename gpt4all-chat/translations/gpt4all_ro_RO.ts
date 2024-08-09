@@ -1726,10 +1726,7 @@ model to get started</source>
                 the model&apos;s context window. More info &lt;a
                 href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
         <translation type="vanished">
-                Valori prea mari pot cauza erori cu LocalDocs, replici lente sau
-                absen&#355;a lor complet&#259;. &#238;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat
-                la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a
-                href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
+                Valori prea mari pot cauza erori cu LocalDocs, replici lente sau absen&#355;a lor complet&#259;. &#238;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
