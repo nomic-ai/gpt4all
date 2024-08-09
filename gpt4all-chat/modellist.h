@@ -368,55 +368,56 @@ public:
 
     QHash<int, QByteArray> roleNames() const override
     {
-        QHash<int, QByteArray> roles;
-        roles[IdRole] = "id";
-        roles[NameRole] = "name";
-        roles[FilenameRole] = "filename";
-        roles[DirpathRole] = "dirpath";
-        roles[FilesizeRole] = "filesize";
-        roles[HashRole] = "hash";
-        roles[HashAlgorithmRole] = "hashAlgorithm";
-        roles[CalcHashRole] = "calcHash";
-        roles[InstalledRole] = "installed";
-        roles[DefaultRole] = "isDefault";
-        roles[OnlineRole] = "isOnline";
-        roles[CompatibleApiRole] = "isCompatibleApi";
-        roles[DescriptionRole] = "description";
-        roles[RequiresVersionRole] = "requiresVersion";
-        roles[VersionRemovedRole] = "versionRemoved";
-        roles[UrlRole] = "url";
-        roles[BytesReceivedRole] = "bytesReceived";
-        roles[BytesTotalRole] = "bytesTotal";
-        roles[TimestampRole] = "timestamp";
-        roles[SpeedRole] = "speed";
-        roles[DownloadingRole] = "isDownloading";
-        roles[IncompleteRole] = "isIncomplete";
-        roles[DownloadErrorRole] = "downloadError";
-        roles[OrderRole] = "order";
-        roles[RamrequiredRole] = "ramrequired";
-        roles[ParametersRole] = "parameters";
-        roles[QuantRole] = "quant";
-        roles[TypeRole] = "type";
-        roles[IsCloneRole] = "isClone";
-        roles[IsDiscoveredRole] = "isDiscovered";
-        roles[IsEmbeddingModelRole] = "isEmbeddingModel";
-        roles[TemperatureRole] = "temperature";
-        roles[TopPRole] = "topP";
-        roles[MinPRole] = "minP";
-        roles[TopKRole] = "topK";
-        roles[MaxLengthRole] = "maxLength";
-        roles[PromptBatchSizeRole] = "promptBatchSize";
-        roles[ContextLengthRole] = "contextLength";
-        roles[GpuLayersRole] = "gpuLayers";
-        roles[RepeatPenaltyRole] = "repeatPenalty";
-        roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
-        roles[PromptTemplateRole] = "promptTemplate";
-        roles[SystemPromptRole] = "systemPrompt";
-        roles[ChatNamePromptRole] = "chatNamePrompt";
-        roles[SuggestedFollowUpPromptRole] = "suggestedFollowUpPrompt";
-        roles[LikesRole] = "likes";
-        roles[DownloadsRole] = "downloads";
-        roles[RecencyRole] = "recency";
+        static const QHash<int, QByteArray> roles {
+            { IdRole,                      "id"                      },
+            { NameRole,                    "name"                    },
+            { FilenameRole,                "filename"                },
+            { DirpathRole,                 "dirpath"                 },
+            { FilesizeRole,                "filesize"                },
+            { HashRole,                    "hash"                    },
+            { HashAlgorithmRole,           "hashAlgorithm"           },
+            { CalcHashRole,                "calcHash"                },
+            { InstalledRole,               "installed"               },
+            { DefaultRole,                 "isDefault"               },
+            { OnlineRole,                  "isOnline"                },
+            { CompatibleApiRole,           "isCompatibleApi"         },
+            { DescriptionRole,             "description"             },
+            { RequiresVersionRole,         "requiresVersion"         },
+            { VersionRemovedRole,          "versionRemoved"          },
+            { UrlRole,                     "url"                     },
+            { BytesReceivedRole,           "bytesReceived"           },
+            { BytesTotalRole,              "bytesTotal"              },
+            { TimestampRole,               "timestamp"               },
+            { SpeedRole,                   "speed"                   },
+            { DownloadingRole,             "isDownloading"           },
+            { IncompleteRole,              "isIncomplete"            },
+            { DownloadErrorRole,           "downloadError"           },
+            { OrderRole,                   "order"                   },
+            { RamrequiredRole,             "ramrequired"             },
+            { ParametersRole,              "parameters"              },
+            { QuantRole,                   "quant"                   },
+            { TypeRole,                    "type"                    },
+            { IsCloneRole,                 "isClone"                 },
+            { IsDiscoveredRole,            "isDiscovered"            },
+            { IsEmbeddingModelRole,        "isEmbeddingModel"        },
+            { TemperatureRole,             "temperature"             },
+            { TopPRole,                    "topP"                    },
+            { MinPRole,                    "minP"                    },
+            { TopKRole,                    "topK"                    },
+            { MaxLengthRole,               "maxLength"               },
+            { PromptBatchSizeRole,         "promptBatchSize"         },
+            { ContextLengthRole,           "contextLength"           },
+            { GpuLayersRole,               "gpuLayers"               },
+            { RepeatPenaltyRole,           "repeatPenalty"           },
+            { RepeatPenaltyTokensRole,     "repeatPenaltyTokens"     },
+            { PromptTemplateRole,          "promptTemplate"          },
+            { SystemPromptRole,            "systemPrompt"            },
+            { ChatNamePromptRole,          "chatNamePrompt"          },
+            { SuggestedFollowUpPromptRole, "suggestedFollowUpPrompt" },
+            { LikesRole,                   "likes"                   },
+            { DownloadsRole,               "downloads"               },
+            { RecencyRole,                 "recency"                 },
+        };
         return roles;
     }
 
