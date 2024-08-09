@@ -32,7 +32,6 @@ project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-option(GPT4ALL_TRANSLATIONS "Build with translations" OFF)
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
@@ -228,19 +227,16 @@ qt_add_qml_module(chat
       icons/you.svg
 )
 
-if (GPT4ALL_TRANSLATIONS)
-    target_compile_definitions(chat PRIVATE GPT4ALL_USE_TRANSLATIONS)
-    qt_add_translations(chat
-        TS_FILES
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
-    )
-endif()
+qt_add_translations(chat
+    TS_FILES
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
+)
 
 set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE

@@ -122,6 +122,7 @@ static QString getUiLanguage(const QString directory, const QString fileName)
 static QStringList getUiLanguages(const QString &modelPath)
 {
     QStringList languageList;
+    QStringList releasedLanguages = { "en_US", "it_IT", "zh_CN", "zh_TW" };
 
     // Add the language translations from model path files first which is used by translation developers
     // to load translations in progress without having to rebuild all of GPT4All from source
@@ -138,7 +139,7 @@ static QStringList getUiLanguages(const QString &modelPath)
         const QStringList qmFiles = dir.entryList({"*.qm"}, QDir::Files);
         for (const QString &fileName : qmFiles) {
             const QString lang = getUiLanguage(":/i18n", fileName);
-            if (!languageList.contains(lang))
+            if (!languageList.contains(lang) && releasedLanguages.contains(lang))
                 languageList.append(lang);
         }
     }
@@ -632,7 +633,6 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     else
         locale = QLocale(l);
 
-#ifdef GPT4ALL_USE_TRANSLATIONS
     // If we previously installed a translator, then remove it
     if (m_translator) {
         if (!qGuiApp->removeTranslator(m_translator.get())) {
@@ -662,7 +662,6 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
             m_translator.reset();
         }
     }
-#endif
 
     // Finally, set the locale whether we have a translation or not
     QLocale::setDefault(locale);
