@@ -1707,7 +1707,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="250"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="250"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Valori prea mari pot cauza erori cu LocalDocs, replici foarte lente sau chiar absen&#355;a lor. &#206;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aquí&lt;/a&gt;.</translation>
+        <translation>Valori prea mari pot cauza erori cu LocalDocs, replici foarte lente sau chiar absen&#355;a lor. &#206;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="259"/>
@@ -1731,7 +1731,7 @@ model to get started</source>
                 Valori prea mari pot cauza erori cu LocalDocs, replici lente sau
                 absen&#355;a lor complet&#259;. &#238;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat
                 la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a
-                href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aquí&lt;/a&gt;.</translation>
+                href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
@@ -1965,7 +1965,7 @@ model to get started</source>
                 &lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocat&#259; pe disc (local)
                 &lt;/li&gt;&lt;li&gt;Va fi utilizat&#259; numai pentru comunicarea cu
                 OpenAI&lt;/li&gt;&lt;li&gt;Po&#355;i solicita o cheie API aici: &lt;a
-                href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aquí.&lt;/a&gt;&lt;/li&gt;</translation>
+                href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aici.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;
@@ -1991,7 +1991,7 @@ model to get started</source>
                 &lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocat&#259; pe disc (local)
                 &lt;/li&gt;&lt;li&gt;Va fi utilizat&#259; numai pentru comunicarea cu
                 OpenAI&lt;/li&gt;&lt;li&gt;Po&#355;i solicita o cheie API aici: &lt;a
-                href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aquí.&lt;/a&gt;&lt;/li&gt;</translation>
+                href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aici.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1578"/>
@@ -2017,7 +2017,7 @@ model to get started</source>
                 Mistral!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocat&#259;
                 pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizat&#259; numai pentru comunicarea cu
                 Mistral&lt;/li&gt;&lt;li&gt;Po&#355;i solicita o cheie API aici: &lt;a
-                href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aquí&lt;/a&gt;.&lt;/li&gt;</translation>
+                href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aici&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1637"/>
@@ -2051,7 +2051,7 @@ model to get started</source>
                 %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest
                 model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informa&#355;ii
                 pot fi g&#259;site la: &lt;a
-                href=&quot;https://huggingface.co/%5&quot;&gt;aquí.&lt;/a&gt;&lt;/ul&gt;</translation>
+                href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does
@@ -2073,7 +2073,7 @@ model to get started</source>
                 Mistral!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocat&#259;
                 pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizat&#259; numai pentru comunicarea cu
                 Mistral&lt;/li&gt;&lt;li&gt;Po&#355;i solicita o cheie API aici: &lt;a
-                href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aquí&lt;/a&gt;.&lt;/li&gt;</translation>
+                href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aici&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Created by
@@ -2084,7 +2084,7 @@ model to get started</source>
                 %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest
                 model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informa&#355;ii
                 pot fi g&#259;site la: &lt;a
-                href=&quot;https://huggingface.co/%5&quot;&gt;aquí.&lt;/a&gt;&lt;/ul&gt;</translation>
+                href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
 </context>
 <context>
