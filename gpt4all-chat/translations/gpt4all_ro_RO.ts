@@ -3326,7 +3326,7 @@ care folose&#351;te datele tale!</translation>
         <location filename="../main.qml" line="240"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="240"/>
         <source>Home</source>
-        <translation>Prima&lt;br&#47;&gt;pagin&#259;</translation>
+        <translation>Prima&lt;br&gt;pagin&#259;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="266"/>
