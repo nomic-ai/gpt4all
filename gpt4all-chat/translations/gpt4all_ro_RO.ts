@@ -1369,7 +1369,6 @@ model to get started</source>
         <translation>
             <numerusform>%n fi&#351;ier</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -1379,7 +1378,6 @@ model to get started</source>
         <translation>
             <numerusform>%n cuv&#226;nt</numerusform>
             <numerusform>%n cuvinte</numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -1872,7 +1870,6 @@ model to get started</source>
         <translation>
             <numerusform>%n fi&#351;ier</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -1882,7 +1879,6 @@ model to get started</source>
         <translation>
             <numerusform>%n cuv&#226;nt</numerusform>
             <numerusform>%n cuvinte</numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message>
