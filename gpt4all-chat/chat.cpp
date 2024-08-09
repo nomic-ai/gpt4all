@@ -62,7 +62,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
@@ -252,9 +252,9 @@ void Chat::serverNewPromptResponsePair(const QString &prompt)
     m_chatModel->appendResponse("Response: ", prompt);
 }
 
-bool Chat::isRecalc() const
+bool Chat::restoringFromText() const
 {
-    return m_llmodel->isRecalc();
+    return m_llmodel->restoringFromText();
 }
 
 void Chat::unloadAndDeleteLater()
@@ -320,10 +320,10 @@ void Chat::generatedQuestionFinished(const QString &question)
     emit generatedQuestionsChanged();
 }
 
-void Chat::handleRecalculating()
+void Chat::handleRestoringFromText()
 {
     Network::globalInstance()->trackChatEvent("recalc_context", { {"length", m_chatModel->count()} });
-    emit recalcChanged();
+    emit restoringFromTextChanged();
 }
 
 void Chat::handleModelLoadingError(const QString &error)

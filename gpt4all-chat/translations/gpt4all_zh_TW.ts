@@ -1067,12 +1067,6 @@ model to get started</source>
         <translation>您</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="876"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
-        <source>recalculating context ...</source>
-        <translation>重新計算語境中......</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="878"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="878"/>
         <source>response stopped ...</source>
@@ -1213,6 +1207,12 @@ model to get started</source>
         <translation>&lt;h3&gt;載入模型時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;導致模型載入失敗的原因可能有很多種，但絕大多數的原因是檔案格式損毀、下載的檔案不完整、檔案類型錯誤、系統RAM空間不足或不相容的模型類型。這裡有些建議可供疑難排解：&lt;br&gt;&lt;ul&gt;&lt;li&gt;確保使用的模型是相容的格式與類型&lt;li&gt;檢查位於下載資料夾的檔案是否完整&lt;li&gt;您可以從設定中找到您所設定的「下載資料夾路徑」&lt;li&gt;如果您有側載模型，請利用 md5sum 等工具確保您的檔案是完整的&lt;li&gt;想了解更多關於我們所支援的模型資訊，煩請詳閱&lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;本文件&lt;/a&gt;。&lt;li&gt;歡迎洽詢我們的 &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt; 以尋求幫助</translation>
     </message>
     <message>
+        <location filename="../qml/ChatView.qml" line="876"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
+        <source>restoring from text ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/ChatView.qml" line="1851"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1851"/>
         <source>Send a message...</source>
@@ -1307,37 +1307,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../download.cpp" line="240"/>
+        <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>模型「%1」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="250"/>
+        <location filename="../download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="256"/>
+        <location filename="../download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="262"/>
+        <location filename="../download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>錯誤：$BASE_URL 無效。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="268"/>
+        <location filename="../download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>錯誤：模型「%1 （%2）」發生衝突。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="287"/>
+        <location filename="../download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>模型「%1（%2）」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="311"/>
+        <location filename="../download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>模型「%1」已移除。</translation>
     </message>
@@ -1782,57 +1782,57 @@ model to get started</source>
         <translation>&lt;strong&gt;OpenAI 相容 API 模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;Base URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1575"/>
+        <location filename="../modellist.cpp" line="1559"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 OpenAI API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 OpenAI&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 OpenAI 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1594"/>
+        <location filename="../modellist.cpp" line="1578"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1607"/>
+        <location filename="../modellist.cpp" line="1591"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您已向 OpenAI 付費購買了 ChatGPT 的 GPT-4 模型使用權，但這也不能保證您能擁有 API 金鑰的使用權限。請聯繫 OpenAI 以查閱更多資訊。</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1622"/>
+        <location filename="../modellist.cpp" line="1606"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1634"/>
+        <location filename="../modellist.cpp" line="1618"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 Mistral API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 Mistral！&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 Mistral 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1653"/>
+        <location filename="../modellist.cpp" line="1637"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 迷你模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1678"/>
+        <location filename="../modellist.cpp" line="1662"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 小型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1704"/>
+        <location filename="../modellist.cpp" line="1688"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 中型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1716"/>
+        <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的 base URL。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI 相容性 API 伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI 相容性 API 伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1733"/>
+        <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;連線到 OpenAI API 相容性伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2147"/>
+        <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;建立者：%1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發行於：%2。&lt;li&gt;這個模型有 %3 個讚。&lt;li&gt;這個模型有 %4 次下載次數。&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>

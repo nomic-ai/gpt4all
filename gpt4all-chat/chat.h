@@ -27,7 +27,7 @@ class Chat : public QObject
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
-    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+    Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
     Q_PROPERTY(ResponseState responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
@@ -88,7 +88,7 @@ public:
     ResponseState responseState() const;
     ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &modelInfo);
-    bool isRecalc() const;
+    bool restoringFromText() const;
 
     Q_INVOKABLE void unloadModel();
     Q_INVOKABLE void reloadModel();
@@ -144,7 +144,7 @@ Q_SIGNALS:
     void processSystemPromptRequested();
     void modelChangeRequested(const ModelInfo &modelInfo);
     void modelInfoChanged();
-    void recalcChanged();
+    void restoringFromTextChanged();
     void loadDefaultModelRequested();
     void loadModelRequested(const ModelInfo &modelInfo);
     void generateNameRequested();
@@ -167,7 +167,7 @@ private Q_SLOTS:
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &question);
-    void handleRecalculating();
+    void handleRestoringFromText();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);

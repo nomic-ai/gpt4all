@@ -11,6 +11,7 @@
 #include <QVector>
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 
 namespace MySettingsEnums {
@@ -245,7 +246,7 @@ private:
     const QStringList m_deviceList;
     const QStringList m_embeddingsDeviceList;
     const QStringList m_uiLanguages;
-    QTranslator *m_translator = nullptr;
+    std::unique_ptr<QTranslator> m_translator;
 
 private:
     explicit MySettings();
