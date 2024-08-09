@@ -8,9 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Add Qwen2-1.5B-Instruct to models3.json (by [@ThiloteE](https://github.com/ThiloteE) in [#2759](https://github.com/nomic-ai/gpt4all/pull/2759))
+- Add portuguese (BR) language translation (by [@thiagojramos](https://github.com/thiagojramos) in [#2733](https://github.com/nomic-ai/gpt4all/pull/2733))
+- Add italian (IT) language translation (by [@Harvester62](https://github.com/Harvester62) in [#2700](https://github.com/nomic-ai/gpt4all/pull/2700))
+- Add spanish (MX) language translation (by [@jstayco](https://github.com/jstayco) in [#2654](https://github.com/nomic-ai/gpt4all/pull/2654))
+- Add romanian (RO) language translation (by [@SINAPSA-IC](https://github.com/SINAPSA-IC) in [#2828](https://github.com/nomic-ai/gpt4all/pull/2828))
+- Add chinese (TW) language translation (by [@supersonictw](https://github.com/supersonictw) in [#2661](https://github.com/nomic-ai/gpt4all/pull/2661))
+- Add chinese (CN) language translation (by [@wuodoo](https://github.com/wuodoo) in [#2716](https://github.com/nomic-ai/gpt4all/pull/2716))
 
 ### Changed
-- Add missing entries to Italian transltation (by [@Harvester62](https://github.com/Harvester62) in [#2783](https://github.com/nomic-ai/gpt4all/pull/2783))
 - Use llama\_kv\_cache ops to shift context faster ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
 - Don't stop generating at end of context ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
 
