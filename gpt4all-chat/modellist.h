@@ -69,7 +69,7 @@ struct ModelInfo {
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
     Q_PROPERTY(QString toolTemplate READ toolTemplate WRITE setToolTemplate)
-    Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
+    Q_PROPERTY(QString systemPromptTemplate READ systemPromptTemplate WRITE setSystemPromptTemplate)
     Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
     Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
     Q_PROPERTY(int likes READ likes WRITE setLikes)
@@ -181,8 +181,9 @@ public:
     void setPromptTemplate(const QString &t);
     QString toolTemplate() const;
     void setToolTemplate(const QString &t);
-    QString systemPrompt() const;
-    void setSystemPrompt(const QString &p);
+    QString systemPromptTemplate() const;
+    void setSystemPromptTemplate(const QString &p);
+    // FIXME (adam): The chatname and suggested follow-up should also be templates I guess?
     QString chatNamePrompt() const;
     void setChatNamePrompt(const QString &p);
     QString suggestedFollowUpPrompt() const;
@@ -219,7 +220,7 @@ private:
     int     m_repeatPenaltyTokens     = 64;
     QString m_promptTemplate          = "### Human:\n%1\n\n### Assistant:\n";
     QString m_toolTemplate            = "";
-    QString m_systemPrompt            = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
+    QString m_systemPromptTemplate    = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;

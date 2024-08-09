@@ -34,6 +34,15 @@ public:
     ToolEnums::Error error() const override { return m_error; }
     QString errorString() const override { return m_errorString; }
 
+    QString name() const override { return tr("LocalDocs search"); }
+    QString description() const override { return tr("Search the local docs"); }
+    QString function() const override { return "localdocs_search"; }
+    QJsonObject paramSchema() const override;
+    bool isEnabled() const override { return true; }
+    bool isBuiltin() const override { return true; }
+    bool forceUsage() const override { return true; }
+    bool excerpts() const override { return true; }
+
 private:
     ToolEnums::Error m_error;
     QString m_errorString;

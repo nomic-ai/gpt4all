@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QThread>
 
@@ -37,6 +38,37 @@ QString LocalDocsSearch::run(const QJsonObject &parameters, qint64 timeout)
     workerThread.quit();
     workerThread.wait();
     return worker.response();
+}
+
+QJsonObject LocalDocsSearch::paramSchema() const
+{
+    static const QString localParamSchema = R"({
+        "collections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The collections to search",
+          "required": true,
+          "modelGenerated": false,
+          "userConfigured": false
+        },
+        "query": {
+          "type": "string",
+          "description": "The query to search",
+          "required": true
+        },
+        "count": {
+          "type": "integer",
+          "description": "The number of excerpts to return",
+          "required": true,
+          "modelGenerated": false
+        }
+      })";
+
+    static const QJsonDocument localJsonDoc = QJsonDocument::fromJson(localParamSchema.toUtf8());
+    Q_ASSERT(!localJsonDoc.isNull() && localJsonDoc.isObject());
+    return localJsonDoc.object();
 }
 
 LocalDocsWorker::LocalDocsWorker()

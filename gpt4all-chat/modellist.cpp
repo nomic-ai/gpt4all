@@ -334,15 +334,15 @@ void ModelInfo::setToolTemplate(const QString &t)
     m_toolTemplate = t;
 }
 
-QString ModelInfo::systemPrompt() const
+QString ModelInfo::systemPromptTemplate() const
 {
-    return MySettings::globalInstance()->modelSystemPrompt(*this);
+    return MySettings::globalInstance()->modelSystemPromptTemplate(*this);
 }
 
-void ModelInfo::setSystemPrompt(const QString &p)
+void ModelInfo::setSystemPromptTemplate(const QString &p)
 {
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPrompt(*this, p, true /*force*/);
-    m_systemPrompt = p;
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPromptTemplate(*this, p, true /*force*/);
+    m_systemPromptTemplate = p;
 }
 
 QString ModelInfo::chatNamePrompt() const
@@ -397,7 +397,7 @@ QVariantMap ModelInfo::getFields() const
         { "repeatPenaltyTokens", m_repeatPenaltyTokens },
         { "promptTemplate",      m_promptTemplate },
         { "toolTemplate",        m_toolTemplate },
-        { "systemPrompt",        m_systemPrompt },
+        { "systemPromptTemplate",m_systemPromptTemplate },
         { "chatNamePrompt",      m_chatNamePrompt },
         { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
     };
@@ -792,7 +792,7 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
         case ToolTemplateRole:
             return info->toolTemplate();
         case SystemPromptRole:
-            return info->systemPrompt();
+            return info->systemPromptTemplate();
         case ChatNamePromptRole:
             return info->chatNamePrompt();
         case SuggestedFollowUpPromptRole:
@@ -970,7 +970,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case ToolTemplateRole:
                 info->setToolTemplate(value.toString()); break;
             case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
+                info->setSystemPromptTemplate(value.toString()); break;
             case ChatNamePromptRole:
                 info->setChatNamePrompt(value.toString()); break;
             case SuggestedFollowUpPromptRole:
@@ -1125,7 +1125,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
         { ModelList::PromptTemplateRole, model.promptTemplate() },
         { ModelList::ToolTemplateRole, model.toolTemplate() },
-        { ModelList::SystemPromptRole, model.systemPrompt() },
+        { ModelList::SystemPromptRole, model.systemPromptTemplate() },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };

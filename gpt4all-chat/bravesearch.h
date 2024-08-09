@@ -48,6 +48,16 @@ public:
     ToolEnums::Error error() const override { return m_error; }
     QString errorString() const override { return m_errorString; }
 
+    QString name() const override { return tr("Brave web search"); }
+    QString description() const override { return tr("Search the web using brave"); }
+    QString function() const override { return "brave_search"; }
+    QJsonObject paramSchema() const override;
+    QJsonObject exampleParams() const override;
+    bool isEnabled() const override;
+    bool isBuiltin() const override { return true; }
+    bool forceUsage() const override;
+    bool excerpts() const override { return true; }
+
 private:
     ToolEnums::Error m_error;
     QString m_errorString;

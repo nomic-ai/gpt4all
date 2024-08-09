@@ -195,7 +195,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
     setModelPromptTemplate(info, info.m_promptTemplate);
     setModelToolTemplate(info, info.m_toolTemplate);
-    setModelSystemPrompt(info, info.m_systemPrompt);
+    setModelSystemPromptTemplate(info, info.m_systemPromptTemplate);
     setModelChatNamePrompt(info, info.m_chatNamePrompt);
     setModelSuggestedFollowUpPrompt(info, info.m_suggestedFollowUpPrompt);
 }
@@ -298,7 +298,7 @@ double    MySettings::modelRepeatPenalty          (const ModelInfo &info) const 
 int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens",     info).toInt(); }
 QString   MySettings::modelPromptTemplate         (const ModelInfo &info) const { return getModelSetting("promptTemplate",          info).toString(); }
 QString   MySettings::modelToolTemplate           (const ModelInfo &info) const { return getModelSetting("toolTemplate",            info).toString(); }
-QString   MySettings::modelSystemPrompt           (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
+QString   MySettings::modelSystemPromptTemplate   (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
 
@@ -412,7 +412,7 @@ void MySettings::setModelToolTemplate(const ModelInfo &info, const QString &valu
     setModelSetting("toolTemplate", info, value, force, true);
 }
 
-void MySettings::setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force)
+void MySettings::setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force)
 {
     setModelSetting("systemPrompt", info, value, force, true);
 }

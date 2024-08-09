@@ -306,7 +306,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE llmodel jinja2cpp)
 
 
 # -- install --

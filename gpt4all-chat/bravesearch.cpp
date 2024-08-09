@@ -42,6 +42,56 @@ QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
     return worker.response();
 }
 
+QJsonObject BraveSearch::paramSchema() const
+{
+    static const QString braveParamSchema = R"({
+        "apiKey": {
+          "type": "string",
+          "description": "The api key to use",
+          "required": true,
+          "modelGenerated": false,
+          "userConfigured": true
+        },
+        "query": {
+          "type": "string",
+          "description": "The query to search",
+          "required": true
+        },
+        "count": {
+          "type": "integer",
+          "description": "The number of excerpts to return",
+          "required": true,
+          "modelGenerated": false
+        }
+      })";
+
+    static const QJsonDocument braveJsonDoc = QJsonDocument::fromJson(braveParamSchema.toUtf8());
+    Q_ASSERT(!braveJsonDoc.isNull() && braveJsonDoc.isObject());
+    return braveJsonDoc.object();
+}
+
+QJsonObject BraveSearch::exampleParams() const
+{
+    static const QString example = R"({
+        "query": "the 44th president of the United States"
+      })";
+    static const QJsonDocument exampleDoc = QJsonDocument::fromJson(example.toUtf8());
+    Q_ASSERT(!exampleDoc.isNull() && exampleDoc.isObject());
+    return exampleDoc.object();
+}
+
+bool BraveSearch::isEnabled() const
+{
+    // FIXME: Refer to mysettings
+    return true;
+}
+
+bool BraveSearch::forceUsage() const
+{
+    // FIXME: Refer to mysettings
+    return false;
+}
+
 void BraveAPIWorker::request(const QString &apiKey, const QString &query, int count)
 {
     // Documentation on the brave web search:

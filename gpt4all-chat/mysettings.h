@@ -128,8 +128,8 @@ public:
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
     QString modelToolTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelToolTemplate(const ModelInfo &info, const QString &value, bool force = false);
-    QString modelSystemPrompt(const ModelInfo &info) const;
-    Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelSystemPromptTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
     int modelContextLength(const ModelInfo &info) const;
     Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
     int modelGpuLayers(const ModelInfo &info) const;

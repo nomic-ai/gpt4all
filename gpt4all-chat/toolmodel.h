@@ -41,23 +41,23 @@ public:
         const Tool *item = m_tools.at(index.row());
         switch (role) {
             case NameRole:
-                return item->name;
+                return item->name();
             case DescriptionRole:
-                return item->description;
+                return item->description();
             case FunctionRole:
-                return item->function;
+                return item->function();
             case ParametersRole:
-                return item->paramSchema;
+                return item->paramSchema();
             case UrlRole:
-                return item->url;
+                return item->url();
             case IsEnabledRole:
-                return item->isEnabled;
+                return item->isEnabled();
             case IsBuiltinRole:
-                return item->isBuiltin;
+                return item->isBuiltin();
             case ForceUsageRole:
-                return item->forceUsage;
+                return item->forceUsage();
             case ExcerptsRole:
-                return item->excerpts;
+                return item->excerpts();
         }
 
         return QVariant();
