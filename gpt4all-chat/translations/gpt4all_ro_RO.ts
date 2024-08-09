@@ -1426,7 +1426,7 @@ model to get started</source>
     <message>
         <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
-        <translation>Modelul &quot;%1&quot; - instalat cu succes</translation>
+        <translation>Modelul &quot;%1&quot; - instalat cu succes.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="288"/>
@@ -1451,7 +1451,7 @@ model to get started</source>
     <message>
         <location filename="../download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
-        <translation>Modelul &quot;%1 (%2)&quot;  - instalat cu succes</translation>
+        <translation>Modelul &quot;%1 (%2)&quot; - instalat cu succes.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="349"/>
@@ -1774,7 +1774,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsView.qml" line="52"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="52"/>
         <source>LocalDocs</source>
-        <translation>LocalDocs/Documente Locale</translation>
+        <translation>LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="58"/>
@@ -2928,7 +2928,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/SettingsView.qml" line="35"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="35"/>
         <source>LocalDocs</source>
-        <translation>LocalDocs/Documente Locale</translation>
+        <translation>LocalDocs</translation>
     </message>
 </context>
 <context>
@@ -3328,7 +3328,7 @@ care folose&#351;te datele tale!</translation>
         <location filename="../main.qml" line="240"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="240"/>
         <source>Home</source>
-        <translation>Prima pagin&#259;</translation>
+        <translation>Prima&lt;br/&gt;pagin&#259;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="266"/>
@@ -3346,7 +3346,7 @@ care folose&#351;te datele tale!</translation>
         <location filename="../main.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="275"/>
         <source>Chats</source>
-        <translation>Conversa&#355;ii/Chat-uri</translation>
+        <translation>Conversa&#355;ii</translation>
     </message>
     <message>
         <location filename="../main.qml" line="300"/>
@@ -3368,7 +3368,7 @@ care folose&#351;te datele tale!</translation>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="334"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="343"/>
         <source>LocalDocs</source>
-        <translation>LocalDocs/Documente Locale</translation>
+        <translation>LocalDocs</translation>
     </message>
     <message>
         <location filename="../main.qml" line="335"/>
