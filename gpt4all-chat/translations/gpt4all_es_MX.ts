@@ -2935,7 +2935,8 @@ lanzamiento de modelo GPT4All que utilice sus datos.</translation>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="334"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="343"/>
         <source>LocalDocs</source>
-        <translation>DocsLocales</translation>
+        <translation>Docs
+Locales</translation>
     </message>
     <message>
         <location filename="../main.qml" line="335"/>
@@ -2949,7 +2950,7 @@ lanzamiento de modelo GPT4All que utilice sus datos.</translation>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="368"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="377"/>
         <source>Settings</source>
-        <translation>Configuración</translation>
+        <translation>Config.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="369"/>
