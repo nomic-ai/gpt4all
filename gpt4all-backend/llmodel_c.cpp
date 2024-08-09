@@ -106,7 +106,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     const char *prompt_template,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
-                    llmodel_recalculate_callback recalculate_callback,
+                    bool allow_context_shift,
                     llmodel_prompt_context *ctx,
                     bool special,
                     const char *fake_reply)
@@ -116,9 +116,6 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     auto response_func = [response_callback](int32_t token_id, const std::string &response) {
         return response_callback(token_id, response.c_str());
     };
-
-    if (size_t(ctx->n_past) < wrapper->promptContext.tokens.size())
-        wrapper->promptContext.tokens.resize(ctx->n_past);
 
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
@@ -138,7 +135,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     auto *fake_reply_p = fake_reply ? &fake_reply_str : nullptr;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, recalculate_callback,
+    wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, allow_context_shift,
                              wrapper->promptContext, special, fake_reply_p);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data

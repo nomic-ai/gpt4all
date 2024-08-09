@@ -57,6 +57,7 @@ class Download : public QObject
 public:
     static Download *globalInstance();
 
+    static std::strong_ordering compareAppVersions(const QString &a, const QString &b);
     ReleaseInfo releaseInfo() const;
     bool hasNewerRelease() const;
     QString latestNews() const { return m_latestNews; }

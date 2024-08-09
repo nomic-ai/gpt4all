@@ -1107,10 +1107,8 @@ model to get started</source>
         <translation>Tu</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="876"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
         <source>recalculating context ...</source>
-        <translation>se reface contextul...</translation>
+        <translation type="vanished">se reface contextul...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="878"/>
@@ -1285,6 +1283,12 @@ model to get started</source>
         <translation>Incarca · %1 (implicit) →</translation>
     </message>
     <message>
+        <location filename="../qml/ChatView.qml" line="876"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
+        <source>restoring from text ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/ChatView.qml" line="879"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="879"/>
         <source>retrieving localdocs: %1 ...</source>
@@ -1395,37 +1399,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../download.cpp" line="240"/>
+        <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="250"/>
+        <location filename="../download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="256"/>
+        <location filename="../download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="262"/>
+        <location filename="../download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="268"/>
+        <location filename="../download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="287"/>
+        <location filename="../download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="311"/>
+        <location filename="../download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1952,57 +1956,57 @@ model to get started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1575"/>
+        <location filename="../modellist.cpp" line="1559"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1594"/>
+        <location filename="../modellist.cpp" line="1578"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1607"/>
+        <location filename="../modellist.cpp" line="1591"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1622"/>
+        <location filename="../modellist.cpp" line="1606"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;Modelul ChatGPT GPT-4 al OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1634"/>
+        <location filename="../modellist.cpp" line="1618"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1653"/>
+        <location filename="../modellist.cpp" line="1637"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1678"/>
+        <location filename="../modellist.cpp" line="1662"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Small&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1704"/>
+        <location filename="../modellist.cpp" line="1688"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Medium&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1716"/>
+        <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1733"/>
+        <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2147"/>
+        <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation type="unfinished"></translation>
     </message>

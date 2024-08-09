@@ -184,25 +184,25 @@
         <location filename="../qml/AddModelView.qml" line="291"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="291"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished"></translation>
+        <translation>網路錯誤：無法取得 %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="486"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="486"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="505"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="505"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="700"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="700"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="700"/>
@@ -210,11 +210,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="700"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="722"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Network error: could not retrieve http://gpt4all.io/models/models3.json</source>
-        <translation type="vanished">網路錯誤：無法取得 http://gpt4all.io/models/models3.json</translation>
+        <translation>？</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="301"/>
@@ -306,26 +302,10 @@
         <translation>安裝線上模型</translation>
     </message>
     <message>
-        <source>&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;</translation>
-    </message>
-    <message>
         <location filename="../qml/AddModelView.qml" line="492"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="492"/>
         <source>Describes an error that occurred when downloading</source>
         <translation>解釋下載時發生的錯誤</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware.</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。</translation>
-    </message>
-    <message>
-        <source> Model requires more memory (</source>
-        <translation type="vanished"> 模型需要比較多的記憶體（</translation>
-    </message>
-    <message>
-        <source> GB) than your system has available (</source>
-        <translation type="vanished"> GB），但您的系統記憶體空間不足（</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="511"/>
@@ -385,37 +365,37 @@
         <location filename="../qml/AddModelView.qml" line="603"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="603"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="609"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="609"/>
         <source>enter $API_KEY</source>
-        <translation>輸入 $API_KEY</translation>
+        <translation>請輸入 $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="624"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="624"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$BASE_URL 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="630"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="630"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入 $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="645"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="645"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="651"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="651"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入 $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="673"/>
@@ -428,10 +408,6 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="695"/>
         <source>RAM required</source>
         <translation>所需的記憶體</translation>
-    </message>
-    <message>
-        <source> GB</source>
-        <translation type="vanished"> GB</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="717"/>
@@ -582,17 +558,13 @@
         <location filename="../qml/ApplicationSettings.qml" line="188"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="188"/>
         <source>System Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>系統語系</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="215"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="215"/>
         <source>Device</source>
         <translation>裝置</translation>
-    </message>
-    <message>
-        <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or Metal.</source>
-        <translation type="vanished">用於生成文字的計算設備。 「Auto」將自動使用 Vulkan 或 Metal。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="267"/>
@@ -640,7 +612,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="216"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="216"/>
         <source>The compute device used for text generation.</source>
-        <translation type="unfinished"></translation>
+        <translation>用於生成文字的計算設備。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="234"/>
@@ -648,7 +620,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="234"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="289"/>
         <source>Application default</source>
-        <translation type="unfinished"></translation>
+        <translation>應用程式預設值</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="350"/>
@@ -772,26 +744,18 @@
         <source>Server Chat</source>
         <translation>伺服器交談</translation>
     </message>
-    <message>
-        <source>Prompt: </source>
-        <translation type="vanished">提示詞： </translation>
-    </message>
-    <message>
-        <source>Response: </source>
-        <translation type="vanished">回覆： </translation>
-    </message>
 </context>
 <context>
     <name>ChatAPIWorker</name>
     <message>
         <location filename="../chatapi.cpp" line="230"/>
         <source>ERROR: Network error occurred while connecting to the API server</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：網路錯誤，無法連線到目標 API 伺服器</translation>
     </message>
     <message>
         <location filename="../chatapi.cpp" line="243"/>
         <source>ChatAPIWorker::handleFinished got HTTP Error %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>ChatAPIWorker::handleFinished 遇到一個 HTTP 錯誤 %1 %2</translation>
     </message>
 </context>
 <context>
@@ -905,14 +869,6 @@
 <context>
     <name>ChatView</name>
     <message>
-        <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;</source>
-        <translation type="vanished">&lt;h3&gt;載入模型時發生錯誤：&lt;/h3&gt;&lt;br&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation type="vanished">&lt;br&gt;&lt;br&gt;模型載入失敗的原因有很多，但最常見的原因包括檔案格式錯誤、下載不完整或損壞、檔案類型錯誤、系統主記憶體不足或模型類型不相容。以下是解決問題的一些建議：&lt;br&gt;&lt;ul&gt;&lt;li&gt;確保模型檔案具有相容的格式與類型&lt;li&gt;檢查下載資料夾中的模型檔案是否完整&lt;li&gt;您可以找到下載資料夾在設置對話方塊中&lt;li&gt;如果您已旁載入模型，請透過檢查md5sum 確保檔案未損壞&lt;li&gt;在我們的&lt;a href=&quot;https://docs.gpt4all.io/ 中了解有關支援哪些模型的更多資訊&quot;&gt;GUI 檔案&lt;/a&gt;&lt;li&gt;查看我們的&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt;尋求協助</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="77"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="77"/>
         <source>&lt;h3&gt;Warning&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</source>
@@ -941,10 +897,6 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="101"/>
         <source>Code copied to clipboard.</source>
         <translation>程式碼已複製到剪貼簿。</translation>
-    </message>
-    <message>
-        <source>Response: </source>
-        <translation type="vanished">回覆： </translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="231"/>
@@ -1053,14 +1005,6 @@
         <translation>將文件集合新增至交談中</translation>
     </message>
     <message>
-        <source>Load · </source>
-        <translation type="vanished">載入 · </translation>
-    </message>
-    <message>
-        <source> (default) →</source>
-        <translation type="vanished"> （預設） →</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="738"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="738"/>
         <source>Load the default model</source>
@@ -1123,21 +1067,6 @@ model to get started</source>
         <translation>您</translation>
     </message>
     <message>
-        <source>Busy indicator</source>
-        <translatorcomment>參考自 https://terms.naer.edu.tw</translatorcomment>
-        <translation type="vanished">忙線指示器</translation>
-    </message>
-    <message>
-        <source>The model is thinking</source>
-        <translation type="vanished">模型正在思考中</translation>
-    </message>
-    <message>
-        <location filename="../qml/ChatView.qml" line="876"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
-        <source>recalculating context ...</source>
-        <translation>重新計算語境中......</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="878"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="878"/>
         <source>response stopped ...</source>
@@ -1171,7 +1100,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="883"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="883"/>
         <source>generating questions ...</source>
-        <translation type="unfinished"></translation>
+        <translation>生成問題......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="949"/>
@@ -1257,7 +1186,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1961"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1961"/>
         <source>Stop generating</source>
-        <translation type="unfinished"></translation>
+        <translation>停止生成</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1962"/>
@@ -1275,7 +1204,13 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="58"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="58"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;載入模型時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;導致模型載入失敗的原因可能有很多種，但絕大多數的原因是檔案格式損毀、下載的檔案不完整、檔案類型錯誤、系統RAM空間不足或不相容的模型類型。這裡有些建議可供疑難排解：&lt;br&gt;&lt;ul&gt;&lt;li&gt;確保使用的模型是相容的格式與類型&lt;li&gt;檢查位於下載資料夾的檔案是否完整&lt;li&gt;您可以從設定中找到您所設定的「下載資料夾路徑」&lt;li&gt;如果您有側載模型，請利用 md5sum 等工具確保您的檔案是完整的&lt;li&gt;想了解更多關於我們所支援的模型資訊，煩請詳閱&lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;本文件&lt;/a&gt;。&lt;li&gt;歡迎洽詢我們的 &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt; 以尋求幫助</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="876"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
+        <source>restoring from text ...</source>
+        <translation>從文字中恢復......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1851"/>
@@ -1372,39 +1307,39 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../download.cpp" line="240"/>
+        <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>模型「%1」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="250"/>
+        <location filename="../download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="256"/>
+        <location filename="../download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="262"/>
+        <location filename="../download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$BASE_URL 無效。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="268"/>
+        <location filename="../download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：模型「%1 （%2）」發生衝突。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="287"/>
+        <location filename="../download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>模型「%1（%2）」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="311"/>
+        <location filename="../download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>模型「%1」已移除。</translation>
     </message>
 </context>
 <context>
@@ -1674,14 +1609,10 @@ model to get started</source>
         <translation>＋ 新增收藏</translation>
     </message>
     <message>
-        <source>ERROR: The LocalDocs database is not valid.</source>
-        <translation type="vanished">錯誤：「我的文件」資料庫已損壞。</translation>
-    </message>
-    <message>
         <location filename="../qml/LocalDocsView.qml" line="85"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="85"/>
         <source>&lt;h3&gt;ERROR: The LocalDocs database cannot be accessed or is not valid.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Note: You will need to restart after trying any of the following suggested fixes.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Make sure that the folder set as &lt;b&gt;Download Path&lt;/b&gt; exists on the file system.&lt;/li&gt;&lt;li&gt;Check ownership as well as read and write permissions of the &lt;b&gt;Download Path&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;If there is a &lt;b&gt;localdocs_v2.db&lt;/b&gt; file, check its ownership and read/write permissions, too.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;If the problem persists and there are any &apos;localdocs_v*.db&apos; files present, as a last resort you can&lt;br&gt;try backing them up and removing them. You will have to recreate your collections, however.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;錯誤：「我的文件」資料庫已無法存取或已損壞。&lt;/h3&gt;&lt;br&gt;&lt;i&gt;提醒：執行完以下任何疑難排解的動作後，請務必重新啟動應用程式。&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;請確保&lt;b&gt;「下載路徑」&lt;/b&gt;所指向的資料夾確實存在於檔案系統當中。&lt;/li&gt;&lt;li&gt;檢查 &lt;b&gt;「下載路徑」&lt;/b&gt;所指向的資料夾，確保其「擁有者」為您本身，以及確保您對該資料夾擁有讀寫權限。&lt;/li&gt;&lt;li&gt;如果該資料夾內存在一份名為 &lt;b&gt;localdocs_v2.db&lt;/b&gt; 的檔案，請同時確保您對其擁有讀寫權限。&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;如果問題依舊存在，且該資料夾內存在與「localdocs_v*.db」名稱相關的檔案，請嘗試備份並移除它們。&lt;br&gt;雖然這樣一來，您恐怕得著手重建您的收藏，但這將或許能夠解決這份錯誤。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="109"/>
@@ -1843,65 +1774,65 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1299"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1（%2）</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1300"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;OpenAI 相容 API 模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;Base URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1575"/>
+        <location filename="../modellist.cpp" line="1559"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 OpenAI API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 OpenAI&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 OpenAI 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1594"/>
+        <location filename="../modellist.cpp" line="1578"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1607"/>
+        <location filename="../modellist.cpp" line="1591"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您已向 OpenAI 付費購買了 ChatGPT 的 GPT-4 模型使用權，但這也不能保證您能擁有 API 金鑰的使用權限。請聯繫 OpenAI 以查閱更多資訊。</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1622"/>
+        <location filename="../modellist.cpp" line="1606"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1634"/>
+        <location filename="../modellist.cpp" line="1618"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 Mistral API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 Mistral！&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 Mistral 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1653"/>
+        <location filename="../modellist.cpp" line="1637"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 迷你模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1678"/>
+        <location filename="../modellist.cpp" line="1662"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 小型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1704"/>
+        <location filename="../modellist.cpp" line="1688"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 中型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1716"/>
+        <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的 base URL。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI 相容性 API 伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI 相容性 API 伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1733"/>
+        <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;連線到 OpenAI API 相容性伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2147"/>
+        <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;建立者：%1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發行於：%2。&lt;li&gt;這個模型有 %3 個讚。&lt;li&gt;這個模型有 %4 次下載次數。&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
@@ -1973,12 +1904,6 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="210"/>
         <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
         <translation>必須包含要替換為使用者輸入的字串「%1」。</translation>
-    </message>
-    <message>
-        <source>Add
-optional image</source>
-        <translation type="vanished">新增
-可選圖片</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="255"/>
@@ -2293,47 +2218,31 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="282"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="282"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="301"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="301"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="496"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="496"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;</translation>
+        <translation>？</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="288"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="288"/>
         <source>Describes an error that occurred when downloading</source>
         <translation>解釋下載時發生的錯誤</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware.</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。</translation>
-    </message>
-    <message>
-        <source> Model requires more memory (</source>
-        <translation type="vanished"> 模型需要比較多的記憶體（</translation>
-    </message>
-    <message>
-        <source> GB) than your system has available (</source>
-        <translation type="vanished"> GB），但您的系統記憶體空間不足（</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="307"/>
@@ -2400,37 +2309,37 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="399"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="399"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="405"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="405"/>
         <source>enter $API_KEY</source>
-        <translation>輸入 $API_KEY</translation>
+        <translation>請輸入 $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="420"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="420"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$BASE_URL 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="426"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="426"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入 $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="441"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="441"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="447"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="447"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入 $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="469"/>
@@ -2443,10 +2352,6 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="491"/>
         <source>RAM required</source>
         <translation>所需的記憶體</translation>
-    </message>
-    <message>
-        <source> GB</source>
-        <translation type="vanished"> GB</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="513"/>
@@ -2675,18 +2580,6 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>歡迎使用！</translation>
     </message>
     <message>
-        <source>### Release notes
-</source>
-        <translation type="vanished">### 版本資訊
-</translation>
-    </message>
-    <message>
-        <source>### Contributors
-</source>
-        <translation type="vanished">### 貢獻者
-</translation>
-    </message>
-    <message>
         <location filename="../qml/StartupDialog.qml" line="71"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="71"/>
         <source>Release notes</source>
@@ -2769,7 +2662,9 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <source>### Release notes
 %1### Contributors
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>### 版本資訊
+%1### 貢獻者
+%2</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="151"/>
@@ -2893,80 +2788,22 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
 <context>
     <name>main</name>
     <message>
-        <source>GPT4All v</source>
-        <translation type="vanished">GPT4All v</translation>
-    </message>
-    <message>
-        <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;</source>
-        <translation type="vanished">&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;</source>
-        <translation type="vanished">&lt;i&gt;「偵測到不相容的硬體」&lt;/i&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run </source>
-        <translation type="vanished">&lt;br&gt;&lt;br&gt;糟糕，您的中央處理器不符合運行的最低要求 </translation>
-    </message>
-    <message>
-        <source>this program. In particular, it does not support AVX intrinsics which this </source>
-        <translation type="vanished">這個程式。特別是，它不支援 AVX 內在函數，這 </translation>
-    </message>
-    <message>
-        <source>program requires to successfully run a modern large language model. </source>
-        <translation type="vanished">程式需要成功運行現代大型語言模型。 </translation>
-    </message>
-    <message>
-        <source>The only solution at this time is to upgrade your hardware to a more modern CPU.</source>
-        <translation type="vanished">此時唯一的解決方案是將硬體升級到更現代的中央處理器。</translation>
-    </message>
-    <message>
-        <source>&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;</source>
-        <translatorcomment>中文網址造成 Linguist 會發出警告，請無視。</translatorcomment>
-        <translation type="vanished">&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&quot;&gt;</translation>
-    </message>
-    <message>
-        <source>https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translatorcomment>中文網址造成 Linguist 會發出警告，請無視。</translatorcomment>
-        <translation type="vanished">https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&lt;/a&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;</source>
-        <translation type="vanished">&lt;i&gt;「無法存取設定檔。」&lt;/i&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing </source>
-        <translation type="vanished">&lt;br&gt;&lt;br&gt;糟糕，有些東西正在阻止程式存取 </translation>
-    </message>
-    <message>
-        <source>the settings file. This could be caused by incorrect permissions in the local </source>
-        <translation type="vanished">設定檔。這可能是本機權限設定不正確導致的 </translation>
-    </message>
-    <message>
-        <source>app config directory where the settings file is located. </source>
-        <translation type="vanished">設定檔案所在的app config 目錄。 </translation>
-    </message>
-    <message>
-        <source>Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation type="vanished">請查看我們的&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt;尋求協助。</translation>
-    </message>
-    <message>
         <location filename="../main.qml" line="23"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="23"/>
         <source>GPT4All v%1</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All v%1</translation>
     </message>
     <message>
         <location filename="../main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「偵測到不相容的硬體。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！您的中央處理器不符合運行所需的最低需求。尤其，它不支援本程式運行現代大型語言模型所需的 AVX 指令集。目前唯一的解決方案，只有更新您的中央處理器及其相關硬體設備。&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX指令集&quot;&gt;AVX 指令集 - 維基百科&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="127"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「無法存取設定檔。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！有些東西正在阻止程式存取設定檔。這極為可能是由於設定檔所在的本機應用程式設定資料夾中的權限設定不正確所造成的。煩請洽詢我們的 &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt; 以尋求協助。</translation>
     </message>
     <message>
         <location filename="../main.qml" line="155"/>

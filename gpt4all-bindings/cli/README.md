@@ -2,8 +2,7 @@
 
 GPT4All on the command-line.
 
-## Documentation
-<https://docs.gpt4all.io/gpt4all_cli.html>
+More details on the [wiki](https://github.com/nomic-ai/gpt4all/wiki/Python-CLI).
 
 ## Quickstart
 
@@ -34,11 +33,11 @@ python -m pip install --user --upgrade gpt4all typer
 # run the CLI
 python app.py repl
 ```
-By default, it will automatically download the `groovy` model to `.cache/gpt4all/` in your user
-directory, if necessary.
+By default, it will automatically download the `Mistral Instruct` model to `.cache/gpt4all/` in your
+user directory, if necessary.
 
 If you have already saved a model beforehand, specify its path with the `-m`/`--model` argument,
 for example:
 ```shell
-python app.py repl --model /home/user/my-gpt4all-models/gpt4all-13b-snoozy-q4_0.gguf
+python app.py repl --model /home/user/my-gpt4all-models/mistral-7b-instruct-v0.1.Q4_0.gguf
 ```
