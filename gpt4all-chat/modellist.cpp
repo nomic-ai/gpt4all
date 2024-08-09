@@ -703,7 +703,7 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
         case DirpathRole:
             return info->dirpath;
         case FilesizeRole:
-            return info->filesize;
+            return info->filesize();
         case HashRole:
             return info->hash;
         case HashAlgorithmRole:
@@ -861,7 +861,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case DirpathRole:
                 info->dirpath = value.toString(); break;
             case FilesizeRole:
-                info->filesize = value.toString(); break;
+                info->m_filesize = value.toULongLong(); break;
             case HashRole:
                 info->hash = value.toByteArray(); break;
             case HashAlgorithmRole:
@@ -1314,7 +1314,7 @@ void ModelList::updateModelsFromDirectory()
                     { OnlineRole, isOnline },
                     { CompatibleApiRole, isCompatibleApi },
                     { DirpathRole, info.dir().absolutePath() + "/" },
-                    { FilesizeRole, toFileSize(info.size()) },
+                    { FilesizeRole, info.size() },
                 };
                 if (isCompatibleApi) {
                     // The data will be saved to "GPT4All.ini".
@@ -1502,8 +1502,6 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!versionRemoved.isEmpty() && Download::compareAppVersions(versionRemoved, currentVersion) <= 0)
             continue;
 
-        modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
-
         const QString id = modelName;
         Q_ASSERT(!id.isEmpty());
 
@@ -1516,7 +1514,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, modelFilesize },
+            { ModelList::FilesizeRole, modelFilesize.toULongLong() },
             { ModelList::HashRole, modelHash },
             { ModelList::HashAlgorithmRole, ModelInfo::Md5 },
             { ModelList::DefaultRole, isDefault },
@@ -1574,7 +1572,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br> %1").arg(chatGPTDesc) },
@@ -1602,7 +1600,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br> %1 %2").arg(chatGPTDesc).arg(chatGPT4Warn) },
@@ -1633,7 +1631,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Mistral Tiny model</strong><br> %1").arg(mistralDesc) },
@@ -1658,7 +1656,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Mistral Small model</strong><br> %1").arg(mistralDesc) },
@@ -1684,7 +1682,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Mistral Medium model</strong><br> %1").arg(mistralDesc) },
@@ -1712,7 +1710,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             addModel(id);
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
-            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::FilesizeRole, 0 },
             { ModelList::OnlineRole, true },
             { ModelList::CompatibleApiRole, true },
             { ModelList::DescriptionRole,
@@ -2128,7 +2126,6 @@ void ModelList::handleDiscoveryItemFinished()
     // QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
 
     QString modelFilename = reply->request().attribute(QNetworkRequest::UserMax).toString();
-    QString modelFilesize = ModelList::toFileSize(QString(linkedSizeHeader).toULongLong());
 
     QString description = tr("<strong>Created by %1.</strong><br><ul>"
                              "<li>Published on %2."
@@ -2153,7 +2150,7 @@ void ModelList::handleDiscoveryItemFinished()
     QVector<QPair<int, QVariant>> data {
         { ModelList::NameRole, modelName },
         { ModelList::FilenameRole, modelFilename },
-        { ModelList::FilesizeRole, modelFilesize },
+        { ModelList::FilesizeRole, QString(linkedSizeHeader).toULongLong() },
         { ModelList::DescriptionRole, description },
         { ModelList::IsDiscoveredRole, true },
         { ModelList::UrlRole, reply->request().url() },

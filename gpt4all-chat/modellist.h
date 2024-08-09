@@ -22,13 +22,14 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+
 struct ModelInfo {
     Q_GADGET
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString filename READ filename WRITE setFilename)
     Q_PROPERTY(QString dirpath MEMBER dirpath)
-    Q_PROPERTY(QString filesize MEMBER filesize)
+    Q_PROPERTY(QString filesize READ filesize)
     Q_PROPERTY(QByteArray hash MEMBER hash)
     Q_PROPERTY(HashAlgorithm hashAlgorithm MEMBER hashAlgorithm)
     Q_PROPERTY(bool calcHash MEMBER calcHash)
@@ -90,6 +91,21 @@ public:
     QString filename() const;
     void setFilename(const QString &name);
 
+    QString filesize() const
+    {
+        qsizetype sz = m_filesize;
+        if (!sz)
+            return u"minimal"_s;
+        if (sz < 1024)
+            return u"%1 bytes"_s.arg(sz);
+        if (sz < 1024 * 1024)
+            return u"%1 KB"_s.arg(qreal(sz) / 1024, 0, 'g', 3);
+        if (sz < 1024 * 1024 * 1024)
+            return u"%1 MB"_s.arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
+
+        return u"%1 GB"_s.arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
+    }
+
     QString description() const;
     void setDescription(const QString &d);
 
@@ -118,7 +134,6 @@ public:
     void setRecency(const QDateTime &r);
 
     QString dirpath;
-    QString filesize;
     QByteArray hash;
     HashAlgorithm hashAlgorithm;
     bool calcHash = false;
@@ -150,9 +165,7 @@ public:
     bool isEmbeddingModel = false;
     bool checkedEmbeddingModel = false;
 
-    bool operator==(const ModelInfo &other) const {
-        return  m_id == other.m_id;
-    }
+    bool operator==(const ModelInfo &other) const { return m_id == other.m_id; }
 
     double temperature() const;
     void setTemperature(double t);
@@ -193,6 +206,7 @@ private:
     QString m_id;
     QString m_name;
     QString m_filename;
+    qsizetype m_filesize;
     QString m_description;
     QString m_url;
     QString m_quant;
@@ -209,9 +223,9 @@ private:
     int     m_maxLength               = 4096;
     int     m_promptBatchSize         = 128;
     int     m_contextLength           = 2048;
-    mutable int m_maxContextLength    = -1;
+    mutable int m_maxContextLength    = -1; // cache
     int     m_gpuLayers               = 100;
-    mutable int m_maxGpuLayers        = -1;
+    mutable int m_maxGpuLayers        = -1; // cache
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
     QString m_promptTemplate          = "### Human:\n%1\n\n### Assistant:\n";
@@ -219,6 +233,7 @@ private:
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
+    friend class ModelList;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
@@ -429,18 +444,6 @@ public:
     InstalledModels *installedModels() const { return m_installedModels; }
     InstalledModels *selectableModels() const { return m_selectableModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
-
-    static inline QString toFileSize(quint64 sz) {
-        if (sz < 1024) {
-            return u"%1 bytes"_s.arg(sz);
-        } else if (sz < 1024 * 1024) {
-            return u"%1 KB"_s.arg(qreal(sz) / 1024, 0, 'g', 3);
-        } else if (sz < 1024 * 1024 * 1024) {
-            return u"%1 MB"_s.arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
-        } else {
-            return u"%1 GB"_s.arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
-        }
-    }
 
     QString incompleteDownloadPath(const QString &modelFile);
     bool asyncModelRequestOngoing() const { return m_asyncModelRequestOngoing; }
