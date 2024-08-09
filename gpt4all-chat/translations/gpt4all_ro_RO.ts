@@ -1426,7 +1426,7 @@ model to get started</source>
     <message>
         <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
-.        <translation>Modelul &quot;%1&quot; - instalat cu succes</translation>
+        <translation>Modelul &quot;%1&quot; - instalat cu succes</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="288"/>
