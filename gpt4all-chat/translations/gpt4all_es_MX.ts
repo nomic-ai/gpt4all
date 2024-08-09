@@ -3006,7 +3006,7 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
             <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="334"/>
             <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="343"/>
             <source>LocalDocs</source>
-            <translation>DocumentosLocales</translation>
+            <translation>DocsLocales</translation>
         </message>
         <message>
             <location filename="../main.qml" line="335"/>
