@@ -1707,25 +1707,19 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="250"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="250"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Valori prea mari pot cauza erori cu LocalDocs, replici foarte lente sau
-                chiar absen&#355;a lor. &#206;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat
-                la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a
-                href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aquí&lt;/a&gt;.</translation>
+        <translation>Valori prea mari pot cauza erori cu LocalDocs, replici foarte lente sau chiar absen&#355;a lor. &#206;n mare, num&#259;rul {N caractere x N citate} este ad&#259;ugat la Context Window/Size/Length a modelului. Mai multe informa&#355;ii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aquí&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="259"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="259"/>
         <source>Number of characters per document snippet. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Num&#259;rul caracterelor din fiecare citat. Numere mari amplific&#259; probabilitatea
-                unor replici corecte, dar de asemenea cauzeaz&#259; generare lent&#259;.</translation>
+        <translation>Num&#259;rul caracterelor din fiecare citat. Numere mari amplific&#259; probabilitatea unor replici corecte, dar de asemenea cauzeaz&#259; generare lent&#259;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="285"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="285"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Num&#259;rul maxim al citatelor ce corespund &#351;i care vor fi ad&#259;ugate la contextul
-                pentru prompt. Numere mari amplific&#259; probabilitatea
-                unor replici corecte, dar de asemenea cauzeaz&#259; generare lent&#259;.</translation>
+        <translation>Num&#259;rul maxim al citatelor ce corespund &#351;i care vor fi ad&#259;ugate la contextul pentru prompt. Numere mari amplific&#259; probabilitatea unor replici corecte, dar de asemenea cauzeaz&#259; generare lent&#259;.</translation>
     </message>
     <message>
         <source>
