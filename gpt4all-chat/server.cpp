@@ -352,7 +352,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     emit requestServerNewPromptResponsePair(actualPrompt); // blocks
 
     // load the new model if necessary
-    setShouldBeLoaded(true);
+    m_shouldBeLoaded = true;
 
     if (modelInfo.filename().isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;

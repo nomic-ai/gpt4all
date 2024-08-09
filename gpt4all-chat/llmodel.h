@@ -30,9 +30,9 @@ public:
 
     virtual void stopGenerating() = 0;
 
-    virtual void setShouldBeLoaded(bool b) = 0;
+    virtual void loadModelAsync(bool reload = false) = 0;
+    virtual void releaseModelAsync(bool unload = false) = 0;
     virtual void requestTrySwitchContext() = 0;
-    virtual void setForceUnloadModel(bool b) = 0;
     virtual void setMarkedForDeletion(bool b) = 0;
 
     virtual void setModelInfo(const ModelInfo &info) = 0;
@@ -45,7 +45,6 @@ public:
 
 public Q_SLOTS:
     virtual bool prompt(const QList<QString> &collectionList, const QString &prompt) = 0;
-    virtual bool loadDefaultModel() = 0;
     virtual bool loadModel(const ModelInfo &modelInfo) = 0;
     virtual void modelChangeRequested(const ModelInfo &modelInfo) = 0;
     virtual void generateName() = 0;

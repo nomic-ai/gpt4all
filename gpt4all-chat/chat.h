@@ -145,7 +145,6 @@ Q_SIGNALS:
     void modelChangeRequested(const ModelInfo &modelInfo);
     void modelInfoChanged();
     void restoringFromTextChanged();
-    void loadDefaultModelRequested();
     void loadModelRequested(const ModelInfo &modelInfo);
     void generateNameRequested();
     void modelLoadingErrorChanged();

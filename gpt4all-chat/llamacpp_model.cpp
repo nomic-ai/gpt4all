@@ -106,7 +106,6 @@ LlamaCppModel::LlamaCppModel(Chat *parent, bool isServer)
     , m_promptTokens(0)
     , m_restoringFromText(false)
     , m_shouldBeLoaded(false)
-    , m_forceUnloadModel(false)
     , m_markedForDeletion(false)
     , m_stopGenerating(false)
     , m_timer(nullptr)
@@ -117,8 +116,10 @@ LlamaCppModel::LlamaCppModel(Chat *parent, bool isServer)
     , m_restoreStateFromText(false)
 {
     moveToThread(&m_llmThread);
-    connect(this, &LlamaCppModel::shouldBeLoadedChanged, this, &LlamaCppModel::handleShouldBeLoadedChanged,
-        Qt::QueuedConnection); // explicitly queued
+    connect<void(LlamaCppModel::*)(bool), void(LlamaCppModel::*)(bool)>(
+        this, &LlamaCppModel::requestLoadModel, this, &LlamaCppModel::loadModel
+    );
+    connect(this, &LlamaCppModel::requestReleaseModel, this, &LlamaCppModel::releaseModel);
     connect(this, &LlamaCppModel::trySwitchContextRequested, this, &LlamaCppModel::trySwitchContextOfLoadedModel,
         Qt::QueuedConnection); // explicitly queued
     connect(parent, &Chat::idChanged, this, &LlamaCppModel::handleChatIdChanged);
@@ -170,8 +171,7 @@ void LlamaCppModel::handleForceMetalChanged(bool forceMetal)
     m_forceMetal = forceMetal;
     if (isModelLoaded() && m_shouldBeLoaded) {
         m_reloadingToChangeVariant = true;
-        unloadModel();
-        reloadModel();
+        loadModel(/*reload*/ true);
         m_reloadingToChangeVariant = false;
     }
 #endif
@@ -181,20 +181,9 @@ void LlamaCppModel::handleDeviceChanged()
 {
     if (isModelLoaded() && m_shouldBeLoaded) {
         m_reloadingToChangeVariant = true;
-        unloadModel();
-        reloadModel();
+        loadModel(/*reload*/ true);
         m_reloadingToChangeVariant = false;
     }
-}
-
-bool LlamaCppModel::loadDefaultModel()
-{
-    ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
-    if (defaultModel.filename().isEmpty()) {
-        emit modelLoadingError(u"Could not find any model to load"_qs);
-        return false;
-    }
-    return loadModel(defaultModel);
 }
 
 void LlamaCppModel::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
@@ -820,13 +809,16 @@ bool LlamaCppModel::promptInternal(const QList<QString> &collectionList, const Q
     return true;
 }
 
-void LlamaCppModel::setShouldBeLoaded(bool b)
+void LlamaCppModel::loadModelAsync(bool reload)
 {
-#if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "setShouldBeLoaded" << m_llmThread.objectName() << b << m_llModelInfo.model.get();
-#endif
-    m_shouldBeLoaded = b; // atomic
-    emit shouldBeLoadedChanged();
+    m_shouldBeLoaded = true; // atomic
+    emit requestLoadModel(reload);
+}
+
+void LlamaCppModel::releaseModelAsync(bool unload)
+{
+    m_shouldBeLoaded = false; // atomic
+    emit requestReleaseModel(unload);
 }
 
 void LlamaCppModel::requestTrySwitchContext()
@@ -835,23 +827,43 @@ void LlamaCppModel::requestTrySwitchContext()
     emit trySwitchContextRequested(modelInfo());
 }
 
-void LlamaCppModel::handleShouldBeLoadedChanged()
+void LlamaCppModel::loadModel(bool reload)
 {
-    if (m_shouldBeLoaded)
-        reloadModel();
-    else
-        unloadModel();
+    Q_ASSERT(m_shouldBeLoaded);
+    if (m_isServer)
+        return; // server managed models directly
+
+    if (reload)
+        releaseModel(/*unload*/ true);
+    else if (isModelLoaded())
+        return; // already loaded
+
+#if defined(DEBUG_MODEL_LOADING)
+    qDebug() << "loadModel" << m_llmThread.objectName() << m_llModelInfo.model.get();
+#endif
+    ModelInfo m = modelInfo();
+    if (m.name().isEmpty()) {
+        ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
+        if (defaultModel.filename().isEmpty()) {
+            emit modelLoadingError(u"Could not find any model to load"_s);
+            return;
+        }
+        m = defaultModel;
+    }
+    loadModel(m);
 }
 
-void LlamaCppModel::unloadModel()
+void LlamaCppModel::releaseModel(bool unload)
 {
     if (!isModelLoaded() || m_isServer)
         return;
 
-    if (!m_forceUnloadModel || !m_shouldBeLoaded)
+    if (unload && m_shouldBeLoaded) {
+        // reloading the model, don't show unloaded status
+        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small positive value
+    } else {
         emit modelLoadingPercentageChanged(0.0f);
-    else
-        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
+    }
 
     if (!m_markedForDeletion)
         saveState();
@@ -860,31 +872,12 @@ void LlamaCppModel::unloadModel()
     qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
 
-    if (m_forceUnloadModel) {
+    if (unload) {
         m_llModelInfo.resetModel(this);
-        m_forceUnloadModel = false;
     }
 
     LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
     m_pristineLoadedState = false;
-}
-
-void LlamaCppModel::reloadModel()
-{
-    if (isModelLoaded() && m_forceUnloadModel)
-        unloadModel(); // we unload first if we are forcing an unload
-
-    if (isModelLoaded() || m_isServer)
-        return;
-
-#if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "reloadModel" << m_llmThread.objectName() << m_llModelInfo.model.get();
-#endif
-    const ModelInfo m = modelInfo();
-    if (m.name().isEmpty())
-        loadDefaultModel();
-    else
-        loadModel(m);
 }
 
 void LlamaCppModel::generateName()

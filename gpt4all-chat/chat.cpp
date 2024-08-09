@@ -74,7 +74,6 @@ void Chat::connectLLM()
 
     connect(this, &Chat::promptRequested, m_llmodel, &LLModel::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelChangeRequested, m_llmodel, &LLModel::modelChangeRequested, Qt::QueuedConnection);
-    connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &LLModel::loadDefaultModel, Qt::QueuedConnection);
     connect(this, &Chat::loadModelRequested, m_llmodel, &LLModel::loadModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &LLModel::generateName, Qt::QueuedConnection);
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &LLModel::regenerateResponse, Qt::QueuedConnection);
@@ -277,25 +276,23 @@ void Chat::markForDeletion()
 void Chat::unloadModel()
 {
     stopGenerating();
-    m_llmodel->setShouldBeLoaded(false);
+    m_llmodel->releaseModelAsync();
 }
 
 void Chat::reloadModel()
 {
-    m_llmodel->setShouldBeLoaded(true);
+    m_llmodel->loadModelAsync();
 }
 
 void Chat::forceUnloadModel()
 {
     stopGenerating();
-    m_llmodel->setForceUnloadModel(true);
-    m_llmodel->setShouldBeLoaded(false);
+    m_llmodel->releaseModelAsync(/*unload*/ true);
 }
 
 void Chat::forceReloadModel()
 {
-    m_llmodel->setForceUnloadModel(true);
-    m_llmodel->setShouldBeLoaded(true);
+    m_llmodel->loadModelAsync(/*reload*/ true);
 }
 
 void Chat::trySwitchContextOfLoadedModel()

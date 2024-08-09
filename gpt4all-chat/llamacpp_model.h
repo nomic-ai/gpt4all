@@ -109,9 +109,9 @@ public:
 
     void stopGenerating() override { m_stopGenerating = true; }
 
-    void setShouldBeLoaded(bool b) override;
+    void loadModelAsync(bool reload = false) override;
+    void releaseModelAsync(bool unload = false) override;
     void requestTrySwitchContext() override;
-    void setForceUnloadModel(bool b) override { m_forceUnloadModel = b; }
     void setMarkedForDeletion(bool b) override { m_markedForDeletion = b; }
 
     void setModelInfo(const ModelInfo &info) override;
@@ -147,14 +147,14 @@ public:
 
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt) override;
-    bool loadDefaultModel() override;
     bool loadModel(const ModelInfo &modelInfo) override;
     void modelChangeRequested(const ModelInfo &modelInfo) override;
     void generateName() override;
     void processSystemPrompt() override;
 
 Q_SIGNALS:
-    void shouldBeLoadedChanged();
+    void requestLoadModel(bool reload);
+    void requestReleaseModel(bool unload);
 
 protected:
     bool isModelLoaded() const;
@@ -183,11 +183,10 @@ protected:
 
 protected Q_SLOTS:
     void trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
-    void unloadModel();
-    void reloadModel();
+    void loadModel(bool reload = false);
+    void releaseModel(bool unload = false);
     void generateQuestions(qint64 elapsed);
     void handleChatIdChanged(const QString &id);
-    void handleShouldBeLoadedChanged();
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
     void handleDeviceChanged();
@@ -197,11 +196,13 @@ private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
 protected:
-    ModelBackend::PromptContext m_ctx;
+    // used by Server
     quint32 m_promptTokens;
     quint32 m_promptResponseTokens;
+    std::atomic<bool> m_shouldBeLoaded;
 
 private:
+    ModelBackend::PromptContext m_ctx;
     std::string m_response;
     std::string m_nameResponse;
     QString m_questionResponse;
@@ -212,9 +213,7 @@ private:
     QByteArray m_state;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
-    std::atomic<bool> m_shouldBeLoaded;
     std::atomic<bool> m_restoringFromText; // status indication
-    std::atomic<bool> m_forceUnloadModel;
     std::atomic<bool> m_markedForDeletion;
     bool m_isServer;
     bool m_forceMetal;
