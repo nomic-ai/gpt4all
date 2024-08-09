@@ -109,6 +109,9 @@ public:
     QString description() const;
     void setDescription(const QString &d);
 
+    /* For built-in OpenAI-compatible models (isOnline && !isCompatibleApi), this is the full completions endpoint URL.
+     * For custom OpenAI-compatible models (isCompatibleApi), this is not set.
+     * For discovered models (isDiscovered), this is the resolved URL of the GGUF file. */
     QString url() const;
     void setUrl(const QString &u);
 
