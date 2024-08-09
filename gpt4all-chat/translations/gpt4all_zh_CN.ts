@@ -1295,7 +1295,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="876"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
         <source>restoring from text ...</source>
-        <translation type="unfinished"></translation>
+        <translation>从文本恢复中</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="879"/>
@@ -1719,7 +1719,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsView.qml" line="85"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="85"/>
         <source>&lt;h3&gt;ERROR: The LocalDocs database cannot be accessed or is not valid.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Note: You will need to restart after trying any of the following suggested fixes.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Make sure that the folder set as &lt;b&gt;Download Path&lt;/b&gt; exists on the file system.&lt;/li&gt;&lt;li&gt;Check ownership as well as read and write permissions of the &lt;b&gt;Download Path&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;If there is a &lt;b&gt;localdocs_v2.db&lt;/b&gt; file, check its ownership and read/write permissions, too.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;If the problem persists and there are any &apos;localdocs_v*.db&apos; files present, as a last resort you can&lt;br&gt;try backing them up and removing them. You will have to recreate your collections, however.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;错误：无法访问 LocalDocs 数据库或该数据库无效。&lt;/h3&gt;&lt;br&gt;&lt;i&gt;注意：尝试以下任何建议的修复方法后，您将需要重新启动。&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;确保设置为&lt;b&gt;下载路径&lt;/b&gt;的文件夹存在于文件系统中。&lt;/li&gt;&lt;li&gt;检查&lt;b&gt;下载路径&lt;/b&gt;的所有权以及读写权限。&lt;/li&gt;&lt;li&gt;如果有&lt;b&gt;localdocs_v2.db&lt;/b&gt;文件，请检查其所有权和读/写权限。&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;如果问题仍然存在，并且存在任何“localdocs_v*.db”文件，作为最后的手段，您可以&lt;br&gt;尝试备份并删除它们。但是，您必须重新创建您的收藏。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="109"/>
