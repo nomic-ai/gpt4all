@@ -731,15 +731,13 @@
         <location filename="../qml/ApplicationSettings.qml" line="471"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="471"/>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
-        <translation>Salveaz&#259; pe disc starea modelului pentru &#238;nc&#259;rcare mai rapid&#259;.
-                ATEN&#354;IE: Consum&#259; ~2GB/conversa&#355;ie.</translation>
+        <translation>Salveaz&#259; pe disc starea modelului pentru &#238;nc&#259;rcare mai rapid&#259;. ATEN&#354;IE: Consum&#259; ~2GB/conversa&#355;ie.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="488"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="488"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
-        <translation>Activeaz&#259; pe localhost un Server compatibil cu Open-AI. ATEN&#354;IE: Cre&#351;te
-                consumul de resurse.</translation>
+        <translation>Activeaz&#259; pe localhost un Server compatibil cu Open-AI. ATEN&#354;IE: Cre&#351;te consumul de resurse.</translation>
     </message>
     <message>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB
@@ -3328,7 +3326,7 @@ care folose&#351;te datele tale!</translation>
         <location filename="../main.qml" line="240"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="240"/>
         <source>Home</source>
-        <translation>Prima&lt;br/&gt;pagin&#259;</translation>
+        <translation>Prima&lt;br&#47;&gt;pagin&#259;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="266"/>
