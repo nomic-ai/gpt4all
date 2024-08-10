@@ -1367,7 +1367,7 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/CollectionsDrawer.qml" line="87"/>
         <source>%n file(s)</source>
         <translation>
-            <numerusform>1 fi&#351;ier</numerusform>
+            <numerusform>%n fi&#351;ier</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
         </translation>
@@ -1377,7 +1377,7 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/CollectionsDrawer.qml" line="87"/>
         <source>%n word(s)</source>
         <translation>
-            <numerusform>1 cuv&#226;nt</numerusform>
+            <numerusform>%n cuv&#226;nt</numerusform>
             <numerusform>%n cuvinte</numerusform>
             <numerusform>%n cuvinte</numerusform>
         </translation>
@@ -1870,7 +1870,7 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="337"/>
         <source>%n file(s)</source>
         <translation>
-            <numerusform>1 fi&#351;ier</numerusform>
+            <numerusform>%n fi&#351;ier</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
             <numerusform>%n fi&#351;iere</numerusform>
         </translation>
@@ -1880,7 +1880,7 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="337"/>
         <source>%n word(s)</source>
         <translation>
-            <numerusform>1 cuv&#226;nt</numerusform>
+            <numerusform>%n cuv&#226;nt</numerusform>
             <numerusform>%n cuvinte</numerusform>
             <numerusform>%n cuvinte</numerusform>
         </translation>
