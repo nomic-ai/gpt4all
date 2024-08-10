@@ -293,8 +293,8 @@ target_compile_definitions(chat
 # usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
 target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
-target_include_directories(chat PRIVATE usearch/include
-                                        usearch/fp16/include)
+target_include_directories(chat PRIVATE third_party/usearch/include
+                                        third_party/usearch/fp16/include)
 
 if(LINUX)
   target_link_libraries(chat

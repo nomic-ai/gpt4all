@@ -3,5 +3,5 @@
 	url = https://github.com/nomic-ai/llama.cpp.git
 	branch = master
 [submodule "gpt4all-chat/usearch"]
-	path = gpt4all-chat/usearch
+	path = gpt4all-chat/third_party/usearch
 	url = https://github.com/nomic-ai/usearch.git
