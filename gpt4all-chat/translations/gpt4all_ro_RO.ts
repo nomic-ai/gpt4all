@@ -1992,7 +1992,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation>Conectare la un server API compatibil cu OpenAI</translation>
+        <translation>&lt;strong&gt;Conectare la un server API compatibil cu OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="2131"/>
