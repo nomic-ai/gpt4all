@@ -296,6 +296,8 @@ target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 target_include_directories(chat PRIVATE third_party/usearch/include
                                         third_party/usearch/fp16/include)
 
+add_subdirectory(third_party/jinja2cpp ${CMAKE_BINARY_DIR}/jinja2cpp)
+
 if(LINUX)
   target_link_libraries(chat
       PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)
