@@ -181,6 +181,7 @@ CMakeLists.txt.user
 gpt4all-chat/models/*
 build_*
 build-*
+cmake-build-*
 
 # IntelliJ
 .idea/
