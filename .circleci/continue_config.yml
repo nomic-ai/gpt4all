@@ -73,18 +73,16 @@ jobs:
             cd build
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
-              -DCMAKE_GENERATOR:STRING=Ninja \
+              -S ../gpt4all-chat -B . -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DBUILD_UNIVERSAL=ON \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=ON \
-              -DGPT4ALL_SIGN_INSTALL=ON \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
-              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
-              -S ../gpt4all-chat \
-              -B .
+              -DGPT4ALL_SIGN_INSTALL=ON
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
@@ -207,18 +205,16 @@ jobs:
             cd build
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
-              -DCMAKE_GENERATOR:STRING=Ninja \
+              -S ../gpt4all-chat -B . -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DBUILD_UNIVERSAL=ON \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=OFF \
-              -DGPT4ALL_SIGN_INSTALL=ON \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
-              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
-              -S ../gpt4all-chat \
-              -B .
+              -DGPT4ALL_SIGN_INSTALL=ON
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
@@ -345,7 +341,10 @@ jobs:
             mkdir build
             cd build
             mkdir upload
-            ~/Qt/Tools/CMake/bin/cmake -DGPT4ALL_OFFLINE_INSTALLER=ON -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
+            ~/Qt/Tools/CMake/bin/cmake \
+              -S ../gpt4all-chat -B . \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DGPT4ALL_OFFLINE_INSTALLER=ON
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target package
@@ -402,7 +401,10 @@ jobs:
             mkdir build
             cd build
             mkdir upload
-            ~/Qt/Tools/CMake/bin/cmake -DGPT4ALL_OFFLINE_INSTALLER=OFF -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
+            ~/Qt/Tools/CMake/bin/cmake \
+              -S ../gpt4all-chat -B . \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DGPT4ALL_OFFLINE_INSTALLER=OFF
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target package
@@ -485,15 +487,12 @@ jobs:
             mkdir build
             cd build
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
-              "-DCMAKE_GENERATOR:STRING=Ninja" `
+              -S ..\gpt4all-chat -B . -G Ninja `
               "-DCMAKE_BUILD_TYPE=Release" `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-DGPT4ALL_OFFLINE_INSTALLER=ON" `
-              "-DGPT4ALL_SIGN_INSTALLER=ON" `
-              "-S ..\gpt4all-chat" `
-              "-B ."
+              "-DGPT4ALL_OFFLINE_INSTALLER=ON"
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
             & "C:\Qt\Tools\Ninja\ninja.exe" package
@@ -616,15 +615,12 @@ jobs:
             mkdir build
             cd build
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
-              "-DCMAKE_GENERATOR:STRING=Ninja" `
+              -S ..\gpt4all-chat -B . -G Ninja `
               "-DCMAKE_BUILD_TYPE=Release" `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-DGPT4ALL_OFFLINE_INSTALLER=OFF" `
-              "-DGPT4ALL_SIGN_INSTALLER=ON" `
-              "-S ..\gpt4all-chat" `
-              "-B ."
+              "-DGPT4ALL_OFFLINE_INSTALLER=OFF"
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
             & "C:\Qt\Tools\Ninja\ninja.exe" package
@@ -714,7 +710,9 @@ jobs:
           command: |
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
             export PATH=$PATH:/usr/local/cuda/bin
-            ~/Qt/Tools/CMake/bin/cmake -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
+            ~/Qt/Tools/CMake/bin/cmake \
+              -S gpt4all-chat -B build \
+              -DCMAKE_BUILD_TYPE=Release
             ~/Qt/Tools/CMake/bin/cmake --build build -j$(nproc) --target all
 
   build-gpt4all-chat-windows:
@@ -774,13 +772,11 @@ jobs:
             $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
-              "-DCMAKE_GENERATOR:STRING=Ninja" `
+              -S gpt4all-chat -B build -G Ninja `
               "-DCMAKE_BUILD_TYPE=Release" `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
-              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-S gpt4all-chat" `
-              "-B build"
+              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON"
             & "C:\Qt\Tools\Ninja\ninja.exe" -C build
 
   build-gpt4all-chat-macos:
@@ -816,13 +812,13 @@ jobs:
           name: Build
           command: |
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
-              -DCMAKE_GENERATOR:STRING=Ninja \
-              -DBUILD_UNIVERSAL=ON \
+              -S gpt4all-chat -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
-              -S gpt4all-chat \
-              -B build
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build build --target all
   build-ts-docs: 
     docker: 
@@ -892,7 +888,8 @@ jobs:
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
-            cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            cmake -B build \
+              -DCMAKE_BUILD_TYPE=Release \
               -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
               -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build -j$(nproc)
@@ -910,7 +907,7 @@ jobs:
 
   build-py-macos:
     macos:
-      xcode: "14.2.0"
+      xcode: 15.4.0
     resource_class: macos.m1.large.gen1
     steps:
       - checkout
@@ -924,7 +921,11 @@ jobs:
           command: |
             git submodule update --init  # don't use --recursive because macOS doesn't use Kompute
             cd gpt4all-backend
-            cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -991,7 +992,8 @@ jobs:
             $Env:PATH += ";C:\VulkanSDK\1.3.261.1\bin"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             cd gpt4all-backend
-            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release `
+            cmake -B build -G Ninja `
+              -DCMAKE_BUILD_TYPE=Release `
               -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON `
               -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build --parallel
@@ -1053,8 +1055,9 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
-            cmake ../..
-            cmake --build . -j$(nproc) --config Release
+            cmake ../.. \
+              -DCMAKE_BUILD_TYPE=Release
+            cmake --build . -j$(nproc)
             mkdir ../linux-x64
             cp -L *.so ../linux-x64 # otherwise persist_to_workspace seems to mess symlinks
       - persist_to_workspace:
@@ -1082,8 +1085,12 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
-            cmake ../.. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
-            cmake --build . --parallel --config Release
+            cmake ../.. \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
+            cmake --build . --parallel
             mkdir ../osx-x64
             cp -L *.dylib ../osx-x64
             cp ../../llama.cpp-mainline/*.metal ../osx-x64
