@@ -954,5 +954,39 @@
 * Shiranui (@supersonictw)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "3.2.0",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish
+* Significantly faster context recalculation when context runs out
+* Models no longer stop generating when they run out of context
+* Add Qwen2-1.5B-Instruct to the model list
+
+<b>&mdash; Fixes &mdash;</b>
+* Fix a CUDA crash with long conversations since v3.1.0
+* Fix \"file(s)\" and \"word(s)\" appearing in UI instead of proper plurals
+* Show the correct icons for LocalDocs sources with uppercase extensions
+* More reliable reverse prompt detection
+* Fix a minor prompting issue introduced in v3.1.0
+* Disallow context shift for chat name and follow-up generation
+* Fix potential incompatibility with macOS 12 and 13
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Riccardo Giovanetti (`@Harvester62`)
+* Victor Emanuel (`@SINAPSA-IC`)
+* Jeremy Tayco (`@jstayco`)
+* Shiranui (`@supersonictw`)
+* Thiago Ramos (`@thiagojramos`)
+* ThiloteE (`@ThiloteE`)
+* Dominik (`@cosmic-snow`)
+* Jack (`@wuodoo`)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

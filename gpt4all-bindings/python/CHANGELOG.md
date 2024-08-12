@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Make reverse prompt detection work more reliably and prevent it from breaking output ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
+- Explicitly target macOS 12.6 in CI to fix Metal compatibility on older macOS ([#2849](https://github.com/nomic-ai/gpt4all/pull/2849))
 
 ## [2.8.0] - 2024-08-05
 
