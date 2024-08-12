@@ -969,7 +969,7 @@
 * Fix a CUDA crash with long conversations since v3.1.0
 * Fix \"file(s)\" and \"word(s)\" appearing in UI instead of proper plurals
 * Show the correct icons for LocalDocs sources with uppercase extensions
-* Make reverse prompt detection work more reliably
+* More reliable reverse prompt detection
 * Fix a minor prompting issue introduced in v3.1.0
 * Disallow context shift for chat name and follow-up generation
 * Fix potential incompatibility with macOS 12 and 13
