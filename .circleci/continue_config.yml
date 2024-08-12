@@ -818,7 +818,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
-              -DBUILD_UNIVERSAL=ON
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build build --target all
   build-ts-docs: 
     docker: 
@@ -907,7 +909,7 @@ jobs:
 
   build-py-macos:
     macos:
-      xcode: "14.2.0"
+      xcode: 15.4.0
     resource_class: macos.m1.large.gen1
     steps:
       - checkout
@@ -923,7 +925,9 @@ jobs:
             cd gpt4all-backend
             cmake -B build \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -1085,7 +1089,9 @@ jobs:
             cd runtimes/build
             cmake ../.. \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DGGML_METAL_MACOSX_VERSION_MIN=12.6
             cmake --build . --parallel
             mkdir ../osx-x64
             cp -L *.dylib ../osx-x64
