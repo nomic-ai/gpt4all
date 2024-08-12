@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Add Qwen2-1.5B-Instruct to models3.json (by [@ThiloteE](https://github.com/ThiloteE) in [#2759](https://github.com/nomic-ai/gpt4all/pull/2759))
-- Enable translation feature for seven languages: English, Spanish, Italian, Chinese Simplified, Chinese Traditional, Romanian (by [@manyoso](https://github.com/manyoso) in [#2833](https://github.com/nomic-ai/gpt4all/pull/2833))
+- Enable translation feature for seven languages: English, Spanish, Italian, Chinese Simplified, Chinese Traditional, Romanian ([#2833](https://github.com/nomic-ai/gpt4all/pull/2833))
 
 ### Changed
 - Add missing entries to Italian transltation (by [@Harvester62](https://github.com/Harvester62) in [#2783](https://github.com/nomic-ai/gpt4all/pull/2783))
