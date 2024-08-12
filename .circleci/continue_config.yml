@@ -492,8 +492,7 @@ jobs:
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-DGPT4ALL_OFFLINE_INSTALLER=ON" `
-              "-DGPT4ALL_SIGN_INSTALLER=ON"
+              "-DGPT4ALL_OFFLINE_INSTALLER=ON"
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
             & "C:\Qt\Tools\Ninja\ninja.exe" package
@@ -621,8 +620,7 @@ jobs:
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-DGPT4ALL_OFFLINE_INSTALLER=OFF" `
-              "-DGPT4ALL_SIGN_INSTALLER=ON"
+              "-DGPT4ALL_OFFLINE_INSTALLER=OFF"
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
             & "C:\Qt\Tools\Ninja\ninja.exe" package
