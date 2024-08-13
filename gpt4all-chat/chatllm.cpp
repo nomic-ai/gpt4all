@@ -31,7 +31,6 @@
 #include <cmath>
 #include <cstddef>
 #include <functional>
-#include <jinja2cpp/template.h>
 #include <limits>
 #include <optional>
 #include <string_view>
@@ -1337,34 +1336,14 @@ void ChatLLM::processSystemPrompt()
     if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText || m_isServer)
         return;
 
-    const std::string systemPromptTemplate = MySettings::globalInstance()->modelSystemPromptTemplate(m_modelInfo).toStdString();
-
-    // FIXME: This needs to be moved to settings probably and the same code used for validation
-    jinja2::ValuesMap params;
-    params.insert({"currentDate", QDate::currentDate().toString().toStdString()});
-
-    jinja2::ValuesList toolList;
-    int c = ToolModel::globalInstance()->count();
-    for (int i = 0; i < c; ++i) {
-        Tool *t = ToolModel::globalInstance()->get(i);
-        if (t->usageMode() == ToolEnums::UsageMode::Enabled)
-            toolList.push_back(t->jinjaValue());
-    }
-    params.insert({"toolList", toolList});
-
-    std::string systemPrompt;
-
-    jinja2::Template t;
-    t.Load(systemPromptTemplate);
-    const auto renderResult = t.RenderAsString(params);
+    QString error;
+    const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo, error).toStdString();
 
     // The GUI should not allow setting an improper template, but it is always possible someone hand
     // edits the settings file to produce an improper one.
-    Q_ASSERT(renderResult);
-    if (renderResult)
-        systemPrompt = renderResult.value();
-    else
-        qWarning() << "ERROR: Could not parse system prompt template:" << renderResult.error().ToString();
+    Q_ASSERT(error.isEmpty());
+    if (!error.isEmpty())
+        qWarning() << "ERROR: Could not parse system prompt template:" << error;
 
     if (QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
         m_processedSystemPrompt = true;

@@ -1,6 +1,8 @@
 #include "mysettings.h"
 
 #include "../gpt4all-backend/llmodel.h"
+#include "tool.h"
+#include "toolmodel.h"
 
 #include <QDebug>
 #include <QDir>
@@ -18,6 +20,7 @@
 #include <QtLogging>
 
 #include <algorithm>
+#include <jinja2cpp/template.h>
 #include <string>
 #include <thread>
 #include <vector>
@@ -675,4 +678,46 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     // Finally, set the locale whether we have a translation or not
     QLocale::setDefault(locale);
     emit languageAndLocaleChanged();
+}
+
+QString MySettings::validateModelSystemPromptTemplate(const QString &proposedTemplate)
+{
+    QString error;
+    systemPromptInternal(proposedTemplate, error);
+    return error;
+}
+
+QString MySettings::modelSystemPrompt(const ModelInfo &info, QString &error)
+{
+    return systemPromptInternal(modelSystemPromptTemplate(info), error);
+}
+
+QString MySettings::systemPromptInternal(const QString &proposedTemplate, QString &error)
+{
+    jinja2::ValuesMap params;
+    params.insert({"currentDate", QDate::currentDate().toString().toStdString()});
+
+    jinja2::ValuesList toolList;
+    int c = ToolModel::globalInstance()->count();
+    for (int i = 0; i < c; ++i) {
+        Tool *t = ToolModel::globalInstance()->get(i);
+        if (t->usageMode() == ToolEnums::UsageMode::Enabled)
+            toolList.push_back(t->jinjaValue());
+    }
+    params.insert({"toolList", toolList});
+
+    QString systemPrompt;
+    jinja2::Template t;
+    const auto loadResult = t.Load(proposedTemplate.toStdString(), "systemPromptTemplate" /*Used in error messages*/);
+    if (!loadResult) {
+        error = QString::fromStdString(loadResult.error().ToString());
+        return systemPrompt;
+    }
+
+    const auto renderResult = t.RenderAsString(params);
+    if (renderResult)
+        systemPrompt = QString::fromStdString(renderResult.value());
+    else
+        error = QString::fromStdString(renderResult.error().ToString());
+    return systemPrompt;
 }

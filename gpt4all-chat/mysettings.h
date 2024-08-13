@@ -204,6 +204,10 @@ public:
     int networkPort() const;
     void setNetworkPort(int value);
 
+    // Jinja aware methods for validating and parsing/rendering the system prompt
+    Q_INVOKABLE QString validateModelSystemPromptTemplate(const QString &proposedTemplate);
+    QString modelSystemPrompt(const ModelInfo &info, QString &error);
+
 Q_SIGNALS:
     void nameChanged(const ModelInfo &info);
     void filenameChanged(const ModelInfo &info);
@@ -269,6 +273,8 @@ private:
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
     QString filePathForLocale(const QLocale &locale);
+    QString systemPromptInternal(const QString &proposedTemplate, QString &error);
+
 };
 
 #endif // MYSETTINGS_H

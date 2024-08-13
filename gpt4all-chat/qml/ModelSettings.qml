@@ -153,13 +153,30 @@ MySettingsTab {
             Layout.fillWidth: true
         }
 
-        MySettingsLabel {
-            visible: !root.currentModelInfo.isOnline
-            text: qsTr("System Prompt")
-            helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
+        RowLayout {
             Layout.row: 7
             Layout.column: 0
+            Layout.columnSpan: 2
             Layout.topMargin: 15
+            spacing: 10
+            MySettingsLabel {
+                text: qsTr("System Prompt Template")
+                helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
+            }
+            MySettingsLabel {
+                id: systemPromptTemplateError
+                color: theme.textErrorColor
+                wrapMode: TextArea.Wrap
+                Timer {
+                    id: errorTimer
+                    interval: 500 // 500 ms delay
+                    repeat: false
+                    property string text: ""
+                    onTriggered: {
+                        systemPromptTemplateError.text = errorTimer.text;
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -188,7 +205,15 @@ MySettingsTab {
                     }
                 }
                 onTextChanged: {
-                    MySettings.setModelSystemPromptTemplate(root.currentModelInfo, text)
+                    var errorString = MySettings.validateModelSystemPromptTemplate(text);
+                    if (errorString === "") {
+                        errorTimer.stop();
+                        systemPromptTemplateError.text = ""; // Clear any previous error
+                        MySettings.setModelSystemPromptTemplate(root.currentModelInfo, text);
+                    } else {
+                        errorTimer.text = errorString;
+                        errorTimer.restart();
+                    }
                 }
                 Accessible.role: Accessible.EditableText
             }
