@@ -995,7 +995,7 @@
 "
 <b>&mdash; Fixes &mdash;</b>
 * Fix a potential Vulkan crash on application exit on some Linux systems
-* Fix a problem CUDA that leads to gibberish on some NVIDIA GPUs
+* Fix a bad CUDA build option that led to gibberish on newer NVIDIA GPUs
 ",
     "contributors":
 "
