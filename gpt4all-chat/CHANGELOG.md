@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.2.0] - 2024-08-12
 
 ### Added
 - Add Qwen2-1.5B-Instruct to models3.json (by [@ThiloteE](https://github.com/ThiloteE) in [#2759](https://github.com/nomic-ai/gpt4all/pull/2759))
+- Enable translation feature for seven languages: English, Spanish, Italian, Portuguese, Chinese Simplified, Chinese Traditional, Romanian ([#2830](https://github.com/nomic-ai/gpt4all/pull/2830))
 
 ### Changed
 - Add missing entries to Italian transltation (by [@Harvester62](https://github.com/Harvester62) in [#2783](https://github.com/nomic-ai/gpt4all/pull/2783))
@@ -22,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - CUDA: Cherry-pick llama.cpp DMMV cols requirement fix that caused a crash with long conversations since [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
 - Make reverse prompt detection work more reliably and prevent it from breaking output ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
 - Disallow context shift for chat name and follow-up generation to prevent bugs ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
+- Explicitly target macOS 12.6 in CI to fix Metal compatibility on older macOS ([#2846](https://github.com/nomic-ai/gpt4all/pull/2846))
 
 ## [3.1.1] - 2024-07-27
 
@@ -81,6 +83,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...HEAD
+[3.2.0]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nomic-ai/gpt4all/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/nomic-ai/gpt4all/compare/v3.0.0...v3.1.0
