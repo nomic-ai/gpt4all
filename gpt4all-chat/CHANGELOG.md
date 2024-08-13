@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
+
+## [3.2.1] - 2024-08-13
+
 ### Fixed
 - Do not initialize Vulkan driver when only using CPU ([#2843](https://github.com/nomic-ai/gpt4all/pull/2843))
 - Fix a potential crash on exit when using only CPU on Linux with NVIDIA (does not affect X11) ([#2843](https://github.com/nomic-ai/gpt4all/pull/2843))
@@ -90,7 +95,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/nomic-ai/gpt4all/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nomic-ai/gpt4all/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/nomic-ai/gpt4all/compare/v3.0.0...v3.1.0
