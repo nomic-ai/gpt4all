@@ -63,6 +63,24 @@ if (LLMODEL_VULKAN)
     list(APPEND BUILD_VARIANTS vulkan vulkan-avxonly)
 endif()
 if (LLMODEL_CUDA)
+    cmake_minimum_required(VERSION 3.18)  # for CMAKE_CUDA_ARCHITECTURES
+
+    # Defaults must be set before enable_language(CUDA).
+    # Keep this in sync with the arch list in ggml/src/CMakeLists.txt.
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+        # 52 == lowest CUDA 12 standard
+        # 60 == f16 CUDA intrinsics
+        # 61 == integer CUDA intrinsics
+        # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
+        if (GGML_CUDA_F16 OR GGML_CUDA_DMMV_F16)
+            set(CMAKE_CUDA_ARCHITECTURES "60;61;70;75") # needed for f16 CUDA intrinsics
+        else()
+            set(CMAKE_CUDA_ARCHITECTURES "52;61;70;75") # lowest CUDA 12 standard + lowest for integer intrinsics
+            #set(CMAKE_CUDA_ARCHITECTURES "OFF") # use this to compile much faster, but only F16 models work
+        endif()
+    endif()
+    message(STATUS "Using CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
+
     include(CheckLanguage)
     check_language(CUDA)
     if (NOT CMAKE_CUDA_COMPILER)
