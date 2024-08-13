@@ -612,7 +612,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="216"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="216"/>
         <source>The compute device used for text generation.</source>
-        <translation>用於生成文字的計算設備。</translation>
+        <translation>用於生成文字的計算裝置。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="234"/>
@@ -2797,7 +2797,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「偵測到不相容的硬體。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！您的中央處理器不符合運行所需的最低需求。尤其，它不支援本程式運行現代大型語言模型所需的 AVX 指令集。目前唯一的解決方案，只有更新您的中央處理器及其相關硬體設備。&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX指令集&quot;&gt;AVX 指令集 - 維基百科&lt;/a&gt;</translation>
+        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「偵測到不相容的硬體。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！您的中央處理器不符合運行所需的最低需求。尤其，它不支援本程式運行現代大型語言模型所需的 AVX 指令集。目前唯一的解決方案，只有更新您的中央處理器及其相關硬體裝置。&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX指令集&quot;&gt;AVX 指令集 - 維基百科&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="127"/>
