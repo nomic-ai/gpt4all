@@ -15,6 +15,14 @@ namespace ToolEnums {
         UnknownError = 499,
     };
     Q_ENUM_NS(Error)
+
+    enum class UsageMode {
+        Disabled,           // Completely disabled
+        Enabled,            // Enabled and the model decides whether to run
+        AskBeforeRunning,   // Enabled and model decides but the user is queried whether they want the tool to run in every instance
+        ForceUsage,         // Attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
+    };
+    Q_ENUM_NS(UsageMode)
 }
 
 class Tool : public QObject {
@@ -25,9 +33,8 @@ class Tool : public QObject {
     Q_PROPERTY(QJsonObject paramSchema READ paramSchema CONSTANT)
     Q_PROPERTY(QJsonObject exampleParams READ exampleParams CONSTANT)
     Q_PROPERTY(QUrl url READ url CONSTANT)
-    Q_PROPERTY(bool isEnabled READ isEnabled NOTIFY isEnabledChanged)
     Q_PROPERTY(bool isBuiltin READ isBuiltin CONSTANT)
-    Q_PROPERTY(bool forceUsage READ forceUsage NOTIFY forceUsageChanged)
+    Q_PROPERTY(ToolEnums::UsageMode usageMode READ usageMode NOTIFY usageModeChanged)
     Q_PROPERTY(bool excerpts READ excerpts CONSTANT)
 
 public:
@@ -61,14 +68,11 @@ public:
     // [Optional] The local file or remote resource use to invoke the tool.
     virtual QUrl url() const { return QUrl(); }
 
-    // [Optional] Whether the tool is currently enabled
-    virtual bool isEnabled() const { return false; }
-
     // [Optional] Whether the tool is built-in
     virtual bool isBuiltin() const { return false; }
 
-    // [Optional] Whether we should attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
-    virtual bool forceUsage() const { return false; }
+    // [Optional] The current usage mode
+    virtual ToolEnums::UsageMode usageMode() const { return ToolEnums::UsageMode::Disabled; }
 
     // [Optional] Whether json result produces source excerpts.
     virtual bool excerpts() const { return false; }
@@ -83,9 +87,7 @@ public:
     jinja2::Value jinjaValue() const;
 
 Q_SIGNALS:
-    void isEnabledChanged();
-    void forceUsageChanged();
-
+    void usageModeChanged();
 };
 
 #endif // TOOL_H

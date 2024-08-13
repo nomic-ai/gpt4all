@@ -38,9 +38,8 @@ public:
     QString description() const override { return tr("Search the local docs"); }
     QString function() const override { return "localdocs_search"; }
     QJsonObject paramSchema() const override;
-    bool isEnabled() const override { return true; }
     bool isBuiltin() const override { return true; }
-    bool forceUsage() const override { return true; }
+    ToolEnums::UsageMode usageMode() const override { return ToolEnums::UsageMode::ForceUsage; }
     bool excerpts() const override { return true; }
 
 private:

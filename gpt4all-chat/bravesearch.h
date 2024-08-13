@@ -53,9 +53,8 @@ public:
     QString function() const override { return "brave_search"; }
     QJsonObject paramSchema() const override;
     QJsonObject exampleParams() const override;
-    bool isEnabled() const override;
     bool isBuiltin() const override { return true; }
-    bool forceUsage() const override;
+    ToolEnums::UsageMode usageMode() const override;
     bool excerpts() const override { return true; }
 
 private:

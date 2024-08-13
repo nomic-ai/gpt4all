@@ -21,9 +21,8 @@ public:
         UrlRole,
         ApiKeyRole,
         KeyRequiredRole,
-        IsEnabledRole,
         IsBuiltinRole,
-        ForceUsageRole,
+        UsageModeRole,
         ExcerptsRole,
     };
 
@@ -50,12 +49,10 @@ public:
                 return item->paramSchema();
             case UrlRole:
                 return item->url();
-            case IsEnabledRole:
-                return item->isEnabled();
             case IsBuiltinRole:
                 return item->isBuiltin();
-            case ForceUsageRole:
-                return item->forceUsage();
+            case UsageModeRole:
+                return QVariant::fromValue(item->usageMode());
             case ExcerptsRole:
                 return item->excerpts();
         }
@@ -73,9 +70,8 @@ public:
         roles[UrlRole] = "url";
         roles[ApiKeyRole] = "apiKey";
         roles[KeyRequiredRole] = "keyRequired";
-        roles[IsEnabledRole] = "isEnabled";
         roles[IsBuiltinRole] = "isBuiltin";
-        roles[ForceUsageRole] = "forceUsage";
+        roles[UsageModeRole] = "usageMode";
         roles[ExcerptsRole] = "excerpts";
         return roles;
     }

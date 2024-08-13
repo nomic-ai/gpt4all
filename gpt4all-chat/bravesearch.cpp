@@ -80,16 +80,10 @@ QJsonObject BraveSearch::exampleParams() const
     return exampleDoc.object();
 }
 
-bool BraveSearch::isEnabled() const
+ToolEnums::UsageMode BraveSearch::usageMode() const
 {
-    // FIXME: Refer to mysettings
-    return true;
-}
-
-bool BraveSearch::forceUsage() const
-{
-    // FIXME: Refer to mysettings
-    return false;
+    // FIXME: This needs to be a setting
+    return ToolEnums::UsageMode::Enabled;
 }
 
 void BraveAPIWorker::request(const QString &apiKey, const QString &query, int count)

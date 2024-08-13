@@ -766,6 +766,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     if (!isModelLoaded())
         return false;
 
+    // FIXME: This should be made agnostic to localdocs and rely upon the force usage usage mode
+    // and also we have to honor the ask before running mode.
     QList<SourceExcerpt> localDocsExcerpts;
     if (!collectionList.isEmpty() && !isToolCallResponse) {
         LocalDocsSearch localdocs;
@@ -1345,7 +1347,7 @@ void ChatLLM::processSystemPrompt()
     int c = ToolModel::globalInstance()->count();
     for (int i = 0; i < c; ++i) {
         Tool *t = ToolModel::globalInstance()->get(i);
-        if (t->isEnabled() && !t->forceUsage())
+        if (t->usageMode() == ToolEnums::UsageMode::Enabled)
             toolList.push_back(t->jinjaValue());
     }
     params.insert({"toolList", toolList});

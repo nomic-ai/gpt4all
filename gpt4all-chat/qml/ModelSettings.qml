@@ -174,21 +174,21 @@ MySettingsTab {
             MyTextArea {
                 id: systemPromptArea
                 anchors.fill: parent
-                text: root.currentModelInfo.systemPrompt
+                text: root.currentModelInfo.systemPromptTemplate
                 Connections {
                     target: MySettings
                     function onSystemPromptChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
+                        systemPromptArea.text = root.currentModelInfo.systemPromptTemplate;
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
+                        systemPromptArea.text = root.currentModelInfo.systemPromptTemplate;
                     }
                 }
                 onTextChanged: {
-                    MySettings.setModelSystemPrompt(root.currentModelInfo, text)
+                    MySettings.setModelSystemPromptTemplate(root.currentModelInfo, text)
                 }
                 Accessible.role: Accessible.EditableText
             }
