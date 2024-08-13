@@ -988,5 +988,18 @@
 * Jack (`@wuodoo`)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "3.2.1",
+    "notes":
+"
+<b>&mdash; Fixes &mdash;</b>
+* Fix a potential Vulkan crash on application exit on some Linux systems
+* Fix a bad CUDA build option that led to gibberish on newer NVIDIA GPUs
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+"
   }
 ]
