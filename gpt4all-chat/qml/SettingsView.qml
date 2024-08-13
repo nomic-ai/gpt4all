@@ -35,7 +35,7 @@ Rectangle {
             title: qsTr("LocalDocs")
         }
         ListElement {
-            title: qsTr("Tools")
+            title: qsTr("Brave Web Search")
         }
     }
 
@@ -158,7 +158,7 @@ Rectangle {
 
                 MySettingsStack {
                     tabs: [
-                        Component { ToolSettings { } }
+                        Component { BraveSearchSettings { } }
                     ]
                 }
             }

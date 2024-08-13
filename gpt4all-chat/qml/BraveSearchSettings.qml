@@ -16,7 +16,7 @@ MySettingsTab {
 
     showRestoreDefaultsButton: true
 
-    title: qsTr("Tools")
+    title: qsTr("Brave Web Search")
     contentItem: ColumnLayout {
         id: root
         spacing: 30
@@ -27,13 +27,40 @@ MySettingsTab {
                 color: theme.grayRed900
                 font.pixelSize: theme.fontSizeLarge
                 font.bold: true
-                text: qsTr("Brave Search")
+                text: qsTr("Brave Web Search")
             }
 
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
                 color: theme.grayRed500
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                id: usageModeLabel
+                text: qsTr("Usage Mode")
+                helpText: qsTr("When and how the brave search tool is executed.")
+            }
+            MyComboBox {
+                id: usageModeBox
+                Layout.minimumWidth: 400
+                Layout.maximumWidth: 400
+                Layout.alignment: Qt.AlignRight
+                // NOTE: indices match values of UsageMode enum, keep them in sync
+                model: ListModel {
+                    ListElement { name: qsTr("Never") }
+                    ListElement { name: qsTr("Model decides") }
+                    ListElement { name: qsTr("Ask for confirmation before executing") }
+                    ListElement { name: qsTr("Force usage for every response when possible") }
+                }
+                Accessible.name: usageModeLabel.text
+                Accessible.description: usageModeLabel.helpText
+                onActivated: {
+                }
+                Component.onCompleted: {
+                }
             }
         }
 
@@ -51,7 +78,8 @@ MySettingsTab {
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
                 Layout.alignment: Qt.AlignRight
-                Layout.minimumWidth: 200
+                Layout.minimumWidth: 400
+                Layout.maximumWidth: 400
                 onEditingFinished: {
                     MySettings.braveSearchAPIKey = apiKeyField.text;
                 }

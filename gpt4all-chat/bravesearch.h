@@ -48,7 +48,7 @@ public:
     ToolEnums::Error error() const override { return m_error; }
     QString errorString() const override { return m_errorString; }
 
-    QString name() const override { return tr("Brave web search"); }
+    QString name() const override { return tr("Brave Web Search"); }
     QString description() const override { return tr("Search the web using brave"); }
     QString function() const override { return "brave_search"; }
     QJsonObject paramSchema() const override;

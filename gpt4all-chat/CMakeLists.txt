@@ -138,6 +138,7 @@ qt_add_qml_module(chat
       qml/AddCollectionView.qml
       qml/AddModelView.qml
       qml/ApplicationSettings.qml
+      qml/BraveSearchSettings.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
@@ -156,7 +157,6 @@ qt_add_qml_module(chat
       qml/ThumbsDownDialog.qml
       qml/Toast.qml
       qml/ToastManager.qml
-      qml/ToolSettings.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
       qml/MyCheckBox.qml
