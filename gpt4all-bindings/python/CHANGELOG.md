@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
+
 ### Changed
 - Search for pip-installed CUDA 11 as well as CUDA 12 ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
 - Stop shipping CUBINs to reduce wheel size ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
