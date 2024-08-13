@@ -994,7 +994,7 @@
     "notes":
 "
 <b>&mdash; Fixes &mdash;</b>
-* Fix a Vulkan crash on application exit on some linux systems
+* Fix a potential Vulkan crash on application exit on some Linux systems
 * Fix a problem CUDA that leads to gibberish on some NVIDIA GPUs
 ",
     "contributors":
