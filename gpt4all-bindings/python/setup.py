@@ -94,8 +94,8 @@ setup(
     ],
     extras_require={
         'cuda': [
-            'nvidia-cuda-runtime-cu12',
-            'nvidia-cublas-cu12',
+            'nvidia-cuda-runtime-cu11',
+            'nvidia-cublas-cu11',
         ],
         'all': [
             'gpt4all[cuda]; platform_system == "Windows" or platform_system == "Linux"',
