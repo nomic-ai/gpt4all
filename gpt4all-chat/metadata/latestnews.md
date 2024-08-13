@@ -1,6 +1,6 @@
 ## Latest News
 
-Version 3.2.1 has now been released which fixes a bug some users experienced on NVIDIA GPUs producing bad output. The new 3.2 major version brings:
+Version 3.2.1 has now been released which fixes an issue with poor quality responses on NVIDIA GPUs in 3.2.0. The new 3.2 minor version brings:
 
 * **Official Language Translations**: Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish.<br/>
   Go to Settings > Language and Locale to change the application language.
