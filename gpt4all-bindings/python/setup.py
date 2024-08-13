@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.8.1",
+    version="2.8.1.post1",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -94,8 +94,8 @@ setup(
     ],
     extras_require={
         'cuda': [
-            'nvidia-cuda-runtime-cu12',
-            'nvidia-cublas-cu12',
+            'nvidia-cuda-runtime-cu11',
+            'nvidia-cublas-cu11',
         ],
         'all': [
             'gpt4all[cuda]; platform_system == "Windows" or platform_system == "Linux"',
