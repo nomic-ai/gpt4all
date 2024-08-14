@@ -1531,8 +1531,8 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="166"/>
-        <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires restart.</source>
-        <translation>Il dispositivo di calcolo utilizzato per gli incorporamenti. &quot;Auto&quot; utilizza la CPU. Richiede il riavvio.</translation>
+        <source>The compute device used for embeddings. Requires restart.</source>
+        <translation>Il dispositivo di calcolo utilizzato per gli incorporamenti. Richiede il riavvio.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="202"/>

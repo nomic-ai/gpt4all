@@ -1533,8 +1533,8 @@ modelo instalado para funcionar</translation>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="166"/>
-        <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires restart.</source>
-        <translation>Dispositivo usado para processar as incorporações. &quot;Automático&quot; utiliza a CPU. Requer reinicialização.</translation>
+        <source>The compute device used for embeddings. Requires restart.</source>
+        <translation>Dispositivo usado para processar as incorporações. Requer reinicialização.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="202"/>

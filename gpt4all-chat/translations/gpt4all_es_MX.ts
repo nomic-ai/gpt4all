@@ -1487,10 +1487,8 @@ modelo para comenzar
         <translation>Dispositivo de incrustaciones</translation>
     </message>
     <message>
-        <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires
-                restart.</source>
-        <translation>El dispositivo de cómputo utilizado para las incrustaciones.
-                &quot;Auto&quot; usa la CPU. Requiere reinicio.</translation>
+        <source>The compute device used for embeddings. Requires restart.</source>
+        <translation>El dispositivo de cómputo utilizado para las incrustaciones. Requiere reinicio.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="52"/>
@@ -1507,8 +1505,8 @@ modelo para comenzar
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="166"/>
-        <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires restart.</source>
-        <translation>El dispositivo de cómputo utilizado para las incrustaciones. &quot;Auto&quot; usa la CPU. Requiere reinicio.</translation>
+        <source>The compute device used for embeddings. Requires restart.</source>
+        <translation>El dispositivo de cómputo utilizado para las incrustaciones. Requiere reinicio.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="202"/>

@@ -1621,8 +1621,8 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="166"/>
-        <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires restart.</source>
-        <translation>技术设备用于embeddings. &quot;自动&quot; 使用.需要重启.</translation>
+        <source>The compute device used for embeddings. Requires restart.</source>
+        <translation>技术设备用于embeddings. 需要重启.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="202"/>
