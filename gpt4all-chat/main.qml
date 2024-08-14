@@ -12,6 +12,8 @@ import network
 import gpt4all
 import localdocs
 import mysettings
+import toollist
+import toolenums
 
 Window {
     id: window
@@ -413,7 +415,11 @@ Window {
 
                 ColorOverlay {
                     id: antennaColored
-                    visible: ModelList.selectableModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
+                    visible: ModelList.selectableModels.count !== 0
+                        && (MySettings.networkIsActive
+                            || currentChat.modelInfo.isOnline
+                            || currentChat.isServer
+                            || ToolList.privacyScope === ToolEnums.PrivacyScope.None)
                     anchors.fill: antennaImage
                     source: antennaImage
                     color: theme.styledTextColor
@@ -422,8 +428,10 @@ Window {
                             return qsTr("The datalake is enabled")
                         else if (currentChat.modelInfo.isOnline)
                             return qsTr("Using a network model")
-                        else if (currentChat.modelInfo.isOnline)
+                        else if (currentChat.isServer)
                             return qsTr("Server mode is enabled")
+                        else if (ToolList.privacyScope === ToolEnums.PrivacyScope.None)
+                            return qsTr("One or more enabled tools is not private")
                         return ""
                     }
                     ToolTip.visible: maAntenna.containsMouse

@@ -51,6 +51,7 @@ public:
     QString name() const override { return tr("Web Search"); }
     QString description() const override { return tr("Search the web"); }
     QString function() const override { return "web_search"; }
+    ToolEnums::PrivacyScope privacyScope() const override { return ToolEnums::PrivacyScope::None; }
     QJsonObject paramSchema() const override;
     QJsonObject exampleParams() const override;
     bool isBuiltin() const override { return true; }

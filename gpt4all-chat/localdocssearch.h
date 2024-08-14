@@ -37,6 +37,7 @@ public:
     QString name() const override { return tr("LocalDocs Search"); }
     QString description() const override { return tr("Search the local docs"); }
     QString function() const override { return "localdocs_search"; }
+    ToolEnums::PrivacyScope privacyScope() const override { return ToolEnums::PrivacyScope::Local; }
     QJsonObject paramSchema() const override;
     bool isBuiltin() const override { return true; }
     ToolEnums::UsageMode usageMode() const override { return ToolEnums::UsageMode::ForceUsage; }

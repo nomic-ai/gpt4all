@@ -9,6 +9,7 @@ class ToolModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(ToolEnums::PrivacyScope privacyScope READ privacyScope NOTIFY privacyScopeChanged)
 
 public:
     static ToolModel *globalInstance();
@@ -17,6 +18,7 @@ public:
         NameRole = Qt::UserRole + 1,
         DescriptionRole,
         FunctionRole,
+        PrivacyScopeRole,
         ParametersRole,
         UrlRole,
         ApiKeyRole,
@@ -46,6 +48,8 @@ public:
                 return item->description();
             case FunctionRole:
                 return item->function();
+            case PrivacyScopeRole:
+                return QVariant::fromValue(item->privacyScope());
             case ParametersRole:
                 return item->paramSchema();
             case UrlRole:
@@ -69,6 +73,7 @@ public:
         roles[NameRole] = "name";
         roles[DescriptionRole] = "description";
         roles[FunctionRole] = "function";
+        roles[PrivacyScopeRole] = "privacyScope";
         roles[ParametersRole] = "parameters";
         roles[UrlRole] = "url";
         roles[ApiKeyRole] = "apiKey";
@@ -94,8 +99,12 @@ public:
 
     int count() const { return m_tools.size(); }
 
+    // Returns the least private scope of all enabled tools
+    ToolEnums::PrivacyScope privacyScope() const;
+
 Q_SIGNALS:
     void countChanged();
+    void privacyScopeChanged();
     void valueChanged(int index, const QString &value);
 
 protected:

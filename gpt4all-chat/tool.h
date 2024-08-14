@@ -22,6 +22,14 @@ namespace ToolEnums {
         ForceUsage,         // Attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
     };
     Q_ENUM_NS(UsageMode)
+
+    // Ordered in increasing levels of privacy
+    enum class PrivacyScope {
+        None = 0,               // Tool call data does not have any privacy scope
+        LocalOrg = 1,           // Tool call data does not leave the local organization
+        Local = 2               // Tool call data does not leave the machine
+    };
+    Q_ENUM_NS(PrivacyScope)
 }
 
 class Tool : public QObject {
@@ -29,6 +37,7 @@ class Tool : public QObject {
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
     Q_PROPERTY(QString function READ function CONSTANT)
+    Q_PROPERTY(ToolEnums::PrivacyScope privacyScope READ privacyScope CONSTANT)
     Q_PROPERTY(QJsonObject paramSchema READ paramSchema CONSTANT)
     Q_PROPERTY(QJsonObject exampleParams READ exampleParams CONSTANT)
     Q_PROPERTY(QUrl url READ url CONSTANT)
@@ -53,6 +62,9 @@ public:
 
     // [Required] Must be unique. Name of the function to invoke. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
     virtual QString function() const = 0;
+
+    // [Required] The privacy scope
+    virtual ToolEnums::PrivacyScope privacyScope() const = 0;
 
     // [Optional] Json schema describing the tool's parameters. An empty object specifies no parameters.
     // https://json-schema.org/understanding-json-schema/
