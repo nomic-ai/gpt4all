@@ -881,8 +881,8 @@ Rectangle {
                                                     case Chat.PromptProcessing: return qsTr("processing ...")
                                                     case Chat.ResponseGeneration: return qsTr("generating response ...");
                                                     case Chat.GeneratingQuestions: return qsTr("generating questions ...");
-                                                    case Chat.ToolCalled: return currentChat.toolDescription;
-                                                    case Chat.ToolProcessing: return qsTr("processing web results ..."); // FIXME should not be hardcoded!
+                                                    case Chat.ToolCalled: return qsTr("executing %1 ...").arg(currentChat.toolDescription);
+                                                    case Chat.ToolProcessing: return qsTr("processing %1 results ...").arg(currentChat.toolDescription);
                                                     default: return ""; // handle unexpected values
                                                     }
                                                 }

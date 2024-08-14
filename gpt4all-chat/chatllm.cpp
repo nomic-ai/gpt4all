@@ -1,6 +1,5 @@
 #include "chatllm.h"
 
-#include "bravesearch.h"
 #include "chat.h"
 #include "chatapi.h"
 #include "localdocssearch.h"
@@ -893,36 +892,31 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
         const QString tool = toolCallDoc["name"].toString();
         const QJsonObject args = toolCallDoc["parameters"].toObject();
 
-        // FIXME: In the future this will try to match the tool call to a list of tools that are supported
-        // according to MySettings, but for now only brave search is supported
-        if (tool != "web_search" || !args.contains("query")) {
-            // FIXME: Need to surface errors to the UI
-            qWarning() << "ERROR: Could not find the tool and correct parameters for " << toolCall;
+        Tool *toolInstance = ToolModel::globalInstance()->get(tool);
+        if (!toolInstance) {
+            qWarning() << "ERROR: Could not find the tool for " << toolCall;
             return handleFailedToolCall(trimmed, totalTime);
         }
 
-        const QString query = args["query"].toString();
+        // Inform the chat that we're executing a tool call
+        emit toolCalled(toolInstance->name().toLower());
 
-        emit toolCalled(tr("searching web..."));
-        const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
-        Q_ASSERT(apiKey != "");
-        BraveSearch brave;
+        const QString response = toolInstance->run(args, 2000 /*msecs to timeout*/);
+        if (toolInstance->error() != ToolEnums::Error::NoError) {
+            qWarning() << "ERROR: Tool call produced error:" << toolInstance->errorString();
+            return handleFailedToolCall(trimmed, totalTime);
+        }
 
-        QJsonObject parameters;
-        parameters.insert("apiKey", apiKey);
-        parameters.insert("query", query);
-        parameters.insert("count", 2);
-
-        // FIXME: Need to surface errors to the UI
-        const QString braveResponse = brave.run(parameters, 2000 /*msecs to timeout*/);
-
-        QString parseError;
-        QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(braveResponse, parseError);
-        if (!parseError.isEmpty()) {
-            qWarning() << "ERROR: Could not parse source excerpts for brave response:" << parseError;
-        } else if (!sourceExcerpts.isEmpty()) {
-            producedSourceExcerpts = true;
-            emit sourceExcerptsChanged(sourceExcerpts);
+        // If the tool supports excerpts then try to parse them here
+        if (toolInstance->excerpts()) {
+            QString parseError;
+            QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(response, parseError);
+            if (!parseError.isEmpty()) {
+                qWarning() << "ERROR: Could not parse source excerpts for response:" << parseError;
+            } else if (!sourceExcerpts.isEmpty()) {
+                producedSourceExcerpts = true;
+                emit sourceExcerptsChanged(sourceExcerpts);
+            }
         }
 
         m_promptResponseTokens = 0;
@@ -931,7 +925,7 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
 
         // This is a recursive call but isRecursiveCall is checked above to arrest infinite recursive
         // tool calls
-        return promptRecursive(QList<QString>()/*collectionList*/, braveResponse, toolTemplate,
+        return promptRecursive(QList<QString>()/*tool context*/, response, toolTemplate,
             n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, totalTime,
             producedSourceExcerpts, true /*isRecursiveCall*/);
     } else {
@@ -946,6 +940,7 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
 
 bool ChatLLM::handleFailedToolCall(const std::string &response, qint64 elapsed)
 {
+    // FIXME: Need to surface errors to the UI
     // Restore the strings that we excluded previously when detecting the tool call
     m_response = "<tool_call>" + response + "</tool_call>";
     emit responseChanged(QString::fromStdString(m_response));

@@ -34,7 +34,7 @@ private Q_SLOTS:
 private:
     QNetworkAccessManager *m_networkManager;
     QString m_response;
-    ToolEnums::Error m_error;
+    ToolEnums::Error m_error = ToolEnums::Error::NoError;
     QString m_errorString;
 };
 

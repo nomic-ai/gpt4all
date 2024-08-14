@@ -1,4 +1,5 @@
 #include "bravesearch.h"
+#include "mysettings.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -18,9 +19,9 @@ using namespace Qt::Literals::StringLiterals;
 
 QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
 {
-    const QString apiKey = parameters["apiKey"].toString();
+    const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
     const QString query = parameters["query"].toString();
-    const int count = parameters["count"].toInt();
+    const int count = 2; // FIXME: This should be a setting
     QThread workerThread;
     BraveAPIWorker worker;
     worker.moveToThread(&workerThread);
