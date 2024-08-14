@@ -509,6 +509,7 @@ private:
     void parseModelsJsonFile(const QByteArray &jsonData, bool save);
     void parseDiscoveryJsonFile(const QByteArray &jsonData);
     QString uniqueModelName(const ModelInfo &model) const;
+    void processModelDirectory(const QString &path);
 
 private:
     mutable QMutex m_mutex;
