@@ -761,6 +761,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
+    // FIXME: Honor the ask before running feature
     // FIXME: The only localdocs specific thing here should be the injection of the parameters
     // FIXME: Get the list of tools ... if force usage is set, then we *try* and force usage here.
     QList<SourceExcerpt> localDocsExcerpts;
@@ -898,6 +899,7 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
             return handleFailedToolCall(trimmed, totalTime);
         }
 
+        // FIXME: Honor the ask before running feature
         // Inform the chat that we're executing a tool call
         emit toolCalled(toolInstance->name().toLower());
 

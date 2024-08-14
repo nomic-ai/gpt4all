@@ -19,7 +19,6 @@ namespace ToolEnums {
     enum class UsageMode {
         Disabled,           // Completely disabled
         Enabled,            // Enabled and the model decides whether to run
-        AskBeforeRunning,   // Enabled and model decides but the user is queried whether they want the tool to run in every instance
         ForceUsage,         // Attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
     };
     Q_ENUM_NS(UsageMode)
@@ -35,6 +34,7 @@ class Tool : public QObject {
     Q_PROPERTY(QUrl url READ url CONSTANT)
     Q_PROPERTY(bool isBuiltin READ isBuiltin CONSTANT)
     Q_PROPERTY(ToolEnums::UsageMode usageMode READ usageMode NOTIFY usageModeChanged)
+    Q_PROPERTY(bool askBeforeRunning READ askBeforeRunning NOTIFY askBeforeRunningChanged)
     Q_PROPERTY(bool excerpts READ excerpts CONSTANT)
 
 public:
@@ -74,6 +74,9 @@ public:
     // [Optional] The current usage mode
     virtual ToolEnums::UsageMode usageMode() const { return ToolEnums::UsageMode::Disabled; }
 
+    // [Optional] The user is queried whether they want the tool to run in every instance
+    virtual bool askBeforeRunning() const { return false; }
+
     // [Optional] Whether json result produces source excerpts.
     virtual bool excerpts() const { return false; }
 
@@ -88,6 +91,7 @@ public:
 
 Q_SIGNALS:
     void usageModeChanged();
+    void askBeforeRunningChanged();
 };
 
 #endif // TOOL_H
