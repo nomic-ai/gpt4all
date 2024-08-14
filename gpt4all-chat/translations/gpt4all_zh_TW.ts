@@ -1779,7 +1779,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1300"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;Base URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1559"/>
@@ -1824,7 +1824,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
-        <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的 base URL。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI API 相容伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI API 相容伺服器進行通訊&lt;/li&gt;</translation>
+        <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的基底 URL（Base URL）。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI API 相容伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI API 相容伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1717"/>
