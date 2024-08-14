@@ -11,7 +11,7 @@ import network
 
 MySettingsTab {
     onRestoreDefaultsClicked: {
-        MySettings.restoreLocalDocsDefaults();
+        MySettings.restoreWebSearchDefaults();
     }
 
     showRestoreDefaultsButton: true
@@ -52,14 +52,24 @@ MySettingsTab {
                 model: ListModel {
                     ListElement { name: qsTr("Never") }
                     ListElement { name: qsTr("Model decides") }
-                    ListElement { name: qsTr("Ask for confirmation before executing") }
-                    ListElement { name: qsTr("Force usage for every response when possible") }
+                    ListElement { name: qsTr("Force usage for every response where possible") }
+                }
+                function updateModel() {
+                    usageModeBox.currentIndex = MySettings.webSearchUsageMode;
                 }
                 Accessible.name: usageModeLabel.text
                 Accessible.description: usageModeLabel.helpText
                 onActivated: {
+                    MySettings.webSearchUsageMode = usageModeBox.currentIndex;
                 }
                 Component.onCompleted: {
+                    usageModeBox.updateModel();
+                }
+                Connections {
+                    target: MySettings
+                    function onWebSearchUsageModeChanged() {
+                        usageModeBox.updateModel();
+                    }
                 }
             }
         }
@@ -74,6 +84,7 @@ MySettingsTab {
 
             MyTextField {
                 id: apiKeyField
+                enabled: usageModeBox.currentIndex !== 0
                 text: MySettings.braveSearchAPIKey
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -86,6 +97,46 @@ MySettingsTab {
                 Accessible.role: Accessible.EditableText
                 Accessible.name: apiKeyLabel.text
                 Accessible.description: apiKeyLabel.helpText
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                id: contextItemsPerPrompt
+                text: qsTr("Max source excerpts per prompt")
+                helpText: qsTr("Max best N matches of retrieved source excerpts to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            }
+
+            MyTextField {
+                text: MySettings.webSearchRetrievalSize
+                font.pixelSize: theme.fontSizeLarge
+                validator: IntValidator {
+                    bottom: 1
+                }
+                onEditingFinished: {
+                    var val = parseInt(text)
+                    if (!isNaN(val)) {
+                        MySettings.webSearchRetrievalSize = val
+                        focus = false
+                    } else {
+                        text = MySettings.webSearchRetrievalSize
+                    }
+                }
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                id: askBeforeRunningLabel
+                text: qsTr("Ask before running")
+                helpText: qsTr("The user is queried whether they want the tool to run in every instance")
+            }
+            MyCheckBox {
+                id: askBeforeRunningBox
+                checked: MySettings.webSearchAskBeforeRunning
+                onClicked: {
+                    MySettings.webSearchAskBeforeRunning = !MySettings.webSearchAskBeforeRunning
+                }
             }
         }
 

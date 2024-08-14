@@ -17,9 +17,9 @@ namespace ToolEnums {
     Q_ENUM_NS(Error)
 
     enum class UsageMode {
-        Disabled,           // Completely disabled
-        Enabled,            // Enabled and the model decides whether to run
-        ForceUsage,         // Attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
+        Disabled = 0,           // Completely disabled
+        Enabled = 1,            // Enabled and the model decides whether to run
+        ForceUsage = 2,         // Attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
     };
     Q_ENUM_NS(UsageMode)
 

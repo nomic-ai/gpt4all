@@ -2,6 +2,7 @@
 #define MYSETTINGS_H
 
 #include "modellist.h" // IWYU pragma: keep
+#include "tool.h"
 
 #include <QDateTime>
 #include <QObject>
@@ -72,6 +73,9 @@ class MySettings : public QObject
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
     Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
+    Q_PROPERTY(ToolEnums::UsageMode webSearchUsageMode READ webSearchUsageMode WRITE setWebSearchUsageMode NOTIFY webSearchUsageModeChanged)
+    Q_PROPERTY(int webSearchRetrievalSize READ webSearchRetrievalSize WRITE setWebSearchRetrievalSize NOTIFY webSearchRetrievalSizeChanged)
+    Q_PROPERTY(bool webSearchAskBeforeRunning READ webSearchAskBeforeRunning WRITE setWebSearchAskBeforeRunning NOTIFY webSearchAskBeforeRunningChanged)
     Q_PROPERTY(QString braveSearchAPIKey READ braveSearchAPIKey WRITE setBraveSearchAPIKey NOTIFY braveSearchAPIKeyChanged)
 
 public:
@@ -81,6 +85,7 @@ public:
     Q_INVOKABLE void restoreModelDefaults(const ModelInfo &info);
     Q_INVOKABLE void restoreApplicationDefaults();
     Q_INVOKABLE void restoreLocalDocsDefaults();
+    Q_INVOKABLE void restoreWebSearchDefaults();
 
     // Model/Character settings
     void eraseModel(const ModelInfo &info);
@@ -188,7 +193,13 @@ public:
     QString localDocsEmbedDevice() const;
     void setLocalDocsEmbedDevice(const QString &value);
 
-    // Tool settings
+    // Web search settings
+    ToolEnums::UsageMode webSearchUsageMode() const;
+    void setWebSearchUsageMode(ToolEnums::UsageMode value);
+    int webSearchRetrievalSize() const;
+    void setWebSearchRetrievalSize(int value);
+    bool webSearchAskBeforeRunning() const;
+    void setWebSearchAskBeforeRunning(bool value);
     QString braveSearchAPIKey() const;
     void setBraveSearchAPIKey(const QString &value);
 
@@ -251,6 +262,9 @@ Q_SIGNALS:
     void deviceChanged();
     void suggestionModeChanged();
     void languageAndLocaleChanged();
+    void webSearchUsageModeChanged();
+    void webSearchRetrievalSizeChanged() const;
+    void webSearchAskBeforeRunningChanged() const;
     void braveSearchAPIKeyChanged();
 
 private:
@@ -274,7 +288,6 @@ private:
                          bool signal = false);
     QString filePathForLocale(const QLocale &locale);
     QString systemPromptInternal(const QString &proposedTemplate, QString &error);
-
 };
 
 #endif // MYSETTINGS_H

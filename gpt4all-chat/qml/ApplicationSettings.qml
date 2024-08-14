@@ -354,13 +354,22 @@ MySettingsTab {
                 ListElement { name: qsTr("Whenever possible") }
                 ListElement { name: qsTr("Never") }
             }
+            function updateModel() {
+                suggestionModeBox.currentIndex = MySettings.suggestionMode;
+            }
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText
             onActivated: {
                 MySettings.suggestionMode = suggestionModeBox.currentIndex;
             }
             Component.onCompleted: {
-                suggestionModeBox.currentIndex = MySettings.suggestionMode;
+                suggestionModeBox.updateModel();
+            }
+            Connections {
+                target: MySettings
+                function onSuggestionModeChanged() {
+                    suggestionModeBox.updateModel();
+                }
             }
         }
         MySettingsLabel {

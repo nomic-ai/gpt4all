@@ -41,7 +41,7 @@ private:
 class BraveSearch : public Tool {
     Q_OBJECT
 public:
-    BraveSearch() : Tool(), m_error(ToolEnums::Error::NoError) {}
+    BraveSearch();
     virtual ~BraveSearch() {}
 
     QString run(const QJsonObject &parameters, qint64 timeout = 2000) override;

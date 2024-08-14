@@ -26,6 +26,7 @@
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+using namespace ToolEnums;
 
 // used only for settings serialization, do not translate
 static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };
@@ -47,22 +48,26 @@ static const QString languageAndLocale       = "System Locale";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
-    { "chatTheme",                QVariant::fromValue(ChatTheme::Light) },
-    { "fontSize",                 QVariant::fromValue(FontSize::Small) },
-    { "lastVersionStarted",       "" },
-    { "networkPort",              4891, },
-    { "saveChatsContext",         false },
-    { "serverChat",               false },
-    { "userDefaultModel",         "Application default" },
-    { "suggestionMode",           QVariant::fromValue(SuggestionMode::SourceExcerptsOnly) },
-    { "localdocs/chunkSize",      512 },
-    { "localdocs/retrievalSize",  3 },
-    { "localdocs/showReferences", true },
-    { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
-    { "localdocs/useRemoteEmbed", false },
-    { "localdocs/nomicAPIKey",    "" },
-    { "localdocs/embedDevice",    "Auto" },
-    { "network/attribution",      "" },
+    { "chatTheme",                  QVariant::fromValue(ChatTheme::Light) },
+    { "fontSize",                   QVariant::fromValue(FontSize::Small) },
+    { "lastVersionStarted",         "" },
+    { "networkPort",                4891, },
+    { "saveChatsContext",           false },
+    { "serverChat",                 false },
+    { "userDefaultModel",           "Application default" },
+    { "suggestionMode",             QVariant::fromValue(SuggestionMode::SourceExcerptsOnly) },
+    { "localdocs/chunkSize",        512 },
+    { "localdocs/retrievalSize",    3 },
+    { "localdocs/showReferences",   true },
+    { "localdocs/fileExtensions",   QStringList { "txt", "pdf", "md", "rst" } },
+    { "localdocs/useRemoteEmbed",   false },
+    { "localdocs/nomicAPIKey",      "" },
+    { "localdocs/embedDevice",      "Auto" },
+    { "network/attribution",        "" },
+    { "websearch/usageMode",        QVariant::fromValue(UsageMode::Disabled) },
+    { "websearch/retrievalSize",    2 },
+    { "websearch/askBeforeRunning", false },
+    { "bravesearch/APIKey",         "" },
 };
 
 static QString defaultLocalModelsPath()
@@ -228,6 +233,14 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsUseRemoteEmbed(basicDefaults.value("localdocs/useRemoteEmbed").toBool());
     setLocalDocsNomicAPIKey(basicDefaults.value("localdocs/nomicAPIKey").toString());
     setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
+}
+
+void MySettings::restoreWebSearchDefaults()
+{
+    setWebSearchUsageMode(basicDefaults.value("websearch/usageMode").value<UsageMode>());
+    setWebSearchRetrievalSize(basicDefaults.value("websearch/retrievalSize").toInt());
+    setWebSearchAskBeforeRunning(basicDefaults.value("websearch/askBeforeRunning").toBool());
+    setBraveSearchAPIKey(basicDefaults.value("bravesearch/APIKey").toString());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
@@ -467,6 +480,9 @@ QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting
 QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 QString     MySettings::braveSearchAPIKey() const       { return getBasicSetting("bravesearch/APIKey"   ).toString(); }
+int         MySettings::webSearchRetrievalSize() const      { return getBasicSetting("websearch/retrievalSize").toInt(); }
+bool        MySettings::webSearchAskBeforeRunning() const   { return getBasicSetting("websearch/askBeforeRunning").toBool(); }
+UsageMode   MySettings::webSearchUsageMode() const          { return getBasicSetting("websearch/usageMode").value<UsageMode>(); }
 
 ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
 FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
@@ -486,6 +502,9 @@ void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasic
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 void MySettings::setBraveSearchAPIKey(const QString &value)           { setBasicSetting("bravesearch/APIKey",       value, "braveSearchAPIKey"); }
+void MySettings::setWebSearchUsageMode(ToolEnums::UsageMode value)    { setBasicSetting("websearch/usageMode",      int(value), "webSearchUsageMode"); }
+void MySettings::setWebSearchRetrievalSize(int value)                 { setBasicSetting("websearch/retrievalSize",  value, "webSearchRetrievalSize"); }
+void MySettings::setWebSearchAskBeforeRunning(bool value)             { setBasicSetting("websearch/askBeforeRunning", value, "webSearchAskBeforeRunning"); }
 
 void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
 void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }
@@ -701,7 +720,7 @@ QString MySettings::systemPromptInternal(const QString &proposedTemplate, QStrin
     int c = ToolModel::globalInstance()->count();
     for (int i = 0; i < c; ++i) {
         Tool *t = ToolModel::globalInstance()->get(i);
-        if (t->usageMode() == ToolEnums::UsageMode::Enabled)
+        if (t->usageMode() == UsageMode::Enabled)
             toolList.push_back(t->jinjaValue());
     }
     params.insert({"toolList", toolList});

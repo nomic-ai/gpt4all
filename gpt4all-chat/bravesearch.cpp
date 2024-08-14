@@ -17,11 +17,18 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+BraveSearch::BraveSearch()
+    : Tool(), m_error(ToolEnums::Error::NoError)
+{
+    connect(MySettings::globalInstance(), &MySettings::webSearchUsageModeChanged,
+        this, &Tool::usageModeChanged);
+}
+
 QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
 {
     const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
     const QString query = parameters["query"].toString();
-    const int count = 2; // FIXME: This should be a setting
+    const int count = MySettings::globalInstance()->webSearchRetrievalSize();
     QThread workerThread;
     BraveAPIWorker worker;
     worker.moveToThread(&workerThread);
@@ -83,8 +90,7 @@ QJsonObject BraveSearch::exampleParams() const
 
 ToolEnums::UsageMode BraveSearch::usageMode() const
 {
-    // FIXME: This needs to be a setting
-    return ToolEnums::UsageMode::Enabled;
+    return MySettings::globalInstance()->webSearchUsageMode();
 }
 
 void BraveAPIWorker::request(const QString &apiKey, const QString &query, int count)
