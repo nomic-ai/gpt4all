@@ -1834,7 +1834,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;模型作者：%1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發佈日期：%2&lt;li&gt;累積讚數：%3 個讚&lt;li&gt;下載次數：%4 次&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;模型作者：%1&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發佈日期：%2&lt;li&gt;累積讚數：%3 個讚&lt;li&gt;下載次數：%4 次&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
 </context>
 <context>
