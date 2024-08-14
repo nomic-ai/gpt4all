@@ -78,6 +78,7 @@ setup(
     project_urls={
         "Documentation": "https://docs.gpt4all.io/gpt4all_python.html",
         "Source code": "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python",
+        "Changelog": "https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/CHANGELOG.md",
     },
     classifiers = [
         "Programming Language :: Python :: 3",
