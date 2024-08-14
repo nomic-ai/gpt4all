@@ -196,9 +196,10 @@ Q_SIGNALS:
     void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
+    // FIXME: This is only available because of server which sucks
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens, bool isToolCallResponse = false);
+        int32_t repeat_penalty_tokens);
     bool handleFailedToolCall(const std::string &toolCall, qint64 elapsed);
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
@@ -219,6 +220,9 @@ protected:
     quint32 m_promptResponseTokens;
 
 private:
+    bool promptRecursive(const QList<QString> &toolContexts, const QString &prompt, const QString &promptTemplate,
+        int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, qint64 &totalTime, bool &producedSourceExcerpts, bool isRecursiveCall = false);
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
     std::string m_response;
