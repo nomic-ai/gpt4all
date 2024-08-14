@@ -874,7 +874,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
         // FIXME: In the future this will try to match the tool call to a list of tools that are supported
         // according to MySettings, but for now only brave search is supported
-        if (tool != "brave_search" || !args.contains("query")) {
+        if (tool != "web_search" || !args.contains("query")) {
             // FIXME: Need to surface errors to the UI
             qWarning() << "ERROR: Could not find the tool and correct parameters for " << toolCall;
             return handleFailedToolCall(trimmed, elapsed);

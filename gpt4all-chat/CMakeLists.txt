@@ -138,7 +138,6 @@ qt_add_qml_module(chat
       qml/AddCollectionView.qml
       qml/AddModelView.qml
       qml/ApplicationSettings.qml
-      qml/BraveSearchSettings.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
@@ -178,6 +177,7 @@ qt_add_qml_module(chat
       qml/MyTextField.qml
       qml/MyToolButton.qml
       qml/MyWelcomeButton.qml
+      qml/WebSearchSettings.qml
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg

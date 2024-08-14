@@ -16,7 +16,7 @@ MySettingsTab {
 
     showRestoreDefaultsButton: true
 
-    title: qsTr("Brave Web Search")
+    title: qsTr("Web Search")
     contentItem: ColumnLayout {
         id: root
         spacing: 30
@@ -27,7 +27,7 @@ MySettingsTab {
                 color: theme.grayRed900
                 font.pixelSize: theme.fontSizeLarge
                 font.bold: true
-                text: qsTr("Brave Web Search")
+                text: qsTr("Web Search")
             }
 
             Rectangle {
