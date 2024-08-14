@@ -45,7 +45,7 @@ def _load_cuda(rtver: str, blasver: str) -> None:
         cudalib   = f"lib/libcudart.so.{rtver}"
         cublaslib = f"lib/libcublas.so.{blasver}"
     else:  # Windows
-        cudalib   = fr"bin\cudart64_{rtver.replace(".", "")}.dll"
+        cudalib   = fr"bin\cudart64_{rtver.replace('.', '')}.dll"
         cublaslib = fr"bin\cublas64_{blasver}.dll"
 
     # preload the CUDA libs so the backend can find them
