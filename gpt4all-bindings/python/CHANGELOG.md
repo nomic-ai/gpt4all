@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.8.2] - 2024-08-14
+
+### Fixed
+- Fixed incompatibility with Python 3.8 since v2.7.0 and python <=3.11 since v2.8.1 ([#2871](https://github.com/nomic-ai/gpt4all/pull/2871))
+
 ## [2.8.1] - 2024-08-13
 
 ### Added
