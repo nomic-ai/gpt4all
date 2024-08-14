@@ -1779,7 +1779,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1300"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL：%2&lt;/li&gt;&lt;li&gt;模型名稱：%3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1559"/>
