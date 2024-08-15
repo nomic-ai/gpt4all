@@ -1,6 +1,7 @@
 #include "localdocssearch.h"
 #include "database.h"
 #include "localdocs.h"
+#include "mysettings.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -14,12 +15,16 @@ using namespace Qt::Literals::StringLiterals;
 
 QString LocalDocsSearch::run(const QJsonObject &parameters, qint64 timeout)
 {
+    // Reset the error state
+    m_error = ToolEnums::Error::NoError;
+    m_errorString = QString();
+
     QList<QString> collections;
     QJsonArray collectionsArray = parameters["collections"].toArray();
     for (int i = 0; i < collectionsArray.size(); ++i)
         collections.append(collectionsArray[i].toString());
-    const QString text = parameters["text"].toString();
-    const int count = parameters["count"].toInt();
+    const QString text = parameters["query"].toString();
+    const int count = MySettings::globalInstance()->localDocsRetrievalSize();
     QThread workerThread;
     LocalDocsWorker worker;
     worker.moveToThread(&workerThread);
@@ -69,6 +74,16 @@ QJsonObject LocalDocsSearch::paramSchema() const
     static const QJsonDocument localJsonDoc = QJsonDocument::fromJson(localParamSchema.toUtf8());
     Q_ASSERT(!localJsonDoc.isNull() && localJsonDoc.isObject());
     return localJsonDoc.object();
+}
+
+QJsonObject LocalDocsSearch::exampleParams() const
+{
+    static const QString example = R"({
+        "query": "the 44th president of the United States"
+      })";
+    static const QJsonDocument exampleDoc = QJsonDocument::fromJson(example.toUtf8());
+    Q_ASSERT(!exampleDoc.isNull() && exampleDoc.isObject());
+    return exampleDoc.object();
 }
 
 LocalDocsWorker::LocalDocsWorker()

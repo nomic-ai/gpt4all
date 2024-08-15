@@ -22,10 +22,16 @@ BraveSearch::BraveSearch()
 {
     connect(MySettings::globalInstance(), &MySettings::webSearchUsageModeChanged,
         this, &Tool::usageModeChanged);
+    connect(MySettings::globalInstance(), &MySettings::webSearchConfirmationModeChanged,
+        this, &Tool::confirmationModeChanged);
 }
 
 QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
 {
+    // Reset the error state
+    m_error = ToolEnums::Error::NoError;
+    m_errorString = QString();
+
     const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
     const QString query = parameters["query"].toString();
     const int count = MySettings::globalInstance()->webSearchRetrievalSize();
@@ -91,6 +97,11 @@ QJsonObject BraveSearch::exampleParams() const
 ToolEnums::UsageMode BraveSearch::usageMode() const
 {
     return MySettings::globalInstance()->webSearchUsageMode();
+}
+
+ToolEnums::ConfirmationMode BraveSearch::confirmationMode() const
+{
+    return MySettings::globalInstance()->webSearchConfirmationMode();
 }
 
 void BraveAPIWorker::request(const QString &apiKey, const QString &query, int count)
@@ -181,8 +192,10 @@ QString BraveAPIWorker::cleanBraveResponse(const QByteArray& jsonResponse)
                 QJsonObject excerpt;
                 excerpt.insert("text", resultObj["description"]);
             }
-            result.insert("excerpts", excerpts);
-            cleanArray.append(QJsonValue(result));
+            if (!excerpts.isEmpty()) {
+                result.insert("excerpts", excerpts);
+                cleanArray.append(QJsonValue(result));
+            }
         }
     }
 

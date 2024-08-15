@@ -75,6 +75,7 @@ struct ModelInfo {
     Q_PROPERTY(int likes READ likes WRITE setLikes)
     Q_PROPERTY(int downloads READ downloads WRITE setDownloads)
     Q_PROPERTY(QDateTime recency READ recency WRITE setRecency)
+    Q_PROPERTY(bool isToolCalling READ isToolCalling WRITE setIsToolCalling)
 
 public:
     enum HashAlgorithm {
@@ -117,6 +118,9 @@ public:
 
     QDateTime recency() const;
     void setRecency(const QDateTime &r);
+
+    bool isToolCalling() const;
+    void setIsToolCalling(bool b);
 
     QString dirpath;
     QString filesize;
@@ -223,6 +227,7 @@ private:
     QString m_systemPromptTemplate    = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
+    bool    m_isToolCalling           = false;
     friend class MySettings;
 };
 Q_DECLARE_METATYPE(ModelInfo)
@@ -351,7 +356,8 @@ public:
         MinPRole,
         LikesRole,
         DownloadsRole,
-        RecencyRole
+        RecencyRole,
+        IsToolCallingRole
     };
 
     QHash<int, QByteArray> roleNames() const override

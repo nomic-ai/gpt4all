@@ -23,6 +23,13 @@ namespace ToolEnums {
     };
     Q_ENUM_NS(UsageMode)
 
+    enum class ConfirmationMode {
+        NoConfirmation = 0,             // No confirmation required
+        AskBeforeRunning = 1,           // User is queried on every execution
+        AskBeforeRunningRecursive = 2,  // User is queried if the tool is invoked in a recursive tool call
+    };
+    Q_ENUM_NS(ConfirmationMode)
+
     // Ordered in increasing levels of privacy
     enum class PrivacyScope {
         None = 0,               // Tool call data does not have any privacy scope
@@ -43,7 +50,7 @@ class Tool : public QObject {
     Q_PROPERTY(QUrl url READ url CONSTANT)
     Q_PROPERTY(bool isBuiltin READ isBuiltin CONSTANT)
     Q_PROPERTY(ToolEnums::UsageMode usageMode READ usageMode NOTIFY usageModeChanged)
-    Q_PROPERTY(bool askBeforeRunning READ askBeforeRunning NOTIFY askBeforeRunningChanged)
+    Q_PROPERTY(ToolEnums::ConfirmationMode confirmationMode READ confirmationMode NOTIFY confirmationModeChanged)
     Q_PROPERTY(bool excerpts READ excerpts CONSTANT)
 
 public:
@@ -63,7 +70,7 @@ public:
     // [Required] Must be unique. Name of the function to invoke. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
     virtual QString function() const = 0;
 
-    // [Required] The privacy scope
+    // [Required] The privacy scope.
     virtual ToolEnums::PrivacyScope privacyScope() const = 0;
 
     // [Optional] Json schema describing the tool's parameters. An empty object specifies no parameters.
@@ -80,14 +87,14 @@ public:
     // [Optional] The local file or remote resource use to invoke the tool.
     virtual QUrl url() const { return QUrl(); }
 
-    // [Optional] Whether the tool is built-in
+    // [Optional] Whether the tool is built-in.
     virtual bool isBuiltin() const { return false; }
 
-    // [Optional] The current usage mode
+    // [Optional] The usage mode.
     virtual ToolEnums::UsageMode usageMode() const { return ToolEnums::UsageMode::Disabled; }
 
-    // [Optional] The user is queried whether they want the tool to run in every instance
-    virtual bool askBeforeRunning() const { return false; }
+    // [Optional] The confirmation mode.
+    virtual ToolEnums::ConfirmationMode confirmationMode() const { return ToolEnums::ConfirmationMode::NoConfirmation; }
 
     // [Optional] Whether json result produces source excerpts.
     virtual bool excerpts() const { return false; }
@@ -103,7 +110,7 @@ public:
 
 Q_SIGNALS:
     void usageModeChanged();
-    void askBeforeRunningChanged();
+    void confirmationModeChanged();
 };
 
 #endif // TOOL_H

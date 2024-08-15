@@ -153,8 +153,29 @@ MySettingsTab {
             Layout.fillWidth: true
         }
 
-        RowLayout {
+        MySettingsLabel {
             Layout.row: 7
+            Layout.column: 0
+            Layout.columnSpan: 1
+            Layout.topMargin: 15
+            id: isToolCallingLabel
+            text: qsTr("Is Tool Calling Model")
+            helpText: qsTr("Whether the model is capable of tool calling and has tool calling instructions in system prompt.")
+        }
+
+        MyCheckBox {
+            Layout.row: 7
+            Layout.column: 1
+            Layout.topMargin: 15
+            id: isToolCallingBox
+            checked: root.currentModelInfo.isToolCalling
+            onClicked: {
+                MySettings.setModelIsToolCalling(root.currentModelInfo, isToolCallingBox.checked);
+            }
+        }
+
+        RowLayout {
+            Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -182,7 +203,7 @@ MySettingsTab {
         Rectangle {
             id: systemPrompt
             visible: !root.currentModelInfo.isOnline
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -220,7 +241,7 @@ MySettingsTab {
         }
 
         RowLayout {
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -241,7 +262,7 @@ MySettingsTab {
 
         Rectangle {
             id: promptTemplate
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -276,18 +297,19 @@ MySettingsTab {
         }
 
         MySettingsLabel {
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
             id: toolTemplateLabel
             text: qsTr("Tool Template")
-            helpText: qsTr("The template that allows tool calls to inject information into the context.")
+            helpText: qsTr("The template that allows tool calls to inject information into the context. Only enabled for tool calling models.")
         }
 
         Rectangle {
             id: toolTemplate
-            Layout.row: 12
+            enabled: root.currentModelInfo.isToolCalling
+            Layout.row: 13
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -325,14 +347,14 @@ MySettingsTab {
             id: chatNamePromptLabel
             text: qsTr("Chat Name Prompt")
             helpText: qsTr("Prompt used to automatically generate chat names.")
-            Layout.row: 13
+            Layout.row: 14
             Layout.column: 0
             Layout.topMargin: 15
         }
 
         Rectangle {
             id: chatNamePrompt
-            Layout.row: 14
+            Layout.row: 15
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -368,14 +390,14 @@ MySettingsTab {
             id: suggestedFollowUpPromptLabel
             text: qsTr("Suggested FollowUp Prompt")
             helpText: qsTr("Prompt used to generate suggested follow-up questions.")
-            Layout.row: 15
+            Layout.row: 16
             Layout.column: 0
             Layout.topMargin: 15
         }
 
         Rectangle {
             id: suggestedFollowUpPrompt
-            Layout.row: 16
+            Layout.row: 17
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -408,7 +430,7 @@ MySettingsTab {
         }
 
         GridLayout {
-            Layout.row: 17
+            Layout.row: 18
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -904,7 +926,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 18
+            Layout.row: 19
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15

@@ -37,6 +37,7 @@
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+using namespace ToolEnums;
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
@@ -761,52 +762,218 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
-    // FIXME: Honor the ask before running feature
-    // FIXME: The only localdocs specific thing here should be the injection of the parameters
-    // FIXME: Get the list of tools ... if force usage is set, then we *try* and force usage here.
-    QList<SourceExcerpt> localDocsExcerpts;
-    if (!collectionList.isEmpty()) {
-        LocalDocsSearch localdocs;
-        QJsonObject parameters;
-        parameters.insert("text", prompt);
-        parameters.insert("count", MySettings::globalInstance()->localDocsRetrievalSize());
-        parameters.insert("collections", QJsonArray::fromStringList(collectionList));
+    QString toolCallingTemplate = MySettings::globalInstance()->modelToolTemplate(m_modelInfo);
+    Q_ASSERT(toolCallingTemplate.isEmpty() || toolCallingTemplate.contains("%1"));
+    if (toolCallingTemplate.isEmpty() || !toolCallingTemplate.contains("%1"))
+        toolCallingTemplate = u"### Context:\n%1\n\n"_s;
 
-        // FIXME: This has to handle errors of the tool call
-        const QString localDocsResponse = localdocs.run(parameters, 2000 /*msecs to timeout*/);
+    const bool isToolCallingModel = MySettings::globalInstance()->modelIsToolCalling(m_modelInfo);
 
-        QString parseError;
-        localDocsExcerpts = SourceExcerpt::fromJson(localDocsResponse, parseError);
-        if (!parseError.isEmpty()) {
-            qWarning() << "ERROR: Could not parse source excerpts for localdocs response:" << parseError;
-        } else if (!localDocsExcerpts.isEmpty()) {
-            emit sourceExcerptsChanged(localDocsExcerpts);
-        }
-    }
-
-    // Augment the prompt template with the results if any
-    QString docsContext;
-    if (!localDocsExcerpts.isEmpty()) {
-        // FIXME(adam): we should be using the new tool template if available otherwise this I guess
-        QString json = SourceExcerpt::toJson(localDocsExcerpts);
-        docsContext = u"### Context:\n%1\n\n"_s.arg(json);
-    }
-
+    // Iterate over the list of tools and if force usage is set, then we *try* and force usage here
+    QList<QString> toolResponses;
     qint64 totalTime = 0;
-    bool producedSourceExcerpts;
-    bool success = promptRecursive({ docsContext }, prompt, promptTemplate, n_predict, top_k, top_p,
-        min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, totalTime, producedSourceExcerpts);
+    bool producedSourceExcerpts = false;
+    const int toolCount = ToolModel::globalInstance()->count();
+    for (int i = 0; i < toolCount; ++i) {
+        Tool *t = ToolModel::globalInstance()->get(i);
+        if (t->usageMode() != UsageMode::ForceUsage)
+            continue;
 
+        // Local docs search is unique. It is the _only_ tool where we try and force usage even if
+        // the model does not support tool calling.
+        if (!isToolCallingModel && t->function() != "localdocs_search")
+            continue;
+
+        // If this is the localdocs tool call, then we perform the search with the entire prompt as
+        // the query
+        if (t->function() == "localdocs_search") {
+            if (collectionList.isEmpty())
+                continue;
+
+            QJsonObject parameters;
+            parameters.insert("collections", QJsonArray::fromStringList(collectionList));
+            parameters.insert("query", prompt);
+            parameters.insert("count", MySettings::globalInstance()->localDocsRetrievalSize());
+
+            // FIXME: Honor the confirmation mode feature
+            const QString response = t->run(parameters, 2000 /*msecs to timeout*/);
+            if (t->error() != Error::NoError) {
+                qWarning() << "ERROR: LocalDocs call produced error:" << t->errorString();
+                continue;
+            }
+
+            QString parseError;
+            QList<SourceExcerpt> localDocsExcerpts = SourceExcerpt::fromJson(response, parseError);
+            if (!parseError.isEmpty()) {
+                qWarning() << "ERROR: Could not parse source excerpts for localdocs response:" << parseError;
+            } else {
+                producedSourceExcerpts = true;
+                emit sourceExcerptsChanged(localDocsExcerpts);
+            }
+            toolResponses << QString(toolCallingTemplate).arg(response);
+            continue;
+        }
+
+        // For all other cases we should have a tool calling model
+        Q_ASSERT(isToolCallingModel);
+
+        // Create the tool calling response as if the model has chosen this particular tool
+        const QString toolCallingResponse = QString("<tool_call>{\"name\": \"%1\", \"parameters\": {\"").arg(t->function());
+
+        // Mimic that the model has already responded like this to trigger our tool calling detection
+        // code and then rely upon it to complete the parameters correctly
+        m_response = toolCallingResponse.toStdString();
+
+        // Insert this response as the tool prompt
+        const QString toolPrompt = QString(promptTemplate).arg(prompt, toolCallingResponse);
+
+        const QString toolCall = completeToolCall(toolPrompt, n_predict, top_k, top_p,
+            min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, totalTime);
+
+        // If the tool call is empty, then we failed in our attempt to force usage
+        if (toolCall.isEmpty()) {
+            qWarning() << "WARNING: Attempt to force usage of toolcall" << t->function() << "failed:"
+                << "model could not complete parameters for" << toolPrompt;
+            continue;
+        }
+
+        QString errorString;
+        const QString response = executeToolCall(toolCall, producedSourceExcerpts, errorString);
+        if (response.isEmpty()) {
+            qWarning() << "WARNING: Attempt to force usage of toolcall" << t->function() << "failed:" << errorString;
+            continue;
+        }
+
+        toolResponses << QString(toolCallingTemplate).arg(response);
+    }
+
+    bool success = promptRecursive({ toolResponses }, prompt, promptTemplate, n_predict, top_k, top_p,
+        min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, totalTime, producedSourceExcerpts);
+    Q_ASSERT(success);
     SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
-    if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && (!localDocsExcerpts.isEmpty() || producedSourceExcerpts)))
+    if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && producedSourceExcerpts))
         generateQuestions(totalTime);
     else
         emit responseStopped(totalTime);
-
     return success;
 }
 
-bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString &prompt,
+QString ChatLLM::completeToolCall(const QString &prompt, int32_t n_predict, int32_t top_k, float top_p,
+    float min_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
+    qint64 &totalTime)
+{
+    if (!isModelLoaded())
+        return QString();
+
+    int n_threads = MySettings::globalInstance()->threadCount();
+
+    m_stopGenerating = false;
+    auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&ChatLLM::handleResponse, this, std::placeholders::_1,
+        std::placeholders::_2);
+    emit promptProcessing();
+    m_ctx.n_predict = n_predict;
+    m_ctx.top_k = top_k;
+    m_ctx.top_p = top_p;
+    m_ctx.min_p = min_p;
+    m_ctx.temp = temp;
+    m_ctx.n_batch = n_batch;
+    m_ctx.repeat_penalty = repeat_penalty;
+    m_ctx.repeat_last_n = repeat_penalty_tokens;
+    m_llModelInfo.model->setThreadCount(n_threads);
+#if defined(DEBUG)
+    printf("%s", qPrintable(prompt));
+    fflush(stdout);
+#endif
+
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+    m_timer->start();
+
+    m_checkToolCall = true;
+
+    // We pass in the prompt as the completed template as we're mimicking that the respone has already
+    // started
+    LLModel::PromptContext ctx = m_ctx;
+    m_llModelInfo.model->prompt(prompt.toStdString(), "%1", promptFunc, responseFunc,
+                                /*allowContextShift*/ false, ctx);
+
+    // After the response has been handled reset this state
+    m_checkToolCall = false;
+    m_maybeToolCall = false;
+
+    m_timer->stop();
+    totalTime = elapsedTimer.elapsed();
+
+    const QString toolCall = QString::fromStdString(trim_whitespace(m_response));
+    m_promptResponseTokens = 0;
+    m_promptTokens = 0;
+    m_response = std::string();
+
+    if (!m_foundToolCall)
+        return QString();
+
+    m_foundToolCall = false;
+    return toolCall;
+}
+
+QString ChatLLM::executeToolCall(const QString &toolCall, bool &producedSourceExcerpts, QString &errorString)
+{
+    const QString toolTemplate = MySettings::globalInstance()->modelToolTemplate(m_modelInfo);
+    if (toolTemplate.isEmpty()) {
+        errorString = QString("ERROR: No valid tool template for this model %1").arg(toolCall);
+        return QString();
+    }
+
+    QJsonParseError err;
+    const QJsonDocument toolCallDoc = QJsonDocument::fromJson(toolCall.toUtf8(), &err);
+
+    if (toolCallDoc.isNull() || err.error != QJsonParseError::NoError || !toolCallDoc.isObject()) {
+        errorString = QString("ERROR: The tool call had null or invalid json %1").arg(toolCall);
+        return QString();
+    }
+
+    QJsonObject rootObject = toolCallDoc.object();
+    if (!rootObject.contains("name") || !rootObject.contains("parameters")) {
+        errorString = QString("ERROR: The tool call did not have required name and argument objects %1").arg(toolCall);
+        return QString();
+    }
+
+    const QString tool = toolCallDoc["name"].toString();
+    const QJsonObject args = toolCallDoc["parameters"].toObject();
+
+    Tool *toolInstance = ToolModel::globalInstance()->get(tool);
+    if (!toolInstance) {
+        errorString = QString("ERROR: Could not find the tool for %1").arg(toolCall);
+        return QString();
+    }
+
+    // FIXME: Honor the confirmation mode feature
+    // Inform the chat that we're executing a tool call
+    emit toolCalled(toolInstance->name().toLower());
+
+    const QString response = toolInstance->run(args, 2000 /*msecs to timeout*/);
+    if (toolInstance->error() != Error::NoError) {
+        errorString = QString("ERROR: Tool call produced error: %1").arg(toolInstance->errorString());
+        return QString();
+    }
+
+    // If the tool supports excerpts then try to parse them here, but it isn't strictly an error
+    // but rather a warning
+    if (toolInstance->excerpts()) {
+        QString parseError;
+        QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(response, parseError);
+        if (!parseError.isEmpty()) {
+            qWarning() << "WARNING: Could not parse source excerpts for response:" << parseError;
+        } else if (!sourceExcerpts.isEmpty()) {
+            producedSourceExcerpts = true;
+            emit sourceExcerptsChanged(sourceExcerpts);
+        }
+    }
+    return response;
+}
+
+bool ChatLLM::promptRecursive(const QList<QString> &toolResponses, const QString &prompt,
     const QString &promptTemplate, int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp,
     int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens, qint64 &totalTime, bool &producedSourceExcerpts, bool isRecursiveCall)
 {
@@ -838,8 +1005,8 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
     elapsedTimer.start();
     m_timer->start();
 
-    // The list of possible additional contexts that come from previous usage of tool calls
-    for (const QString &context : toolContexts) {
+    // The list of possible additional responses that come from previous usage of tool calls
+    for (const QString &context : toolResponses) {
         auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode context without a response
         m_llModelInfo.model->prompt(context.toStdString(), "%1", promptFunc, responseFunc,
                                     /*allowContextShift*/ true, m_ctx);
@@ -869,65 +1036,27 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
     if (m_foundToolCall) {
         m_foundToolCall = false;
 
+        QString errorString;
         const QString toolCall = QString::fromStdString(trimmed);
-        const QString toolTemplate = MySettings::globalInstance()->modelToolTemplate(m_modelInfo);
-        if (toolTemplate.isEmpty()) {
-            qWarning() << "ERROR: No valid tool template for this model" << toolCall;
-            return handleFailedToolCall(trimmed, totalTime);
+        const QString toolResponse = executeToolCall(toolCall, producedSourceExcerpts, errorString);
+        if (toolResponse.isEmpty()) {
+            // FIXME: Need to surface errors to the UI
+            // Restore the strings that we excluded previously when detecting the tool call
+            qWarning() << errorString;
+            m_response = "<tool_call>" + toolCall.toStdString() + "</tool_call>";
+            emit responseChanged(QString::fromStdString(m_response));
+            emit responseStopped(totalTime);
+            m_pristineLoadedState = false;
+            return false;
         }
 
-        QJsonParseError err;
-        const QJsonDocument toolCallDoc = QJsonDocument::fromJson(toolCall.toUtf8(), &err);
-
-        if (toolCallDoc.isNull() || err.error != QJsonParseError::NoError || !toolCallDoc.isObject()) {
-            qWarning() << "ERROR: The tool call had null or invalid json " << toolCall;
-            return handleFailedToolCall(trimmed, totalTime);
-        }
-
-        QJsonObject rootObject = toolCallDoc.object();
-        if (!rootObject.contains("name") || !rootObject.contains("parameters")) {
-            qWarning() << "ERROR: The tool call did not have required name and argument objects " << toolCall;
-            return handleFailedToolCall(trimmed, totalTime);
-        }
-
-        const QString tool = toolCallDoc["name"].toString();
-        const QJsonObject args = toolCallDoc["parameters"].toObject();
-
-        Tool *toolInstance = ToolModel::globalInstance()->get(tool);
-        if (!toolInstance) {
-            qWarning() << "ERROR: Could not find the tool for " << toolCall;
-            return handleFailedToolCall(trimmed, totalTime);
-        }
-
-        // FIXME: Honor the ask before running feature
-        // Inform the chat that we're executing a tool call
-        emit toolCalled(toolInstance->name().toLower());
-
-        const QString response = toolInstance->run(args, 2000 /*msecs to timeout*/);
-        if (toolInstance->error() != ToolEnums::Error::NoError) {
-            qWarning() << "ERROR: Tool call produced error:" << toolInstance->errorString();
-            return handleFailedToolCall(trimmed, totalTime);
-        }
-
-        // If the tool supports excerpts then try to parse them here
-        if (toolInstance->excerpts()) {
-            QString parseError;
-            QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(response, parseError);
-            if (!parseError.isEmpty()) {
-                qWarning() << "ERROR: Could not parse source excerpts for response:" << parseError;
-            } else if (!sourceExcerpts.isEmpty()) {
-                producedSourceExcerpts = true;
-                emit sourceExcerptsChanged(sourceExcerpts);
-            }
-        }
-
+        // Reset the state now that we've had a successful tool call response
         m_promptResponseTokens = 0;
         m_promptTokens = 0;
         m_response = std::string();
 
-        // This is a recursive call but isRecursiveCall is checked above to arrest infinite recursive
-        // tool calls
-        return promptRecursive(QList<QString>()/*tool context*/, response, toolTemplate,
+        // This is a recursive call but flag is checked above to arrest infinite recursive tool calls
+        return promptRecursive({ toolResponse }, prompt, promptTemplate,
             n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, totalTime,
             producedSourceExcerpts, true /*isRecursiveCall*/);
     } else {
@@ -938,17 +1067,6 @@ bool ChatLLM::promptRecursive(const QList<QString> &toolContexts, const QString 
         m_pristineLoadedState = false;
         return true;
     }
-}
-
-bool ChatLLM::handleFailedToolCall(const std::string &response, qint64 elapsed)
-{
-    // FIXME: Need to surface errors to the UI
-    // Restore the strings that we excluded previously when detecting the tool call
-    m_response = "<tool_call>" + response + "</tool_call>";
-    emit responseChanged(QString::fromStdString(m_response));
-    emit responseStopped(elapsed);
-    m_pristineLoadedState = false;
-    return true;
 }
 
 void ChatLLM::setShouldBeLoaded(bool b)

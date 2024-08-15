@@ -73,9 +73,9 @@ class MySettings : public QObject
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
     Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
-    Q_PROPERTY(ToolEnums::UsageMode webSearchUsageMode READ webSearchUsageMode WRITE setWebSearchUsageMode NOTIFY webSearchUsageModeChanged)
     Q_PROPERTY(int webSearchRetrievalSize READ webSearchRetrievalSize WRITE setWebSearchRetrievalSize NOTIFY webSearchRetrievalSizeChanged)
-    Q_PROPERTY(bool webSearchAskBeforeRunning READ webSearchAskBeforeRunning WRITE setWebSearchAskBeforeRunning NOTIFY webSearchAskBeforeRunningChanged)
+    Q_PROPERTY(ToolEnums::UsageMode webSearchUsageMode READ webSearchUsageMode WRITE setWebSearchUsageMode NOTIFY webSearchUsageModeChanged)
+    Q_PROPERTY(ToolEnums::ConfirmationMode webSearchConfirmationMode READ webSearchConfirmationMode WRITE setWebSearchConfirmationMode NOTIFY webSearchConfirmationModeChanged)
     Q_PROPERTY(QString braveSearchAPIKey READ braveSearchAPIKey WRITE setBraveSearchAPIKey NOTIFY braveSearchAPIKeyChanged)
 
 public:
@@ -133,6 +133,8 @@ public:
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
     QString modelToolTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelToolTemplate(const ModelInfo &info, const QString &value, bool force = false);
+    bool modelIsToolCalling(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelIsToolCalling(const ModelInfo &info, bool value, bool force = false);
     QString modelSystemPromptTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
     int modelContextLength(const ModelInfo &info) const;
@@ -194,12 +196,12 @@ public:
     void setLocalDocsEmbedDevice(const QString &value);
 
     // Web search settings
-    ToolEnums::UsageMode webSearchUsageMode() const;
-    void setWebSearchUsageMode(ToolEnums::UsageMode value);
     int webSearchRetrievalSize() const;
     void setWebSearchRetrievalSize(int value);
-    bool webSearchAskBeforeRunning() const;
-    void setWebSearchAskBeforeRunning(bool value);
+    ToolEnums::UsageMode webSearchUsageMode() const;
+    void setWebSearchUsageMode(ToolEnums::UsageMode value);
+    ToolEnums::ConfirmationMode webSearchConfirmationMode() const;
+    void setWebSearchConfirmationMode(ToolEnums::ConfirmationMode value);
     QString braveSearchAPIKey() const;
     void setBraveSearchAPIKey(const QString &value);
 
@@ -238,6 +240,7 @@ Q_SIGNALS:
     void systemPromptChanged(const ModelInfo &info);
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);
+    void isToolCallingChanged(const ModelInfo &info);
     void threadCountChanged();
     void saveChatsContextChanged();
     void serverChatChanged();
@@ -262,9 +265,10 @@ Q_SIGNALS:
     void deviceChanged();
     void suggestionModeChanged();
     void languageAndLocaleChanged();
+    void webSearchRetrievalSizeChanged();
+    // FIXME: These are never emitted along with a lot of the signals above probably with all kinds of bugs!!
     void webSearchUsageModeChanged();
-    void webSearchRetrievalSizeChanged() const;
-    void webSearchAskBeforeRunningChanged() const;
+    void webSearchConfirmationModeChanged();
     void braveSearchAPIKeyChanged();
 
 private:

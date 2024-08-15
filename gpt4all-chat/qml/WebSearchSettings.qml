@@ -125,20 +125,21 @@ MySettingsTab {
             }
         }
 
-        RowLayout {
-            MySettingsLabel {
-                id: askBeforeRunningLabel
-                text: qsTr("Ask before running")
-                helpText: qsTr("The user is queried whether they want the tool to run in every instance")
-            }
-            MyCheckBox {
-                id: askBeforeRunningBox
-                checked: MySettings.webSearchAskBeforeRunning
-                onClicked: {
-                    MySettings.webSearchAskBeforeRunning = !MySettings.webSearchAskBeforeRunning
-                }
-            }
-        }
+// FIXME:
+//        RowLayout {
+//            MySettingsLabel {
+//                id: askBeforeRunningLabel
+//                text: qsTr("Ask before running")
+//                helpText: qsTr("The user is queried whether they want the tool to run in every instance.")
+//            }
+//            MyCheckBox {
+//                id: askBeforeRunningBox
+//                checked: MySettings.webSearchConfirmationMode
+//                onClicked: {
+//                    MySettings.webSearchConfirmationMode = !MySettings.webSearchAskBeforeRunning
+//                }
+//            }
+//        }
 
         Rectangle {
             Layout.topMargin: 15

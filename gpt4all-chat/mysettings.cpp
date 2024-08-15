@@ -64,9 +64,9 @@ static const QVariantMap basicDefaults {
     { "localdocs/nomicAPIKey",      "" },
     { "localdocs/embedDevice",      "Auto" },
     { "network/attribution",        "" },
-    { "websearch/usageMode",        QVariant::fromValue(UsageMode::Disabled) },
     { "websearch/retrievalSize",    2 },
-    { "websearch/askBeforeRunning", false },
+    { "websearch/usageMode",        QVariant::fromValue(UsageMode::Disabled) },
+    { "websearch/confirmationMode", QVariant::fromValue(ConfirmationMode::NoConfirmation) },
     { "bravesearch/APIKey",         "" },
 };
 
@@ -203,6 +203,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
     setModelPromptTemplate(info, info.m_promptTemplate);
     setModelToolTemplate(info, info.m_toolTemplate);
+    setModelIsToolCalling(info, info.m_isToolCalling);
     setModelSystemPromptTemplate(info, info.m_systemPromptTemplate);
     setModelChatNamePrompt(info, info.m_chatNamePrompt);
     setModelSuggestedFollowUpPrompt(info, info.m_suggestedFollowUpPrompt);
@@ -239,7 +240,7 @@ void MySettings::restoreWebSearchDefaults()
 {
     setWebSearchUsageMode(basicDefaults.value("websearch/usageMode").value<UsageMode>());
     setWebSearchRetrievalSize(basicDefaults.value("websearch/retrievalSize").toInt());
-    setWebSearchAskBeforeRunning(basicDefaults.value("websearch/askBeforeRunning").toBool());
+    setWebSearchConfirmationMode(basicDefaults.value("websearch/confirmationMode").value<ConfirmationMode>());
     setBraveSearchAPIKey(basicDefaults.value("bravesearch/APIKey").toString());
 }
 
@@ -314,6 +315,7 @@ double    MySettings::modelRepeatPenalty          (const ModelInfo &info) const 
 int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens",     info).toInt(); }
 QString   MySettings::modelPromptTemplate         (const ModelInfo &info) const { return getModelSetting("promptTemplate",          info).toString(); }
 QString   MySettings::modelToolTemplate           (const ModelInfo &info) const { return getModelSetting("toolTemplate",            info).toString(); }
+bool      MySettings::modelIsToolCalling          (const ModelInfo &info) const { return getModelSetting("isToolCalling",           info).toBool(); }
 QString   MySettings::modelSystemPromptTemplate   (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
@@ -428,6 +430,11 @@ void MySettings::setModelToolTemplate(const ModelInfo &info, const QString &valu
     setModelSetting("toolTemplate", info, value, force, true);
 }
 
+void MySettings::setModelIsToolCalling(const ModelInfo &info, bool value, bool force)
+{
+    setModelSetting("isToolCalling", info, value, force, true);
+}
+
 void MySettings::setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force)
 {
     setModelSetting("systemPrompt", info, value, force, true);
@@ -481,8 +488,8 @@ QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 QString     MySettings::braveSearchAPIKey() const       { return getBasicSetting("bravesearch/APIKey"   ).toString(); }
 int         MySettings::webSearchRetrievalSize() const      { return getBasicSetting("websearch/retrievalSize").toInt(); }
-bool        MySettings::webSearchAskBeforeRunning() const   { return getBasicSetting("websearch/askBeforeRunning").toBool(); }
-UsageMode   MySettings::webSearchUsageMode() const          { return getBasicSetting("websearch/usageMode").value<UsageMode>(); }
+UsageMode        MySettings::webSearchUsageMode() const          { return getBasicSetting("websearch/usageMode").value<UsageMode>(); }
+ConfirmationMode MySettings::webSearchConfirmationMode() const   { return getBasicSetting("websearch/confirmationMode").value<ConfirmationMode>(); }
 
 ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
 FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
@@ -502,9 +509,9 @@ void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasic
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 void MySettings::setBraveSearchAPIKey(const QString &value)           { setBasicSetting("bravesearch/APIKey",       value, "braveSearchAPIKey"); }
-void MySettings::setWebSearchUsageMode(ToolEnums::UsageMode value)    { setBasicSetting("websearch/usageMode",      int(value), "webSearchUsageMode"); }
 void MySettings::setWebSearchRetrievalSize(int value)                 { setBasicSetting("websearch/retrievalSize",  value, "webSearchRetrievalSize"); }
-void MySettings::setWebSearchAskBeforeRunning(bool value)             { setBasicSetting("websearch/askBeforeRunning", value, "webSearchAskBeforeRunning"); }
+void MySettings::setWebSearchUsageMode(ToolEnums::UsageMode value)                  { setBasicSetting("websearch/usageMode",        int(value), "webSearchUsageMode"); }
+void MySettings::setWebSearchConfirmationMode(ToolEnums::ConfirmationMode value)    { setBasicSetting("websearch/confirmationMode", int(value), "webSearchConfirmationMode"); }
 
 void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
 void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }
@@ -717,10 +724,14 @@ QString MySettings::systemPromptInternal(const QString &proposedTemplate, QStrin
     params.insert({"currentDate", QDate::currentDate().toString().toStdString()});
 
     jinja2::ValuesList toolList;
-    int c = ToolModel::globalInstance()->count();
-    for (int i = 0; i < c; ++i) {
+    const int toolCount = ToolModel::globalInstance()->count();
+    for (int i = 0; i < toolCount; ++i) {
         Tool *t = ToolModel::globalInstance()->get(i);
-        if (t->usageMode() == UsageMode::Enabled)
+        // FIXME: For now we don't tell the model about the localdocs search in the system prompt because
+        // it will try to call the localdocs search even if no collection is selected. Ideally, we need
+        // away to update model to whether a tool is enabled/disabled either via reprocessing the system
+        // prompt or sending a system message as it happens
+        if (t->usageMode() != UsageMode::Disabled && t->function() != "localdocs_search")
             toolList.push_back(t->jinjaValue());
     }
     params.insert({"toolList", toolList});

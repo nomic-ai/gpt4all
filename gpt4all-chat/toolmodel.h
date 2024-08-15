@@ -25,7 +25,7 @@ public:
         KeyRequiredRole,
         IsBuiltinRole,
         UsageModeRole,
-        AskBeforeRole,
+        ConfirmationModeRole,
         ExcerptsRole,
     };
 
@@ -58,8 +58,8 @@ public:
                 return item->isBuiltin();
             case UsageModeRole:
                 return QVariant::fromValue(item->usageMode());
-            case AskBeforeRole:
-                return item->askBeforeRunning();
+            case ConfirmationModeRole:
+                return QVariant::fromValue(item->confirmationMode());
             case ExcerptsRole:
                 return item->excerpts();
         }
@@ -80,7 +80,7 @@ public:
         roles[KeyRequiredRole] = "keyRequired";
         roles[IsBuiltinRole] = "isBuiltin";
         roles[UsageModeRole] = "usageMode";
-        roles[AskBeforeRole] = "askBeforeRunning";
+        roles[ConfirmationModeRole] = "confirmationMode";
         roles[ExcerptsRole] = "excerpts";
         return roles;
     }

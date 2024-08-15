@@ -367,6 +367,17 @@ void ModelInfo::setSuggestedFollowUpPrompt(const QString &p)
     m_suggestedFollowUpPrompt = p;
 }
 
+bool ModelInfo::isToolCalling() const
+{
+    return MySettings::globalInstance()->modelIsToolCalling(*this);
+}
+
+void ModelInfo::setIsToolCalling(bool b)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelIsToolCalling(*this, b, true /*force*/);
+    m_isToolCalling = b;
+}
+
 bool ModelInfo::shouldSaveMetadata() const
 {
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
@@ -400,6 +411,7 @@ QVariantMap ModelInfo::getFields() const
         { "systemPromptTemplate",m_systemPromptTemplate },
         { "chatNamePrompt",      m_chatNamePrompt },
         { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
+        { "isToolCalling",       m_isToolCalling },
     };
 }
 
@@ -518,6 +530,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::toolTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::isToolCallingChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
@@ -803,7 +816,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->downloads();
         case RecencyRole:
             return info->recency();
-
+        case IsToolCallingRole:
+            return info->isToolCalling();
     }
 
     return QVariant();
@@ -999,6 +1013,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                     }
                     break;
                 }
+            case IsToolCallingRole:
+                info->setIsToolCalling(value.toBool()); break;
             }
         }
 
@@ -1573,6 +1589,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             data.append({ ModelList::ToolTemplateRole, obj["toolTemplate"].toString() });
         if (obj.contains("systemPrompt"))
             data.append({ ModelList::SystemPromptRole, obj["systemPrompt"].toString() });
+        if (obj.contains("isToolCalling"))
+            data.append({ ModelList::IsToolCallingRole, obj["isToolCalling"].toBool() });
         updateData(id, data);
     }
 
@@ -1887,6 +1905,10 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/suggestedFollowUpPrompt")) {
             const QString suggestedFollowUpPrompt = settings.value(g + "/suggestedFollowUpPrompt").toString();
             data.append({ ModelList::SuggestedFollowUpPromptRole, suggestedFollowUpPrompt });
+        }
+        if (settings.contains(g + "/isToolCalling")) {
+            const bool isToolCalling = settings.value(g + "/isToolCalling").toBool();
+            data.append({ ModelList::IsToolCallingRole, isToolCalling });
         }
         updateData(id, data);
     }

@@ -56,6 +56,7 @@ public:
     QJsonObject exampleParams() const override;
     bool isBuiltin() const override { return true; }
     ToolEnums::UsageMode usageMode() const override;
+    ToolEnums::ConfirmationMode confirmationMode() const override;
     bool excerpts() const override { return true; }
 
 private:
