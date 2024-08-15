@@ -1210,38 +1210,37 @@ bool ModelList::modelExists(const QString &modelFilename) const
 
 void ModelList::updateOldRemoteModels(const QString &path)
 {
-    QDirIterator it(path, QDirIterator::Subdirectories);
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
-        if (!it.fileInfo().isDir()) {
-            QString filename = it.fileName();
-            if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
-                QString apikey;
-                QString modelname(filename);
-                modelname.chop(4); // strip ".txt" extension
-                modelname.remove(0, 8); // strip "chatgpt-" prefix
-                QFile file(path + filename);
-                if (file.open(QIODevice::ReadWrite)) {
-                    QTextStream in(&file);
-                    apikey = in.readAll();
-                    file.close();
-                }
+        QString filename = it.fileName();
+        if (!filename.startsWith("chatgpt-") || !filename.endsWith(".txt"))
+            continue;
 
-                QJsonObject obj;
-                obj.insert("apiKey", apikey);
-                obj.insert("modelName", modelname);
-                QJsonDocument doc(obj);
-
-                auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
-                QFile newfile(path + newfilename);
-                if (newfile.open(QIODevice::ReadWrite)) {
-                    QTextStream out(&newfile);
-                    out << doc.toJson();
-                    newfile.close();
-                }
-                file.remove();
-            }
+        QString apikey;
+        QString modelname(filename);
+        modelname.chop(4); // strip ".txt" extension
+        modelname.remove(0, 8); // strip "chatgpt-" prefix
+        QFile file(path + filename);
+        if (file.open(QIODevice::ReadWrite)) {
+            QTextStream in(&file);
+            apikey = in.readAll();
+            file.close();
         }
+
+        QJsonObject obj;
+        obj.insert("apiKey", apikey);
+        obj.insert("modelName", modelname);
+        QJsonDocument doc(obj);
+
+        auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
+        QFile newfile(path + newfilename);
+        if (newfile.open(QIODevice::ReadWrite)) {
+            QTextStream out(&newfile);
+            out << doc.toJson();
+            newfile.close();
+        }
+        file.remove();
     }
 }
 
@@ -1249,7 +1248,7 @@ void ModelList::processModelDirectory(const QString &path)
 {
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
+        QFileInfo info = it.nextFileInfo();
 
         QString filename = it.fileName();
         if (filename.startsWith("incomplete") || FILENAME_BLACKLIST.contains(filename))
@@ -1270,8 +1269,6 @@ void ModelList::processModelDirectory(const QString &path)
                 addModel(filename);
             modelsById.append(filename);
         }
-
-        QFileInfo info = it.fileInfo();
 
         bool isOnline(filename.endsWith(".rmodel"));
         bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
