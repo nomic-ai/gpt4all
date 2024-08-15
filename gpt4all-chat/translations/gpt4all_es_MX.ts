@@ -1829,7 +1829,7 @@ modelo para comenzar
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../modellist.cpp" line="1559"/>
+        <location filename="../modellist.cpp" line="1566"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Requiere clave API personal de OpenAI.&lt;/li&gt;&lt;li&gt;ADVERTENCIA: ¡Enviará sus chats a OpenAI!&lt;/li&gt;&lt;li&gt;Su clave API se almacenará en el disco&lt;/li&gt;&lt;li&gt;Solo se usará para comunicarse con OpenAI&lt;/li&gt;&lt;li&gt;Puede solicitar una clave API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aquí.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
@@ -1840,62 +1840,73 @@ modelo para comenzar
                 OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1578"/>
+        <location filename="../modellist.cpp" line="1585"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo ChatGPT GPT-3.5 Turbo de OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1591"/>
+        <location filename="../modellist.cpp" line="1598"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Aunque pagues a OpenAI por ChatGPT-4, esto no garantiza el acceso a la clave API. Contacta a OpenAI para más información.</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1606"/>
+        <location filename="../modellist.cpp" line="1613"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;Modelo ChatGPT GPT-4 de OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1618"/>
+        <location filename="../modellist.cpp" line="1625"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Requiere una clave API personal de Mistral.&lt;/li&gt;&lt;li&gt;ADVERTENCIA: ¡Enviará tus chats a Mistral!&lt;/li&gt;&lt;li&gt;Tu clave API se almacenará en el disco&lt;/li&gt;&lt;li&gt;Solo se usará para comunicarse con Mistral&lt;/li&gt;&lt;li&gt;Puedes solicitar una clave API &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aquí&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1637"/>
+        <location filename="../modellist.cpp" line="1644"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1662"/>
+        <location filename="../modellist.cpp" line="1669"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Small&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1688"/>
+        <location filename="../modellist.cpp" line="1695"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Medium&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2131"/>
+        <location filename="../modellist.cpp" line="2138"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Creado por %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicado el %2.&lt;li&gt;Este modelo tiene %3 me gusta.&lt;li&gt;Este modelo tiene %4 descargas.&lt;li&gt;Más información puede encontrarse &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aquí.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1299"/>
+        <location filename="../modellist.cpp" line="1288"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1300"/>
+        <location filename="../modellist.cpp" line="1226"/>
+        <location filename="../modellist.cpp" line="1277"/>
+        <source>cannot open &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../modellist.cpp" line="1238"/>
+        <source>cannot create &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../modellist.cpp" line="1289"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Modelo de API compatible con OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Clave API: %1&lt;/li&gt;&lt;li&gt;URL base: %2&lt;/li&gt;&lt;li&gt;Nombre del modelo: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1700"/>
+        <location filename="../modellist.cpp" line="1707"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Requiere una clave API personal y la URL base de la API.&lt;/li&gt;&lt;li&gt;ADVERTENCIA: ¡Enviará sus chats al servidor de API compatible con OpenAI que especificó!&lt;/li&gt;&lt;li&gt;Su clave API se almacenará en el disco&lt;/li&gt;&lt;li&gt;Solo se utilizará para comunicarse con el servidor de API compatible con OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1717"/>
+        <location filename="../modellist.cpp" line="1724"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Conectar al servidor de API compatible con OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
