@@ -1212,7 +1212,7 @@ void ModelList::updateOldRemoteModels(const QString &path)
 {
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
+        QFileInfo info = it.nextFileInfo();
         QString filename = it.fileName();
         if (!filename.startsWith("chatgpt-") || !filename.endsWith(".txt"))
             continue;
@@ -1221,8 +1221,8 @@ void ModelList::updateOldRemoteModels(const QString &path)
         QString modelname(filename);
         modelname.chop(4); // strip ".txt" extension
         modelname.remove(0, 8); // strip "chatgpt-" prefix
-        QFile file(path + filename);
-        if (!file.open(QIODevice::ReadWrite)) {
+        QFile file(info.filePath());
+        if (!file.open(QIODevice::ReadOnly)) {
             qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
             continue;
         }
@@ -1233,8 +1233,7 @@ void ModelList::updateOldRemoteModels(const QString &path)
             file.close();
         }
 
-        auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
-        QFile newfile(path + newfilename);
+        QFile newfile(u"%1/gpt4all-%2.rmodel"_s.arg(info.dir().path(), modelname));
         if (!newfile.open(QIODevice::ReadWrite)) {
             qWarning().noquote() << tr("cannot create \"%1\": %2").arg(newfile.fileName(), file.errorString());
             continue;
@@ -1273,7 +1272,7 @@ void ModelList::processModelDirectory(const QString &path)
         if (isCompatibleApi) {
             QJsonObject obj;
             {
-                QFile file(path + filename);
+                QFile file(info.filePath());
                 if (!file.open(QIODeviceBase::ReadOnly)) {
                     qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
                     continue;
