@@ -1222,24 +1222,33 @@ void ModelList::updateOldRemoteModels(const QString &path)
         modelname.chop(4); // strip ".txt" extension
         modelname.remove(0, 8); // strip "chatgpt-" prefix
         QFile file(path + filename);
-        if (file.open(QIODevice::ReadWrite)) {
+        if (!file.open(QIODevice::ReadWrite)) {
+            qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
+            continue;
+        }
+
+        {
             QTextStream in(&file);
             apikey = in.readAll();
             file.close();
         }
 
-        QJsonObject obj;
-        obj.insert("apiKey", apikey);
-        obj.insert("modelName", modelname);
-        QJsonDocument doc(obj);
-
         auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
         QFile newfile(path + newfilename);
-        if (newfile.open(QIODevice::ReadWrite)) {
-            QTextStream out(&newfile);
-            out << doc.toJson();
-            newfile.close();
+        if (!newfile.open(QIODevice::ReadWrite)) {
+            qWarning().noquote() << tr("cannot create \"%1\": %2").arg(newfile.fileName(), file.errorString());
+            continue;
         }
+
+        QJsonObject obj {
+            { "apiKey",    apikey    },
+            { "modelName", modelname },
+        };
+
+        QTextStream out(&newfile);
+        out << QJsonDocument(obj).toJson();
+        newfile.close();
+
         file.remove();
     }
 }
@@ -1256,20 +1265,6 @@ void ModelList::processModelDirectory(const QString &path)
         if (!filename.endsWith(".gguf") && !filename.endsWith(".rmodel"))
             continue;
 
-        QVector<QString> modelsById;
-        {
-            QMutexLocker locker(&m_mutex);
-            for (ModelInfo *info : m_models)
-                if (info->filename() == filename)
-                    modelsById.append(info->id());
-        }
-
-        if (modelsById.isEmpty()) {
-            if (!contains(filename))
-                addModel(filename);
-            modelsById.append(filename);
-        }
-
         bool isOnline(filename.endsWith(".rmodel"));
         bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
 
@@ -1279,9 +1274,10 @@ void ModelList::processModelDirectory(const QString &path)
             QJsonObject obj;
             {
                 QFile file(path + filename);
-                bool success = file.open(QIODeviceBase::ReadOnly);
-                (void)success;
-                Q_ASSERT(success);
+                if (!file.open(QIODeviceBase::ReadOnly)) {
+                    qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
+                    continue;
+                }
                 QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
                 obj = doc.object();
             }
@@ -1297,6 +1293,20 @@ void ModelList::processModelDirectory(const QString &path)
                                  "<li>Model Name: %3</li></ul>")
                                     .arg(apiKey, baseUrl, modelName);
             }
+        }
+
+        QVector<QString> modelsById;
+        {
+            QMutexLocker locker(&m_mutex);
+            for (ModelInfo *info : m_models)
+                if (info->filename() == filename)
+                    modelsById.append(info->id());
+        }
+
+        if (modelsById.isEmpty()) {
+            if (!contains(filename))
+                addModel(filename);
+            modelsById.append(filename);
         }
 
         for (const QString &id : modelsById) {
