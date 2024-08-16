@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 9
+#define CHAT_FORMAT_VERSION 10
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
@@ -31,7 +31,7 @@ ChatListModel *ChatListModel::globalInstance()
 ChatListModel::ChatListModel()
     : QAbstractListModel(nullptr) {
 
-        QCoreApplication::instance()->installEventFilter(this);
+    QCoreApplication::instance()->installEventFilter(this);
 }
 
 bool ChatListModel::eventFilter(QObject *obj, QEvent *ev)

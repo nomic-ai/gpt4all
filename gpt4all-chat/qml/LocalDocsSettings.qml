@@ -263,13 +263,14 @@ MySettingsTab {
             MySettingsLabel {
                 id: chunkLabel
                 Layout.fillWidth: true
-                text: qsTr("Document snippet size (characters)")
-                helpText: qsTr("Number of characters per document snippet. Larger numbers increase likelihood of factual responses, but also result in slower generation.")
+                text: qsTr("Document excerpt size (characters)")
+                helpText: qsTr("Number of characters per document excerpt. Larger numbers increase likelihood of factual responses, but also result in slower generation.")
             }
 
             MyTextField {
                 id: chunkSizeTextField
                 text: MySettings.localDocsChunkSize
+                font.pixelSize: theme.fontSizeLarge
                 validator: IntValidator {
                     bottom: 1
                 }
@@ -289,13 +290,14 @@ MySettingsTab {
             Layout.topMargin: 15
             MySettingsLabel {
                 id: contextItemsPerPrompt
-                text: qsTr("Max document snippets per prompt")
-                helpText: qsTr("Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.")
+                text: qsTr("Max source excerpts per prompt")
+                helpText: qsTr("Max best N matches of retrieved source excerpts to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.")
 
             }
 
             MyTextField {
                 text: MySettings.localDocsRetrievalSize
+                font.pixelSize: theme.fontSizeLarge
                 validator: IntValidator {
                     bottom: 1
                 }

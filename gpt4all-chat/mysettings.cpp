@@ -1,6 +1,8 @@
 #include "mysettings.h"
 
 #include "../gpt4all-backend/llmodel.h"
+#include "tool.h"
+#include "toolmodel.h"
 
 #include <QDebug>
 #include <QDir>
@@ -18,11 +20,13 @@
 #include <QtLogging>
 
 #include <algorithm>
+#include <jinja2cpp/template.h>
 #include <string>
 #include <thread>
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+using namespace ToolEnums;
 
 // used only for settings serialization, do not translate
 static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };
@@ -44,22 +48,26 @@ static const QString languageAndLocale       = "System Locale";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
-    { "chatTheme",                QVariant::fromValue(ChatTheme::Light) },
-    { "fontSize",                 QVariant::fromValue(FontSize::Small) },
-    { "lastVersionStarted",       "" },
-    { "networkPort",              4891, },
-    { "saveChatsContext",         false },
-    { "serverChat",               false },
-    { "userDefaultModel",         "Application default" },
-    { "suggestionMode",           QVariant::fromValue(SuggestionMode::LocalDocsOnly) },
-    { "localdocs/chunkSize",      512 },
-    { "localdocs/retrievalSize",  3 },
-    { "localdocs/showReferences", true },
-    { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
-    { "localdocs/useRemoteEmbed", false },
-    { "localdocs/nomicAPIKey",    "" },
-    { "localdocs/embedDevice",    "Auto" },
-    { "network/attribution",      "" },
+    { "chatTheme",                  QVariant::fromValue(ChatTheme::Light) },
+    { "fontSize",                   QVariant::fromValue(FontSize::Small) },
+    { "lastVersionStarted",         "" },
+    { "networkPort",                4891, },
+    { "saveChatsContext",           false },
+    { "serverChat",                 false },
+    { "userDefaultModel",           "Application default" },
+    { "suggestionMode",             QVariant::fromValue(SuggestionMode::SourceExcerptsOnly) },
+    { "localdocs/chunkSize",        512 },
+    { "localdocs/retrievalSize",    3 },
+    { "localdocs/showReferences",   true },
+    { "localdocs/fileExtensions",   QStringList { "txt", "pdf", "md", "rst" } },
+    { "localdocs/useRemoteEmbed",   false },
+    { "localdocs/nomicAPIKey",      "" },
+    { "localdocs/embedDevice",      "Auto" },
+    { "network/attribution",        "" },
+    { "websearch/retrievalSize",    2 },
+    { "websearch/usageMode",        QVariant::fromValue(UsageMode::Disabled) },
+    { "websearch/confirmationMode", QVariant::fromValue(ConfirmationMode::NoConfirmation) },
+    { "bravesearch/APIKey",         "" },
 };
 
 static QString defaultLocalModelsPath()
@@ -194,7 +202,9 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelRepeatPenalty(info, info.m_repeatPenalty);
     setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
     setModelPromptTemplate(info, info.m_promptTemplate);
-    setModelSystemPrompt(info, info.m_systemPrompt);
+    setModelToolTemplate(info, info.m_toolTemplate);
+    setModelIsToolCalling(info, info.m_isToolCalling);
+    setModelSystemPromptTemplate(info, info.m_systemPromptTemplate);
     setModelChatNamePrompt(info, info.m_chatNamePrompt);
     setModelSuggestedFollowUpPrompt(info, info.m_suggestedFollowUpPrompt);
 }
@@ -224,6 +234,14 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsUseRemoteEmbed(basicDefaults.value("localdocs/useRemoteEmbed").toBool());
     setLocalDocsNomicAPIKey(basicDefaults.value("localdocs/nomicAPIKey").toString());
     setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
+}
+
+void MySettings::restoreWebSearchDefaults()
+{
+    setWebSearchUsageMode(basicDefaults.value("websearch/usageMode").value<UsageMode>());
+    setWebSearchRetrievalSize(basicDefaults.value("websearch/retrievalSize").toInt());
+    setWebSearchConfirmationMode(basicDefaults.value("websearch/confirmationMode").value<ConfirmationMode>());
+    setBraveSearchAPIKey(basicDefaults.value("bravesearch/APIKey").toString());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
@@ -296,7 +314,9 @@ int       MySettings::modelGpuLayers              (const ModelInfo &info) const 
 double    MySettings::modelRepeatPenalty          (const ModelInfo &info) const { return getModelSetting("repeatPenalty",           info).toDouble(); }
 int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens",     info).toInt(); }
 QString   MySettings::modelPromptTemplate         (const ModelInfo &info) const { return getModelSetting("promptTemplate",          info).toString(); }
-QString   MySettings::modelSystemPrompt           (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
+QString   MySettings::modelToolTemplate           (const ModelInfo &info) const { return getModelSetting("toolTemplate",            info).toString(); }
+bool      MySettings::modelIsToolCalling          (const ModelInfo &info) const { return getModelSetting("isToolCalling",           info).toBool(); }
+QString   MySettings::modelSystemPromptTemplate   (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
 
@@ -405,7 +425,17 @@ void MySettings::setModelPromptTemplate(const ModelInfo &info, const QString &va
     setModelSetting("promptTemplate", info, value, force, true);
 }
 
-void MySettings::setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force)
+void MySettings::setModelToolTemplate(const ModelInfo &info, const QString &value, bool force)
+{
+    setModelSetting("toolTemplate", info, value, force, true);
+}
+
+void MySettings::setModelIsToolCalling(const ModelInfo &info, bool value, bool force)
+{
+    setModelSetting("isToolCalling", info, value, force, true);
+}
+
+void MySettings::setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force)
 {
     setModelSetting("systemPrompt", info, value, force, true);
 }
@@ -456,6 +486,10 @@ bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting
 QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
 QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
+QString     MySettings::braveSearchAPIKey() const       { return getBasicSetting("bravesearch/APIKey"   ).toString(); }
+int         MySettings::webSearchRetrievalSize() const      { return getBasicSetting("websearch/retrievalSize").toInt(); }
+UsageMode        MySettings::webSearchUsageMode() const          { return getBasicSetting("websearch/usageMode").value<UsageMode>(); }
+ConfirmationMode MySettings::webSearchConfirmationMode() const   { return getBasicSetting("websearch/confirmationMode").value<ConfirmationMode>(); }
 
 ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
 FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
@@ -474,6 +508,10 @@ void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasic
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
+void MySettings::setBraveSearchAPIKey(const QString &value)           { setBasicSetting("bravesearch/APIKey",       value, "braveSearchAPIKey"); }
+void MySettings::setWebSearchRetrievalSize(int value)                 { setBasicSetting("websearch/retrievalSize",  value, "webSearchRetrievalSize"); }
+void MySettings::setWebSearchUsageMode(ToolEnums::UsageMode value)                  { setBasicSetting("websearch/usageMode",        int(value), "webSearchUsageMode"); }
+void MySettings::setWebSearchConfirmationMode(ToolEnums::ConfirmationMode value)    { setBasicSetting("websearch/confirmationMode", int(value), "webSearchConfirmationMode"); }
 
 void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
 void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }
@@ -666,4 +704,50 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     // Finally, set the locale whether we have a translation or not
     QLocale::setDefault(locale);
     emit languageAndLocaleChanged();
+}
+
+QString MySettings::validateModelSystemPromptTemplate(const QString &proposedTemplate)
+{
+    QString error;
+    systemPromptInternal(proposedTemplate, error);
+    return error;
+}
+
+QString MySettings::modelSystemPrompt(const ModelInfo &info, QString &error)
+{
+    return systemPromptInternal(modelSystemPromptTemplate(info), error);
+}
+
+QString MySettings::systemPromptInternal(const QString &proposedTemplate, QString &error)
+{
+    jinja2::ValuesMap params;
+    params.insert({"currentDate", QDate::currentDate().toString().toStdString()});
+
+    jinja2::ValuesList toolList;
+    const int toolCount = ToolModel::globalInstance()->count();
+    for (int i = 0; i < toolCount; ++i) {
+        Tool *t = ToolModel::globalInstance()->get(i);
+        // FIXME: For now we don't tell the model about the localdocs search in the system prompt because
+        // it will try to call the localdocs search even if no collection is selected. Ideally, we need
+        // away to update model to whether a tool is enabled/disabled either via reprocessing the system
+        // prompt or sending a system message as it happens
+        if (t->usageMode() != UsageMode::Disabled && t->function() != "localdocs_search")
+            toolList.push_back(t->jinjaValue());
+    }
+    params.insert({"toolList", toolList});
+
+    QString systemPrompt;
+    jinja2::Template t;
+    const auto loadResult = t.Load(proposedTemplate.toStdString(), "systemPromptTemplate" /*Used in error messages*/);
+    if (!loadResult) {
+        error = QString::fromStdString(loadResult.error().ToString());
+        return systemPrompt;
+    }
+
+    const auto renderResult = t.RenderAsString(params);
+    if (renderResult)
+        systemPrompt = QString::fromStdString(renderResult.value());
+    else
+        error = QString::fromStdString(renderResult.error().ToString());
+    return systemPrompt;
 }

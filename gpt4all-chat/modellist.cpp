@@ -323,15 +323,26 @@ void ModelInfo::setPromptTemplate(const QString &t)
     m_promptTemplate = t;
 }
 
-QString ModelInfo::systemPrompt() const
+QString ModelInfo::toolTemplate() const
 {
-    return MySettings::globalInstance()->modelSystemPrompt(*this);
+    return MySettings::globalInstance()->modelToolTemplate(*this);
 }
 
-void ModelInfo::setSystemPrompt(const QString &p)
+void ModelInfo::setToolTemplate(const QString &t)
 {
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPrompt(*this, p, true /*force*/);
-    m_systemPrompt = p;
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelToolTemplate(*this, t, true /*force*/);
+    m_toolTemplate = t;
+}
+
+QString ModelInfo::systemPromptTemplate() const
+{
+    return MySettings::globalInstance()->modelSystemPromptTemplate(*this);
+}
+
+void ModelInfo::setSystemPromptTemplate(const QString &p)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPromptTemplate(*this, p, true /*force*/);
+    m_systemPromptTemplate = p;
 }
 
 QString ModelInfo::chatNamePrompt() const
@@ -354,6 +365,17 @@ void ModelInfo::setSuggestedFollowUpPrompt(const QString &p)
 {
     if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSuggestedFollowUpPrompt(*this, p, true /*force*/);
     m_suggestedFollowUpPrompt = p;
+}
+
+bool ModelInfo::isToolCalling() const
+{
+    return MySettings::globalInstance()->modelIsToolCalling(*this);
+}
+
+void ModelInfo::setIsToolCalling(bool b)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelIsToolCalling(*this, b, true /*force*/);
+    m_isToolCalling = b;
 }
 
 bool ModelInfo::shouldSaveMetadata() const
@@ -385,9 +407,11 @@ QVariantMap ModelInfo::getFields() const
         { "repeatPenalty",       m_repeatPenalty },
         { "repeatPenaltyTokens", m_repeatPenaltyTokens },
         { "promptTemplate",      m_promptTemplate },
-        { "systemPrompt",        m_systemPrompt },
+        { "toolTemplate",        m_toolTemplate },
+        { "systemPromptTemplate",m_systemPromptTemplate },
         { "chatNamePrompt",      m_chatNamePrompt },
         { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
+        { "isToolCalling",       m_isToolCalling },
     };
 }
 
@@ -504,7 +528,9 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::toolTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::isToolCallingChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
@@ -776,8 +802,10 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->repeatPenaltyTokens();
         case PromptTemplateRole:
             return info->promptTemplate();
+        case ToolTemplateRole:
+            return info->toolTemplate();
         case SystemPromptRole:
-            return info->systemPrompt();
+            return info->systemPromptTemplate();
         case ChatNamePromptRole:
             return info->chatNamePrompt();
         case SuggestedFollowUpPromptRole:
@@ -788,7 +816,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->downloads();
         case RecencyRole:
             return info->recency();
-
+        case IsToolCallingRole:
+            return info->isToolCalling();
     }
 
     return QVariant();
@@ -952,8 +981,10 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setRepeatPenaltyTokens(value.toInt()); break;
             case PromptTemplateRole:
                 info->setPromptTemplate(value.toString()); break;
+            case ToolTemplateRole:
+                info->setToolTemplate(value.toString()); break;
             case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
+                info->setSystemPromptTemplate(value.toString()); break;
             case ChatNamePromptRole:
                 info->setChatNamePrompt(value.toString()); break;
             case SuggestedFollowUpPromptRole:
@@ -982,6 +1013,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                     }
                     break;
                 }
+            case IsToolCallingRole:
+                info->setIsToolCalling(value.toBool()); break;
             }
         }
 
@@ -1107,7 +1140,8 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
         { ModelList::PromptTemplateRole, model.promptTemplate() },
-        { ModelList::SystemPromptRole, model.systemPrompt() },
+        { ModelList::ToolTemplateRole, model.toolTemplate() },
+        { ModelList::SystemPromptRole, model.systemPromptTemplate() },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };
@@ -1551,8 +1585,12 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             data.append({ ModelList::RepeatPenaltyTokensRole, obj["repeatPenaltyTokens"].toInt() });
         if (obj.contains("promptTemplate"))
             data.append({ ModelList::PromptTemplateRole, obj["promptTemplate"].toString() });
+        if (obj.contains("toolTemplate"))
+            data.append({ ModelList::ToolTemplateRole, obj["toolTemplate"].toString() });
         if (obj.contains("systemPrompt"))
             data.append({ ModelList::SystemPromptRole, obj["systemPrompt"].toString() });
+        if (obj.contains("isToolCalling"))
+            data.append({ ModelList::IsToolCallingRole, obj["isToolCalling"].toBool() });
         updateData(id, data);
     }
 
@@ -1852,6 +1890,10 @@ void ModelList::updateModelsFromSettings()
             const QString promptTemplate = settings.value(g + "/promptTemplate").toString();
             data.append({ ModelList::PromptTemplateRole, promptTemplate });
         }
+        if (settings.contains(g + "/toolTemplate")) {
+            const QString toolTemplate = settings.value(g + "/toolTemplate").toString();
+            data.append({ ModelList::ToolTemplateRole, toolTemplate });
+        }
         if (settings.contains(g + "/systemPrompt")) {
             const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
             data.append({ ModelList::SystemPromptRole, systemPrompt });
@@ -1863,6 +1905,10 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/suggestedFollowUpPrompt")) {
             const QString suggestedFollowUpPrompt = settings.value(g + "/suggestedFollowUpPrompt").toString();
             data.append({ ModelList::SuggestedFollowUpPromptRole, suggestedFollowUpPrompt });
+        }
+        if (settings.contains(g + "/isToolCalling")) {
+            const bool isToolCalling = settings.value(g + "/isToolCalling").toBool();
+            data.append({ ModelList::IsToolCallingRole, isToolCalling });
         }
         updateData(id, data);
     }

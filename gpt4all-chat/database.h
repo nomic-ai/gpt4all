@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include "embllm.h" // IWYU pragma: keep
+#include "sourceexcerpt.h"
 
 #include <QDateTime>
 #include <QFileInfo>
@@ -48,64 +49,6 @@ struct DocumentInfo
         return doc.suffix().compare(u"pdf"_s, Qt::CaseInsensitive) == 0;
     }
 };
-
-struct ResultInfo {
-    Q_GADGET
-    Q_PROPERTY(QString collection MEMBER collection)
-    Q_PROPERTY(QString path MEMBER path)
-    Q_PROPERTY(QString file MEMBER file)
-    Q_PROPERTY(QString title MEMBER title)
-    Q_PROPERTY(QString author MEMBER author)
-    Q_PROPERTY(QString date MEMBER date)
-    Q_PROPERTY(QString text MEMBER text)
-    Q_PROPERTY(int page MEMBER page)
-    Q_PROPERTY(int from MEMBER from)
-    Q_PROPERTY(int to MEMBER to)
-    Q_PROPERTY(QString fileUri READ fileUri STORED false)
-
-public:
-    QString collection; // [Required] The name of the collection
-    QString path;       // [Required] The full path
-    QString file;       // [Required] The name of the file, but not the full path
-    QString title;      // [Optional] The title of the document
-    QString author;     // [Optional] The author of the document
-    QString date;       // [Required] The creation or the last modification date whichever is latest
-    QString text;       // [Required] The text actually used in the augmented context
-    int page = -1;      // [Optional] The page where the text was found
-    int from = -1;      // [Optional] The line number where the text begins
-    int to = -1;        // [Optional] The line number where the text ends
-
-    QString fileUri() const {
-        // QUrl reserved chars that are not UNSAFE_PATH according to glib/gconvert.c
-        static const QByteArray s_exclude = "!$&'()*+,/:=@~"_ba;
-
-        Q_ASSERT(!QFileInfo(path).isRelative());
-#ifdef Q_OS_WINDOWS
-        Q_ASSERT(!path.contains('\\')); // Qt normally uses forward slash as path separator
-#endif
-
-        auto escaped = QString::fromUtf8(QUrl::toPercentEncoding(path, s_exclude));
-        if (escaped.front() != '/')
-            escaped = '/' + escaped;
-        return u"file://"_s + escaped;
-    }
-
-    bool operator==(const ResultInfo &other) const {
-        return file == other.file &&
-               title == other.title &&
-               author == other.author &&
-               date == other.date &&
-               text == other.text &&
-               page == other.page &&
-               from == other.from &&
-               to == other.to;
-    }
-    bool operator!=(const ResultInfo &other) const {
-        return !(*this == other);
-    }
-};
-
-Q_DECLARE_METATYPE(ResultInfo)
 
 struct CollectionItem {
     // -- Fields persisted to database --
@@ -158,7 +101,7 @@ public Q_SLOTS:
     void forceRebuildFolder(const QString &path);
     bool addFolder(const QString &collection, const QString &path, const QString &embedding_model);
     void removeFolder(const QString &collection, const QString &path);
-    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
+    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QString &jsonResult);
     void changeChunkSize(int chunkSize);
     void changeFileExtensions(const QStringList &extensions);
 
@@ -225,7 +168,6 @@ private:
     QStringList m_scannedFileExtensions;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
-    QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
     QSet<QString> m_watchedPaths;

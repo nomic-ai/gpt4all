@@ -350,9 +350,12 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of SuggestionMode enum, keep them in sync
             model: ListModel {
-                ListElement { name: qsTr("When chatting with LocalDocs") }
+                ListElement { name: qsTr("When source excerpts are cited") }
                 ListElement { name: qsTr("Whenever possible") }
                 ListElement { name: qsTr("Never") }
+            }
+            function updateModel() {
+                suggestionModeBox.currentIndex = MySettings.suggestionMode;
             }
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText
@@ -360,7 +363,13 @@ MySettingsTab {
                 MySettings.suggestionMode = suggestionModeBox.currentIndex;
             }
             Component.onCompleted: {
-                suggestionModeBox.currentIndex = MySettings.suggestionMode;
+                suggestionModeBox.updateModel();
+            }
+            Connections {
+                target: MySettings
+                function onSuggestionModeChanged() {
+                    suggestionModeBox.updateModel();
+                }
             }
         }
         MySettingsLabel {

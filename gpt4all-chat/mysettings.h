@@ -2,6 +2,7 @@
 #define MYSETTINGS_H
 
 #include "modellist.h" // IWYU pragma: keep
+#include "tool.h"
 
 #include <QDateTime>
 #include <QObject>
@@ -21,9 +22,9 @@ namespace MySettingsEnums {
      *       ApplicationSettings.qml, as well as the corresponding name lists in mysettings.cpp */
 
     enum class SuggestionMode {
-        LocalDocsOnly = 0,
-        On            = 1,
-        Off           = 2,
+        SourceExcerptsOnly = 0,
+        On                 = 1,
+        Off                = 2,
     };
     Q_ENUM_NS(SuggestionMode)
 
@@ -72,6 +73,10 @@ class MySettings : public QObject
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
     Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
+    Q_PROPERTY(int webSearchRetrievalSize READ webSearchRetrievalSize WRITE setWebSearchRetrievalSize NOTIFY webSearchRetrievalSizeChanged)
+    Q_PROPERTY(ToolEnums::UsageMode webSearchUsageMode READ webSearchUsageMode WRITE setWebSearchUsageMode NOTIFY webSearchUsageModeChanged)
+    Q_PROPERTY(ToolEnums::ConfirmationMode webSearchConfirmationMode READ webSearchConfirmationMode WRITE setWebSearchConfirmationMode NOTIFY webSearchConfirmationModeChanged)
+    Q_PROPERTY(QString braveSearchAPIKey READ braveSearchAPIKey WRITE setBraveSearchAPIKey NOTIFY braveSearchAPIKeyChanged)
 
 public:
     static MySettings *globalInstance();
@@ -80,6 +85,7 @@ public:
     Q_INVOKABLE void restoreModelDefaults(const ModelInfo &info);
     Q_INVOKABLE void restoreApplicationDefaults();
     Q_INVOKABLE void restoreLocalDocsDefaults();
+    Q_INVOKABLE void restoreWebSearchDefaults();
 
     // Model/Character settings
     void eraseModel(const ModelInfo &info);
@@ -125,8 +131,12 @@ public:
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
     QString modelPromptTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
-    QString modelSystemPrompt(const ModelInfo &info) const;
-    Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelToolTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelToolTemplate(const ModelInfo &info, const QString &value, bool force = false);
+    bool modelIsToolCalling(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelIsToolCalling(const ModelInfo &info, bool value, bool force = false);
+    QString modelSystemPromptTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelSystemPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
     int modelContextLength(const ModelInfo &info) const;
     Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
     int modelGpuLayers(const ModelInfo &info) const;
@@ -185,6 +195,16 @@ public:
     QString localDocsEmbedDevice() const;
     void setLocalDocsEmbedDevice(const QString &value);
 
+    // Web search settings
+    int webSearchRetrievalSize() const;
+    void setWebSearchRetrievalSize(int value);
+    ToolEnums::UsageMode webSearchUsageMode() const;
+    void setWebSearchUsageMode(ToolEnums::UsageMode value);
+    ToolEnums::ConfirmationMode webSearchConfirmationMode() const;
+    void setWebSearchConfirmationMode(ToolEnums::ConfirmationMode value);
+    QString braveSearchAPIKey() const;
+    void setBraveSearchAPIKey(const QString &value);
+
     // Network settings
     QString networkAttribution() const;
     void setNetworkAttribution(const QString &value);
@@ -196,6 +216,10 @@ public:
     void setNetworkUsageStatsActive(bool value);
     int networkPort() const;
     void setNetworkPort(int value);
+
+    // Jinja aware methods for validating and parsing/rendering the system prompt
+    Q_INVOKABLE QString validateModelSystemPromptTemplate(const QString &proposedTemplate);
+    QString modelSystemPrompt(const ModelInfo &info, QString &error);
 
 Q_SIGNALS:
     void nameChanged(const ModelInfo &info);
@@ -212,9 +236,11 @@ Q_SIGNALS:
     void repeatPenaltyChanged(const ModelInfo &info);
     void repeatPenaltyTokensChanged(const ModelInfo &info);
     void promptTemplateChanged(const ModelInfo &info);
+    void toolTemplateChanged(const ModelInfo &info);
     void systemPromptChanged(const ModelInfo &info);
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);
+    void isToolCallingChanged(const ModelInfo &info);
     void threadCountChanged();
     void saveChatsContextChanged();
     void serverChatChanged();
@@ -239,6 +265,11 @@ Q_SIGNALS:
     void deviceChanged();
     void suggestionModeChanged();
     void languageAndLocaleChanged();
+    void webSearchRetrievalSizeChanged();
+    // FIXME: These are never emitted along with a lot of the signals above probably with all kinds of bugs!!
+    void webSearchUsageModeChanged();
+    void webSearchConfirmationModeChanged();
+    void braveSearchAPIKeyChanged();
 
 private:
     QSettings m_settings;
@@ -260,6 +291,7 @@ private:
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
     QString filePathForLocale(const QLocale &locale);
+    QString systemPromptInternal(const QString &proposedTemplate, QString &error);
 };
 
 #endif // MYSETTINGS_H

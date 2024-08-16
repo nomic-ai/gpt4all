@@ -107,6 +107,7 @@ endif()
 
 qt_add_executable(chat
     main.cpp
+    bravesearch.h bravesearch.cpp
     chat.h chat.cpp
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
@@ -115,13 +116,15 @@ qt_add_executable(chat
     database.h database.cpp
     download.h download.cpp
     embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
+    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp localdocssearch.h localdocssearch.cpp
     llm.h llm.cpp
     modellist.h modellist.cpp
     mysettings.h mysettings.cpp
     network.h network.cpp
+    sourceexcerpt.h sourceexcerpt.cpp
     server.h server.cpp
     logger.h logger.cpp
+    tool.h tool.cpp toolmodel.h toolmodel.cpp
     ${APP_ICON_RESOURCE}
     ${CHAT_EXE_RESOURCES}
 )
@@ -174,6 +177,7 @@ qt_add_qml_module(chat
       qml/MyTextField.qml
       qml/MyToolButton.qml
       qml/MyWelcomeButton.qml
+      qml/WebSearchSettings.qml
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -289,8 +293,10 @@ target_compile_definitions(chat
 # usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
 target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
-target_include_directories(chat PRIVATE usearch/include
-                                        usearch/fp16/include)
+target_include_directories(chat PRIVATE third_party/usearch/include
+                                        third_party/usearch/fp16/include)
+
+add_subdirectory(third_party/jinja2cpp ${CMAKE_BINARY_DIR}/jinja2cpp)
 
 if(LINUX)
   target_link_libraries(chat
@@ -300,7 +306,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE llmodel jinja2cpp)
 
 
 # -- install --

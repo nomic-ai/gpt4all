@@ -881,6 +881,8 @@ Rectangle {
                                                     case Chat.PromptProcessing: return qsTr("processing ...")
                                                     case Chat.ResponseGeneration: return qsTr("generating response ...");
                                                     case Chat.GeneratingQuestions: return qsTr("generating questions ...");
+                                                    case Chat.ToolCalled: return qsTr("executing %1 ...").arg(currentChat.toolDescription);
+                                                    case Chat.ToolProcessing: return qsTr("processing %1 results ...").arg(currentChat.toolDescription);
                                                     default: return ""; // handle unexpected values
                                                     }
                                                 }
@@ -1104,7 +1106,7 @@ Rectangle {
                                     Layout.preferredWidth: childrenRect.width
                                     Layout.preferredHeight: childrenRect.height
                                     visible: {
-                                        if (consolidatedSources.length === 0)
+                                        if (sources.length === 0)
                                             return false
                                         if (!MySettings.localDocsShowReferences)
                                             return false
@@ -1131,7 +1133,14 @@ Rectangle {
                                                     sourceSize.width: 24
                                                     sourceSize.height: 24
                                                     mipmap: true
-                                                    source: "qrc:/gpt4all/icons/db.svg"
+                                                    source: {
+                                                        if (typeof sources === 'undefined'
+                                                            || typeof sources[0] === 'undefined'
+                                                            || sources[0].url === "")
+                                                            return "qrc:/gpt4all/icons/db.svg";
+                                                        else
+                                                            return "qrc:/gpt4all/icons/globe.svg";
+                                                    }
                                                 }
 
                                                 ColorOverlay {
@@ -1142,7 +1151,7 @@ Rectangle {
                                             }
 
                                             Text {
-                                                text: qsTr("%1 Sources").arg(consolidatedSources.length)
+                                                text: qsTr("%1 Sources").arg(sources.length)
                                                 padding: 0
                                                 font.pixelSize: theme.fontSizeLarge
                                                 font.bold: true
@@ -1190,7 +1199,7 @@ Rectangle {
                                     Layout.column: 1
                                     Layout.topMargin: 5
                                     visible: {
-                                        if (consolidatedSources.length === 0)
+                                        if (sources.length === 0)
                                             return false
                                         if (!MySettings.localDocsShowReferences)
                                             return false
@@ -1231,9 +1240,9 @@ Rectangle {
                                         id: flow
                                         Layout.fillWidth: true
                                         spacing: 10
-                                        visible: consolidatedSources.length !== 0
+                                        visible: sources.length !== 0
                                         Repeater {
-                                            model: consolidatedSources
+                                            model: sources
 
                                             delegate: Rectangle {
                                                 radius: 10
@@ -1243,11 +1252,15 @@ Rectangle {
 
                                                 MouseArea {
                                                     id: ma
-                                                    enabled: modelData.path !== ""
+                                                    enabled: modelData.path !== "" || modelData.url !== ""
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     onClicked: function() {
-                                                        Qt.openUrlExternally(modelData.fileUri)
+                                                        if (modelData.url !== "") {
+                                                            console.log("opening url")
+                                                            Qt.openUrlExternally(modelData.url)
+                                                        } else
+                                                            Qt.openUrlExternally(modelData.fileUri)
                                                     }
                                                 }
 
@@ -1287,22 +1300,27 @@ Rectangle {
                                                             Image {
                                                                 id: fileIcon
                                                                 anchors.fill: parent
-                                                                visible: false
+                                                                visible: modelData.favicon !== ""
                                                                 sourceSize.width: 24
                                                                 sourceSize.height: 24
                                                                 mipmap: true
                                                                 source: {
-                                                                    if (modelData.file.toLowerCase().endsWith(".txt"))
+                                                                    if (modelData.favicon !== "")
+                                                                        return modelData.favicon;
+                                                                    else if (modelData.file.toLowerCase().endsWith(".txt"))
                                                                         return "qrc:/gpt4all/icons/file-txt.svg"
                                                                     else if (modelData.file.toLowerCase().endsWith(".pdf"))
                                                                         return "qrc:/gpt4all/icons/file-pdf.svg"
                                                                     else if (modelData.file.toLowerCase().endsWith(".md"))
                                                                         return "qrc:/gpt4all/icons/file-md.svg"
-                                                                    else
+                                                                    else if (modelData.file !== "")
                                                                         return "qrc:/gpt4all/icons/file.svg"
+                                                                    else
+                                                                        return "qrc:/gpt4all/icons/globe.svg"
                                                                 }
                                                             }
                                                             ColorOverlay {
+                                                                visible: !fileIcon.visible
                                                                 anchors.fill: fileIcon
                                                                 source: fileIcon
                                                                 color: theme.textColor
@@ -1310,7 +1328,7 @@ Rectangle {
                                                         }
                                                         Text {
                                                             Layout.maximumWidth: 156
-                                                            text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
+                                                            text: modelData.collection !== "" ? modelData.collection : modelData.title
                                                             font.pixelSize: theme.fontSizeLarge
                                                             font.bold: true
                                                             color: theme.styledTextColor
@@ -1326,7 +1344,7 @@ Rectangle {
                                                         Layout.fillHeight: true
                                                         Layout.maximumWidth: 180
                                                         Layout.maximumHeight: 55 - title.height
-                                                        text: modelData.file
+                                                        text: modelData.file !== "" ? modelData.file : modelData.url
                                                         color: theme.textColor
                                                         font.pixelSize: theme.fontSizeSmall
                                                         elide: Qt.ElideRight
@@ -1343,7 +1361,7 @@ Rectangle {
                                         return false;
                                     if (MySettings.suggestionMode === 2) // Off
                                         return false;
-                                    if (MySettings.suggestionMode === 0 && consolidatedSources.length === 0) // LocalDocs only
+                                    if (MySettings.suggestionMode === 0 && sources.length === 0) // LocalDocs only
                                         return false;
                                     return currentChat.responseState === Chat.GeneratingQuestions || currentChat.generatedQuestions.length !== 0;
                                 }

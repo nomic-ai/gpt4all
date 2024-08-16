@@ -180,6 +180,7 @@ Q_SIGNALS:
     void responseChanged(const QString &response);
     void promptProcessing();
     void generatingQuestions();
+    void toolCalled(const QString &description);
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &generatedQuestion);
@@ -188,14 +189,14 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
     void trySwitchContextRequested(const ModelInfo &modelInfo);
     void trySwitchContextOfLoadedModelCompleted(int value);
-    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
     void reportDevice(const QString &device);
     void reportFallbackReason(const QString &fallbackReason);
-    void databaseResultsChanged(const QList<ResultInfo>&);
+    void sourceExcerptsChanged(const QList<SourceExcerpt>&);
     void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
+    // FIXME: This is only available because of server which sucks
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens);
@@ -218,6 +219,13 @@ protected:
     quint32 m_promptResponseTokens;
 
 private:
+    QString completeToolCall(const QString &promptTemplate, int32_t n_predict, int32_t top_k, float top_p,
+        float min_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
+        qint64 &totalTime);
+    QString executeToolCall(const QString &toolCall, bool &producedSourceExcerpts, QString &errorString);
+    bool promptRecursive(const QList<QString> &toolContexts, const QString &prompt, const QString &promptTemplate,
+        int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, qint64 &totalTime, bool &producedSourceExcerpts, bool isRecursiveCall = false);
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
     std::string m_response;
@@ -239,11 +247,15 @@ private:
     bool m_reloadingToChangeVariant;
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
+    bool m_checkToolCall;
+    bool m_maybeToolCall;
+    bool m_foundToolCall;
     // m_pristineLoadedState is set if saveSate is unnecessary, either because:
     // - an unload was queued during LLModel::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet
     bool m_pristineLoadedState = false;
     QVector<QPair<QString, QString>> m_stateFromText;
+    QNetworkAccessManager m_networkManager; // FIXME REMOVE
 };
 
 #endif // CHATLLM_H
