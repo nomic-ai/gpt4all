@@ -612,7 +612,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
-        <translation>用於生成文字的計算設備。</translation>
+        <translation>用於生成文字的計算裝置。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="242"/>
@@ -1785,7 +1785,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1300"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;OpenAI 相容 API 模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;Base URL： %2&lt;/li&gt;&lt;li&gt;模型名稱： %3&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL：%2&lt;/li&gt;&lt;li&gt;模型名稱：%3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1559"/>
@@ -1830,17 +1830,17 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
-        <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的 base URL。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI 相容性 API 伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI 相容性 API 伺服器進行通訊&lt;/li&gt;</translation>
+        <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的基底 URL（Base URL）。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI API 相容伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI API 相容伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation>&lt;strong&gt;連線到 OpenAI API 相容性伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
+        <translation>&lt;strong&gt;連線到 OpenAI API 相容伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;建立者：%1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發行於：%2。&lt;li&gt;這個模型有 %3 個讚。&lt;li&gt;這個模型有 %4 次下載次數。&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;模型作者：%1&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發佈日期：%2&lt;li&gt;累積讚數：%3 個讚&lt;li&gt;下載次數：%4 次&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
 </context>
 <context>
@@ -2803,7 +2803,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「偵測到不相容的硬體。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！您的中央處理器不符合運行所需的最低需求。尤其，它不支援本程式運行現代大型語言模型所需的 AVX 指令集。目前唯一的解決方案，只有更新您的中央處理器及其相關硬體設備。&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX指令集&quot;&gt;AVX 指令集 - 維基百科&lt;/a&gt;</translation>
+        <translation>&lt;h3&gt;啟動時發生錯誤：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;「偵測到不相容的硬體。」&lt;/i&gt;&lt;br&gt;&lt;br&gt;糟糕！您的中央處理器不符合運行所需的最低需求。尤其，它不支援本程式運行現代大型語言模型所需的 AVX 指令集。目前唯一的解決方案，只有更新您的中央處理器及其相關硬體裝置。&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX指令集&quot;&gt;AVX 指令集 - 維基百科&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="127"/>
