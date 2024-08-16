@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.8.1",
+    version="2.8.2",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -78,6 +78,7 @@ setup(
     project_urls={
         "Documentation": "https://docs.gpt4all.io/gpt4all_python.html",
         "Source code": "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python",
+        "Changelog": "https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/CHANGELOG.md",
     },
     classifiers = [
         "Programming Language :: Python :: 3",
