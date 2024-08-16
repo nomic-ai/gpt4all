@@ -1927,7 +1927,7 @@ modello per iniziare</translation>
         <location filename="../qml/ModelSettings.qml" line="206"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="206"/>
         <source>The template that wraps every prompt.</source>
-        <translation>Il modello che racchiude ogni prompt.</translation>
+        <translation>Lo schema che incorpora ogni prompt.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="210"/>
@@ -1957,7 +1957,7 @@ modello per iniziare</translation>
         <location filename="../qml/ModelSettings.qml" line="299"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="299"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation>Prompt utilizzato per generare domande di approfondimento suggerite.</translation>
+        <translation>Prompt utilizzato per generare le domande di approfondimento suggerite.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="352"/>
@@ -2446,7 +2446,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/NetworkDialog.qml" line="39"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="39"/>
         <source>Contribute data to the GPT4All Opensource Datalake.</source>
-        <translation>Contribuisci  coni tuoi dati al Datalake Open Source di GPT4All.</translation>
+        <translation>Contribuisci  con i tuoi dati al Datalake Open Source di GPT4All.</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="55"/>
@@ -2458,9 +2458,9 @@ When a GPT4All model responds to you and you have opted-in, your conversation wi
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
         <translation>Abilitando questa funzionalità, potrai partecipare al processo democratico di addestramento di un modello linguistico di grandi dimensioni fornendo dati per futuri miglioramenti del modello.
 
-Quando un modello di GPT4All ti risponde e tu hai aderito, la tua conversazione verrà inviata al Datalake Open Source di GPT4All. Inoltre, puoi mettere mi piace/non mi piace la sua risposta. Se non ti piace una risposta, puoi suggerire una risposta alternativa. Questi dati verranno raccolti e aggregati nel Datalake di GPT4All.
+Quando un modello di GPT4All ti risponde e tu hai aderito, la tua conversazione verrà inviata al Datalake Open Source di GPT4All. Inoltre, puoi mettere mi piace/non mi piace alla sua risposta. Se non ti piace una risposta, puoi suggerirne una alternativa. Questi dati verranno raccolti e aggregati nel Datalake di GPT4All.
 
-NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di GPT4All. Non dovresti avere aspettative sulla privacy della chat quando questa funzione è abilitata. Dovresti; tuttavia, se lo desideri, aspettati un&apos;attribuzione facoltativa. I tuoi dati di chat saranno liberamente disponibili per essere scaricati da chiunque e verranno utilizzati da Nomic AI per migliorare i futuri modelli GPT4All. Nomic AI conserverà tutte le informazioni di attribuzione allegate ai tuoi dati e verrai accreditato come collaboratore a qualsiasi versione del modello GPT4All che utilizza i tuoi dati!</translation>
+NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di GPT4All. Non dovresti avere aspettative sulla privacy della chat quando questa funzione è abilitata. Dovresti, tuttavia, aspettarti un&apos;attribuzione facoltativa, se lo desideri. I tuoi dati di chat saranno liberamente disponibili per essere scaricati da chiunque e verranno utilizzati da Nomic AI per migliorare i futuri modelli GPT4All. Nomic AI conserverà tutte le informazioni di attribuzione allegate ai tuoi dati e verrai accreditato come collaboratore a qualsiasi versione del modello GPT4All che utilizza i tuoi dati!</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="63"/>
@@ -2644,9 +2644,9 @@ model release that uses your data!</source>
         <translation>### Abilitazioni per analisi di utilizzo anonime e datalake
 Abilitando questa funzionalità, potrai partecipare al processo democratico di addestramento di un modello linguistico di grandi dimensioni fornendo dati per futuri miglioramenti del modello.
 
-Quando un modello di GPT4All ti risponde e tu hai aderito, la tua conversazione verrà inviata al Datalake Open Source di GPT4All. Inoltre, puoi mettere mi piace/non mi piace la sua risposta. Se non ti piace una risposta, puoi suggerire una risposta alternativa. Questi dati verranno raccolti e aggregati nel Datalake di GPT4All.
+Quando un modello di GPT4All ti risponde e tu hai aderito, la tua conversazione verrà inviata al Datalake Open Source di GPT4All. Inoltre, puoi mettere mi piace/non mi piace alla sua risposta. Se non ti piace una risposta, puoi suggerirne una alternativa. Questi dati verranno raccolti e aggregati nel Datalake di GPT4All.
 
-NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di GPT4All. Non dovresti avere aspettative sulla privacy della chat quando questa funzione è abilitata. Dovresti; tuttavia, se lo desideri, aspettati un&apos;attribuzione facoltativa. I tuoi dati di chat saranno liberamente disponibili per essere scaricati da chiunque e verranno utilizzati da Nomic AI per migliorare i futuri modelli GPT4All. Nomic AI conserverà tutte le informazioni di attribuzione allegate ai tuoi dati e verrai accreditato come collaboratore a qualsiasi versione del modello GPT4All che utilizza i tuoi dati!</translation>
+NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di GPT4All. Non dovresti avere aspettative sulla privacy della chat quando questa funzione è abilitata. Dovresti, tuttavia, aspettarti un&apos;attribuzione facoltativa, se lo desideri, . I tuoi dati di chat saranno liberamente disponibili per essere scaricati da chiunque e verranno utilizzati da Nomic AI per migliorare i futuri modelli GPT4All. Nomic AI conserverà tutte le informazioni di attribuzione allegate ai tuoi dati e verrai accreditato come collaboratore a qualsiasi versione del modello GPT4All che utilizza i tuoi dati!</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="106"/>

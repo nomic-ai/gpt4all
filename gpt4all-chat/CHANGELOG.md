@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Bring back "Auto" option for Embeddings Device as "Application default," which went missing in v3.1.0 ([#2873](https://github.com/nomic-ai/gpt4all/pull/2873))
+- Correct a few strings in the Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#2872](https://github.com/nomic-ai/gpt4all/pull/2872))
+- Correct typos in Traditional Chinese translation (by [@supersonictw](https://github.com/supersonictw) in [#2852](https://github.com/nomic-ai/gpt4all/pull/2852))
+- Set the window icon on Linux ([#2880](https://github.com/nomic-ai/gpt4all/pull/2880))
 - Fix a few issues with locating files and handling errors when loading remote models on startup ([#2875](https://github.com/nomic-ai/gpt4all/pull/2875))
 
 ## [3.2.1] - 2024-08-13

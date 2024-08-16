@@ -21,6 +21,11 @@
 #include <QUrl>
 #include <Qt>
 
+#ifdef Q_OS_LINUX
+#   include <QIcon>
+#endif
+
+
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("nomic.ai");
@@ -32,6 +37,9 @@ int main(int argc, char *argv[])
     Logger::globalInstance();
 
     QGuiApplication app(argc, argv);
+#ifdef Q_OS_LINUX
+    app.setWindowIcon(QIcon(":/gpt4all/icons/gpt4all.svg"));
+#endif
 
     // set search path before constructing the MySettings instance, which relies on this
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
