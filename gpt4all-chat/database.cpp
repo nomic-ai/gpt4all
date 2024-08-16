@@ -1038,6 +1038,53 @@ void Database::handleDocumentError(const QString &errorMessage,
     qWarning() << errorMessage << document_id << document_path << error;
 }
 
+static QString recursiveTextSplitter(QString &text, int &splitLevel, size_t maxChars,
+    const QList<QString> &splitters, int splitterIndex = 0)
+{
+    // If our text is below the limit, then return it
+    if (text.size() <= maxChars) {
+        splitLevel = splitterIndex;
+        const QString chunk = text;
+        text.clear();
+        return chunk;
+    }
+
+    // If we can't split further, then slice and return what we can
+    if (splitterIndex >= splitters.size()) {
+        splitLevel = -1;
+        const QString chunk = text.first(maxChars);
+        text.remove(0, chunk.size());
+        return chunk;
+    }
+
+    // Split the string with current splitter
+    const QString splitter = splitters.at(splitterIndex);
+    const QList<QString> parts = text.split(splitter);
+    Q_ASSERT(parts.size() > 0);
+
+    // If the first part is already above our limit, then move on to the next splitter
+    if (parts.first().size() > maxChars)
+        return recursiveTextSplitter(text, splitLevel, maxChars, splitters, splitterIndex + 1);
+
+    // Otherwise, we have our split level now accumulate as much as we can on this level
+    QList<QString>::const_iterator it = parts.constBegin();
+    QString chunk = *it;
+    for (++it; it != parts.constEnd(); ++it) {
+        QString candidate = chunk + splitter;
+        if (candidate.size() > maxChars)
+            break;
+        chunk = candidate;
+        candidate += *it;
+        if (candidate.size() > maxChars)
+            break;
+        chunk = candidate;
+    }
+
+    splitLevel = splitterIndex;
+    text.remove(0, chunk.size());
+    return chunk;
+}
+
 size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
     const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
     int page, int maxChunks)
@@ -1046,56 +1093,73 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     // TODO: implement line_from/line_to
     constexpr int line_from = -1;
     constexpr int line_to = -1;
-    QList<QString> words;
+
     int chunks = 0;
     int addedWords = 0;
 
-    for (;;) {
-        QString word;
-        stream >> word;
-        if (stream.status() && !stream.atEnd())
-            return -1;
-        charCount += word.length();
-        if (!word.isEmpty())
-            words.append(word);
-        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
-            if (!words.isEmpty()) {
-                const QString chunk = words.join(" ");
-                QSqlQuery q(m_db);
-                int chunk_id = 0;
-                if (!addChunk(q,
-                    document_id,
-                    chunk,
-                    file,
-                    title,
-                    author,
-                    subject,
-                    keywords,
-                    page,
-                    line_from,
-                    line_to,
-                    words.size(),
-                    &chunk_id
-                )) {
-                    qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
-                }
+    QString buffer;
+    buffer.reserve(m_chunkSize * 2);
 
-                addedWords += words.size();
+    // FIXME: Consider using regex here instead for instance ' \r\n' seems to be used to indicate
+    // an intentional formatting based line break rather than a semantic line break in some PDFs.
+    const QList<QString> splitters = {"\n\n", "\r\n\r\n", "\r\n", "\n", " "};
 
-                EmbeddingChunk toEmbed;
-                toEmbed.model = embedding_model;
-                toEmbed.folder_id = folder_id;
-                toEmbed.chunk_id = chunk_id;
-                toEmbed.chunk = chunk;
-                appendChunk(toEmbed);
-                ++chunks;
+    while (!stream.atEnd() || !buffer.isEmpty()) {
+        if (!stream.atEnd())
+            buffer += stream.read(buffer.capacity()-buffer.size());
 
-                words.clear();
-                charCount = 0;
-            }
+        int splitLevel = 0;
+        QString chunk = recursiveTextSplitter(buffer, splitLevel, m_chunkSize, splitters);
+        Q_ASSERT(!chunk.isEmpty());
 
-            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
+        // Drop whitespace only chunks on the floor
+        if (chunk.trimmed().isEmpty())
+            continue;
+
+        // FIXME: We should deal with splitLevel by possibly using overlap at certain levels?
+
+        QSqlQuery q(m_db);
+        int chunk_id = 0;
+        if (!addChunk(q,
+            document_id,
+            chunk,
+            file,
+            title,
+            author,
+            subject,
+            keywords,
+            page,
+            line_from,
+            line_to,
+            chunk.size(),
+            &chunk_id
+        )) {
+            qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+        }
+
+        // Count the words
+        QTextStream wordsStream(&chunk);
+        for (;;) {
+            QString word;
+            wordsStream >> word;
+            if (!word.isEmpty())
+                ++addedWords;
+            if (wordsStream.status())
                 break;
+        }
+
+        EmbeddingChunk toEmbed;
+        toEmbed.model = embedding_model;
+        toEmbed.folder_id = folder_id;
+        toEmbed.chunk_id = chunk_id;
+        toEmbed.chunk = chunk;
+        appendChunk(toEmbed);
+        ++chunks;
+        charCount = 0;
+
+        if (maxChunks > 0 && chunks == maxChunks) {
+            stream.seek(stream.pos() - buffer.size());
+            break;
         }
     }
 
