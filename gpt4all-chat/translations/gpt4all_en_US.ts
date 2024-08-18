@@ -1114,11 +1114,14 @@ model to get started</source>
         <source>Opens thumbs down dialog</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1145"/>
-        <source>%1 Sources</source>
-        <translation type="unfinished"></translation>
+        <source>%n Source(s)</source>
+        <translation>
+            <numerusform>%n Source</numerusform>
+            <numerusform>%n Sources</numerusform>
+        </translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
