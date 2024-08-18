@@ -1142,7 +1142,7 @@ Rectangle {
                                             }
 
                                             Text {
-                                                text: qsTr("%n Source(s)").arg(consolidatedSources.length)
+                                                text: qsTr("%n Source(s)", "", consolidatedSources.length)
                                                 padding: 0
                                                 font.pixelSize: theme.fontSizeLarge
                                                 font.bold: true
