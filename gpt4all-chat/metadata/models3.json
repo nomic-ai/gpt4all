@@ -1,22 +1,6 @@
 [
   {
     "order": "a",
-    "md5sum": "8a9c75bcd8a66b7693f158ec96924eeb",
-    "name": "Llama 3.1 8B Instruct 128k",
-    "filename": "Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
-    "filesize": "4661212096",
-    "requires": "3.1.1",
-    "ramrequired": "8",
-    "parameters": "8 billion",
-    "quant": "q4_0",
-    "type": "LLaMA3",
-    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Large context size of 128k</li><li>Accepts agentic system prompts in Llama 3.1 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_1/license/\">Meta Llama 3.1 Community License</a></li></ul>",
-    "url": "https://huggingface.co/GPT4All-Community/Meta-Llama-3.1-8B-Instruct-128k/resolve/main/Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
-    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
-    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
-  },
-  {
-    "order": "b",
     "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
     "name": "Llama 3 8B Instruct",
     "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
@@ -32,7 +16,7 @@
     "systemPrompt": ""
   },
   {
-    "order": "c",
+    "order": "b",
     "md5sum": "a5f6b4eabd3992da4d7fb7f020f921eb",
     "name": "Nous Hermes 2 Mistral DPO",
     "filename": "Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
@@ -48,7 +32,7 @@
     "systemPrompt": ""
   },
   {
-    "order": "d",
+    "order": "c",
     "md5sum": "97463be739b50525df56d33b26b00852",
     "name": "Mistral Instruct",
     "filename": "mistral-7b-instruct-v0.1.Q4_0.gguf",
@@ -62,6 +46,22 @@
     "description": "<strong>Strong overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
     "promptTemplate": "[INST] %1 [/INST]"
+  },
+  {
+    "order": "d",
+    "md5sum": "8a9c75bcd8a66b7693f158ec96924eeb",
+    "name": "Llama 3.1 8B Instruct 128k",
+    "filename": "Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
+    "filesize": "4661212096",
+    "requires": "3.1.1",
+    "ramrequired": "8",
+    "parameters": "8 billion",
+    "quant": "q4_0",
+    "type": "LLaMA3",
+    "description": "<ul><li><strong>For advanced users only. Not recommended for use on Windows or Linux without selecting CUDA due to speed issues.</strong></li><li>Fast responses</li><li>Chat based model</li><li>Large context size of 128k</li><li>Accepts agentic system prompts in Llama 3.1 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_1/license/\">Meta Llama 3.1 Community License</a></li></ul>",
+    "url": "https://huggingface.co/GPT4All-Community/Meta-Llama-3.1-8B-Instruct-128k/resolve/main/Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
+    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
   },
   {
     "order": "e",
