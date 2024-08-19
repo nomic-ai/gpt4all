@@ -24,13 +24,13 @@
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Adaugă un folder cu fişiere în format text, PDF sau Markdown. Alte extensii pot fi adăugate în Configurare.</translation>
+        <translation>Adaugă un folder cu fişiere în format text, PDF sau Markdown. Alte extensii pot fi specificate în Configurare.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="94"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="94"/>
         <source>Please choose a directory</source>
-        <translation>Selectează un folder/director</translation>
+        <translation>Selectează un director/folder</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="106"/>
@@ -78,7 +78,7 @@
         <location filename="../qml/AddCollectionView.qml" line="184"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="184"/>
         <source>Create Collection</source>
-        <translation>Creează o Colecţie</translation>
+        <translation>Creează Colecţia</translation>
     </message>
 </context>
 <context>
@@ -257,13 +257,13 @@
         <location filename="../qml/AddModelView.qml" line="436"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="436"/>
         <source>Remove</source>
-        <translation>şterge</translation>
+        <translation>Şterge</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="443"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="443"/>
         <source>Remove model from filesystem</source>
-        <translation>şterge modelul din sistemul de fişiere</translation>
+        <translation>Şterge modelul din sistemul de fişiere</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="457"/>
@@ -289,14 +289,13 @@
         <location filename="../qml/AddModelView.qml" line="521"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="521"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem
-                (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your
                 hardware. Model requires more memory (%1 GB) than your system has available
                 (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât cea disponibilă în sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="716"/>
@@ -544,8 +543,7 @@
     <message>
         <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or
                 Metal.</source>
-        <translation type="vanished">Dispozitivul de calcul utilizat pentru generarea de text.
-                &quot;Auto&quot; apelează la Vulkan sau la Metal.</translation>
+        <translation type="vanished">Dispozitivul de calcul utilizat pentru generarea de text. &quot;Auto&quot; apelează la Vulkan sau la Metal.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="37"/>
@@ -587,7 +585,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="177"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="177"/>
         <source>The language and locale you wish to use.</source>
-        <translation>Limba şi Localizarea de utilizat</translation>
+        <translation>Limba şi Localizarea de utilizat.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="196"/>
@@ -631,7 +629,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="340"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="340"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation>Generarea de Întrebări pentru continuare, la finalul replicilor.</translation>
+        <translation>Generarea de întrebări pentru continuare, la finalul replicilor.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="353"/>
@@ -726,7 +724,7 @@
     <message>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB
                 per chat.</source>
-        <translation type="vanished">Salvează pe disc starea modelului pentru Încărcare mai rapidă. ATENţIE: Consumă ~2GB/conversaţie.</translation>
+        <translation type="vanished">Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="505"/>
@@ -737,7 +735,7 @@
     <message>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased
                 resource usage.</source>
-        <translation type="vanished">Activează pe localhost un Server compatibil cu Open-AI. ATENţIE: Creşte consumul de resurse.</translation>
+        <translation type="vanished">Activează pe localhost un Server compatibil cu Open-AI. ATENŢIE: Creşte consumul de resurse.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="522"/>
@@ -776,7 +774,7 @@
         <location filename="../chat.h" line="72"/>
         <location filename="../chat.cpp" line="25"/>
         <source>New Chat</source>
-        <translation>Chat/Conversaţie Nouă</translation>
+        <translation>Conversaţie Nouă</translation>
     </message>
     <message>
         <location filename="../chat.cpp" line="38"/>
@@ -839,25 +837,25 @@
         <location filename="../qml/ChatDrawer.qml" line="229"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="229"/>
         <source>Save chat name</source>
-        <translation>Salveazăa denumirea conversaţiei</translation>
+        <translation>Salvează denumirea conversaţiei</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="246"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="246"/>
         <source>Delete chat</source>
-        <translation>şterge conversaţia</translation>
+        <translation>Şterge conversaţia</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="283"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="283"/>
         <source>Confirm chat deletion</source>
-        <translation>CONFIRMă ştergerea conversaţiei</translation>
+        <translation>CONFIRMĂ ştergerea conversaţiei</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="305"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="305"/>
         <source>Cancel chat deletion</source>
-        <translation>ANULEAZă ştergerea conversaţiei</translation>
+        <translation>ANULEAZĂ ştergerea conversaţiei</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="317"/>
@@ -877,12 +875,12 @@
     <message>
         <location filename="../chatlistmodel.h" line="86"/>
         <source>TODAY</source>
-        <translation>ASTăZI</translation>
+        <translation>ASTĂZI</translation>
     </message>
     <message>
         <location filename="../chatlistmodel.h" line="88"/>
         <source>THIS WEEK</source>
-        <translation>SăPTăMâNA ACEASTA</translation>
+        <translation>SĂPTĂMÂNA ACEASTA</translation>
     </message>
     <message>
         <location filename="../chatlistmodel.h" line="90"/>
@@ -892,7 +890,7 @@
     <message>
         <location filename="../chatlistmodel.h" line="92"/>
         <source>LAST SIX MONTHS</source>
-        <translation>ULTIMELE şASE LUNI</translation>
+        <translation>ULTIMELE ŞASE LUNI</translation>
     </message>
     <message>
         <location filename="../chatlistmodel.h" line="94"/>
@@ -953,7 +951,7 @@
         <location filename="../qml/ChatView.qml" line="339"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="339"/>
         <source>Reload the currently loaded model</source>
-        <translation>ReÎncarcă modelul curent</translation>
+        <translation>Reîncarcă modelul curent</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="353"/>
@@ -971,7 +969,7 @@
         <location filename="../qml/ChatView.qml" line="367"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="367"/>
         <source>Model loading error.</source>
-        <translation>Eroare la Încărcarea modelului.</translation>
+        <translation>Eroare la încărcarea modelului.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="369"/>
@@ -1044,8 +1042,7 @@
     <message>
         <source>GPT4All requires that you install at least one
                 model to get started</source>
-        <translation type="vanished">GPT4All necesită cel puţin un
-                model pentru a putea porni</translation>
+        <translation type="vanished">GPT4All necesită cel puţin un model pentru a putea porni</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="58"/>
@@ -1072,8 +1069,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="759"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
-        <translation>GPT4All necesită cel puţin un
-                model pentru a putea rula</translation>
+        <translation>GPT4All necesită cel puţin un model pentru a putea rula</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="771"/>
@@ -1085,7 +1081,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="776"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="776"/>
         <source>Shows the add model view</source>
-        <translation>Afisează secţiunea de adăugare a unui model</translation>
+        <translation>Afişează secţiunea de adăugare a unui model</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="801"/>
@@ -1119,7 +1115,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="878"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="878"/>
         <source>response stopped ...</source>
-        <translation>replică Întreruptă...</translation>
+        <translation>replică întreruptă...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="881"/>
@@ -1137,7 +1133,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="883"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="883"/>
         <source>generating questions ...</source>
-        <translation>se generează Întrebări...</translation>
+        <translation>se generează întrebări...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="949"/>
@@ -1205,13 +1201,13 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1665"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1665"/>
         <source>Erase and reset chat session</source>
-        <translation>şterge şi resetează sesiunea de chat</translation>
+        <translation>Şterge şi resetează sesiunea de chat</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1686"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1686"/>
         <source>Copy chat session to clipboard</source>
-        <translation>Copiez sesiunea de chat în Clipboard</translation>
+        <translation>Copiez sesiunea de chat (conversaţia) în Clipboard</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1712"/>
@@ -1235,7 +1231,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1777"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1777"/>
         <source>Reloads the model</source>
-        <translation>ReÎncarc modelul</translation>
+        <translation>Reîncarc modelul</translation>
     </message>
     <message>
         <source>&lt;h3&gt;Encountered an error loading
@@ -1254,7 +1250,7 @@ model to get started</source>
         <translation type="vanished">&lt;h3&gt;EROARE la Încărcarea
                 modelului:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Astfel
                 de erori pot apărea din mai multe cauze, dintre care cele mai comune
-                includ un format inadecvat al fişierului, un download incomplet sau Întrerupt,
+                includ un format inadecvat al fişierului, un download incomplet sau întrerupt,
                 un tip inadecvat de fişier, RAM insuficientă, sau un tip incompatibil de model.
                 Sugestii pentru rezolvarea problemei: verifică dacă fişierul modelului are
                 un format si un tip compatibile; verifică dacă fişierul modelului este complet
@@ -1535,7 +1531,7 @@ model to get started</source>
         <location filename="../qml/HomeView.qml" line="246"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/HomeView.qml" line="246"/>
         <source>Github</source>
-        <translation type="unfinished"></translation>
+        <translation>GitHub</translation>
     </message>
     <message>
         <source>GitHub</source>
@@ -1583,8 +1579,7 @@ model to get started</source>
     <message>
         <source>Comma-separated list. LocalDocs will only attempt to process files with these
                 extensions.</source>
-        <translation type="vanished">Extensiile, separate prin virgulă. LocalDocs va Încerca procesarea
-                numai a fişierelor cu aceste extensii.</translation>
+        <translation type="vanished">Extensiile, separate prin virgulă. LocalDocs va încerca procesarea numai a fişierelor cu aceste extensii.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="100"/>
@@ -1808,7 +1803,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsView.qml" line="261"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="261"/>
         <source>INDEXING</source>
-        <translation>...SE INDEXEAZă...</translation>
+        <translation>...SE INDEXEAZĂ...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="265"/>
@@ -1820,7 +1815,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsView.qml" line="268"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="268"/>
         <source>REQUIRES UPDATE</source>
-        <translation>NECESITă UPDATE</translation>
+        <translation>NECESITĂ UPDATE</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="271"/>
@@ -2116,7 +2111,7 @@ model to get started</source>
         <location filename="../qml/ModelSettings.qml" line="299"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="299"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation>Prompt-ul folosit pentru generarea Întrebărilor de continuare.</translation>
+        <translation>Prompt-ul folosit pentru generarea întrebărilor de continuare.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="352"/>
@@ -2134,7 +2129,7 @@ model to get started</source>
         <source>Maximum combined prompt/response tokens before information is lost.
                 Using more context than the model was trained on will yield poor results.
                 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="vanished">Numărul maxim combinat al token-urilor în prompt+replică Înainte de a se pierde informaţie. Utilizarea unui context mai mare decât cel cu care a fost instruit modelul va întoarce rezultate mai slabe. NOTă: Nu are efect până la reincărcarea modelului.</translation>
+        <translation type="vanished">Numărul maxim combinat al token-urilor în prompt+replică înainte de a se pierde informaţie. Utilizarea unui context mai mare decât cel cu care a fost instruit modelul va întoarce rezultate mai slabe. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="412"/>
@@ -2151,7 +2146,7 @@ model to get started</source>
     <message>
         <source>Temperature increases the chances of choosing less likely tokens.
                 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation type="vanished">Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTă: O temperatură tot mai Înaltă determinÎ replici tot mai creative şi mai puţin predictibile.</translation>
+        <translation type="vanished">Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTĂ: O temperatură tot mai înaltă determină replici tot mai creative şi mai puţin predictibile.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="458"/>
@@ -2168,7 +2163,7 @@ model to get started</source>
     <message>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
                 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation type="vanished">Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTă: Se evită selectarea token-urilor foarte improbabile.</translation>
+        <translation type="vanished">Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTĂ: Se evită selectarea token-urilor foarte improbabile.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="159"/>
@@ -2195,7 +2190,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="424"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation>Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTĂ: O temperatură tot mai înaltă determinî replici tot mai creative şi mai puţin predictibile.</translation>
+        <translation>Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTĂ: O temperatură tot mai înaltă determină replici tot mai creative şi mai puţin predictibile.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="469"/>
@@ -2282,7 +2277,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <source>Amount of prompt tokens to process at once.
                 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation type="vanished">numărul token-urilor procesate simultan. NOTă: Valori tot mai mari pot accelera citirea prompt-urilor, dar şi utiliza mai multă RAM.</translation>
+        <translation type="vanished">numărul token-urilor procesate simultan. NOTĂ: Valori tot mai mari pot accelera citirea prompt-urilor, dar şi utiliza mai multă RAM.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="690"/>
@@ -2300,7 +2295,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelSettings.qml" line="735"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="735"/>
         <source>Repeat Penalty Tokens</source>
-        <translation>Token-uri pentru penalzare a repetării</translation>
+        <translation>Token-uri pentru penalizare a repetării</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="736"/>
@@ -2325,7 +2320,7 @@ NOTE: Does not take effect until you reload the model.</source>
                 VRAM while loading this model.
                 Lower values increase CPU load and RAM usage, and make inference slower.
                 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="vanished">Cât de multe layere ale modelului să fie Încărcate în VRAM. Valori mici trebuie folosite dacă GPT4All rămâne fără VRAM în timp ce Încarcă modelul. Valorile tot mai mici cresc utilizarea CPU şi a RAM şi Încetinesc inferenţa. NOTă: Nu are efect până la reÎncărcarea modelului.</translation>
+        <translation type="vanished">Cât de multe layere ale modelului să fie încărcate în VRAM. Valori mici trebuie folosite dacă GPT4All rămâne fără VRAM în timp ce încarcă modelul. Valorile tot mai mici cresc utilizarea CPU şi a RAM şi încetinesc inferenţa. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
 </context>
 <context>
@@ -2340,7 +2335,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="49"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="49"/>
         <source>Install a model to get started using GPT4All</source>
-        <translation>Instalează un model pentru a Începe să foloseşti GPT4All</translation>
+        <translation>Instalează un model pentru a începe să foloseşti GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="60"/>
@@ -2408,7 +2403,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="204"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="204"/>
         <source>Stop/restart/start the download</source>
-        <translation>Oprirea/Repornirea/Initierea descărcării</translation>
+        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="216"/>
@@ -2445,7 +2440,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your
                 hardware. Model requires more memory (%1 GB) than your system has available
                 (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are sistemul tău(%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are sistemul tău (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
@@ -2718,13 +2713,13 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/NetworkDialog.qml" line="64"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="64"/>
         <source>Describes what will happen when you opt-in</source>
-        <translation>Descrie ce se Întâmplă când participi</translation>
+        <translation>Descrie ce se întâmplă când participi</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="72"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="72"/>
         <source>Please provide a name for attribution (optional)</source>
-        <translation>Specifică o denumire pentru această apreciere (optional)</translation>
+        <translation>Specifică o denumire pentru această apreciere (opţional)</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="74"/>
@@ -2790,7 +2785,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/PopupDialog.qml" line="38"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="38"/>
         <source>Reveals a shortlived help balloon</source>
-        <translation>Afisează un mesaj scurt de asistenţă</translation>
+        <translation>Afişează un mesaj scurt de asistenţă</translation>
     </message>
     <message>
         <location filename="../qml/PopupDialog.qml" line="48"/>
@@ -2896,11 +2891,11 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
                 Activând aceste functionalităţi vei putea participa la procesul democratic
                 de instruire a unui
                 model conversaţional prin contribuirea cu date/informaţii pentru îmbunătăţirea unor modele.
-                Când un model în GPT4All Îţi răspunde şi îi accepţi răspunsul, conversaţia este
+                Când un model în GPT4All îţi răspunde şi îi accepţi răspunsul, conversaţia este
                 trimisă la componenta
                 Open-source DataLake a GPT4All. Mai mult - poţi aprecia (Like/Dislike) răspunsul. Dacă
-                un răspuns Nu Îţi Place. poţi
-                sugera un răspuns alternativ. Aceste date vor fi colectate şi agregate În
+                un răspuns Nu Îţi Place (e "Aiurea"). poţi
+                sugera un răspuns alternativ. Aceste date vor fi colectate şi agregate în
                 componenta DataLake a GPT4All.
 
                 NOTă: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
@@ -2972,7 +2967,7 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/StartupDialog.qml" line="107"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="107"/>
         <source>Describes what will happen when you opt-in</source>
-        <translation>Descrie ce se Întâmplă când participi</translation>
+        <translation>Descrie ce se întâmplă când participi</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
@@ -2980,7 +2975,7 @@ care foloseşte datele tale!</translation>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="124"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="150"/>
         <source>Opt-in for anonymous usage statistics</source>
-        <translation>Acceptă colectarea de statistici despre utilizare anonmă</translation>
+        <translation>Acceptă colectarea de statistici despre utilizare -anonimă-</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="147"/>
@@ -3034,7 +3029,7 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/StartupDialog.qml" line="266"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="266"/>
         <source>Allow opt-in anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>Permite participarea la partajarea (share) anonimă a conversaţiilor către DataLake a GPT4All</translation>
+        <translation>Permite participarea la partajarea (share) -anonimă- a conversaţiilor către DataLake a GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="307"/>
@@ -3046,7 +3041,7 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/StartupDialog.qml" line="308"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="308"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>Permite anularea participării la partajarea anonimă a conversaţiilor către DataLake a GPT4All</translation>
+        <translation>Permite anularea participării la partajarea -anonimă- a conversaţiilor către DataLake a GPT4All</translation>
     </message>
 </context>
 <context>
@@ -3054,7 +3049,7 @@ care foloseşte datele tale!</translation>
     <message>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current
                 conversation. Do you wish to continue?</source>
-        <translation type="vanished">&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va sterge conversaţia curentă. Confirmi aceasta?</translation>
+        <translation type="vanished">&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va şterge conversaţia curentă. Confirmi aceasta?</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="22"/>
@@ -3072,7 +3067,7 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/SwitchModelDialog.qml" line="34"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="34"/>
         <source>Continue with model loading</source>
-        <translation>Continuă cu Încărcarea modelului</translation>
+        <translation>Continuă încărcarea modelului</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="38"/>
@@ -3119,7 +3114,7 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/ThumbsDownDialog.qml" line="70"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="70"/>
         <source>Closes the response dialog</source>
-        <translation>Închide dialogul răspunsului</translation>
+        <translation>Închide afişarea răspunsului</translation>
     </message>
 </context>
 <context>
@@ -3135,7 +3130,7 @@ care foloseşte datele tale!</translation>
                 CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a
                 href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
         <translation type="vanished">
-                &lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu Întruneşte condiţiile minime pentru a rula acest program. în particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. în acest moment, unica soluţie este să Îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
+                &lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="23"/>
@@ -3151,7 +3146,7 @@ care foloseşte datele tale!</translation>
                 permissions in the local app config directory where the settings file is located.
                 Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord
                 channel&lt;/a&gt; for help.</source>
-        <translation type="vanished">&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte În/pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
+        <translation type="vanished">&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
     </message>
     <message>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only soluţion at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
@@ -3161,13 +3156,13 @@ care foloseşte datele tale!</translation>
         <location filename="../main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="127"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte în/pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
+        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="155"/>
