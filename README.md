@@ -1,9 +1,18 @@
 <h1 align="center">GPT4All</h1>
 
-<p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>.
-
 <p align="center">
   <a href="https://gpt4all.io">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
+</p>
+
+<p align="center">
+  GPT4All runs large language models (LLMs) privately on everyday desktops & laptops.
+</p>
+<p align="center">
+  No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>.
+</p>
+
+<p align="center">
+  Read about what's new in <a href="https://www.nomic.ai/blog/tag/gpt4all">our blog</a>.
 </p>
 <p align="center">
   <a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Subscribe to the newsletter</a>
