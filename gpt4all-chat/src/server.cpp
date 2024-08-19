@@ -340,6 +340,10 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         QList<QString> chats;
         for (int i = 0; i < messages.count();  ++i) {
             QJsonValue v = messages.at(i);
+            // FIXME: Deal with system messages correctly
+            QString role = v.toObject()["role"].toString();
+            if (role != "user")
+                continue;
             QString content = v.toObject()["content"].toString();
             if (!content.endsWith("\n") && i < messages.count() - 1)
                 content += "\n";
