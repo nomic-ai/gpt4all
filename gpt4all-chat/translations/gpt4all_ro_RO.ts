@@ -1007,10 +1007,6 @@ model to get started</source>
         <translation>Deschide reacţia Aiurea</translation>
     </message>
     <message>
-        <source>%1 Sources</source>
-        <translation type="vanished">%1 Surse</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
         <translation>Continuări sugerate</translation>
@@ -1109,10 +1105,10 @@ model to get started</source>
     <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n Sursa</numerusform>
+            <numerusform>%n Surse</numerusform>
+            <numerusform>%n de Surse</numerusform>
         </translation>
     </message>
     <message>
@@ -1169,7 +1165,7 @@ model to get started</source>
         <translation>
             <numerusform>%n fişier</numerusform>
             <numerusform>%n fişiere</numerusform>
-            <numerusform>%n fişiere</numerusform>
+            <numerusform>%n de fişiere</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -1178,7 +1174,7 @@ model to get started</source>
         <translation>
             <numerusform>%n cuvânt</numerusform>
             <numerusform>%n cuvinte</numerusform>
-            <numerusform>%n cuvinte</numerusform>
+            <numerusform>%n de cuvinte</numerusform>
         </translation>
     </message>
     <message>
@@ -1608,7 +1604,7 @@ model to get started</source>
         <translation>
             <numerusform>%n fişier</numerusform>
             <numerusform>%n fişiere</numerusform>
-            <numerusform>%n fişiere</numerusform>
+            <numerusform>%n de fişiere</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -1617,7 +1613,7 @@ model to get started</source>
         <translation>
             <numerusform>%n cuvânt</numerusform>
             <numerusform>%n cuvinte</numerusform>
-            <numerusform>%n cuvinte</numerusform>
+            <numerusform>%n de cuvinte</numerusform>
         </translation>
     </message>
     <message>

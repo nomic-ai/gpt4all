@@ -966,10 +966,6 @@
         <translation>Abre el diálogo de no me gusta</translation>
     </message>
     <message>
-        <source>%1 Sources</source>
-        <translation type="vanished">%1 Fuentes</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
         <translation>Seguimientos sugeridos</translation>
@@ -1033,9 +1029,9 @@
     <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n Fuente</numerusform>
+            <numerusform>%n Fuentes</numerusform>
         </translation>
     </message>
     <message>

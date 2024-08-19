@@ -950,10 +950,6 @@ modelo instalado para funcionar</translation>
         <translation>Abrir diálogo de joinha para baixo</translation>
     </message>
     <message>
-        <source>%1 Sources</source>
-        <translation type="vanished">%1 Origens</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
         <translation>Perguntas relacionadas</translation>
@@ -1027,9 +1023,9 @@ modelo instalado para funcionar</translation>
     <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n Origem</numerusform>
+            <numerusform>%n Origens</numerusform>
         </translation>
     </message>
     <message>

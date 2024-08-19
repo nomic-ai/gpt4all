@@ -947,10 +947,6 @@ modello per iniziare</translation>
         <translation>Apre la finestra di dialogo &quot;Non mi piace&quot;</translation>
     </message>
     <message>
-        <source>%1 Sources</source>
-        <translation type="vanished">%1 Fonti</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
         <translation>Approfondimenti suggeriti</translation>
@@ -1024,9 +1020,9 @@ modello per iniziare</translation>
     <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n Fonte</numerusform>
+            <numerusform>%n Fonti</numerusform>
         </translation>
     </message>
     <message>

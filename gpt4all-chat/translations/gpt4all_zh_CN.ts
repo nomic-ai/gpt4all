@@ -1040,10 +1040,6 @@ model to get started</source>
         <translation>打开点踩对话框</translation>
     </message>
     <message>
-        <source>%1 Sources</source>
-        <translation type="vanished">%1 资源</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
         <translation>建议的后续行动</translation>
@@ -1117,8 +1113,8 @@ model to get started</source>
     <message numerus="yes">
         <location filename="../qml/ChatView.qml" line="1145"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n 资源</numerusform>
         </translation>
     </message>
     <message>
