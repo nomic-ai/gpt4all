@@ -1244,7 +1244,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="38"/>
         <source>Indexing</source>
-        <translation>索引中</translation>
+        <translation>索引</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="51"/>
