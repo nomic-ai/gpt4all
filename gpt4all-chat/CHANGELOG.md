@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
 
 ### Changed
-- Smaller default window size, and dynamic minimum size ([#2904](https://github.com/nomic-ai/gpt4all/pull/2904))
+- Smaller default window size, dynamic minimum size, and scaling tweaks ([#2904](https://github.com/nomic-ai/gpt4all/pull/2904))
 
 ### Fixed
 - Bring back "Auto" option for Embeddings Device as "Application default," which went missing in v3.1.0 ([#2873](https://github.com/nomic-ai/gpt4all/pull/2873))

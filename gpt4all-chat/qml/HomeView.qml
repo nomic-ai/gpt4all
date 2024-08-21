@@ -76,8 +76,8 @@ Rectangle {
 
                 MyWelcomeButton {
                     Layout.fillWidth: true
-                    Layout.maximumWidth: 500
-                    Layout.preferredHeight: 150
+                    Layout.maximumWidth: 150 + 200 * theme.fontScale
+                    Layout.preferredHeight: 40 + 90 * theme.fontScale
                     text: qsTr("Start Chatting")
                     description: qsTr("Chat with any LLM")
                     imageSource: "qrc:/gpt4all/icons/chat.svg"
@@ -87,8 +87,8 @@ Rectangle {
                 }
                 MyWelcomeButton {
                     Layout.fillWidth: true
-                    Layout.maximumWidth: 500
-                    Layout.preferredHeight: 150
+                    Layout.maximumWidth: 150 + 200 * theme.fontScale
+                    Layout.preferredHeight: 40 + 90 * theme.fontScale
                     text: qsTr("LocalDocs")
                     description: qsTr("Chat with your local files")
                     imageSource: "qrc:/gpt4all/icons/db.svg"
@@ -98,8 +98,8 @@ Rectangle {
                 }
                 MyWelcomeButton {
                     Layout.fillWidth: true
-                    Layout.maximumWidth: 500
-                    Layout.preferredHeight: 150
+                    Layout.maximumWidth: 150 + 200 * theme.fontScale
+                    Layout.preferredHeight: 40 + 90 * theme.fontScale
                     text: qsTr("Find Models")
                     description: qsTr("Explore and download models")
                     imageSource: "qrc:/gpt4all/icons/models.svg"
