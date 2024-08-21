@@ -15,10 +15,10 @@ import mysettings
 
 Window {
     id: window
-    width: 1920
-    height: 1080
-    minimumWidth: 1280
-    minimumHeight: 720
+    width: 1440
+    height: 810
+    minimumWidth: 563 + 485 * theme.fontScale
+    minimumHeight: 348 + 180 * theme.fontScale
     visible: true
     title: qsTr("GPT4All v%1").arg(Qt.application.version)
 
