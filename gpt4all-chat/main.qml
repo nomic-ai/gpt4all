@@ -17,7 +17,7 @@ Window {
     id: window
     width: 1440
     height: 810
-    minimumWidth: 743 + 385 * theme.fontScale
+    minimumWidth: 708 + 420 * theme.fontScale
     minimumHeight: 384 + 160 * theme.fontScale
     visible: true
     title: qsTr("GPT4All v%1").arg(Qt.application.version)
