@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Correct typos in Traditional Chinese translation (by [@supersonictw](https://github.com/supersonictw) in [#2852](https://github.com/nomic-ai/gpt4all/pull/2852))
 - Set the window icon on Linux ([#2880](https://github.com/nomic-ai/gpt4all/pull/2880))
 
+### Changed
+- The offline update button now directs users to the offline installer releases page. (by [@3Simplex](https://github.com/3Simplex) in [#2888](https://github.com/nomic-ai/gpt4all/pull/2888))
+
 ## [3.2.1] - 2024-08-13
 
 ### Fixed
