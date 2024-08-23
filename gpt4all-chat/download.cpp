@@ -263,16 +263,17 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
 
-        QJsonObject obj;
         QString modelName(modelFile);
         modelName.remove(0, 8); // strip "gpt4all-" prefix
         modelName.chop(7); // strip ".rmodel" extension
-        obj.insert("apiKey", apiKey);
-        obj.insert("modelName", modelName);
-        QJsonDocument doc(obj);
+        QJsonObject obj {
+            { "type",      ...       },
+            { "apiKey",    apiKey    },
+            { "modelName", modelName },
+        };
 
         QTextStream stream(&file);
-        stream << doc.toJson();
+        stream << QJsonDocument(doc).toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
         emit toastMessage(tr("Model \"%1\" is installed successfully.").arg(modelName));
@@ -312,14 +313,15 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
-        QJsonObject obj;
-        obj.insert("apiKey", apiKey);
-        obj.insert("modelName", modelName);
-        obj.insert("baseUrl", apiBaseUrl.toString());
-        QJsonDocument doc(obj);
+        QJsonObject obj {
+            { "type",      "openai-generic"      },
+            { "apiKey",    apiKey                },
+            { "modelName", modelName             },
+            { "baseUrl",   apiBaseUrl.toString() },
+        };
 
         QTextStream stream(&file);
-        stream << doc.toJson();
+        stream << QJsonDocument(obj).toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
         emit toastMessage(tr("Model \"%1 (%2)\" is installed successfully.").arg(modelName, baseUrl));
@@ -336,20 +338,26 @@ void Download::removeModel(const QString &modelFile)
         incompleteFile.remove();
     }
 
-    bool shouldRemoveInstalled = false;
+    bool removedFromList = false;
     QFile file(filePath);
     if (file.exists()) {
         const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
         MySettings::globalInstance()->eraseModel(info);
-        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.isCompatibleApi || info.description() == "" /*indicates sideloaded*/);
-        if (shouldRemoveInstalled)
+        if (
+            info.installed && !info.isClone() && (
+                info.isDiscovered() || info.description() == "" /*indicates sideloaded*/
+                || info.provider == ModelInfo::Provider::OpenAIGeneric
+            )
+        ) {
             ModelList::globalInstance()->removeInstalled(info);
+            removedFromList = true;
+        }
         Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
         file.remove();
         emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
     }
 
-    if (!shouldRemoveInstalled) {
+    if (!removedFromList) {
         QVector<QPair<int, QVariant>> data {
             { ModelList::InstalledRole, false },
             { ModelList::BytesReceivedRole, 0 },

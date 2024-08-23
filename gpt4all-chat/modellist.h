@@ -25,6 +25,7 @@ using namespace Qt::Literals::StringLiterals;
 
 struct ModelInfo {
     Q_GADGET
+    Q_PROPERTY(Provider provider READ provider)
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString filename READ filename WRITE setFilename)
@@ -35,8 +36,7 @@ struct ModelInfo {
     Q_PROPERTY(bool calcHash MEMBER calcHash)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
-    Q_PROPERTY(bool isOnline MEMBER isOnline)
-    Q_PROPERTY(bool isCompatibleApi MEMBER isCompatibleApi)
+    Q_PROPERTY(bool isOnline READ isOnline)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
     Q_PROPERTY(QString versionRemoved MEMBER versionRemoved)
@@ -77,10 +77,27 @@ struct ModelInfo {
     Q_PROPERTY(QDateTime recency READ recency WRITE setRecency)
 
 public:
-    enum HashAlgorithm {
+    enum class Provider {
+        LlamaCpp,
+        // Pre-configured model from openai.com or mistral.ai
+        OpenAI,
+        Mistral,
+        // Model with a custom endpoint configured by the user (stored in *-capi.rmodel)
+        OpenAIGeneric,
+    };
+    Q_ENUM(Provider)
+
+    // Not a valid member of the Provider enum. Used as a sentinel with Qt containers.
+    static constexpr Provider INVALID_PROVIDER = Provider(-1);
+
+    enum class HashAlgorithm {
         Md5,
         Sha256
     };
+    Q_ENUM(HashAlgorithm)
+
+    Provider provider() const { return m_provider; }
+    bool isOnline() const { return m_provider != Provider::LlamaCpp; }
 
     QString id() const;
     void setId(const QString &id);
@@ -109,8 +126,8 @@ public:
     QString description() const;
     void setDescription(const QString &d);
 
-    /* For built-in OpenAI-compatible models (isOnline && !isCompatibleApi), this is the full completions endpoint URL.
-     * For custom OpenAI-compatible models (isCompatibleApi), this is not set.
+    /* For built-in OpenAI-compatible models, this is the full completions endpoint URL.
+     * For custom OpenAI-compatible models (Provider::OpenAIGeneric), this is not set.
      * For discovered models (isDiscovered), this is the resolved URL of the GGUF file. */
     QString url() const;
     void setUrl(const QString &u);
@@ -142,17 +159,6 @@ public:
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
-    // Differences between 'isOnline' and 'isCompatibleApi' in ModelInfo:
-    // 'isOnline':
-    // - Indicates whether this is a online model.
-    // - Linked with the ModelList, fetching info from it.
-    bool isOnline = false;
-    // 'isCompatibleApi':
-    // - Indicates whether the model is using the OpenAI-compatible API which user custom.
-    // - When the property is true, 'isOnline' should also be true.
-    // - Does not link to the ModelList directly; instead, fetches info from the *-capi.rmodel file and works standalone.
-    // - Still needs to copy data from gpt4all.ini and *-capi.rmodel to the ModelList in memory while application getting started(as custom .gguf models do).
-    bool isCompatibleApi = false;
     QString requiresVersion;
     QString versionRemoved;
     qint64 bytesReceived = 0;
@@ -206,6 +212,7 @@ public:
 private:
     QVariantMap getFields() const;
 
+    Provider m_provider;
     QString m_id;
     QString m_name;
     QString m_filename;
@@ -369,6 +376,7 @@ public:
     QHash<int, QByteArray> roleNames() const override
     {
         static const QHash<int, QByteArray> roles {
+            { ProviderRole,                "provider"                },
             { IdRole,                      "id"                      },
             { NameRole,                    "name"                    },
             { FilenameRole,                "filename"                },
@@ -379,8 +387,6 @@ public:
             { CalcHashRole,                "calcHash"                },
             { InstalledRole,               "installed"               },
             { DefaultRole,                 "isDefault"               },
-            { OnlineRole,                  "isOnline"                },
-            { CompatibleApiRole,           "isCompatibleApi"         },
             { DescriptionRole,             "description"             },
             { RequiresVersionRole,         "requiresVersion"         },
             { VersionRemovedRole,          "versionRemoved"          },
@@ -437,7 +443,8 @@ public:
     Q_INVOKABLE bool isUniqueName(const QString &name) const;
     Q_INVOKABLE QString clone(const ModelInfo &model);
     Q_INVOKABLE void removeClone(const ModelInfo &model);
-    Q_INVOKABLE void removeInstalled(const ModelInfo &model);
+    // Delist a model that is about to be removed from the model dir
+    void removeInstalled(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
 
     void addModel(const QString &id);

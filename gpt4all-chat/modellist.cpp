@@ -36,6 +36,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -43,7 +45,32 @@ using namespace Qt::Literals::StringLiterals;
 
 //#define USE_LOCAL_MODELSJSON
 
+
 static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmodel"_s };
+
+// Maps "type" of current .rmodel format to a provider.
+static const QHash<QString, ModelInfo::Provider> RMODEL_TYPES {
+    { u"openai"_s,         ModelInfo::Provider::OpenAI        },
+    { u"mistral"_s,        ModelInfo::Provider::Mistral       },
+    { u"openai-generic"_s, ModelInfo::Provider::OpenAIGeneric },
+};
+
+// For backwards compatbility only. Do not add to this list.
+static const QHash<QString, ModelInfo::Provider> BUILTIN_RMODEL_FILENAMES {
+    { u"gpt4all-gpt-3.5-turbo.rmodel"_s,  ModelInfo::Provider::OpenAI  },
+    { u"gpt4all-gpt-4.rmodel"_s,          ModelInfo::Provider::OpenAI  },
+    { u"gpt4all-mistral-tiny.rmodel"_s,   ModelInfo::Provider::Mistral },
+    { u"gpt4all-mistral-small.rmodel"_s,  ModelInfo::Provider::Mistral },
+    { u"gpt4all-mistral-medium.rmodel"_s, ModelInfo::Provider::Mistral },
+};
+
+static ModelInfo::Provider getBuiltinRmodelFilename(const QString &filename)
+{
+    auto provider = BUILTIN_RMODEL_FILENAMES.value(filename, ModelInfo::INVALID_PROVIDER);
+    if (provider == ModelInfo::INVALID_PROVIDER)
+        throw std::invalid_arugment("unrecognized rmodel filename: " + filename.toStdString());
+    return provider;
+}
 
 QString ModelInfo::id() const
 {
@@ -694,6 +721,8 @@ int ModelList::rowCount(const QModelIndex &parent) const
 QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
 {
     switch (role) {
+        case ProviderRole:
+            return info->provider();
         case IdRole:
             return info->id();
         case NameRole:
@@ -714,10 +743,6 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->installed;
         case DefaultRole:
             return info->isDefault;
-        case OnlineRole:
-            return info->isOnline;
-        case CompatibleApiRole:
-            return info->isCompatibleApi;
         case DescriptionRole:
             return info->description();
         case RequiresVersionRole:
@@ -846,6 +871,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             const int role = d.first;
             const QVariant value = d.second;
             switch (role) {
+            case ProviderRole:
+                info->m_provider = value.value<ModelInfo::Provider>();
             case IdRole:
                 {
                     if (info->id() != value.toString()) {
@@ -865,17 +892,13 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case HashRole:
                 info->hash = value.toByteArray(); break;
             case HashAlgorithmRole:
-                info->hashAlgorithm = static_cast<ModelInfo::HashAlgorithm>(value.toInt()); break;
+                info->hashAlgorithm = value.value<ModelInfo::HashAlgorithm>(); break;
             case CalcHashRole:
                 info->calcHash = value.toBool(); break;
             case InstalledRole:
                 info->installed = value.toBool(); break;
             case DefaultRole:
                 info->isDefault = value.toBool(); break;
-            case OnlineRole:
-                info->isOnline = value.toBool(); break;
-            case CompatibleApiRole:
-                info->isCompatibleApi = value.toBool(); break;
             case DescriptionRole:
                 info->setDescription(value.toString()); break;
             case RequiresVersionRole:
@@ -1090,13 +1113,12 @@ QString ModelList::clone(const ModelInfo &model)
     addModel(id);
 
     QVector<QPair<int, QVariant>> data {
+        { ModelList::ProviderRole, model.provider },
         { ModelList::InstalledRole, model.installed },
         { ModelList::IsCloneRole, true },
         { ModelList::NameRole, uniqueModelName(model) },
         { ModelList::FilenameRole, model.filename() },
         { ModelList::DirpathRole, model.dirpath },
-        { ModelList::OnlineRole, model.isOnline },
-        { ModelList::CompatibleApiRole, model.isCompatibleApi },
         { ModelList::IsEmbeddingModelRole, model.isEmbeddingModel },
         { ModelList::TemperatureRole, model.temperature() },
         { ModelList::TopPRole, model.topP() },
@@ -1129,9 +1151,9 @@ void ModelList::removeClone(const ModelInfo &model)
 
 void ModelList::removeInstalled(const ModelInfo &model)
 {
+    Q_ASSERT(model.provider == ModelInfo::Provider::LlamaCpp || model.provider == ModelInfo::Provider::OpenAIGeneric);
     Q_ASSERT(model.installed);
     Q_ASSERT(!model.isClone());
-    Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
     removeInternal(model);
     emit layoutChanged();
 }
@@ -1212,51 +1234,142 @@ bool ModelList::modelExists(const QString &modelFilename) const
 
 static void updateOldRemoteModels(const QString &path)
 {
-    QDirIterator it(path, QDirIterator::Subdirectories);
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
-        if (!it.fileInfo().isDir()) {
-            QString filename = it.fileName();
-            if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
-                QString apikey;
-                QString modelname(filename);
-                modelname.chop(4); // strip ".txt" extension
-                modelname.remove(0, 8); // strip "chatgpt-" prefix
-                QFile file(path + filename);
-                if (file.open(QIODevice::ReadWrite)) {
-                    QTextStream in(&file);
-                    apikey = in.readAll();
-                    file.close();
-                }
+        QFileInfo info = it.nextFileInfo();
+        QString filename = info.fileName();
+        if (!filename.startsWith("chatgpt-") || !filename.endsWith(".txt"))
+            continue;
 
-                QJsonObject obj;
-                obj.insert("apiKey", apikey);
-                obj.insert("modelName", modelname);
-                QJsonDocument doc(obj);
+        QString apikey;
+        QString modelname(filename);
+        modelname.chop(4); // strip ".txt" extension
+        modelname.remove(0, 8); // strip "chatgpt-" prefix
+        QFile file(info.filePath());
+        if (!file.open(QFile::ReadOnly)) {
+            qWarning(tr("cannot open \"%s\": %s"), info.filePath(), file.errorString());
+            continue;
+        }
 
-                auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
-                QFile newfile(path + newfilename);
-                if (newfile.open(QIODevice::ReadWrite)) {
-                    QTextStream out(&newfile);
-                    out << doc.toJson();
-                    newfile.close();
-                }
-                file.remove();
-            }
+        {
+            QTextStream in(&file);
+            apikey = in.readAll();
+            file.close();
+        }
+
+        QJsonObject obj {
+            { "type",      "openai"  },
+            { "apiKey",    apikey    },
+            { "modelName", modelname },
+        };
+
+        QFile newfile(u"%1/gpt4all-%2.rmodel"_s.arg(info.dir().path(), modelname));
+        if (!newfile.open(QFile::ReadWrite)) {
+            qWarning(tr("cannot create \"%s\": %s"), newfile.fileName(), file.errorString());
+            continue;
+        }
+
+        QTextStream out(&newfile);
+        out << QJsonDocument(obj).toJson();
+        newfile.close();
+        file.remove();
+    }
+}
+
+[[nodiscard]]
+static bool parseRemoteModel(QVector<QPair<int, QVariant>> &props, const QFileInfo &info)
+{
+    QJsonObject remoteModel;
+    {
+        QFile file(info.filePath());
+        if (!file.open(QFile::ReadOnly)) {
+            qWarning(tr("cannot open \"%s\": %s"), info.filePath(), file.errorString());
+            return false;
+        }
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        remoteModel = doc.object();
+    }
+
+    ModelInfo::Provider provider;
+    QString remoteModelName, remoteApiKey;
+    {
+        const auto INVALID = ModelInfo::INVALID_PROVIDER;
+
+        std::optional<ModelInfo::Provider> providerJson;
+        if (auto type = remoteModel["type"]; type.type() != QJsonValue::Unknown)
+            providerJson.reset(RMODEL_TYPES.value(type, INVALID));
+
+        auto apiKey = remoteModel["apiKey"];
+        auto modelName = remoteModel["modelName"];
+        if (modelName.type() != QJsonValue::String || apiKey.type() != QJsonValue::String || providerJson == INVALID) {
+            qWarning(tr("bad rmodel \"%s\": unrecognized format"), info.filePath());
+            return false;
+        }
+        remoteModelName = modelName.toString();
+        remoteApiKey = apiKey.toString();
+
+        if (providerJson) {
+            provider = providerJson.value();
+        } else if (auto builtin = BUILTIN_RMODEL_FILENAMES.value(filename, INVALID); builtin != INVALID) {
+            provider = builtin;
+        } else {
+            goto bad_data;
         }
     }
+
+    QString name;
+    QString description;
+    if (provider == ModelInfo::Provider::OpenAIGeneric) {
+        auto baseUrl = remoteModel["baseUrl"];
+        if (baseUrl.type() != QJsonValue::String)
+            goto bad_data;
+
+        QString apiKey = remoteApiKey;
+        apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
+        QString baseUrl(remoteModel["baseUrl"].toString());
+        name = tr("%1 (%2)").arg(remoteModelName, baseUrl);
+        description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
+                         "<ul><li>API Key: %1</li>"
+                         "<li>Base URL: %2</li>"
+                         "<li>Model Name: %3</li></ul>")
+                            .arg(apiKey, baseUrl, remoteModelName);
+
+        // The description is hard-coded into "GPT4All.ini" due to performance issue.
+        // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
+        props << QVector<QPair<int, QVariant>> {
+            { NameRole,           name        },
+            { DescriptionRole,    description },
+            // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
+            { PromptTemplateRole, "%1"        },
+        };
+    }
+
+    props << QVector<QPair<int, QVariant>> {
+        { ProviderRole, provider },
+    };
+    return true;
+
+bad_data:
+    qWarning(tr("bad rmodel \"%s\": unrecognized data"), info.filePath());
+    return false;
 }
 
 void ModelList::processModelDirectory(const QString &path)
 {
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
+        QFileInfo info = it.nextFileInfo();
 
-        QString filename = it.fileName();
+        QString filename = info.fileName();
         if (filename.startsWith("incomplete") || FILENAME_BLACKLIST.contains(filename))
             continue;
         if (!filename.endsWith(".gguf") && !filename.endsWith(".rmodel"))
+            continue;
+
+        QVector<QPair<int, QVariant>> props;
+        if (!filename.endswith(".rmodel")) {
+            props.emplaceBack(ProviderRole, ModelInfo::Provider::LlamaCpp);
+        } else if (!parseRemoteModel(props, info))
             continue;
 
         QVector<QString> modelsById;
@@ -1273,56 +1386,15 @@ void ModelList::processModelDirectory(const QString &path)
             modelsById.append(filename);
         }
 
-        QFileInfo info = it.fileInfo();
-
-        bool isOnline(filename.endsWith(".rmodel"));
-        bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
-
-        QString name;
-        QString description;
-        if (isCompatibleApi) {
-            QJsonObject obj;
-            {
-                QFile file(path + filename);
-                bool success = file.open(QIODeviceBase::ReadOnly);
-                (void)success;
-                Q_ASSERT(success);
-                QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-                obj = doc.object();
-            }
-            {
-                QString apiKey(obj["apiKey"].toString());
-                QString baseUrl(obj["baseUrl"].toString());
-                QString modelName(obj["modelName"].toString());
-                apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
-                name = tr("%1 (%2)").arg(modelName, baseUrl);
-                description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
-                                 "<ul><li>API Key: %1</li>"
-                                 "<li>Base URL: %2</li>"
-                                 "<li>Model Name: %3</li></ul>")
-                                    .arg(apiKey, baseUrl, modelName);
-            }
-        }
-
         for (const QString &id : modelsById) {
-            QVector<QPair<int, QVariant>> data {
-                { InstalledRole, true },
-                { FilenameRole, filename },
-                { OnlineRole, isOnline },
-                { CompatibleApiRole, isCompatibleApi },
-                { DirpathRole, info.dir().absolutePath() + "/" },
-                { FilesizeRole, info.size() },
+            props << QVector<QPair<int, QVariant>> {
+                { ProviderRole,      provider                        },
+                { InstalledRole,     true                            },
+                { FilenameRole,      filename                        },
+                { DirpathRole,       info.dir().absolutePath() + "/" },
+                { FilesizeRole,      info.size()                     },
             };
-            if (isCompatibleApi) {
-                // The data will be saved to "GPT4All.ini".
-                data.append({ NameRole, name });
-                // The description is hard-coded into "GPT4All.ini" due to performance issue.
-                // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
-                data.append({ DescriptionRole, description });
-                // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
-                data.append({ PromptTemplateRole, "%1" });
-            }
-            updateData(id, data);
+            updateData(id, props);
         }
     }
 }
@@ -1571,6 +1643,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, BUILTIN_RMODEL_FILENAMES. },
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, 0 },
@@ -1599,6 +1672,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, getBuiltinRmodelFilename(modelFilename) },
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, 0 },
@@ -1630,6 +1704,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, getBuiltinRmodelFilename(modelFilename) },
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, 0 },
@@ -1655,6 +1730,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, getBuiltinRmodelFilename(modelFilename) },
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, 0 },
@@ -1681,10 +1757,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, getBuiltinRmodelFilename(modelFilename) },
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, 0 },
-            { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Mistral Medium model</strong><br> %1").arg(mistralDesc) },
             { ModelList::RequiresVersionRole, "2.7.4" },
@@ -1710,10 +1786,9 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
+            { ModelList::ProviderRole, ModelInfo::Provider::OpenAIGeneric },
             { ModelList::NameRole, modelName },
             { ModelList::FilesizeRole, 0 },
-            { ModelList::OnlineRole, true },
-            { ModelList::CompatibleApiRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Connect to OpenAI-compatible API server</strong><br> %1").arg(compatibleDesc) },
             { ModelList::RequiresVersionRole, "2.7.4" },

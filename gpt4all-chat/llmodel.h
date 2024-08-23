@@ -73,3 +73,6 @@ Q_SIGNALS:
     void databaseResultsChanged(const QList<ResultInfo> &results);
     void modelInfoChanged(const ModelInfo &modelInfo);
 };
+
+std::string remove_leading_whitespace(const std::string &input);
+std::string trim_whitespace(const std::string &input);

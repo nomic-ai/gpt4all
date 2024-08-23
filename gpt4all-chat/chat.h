@@ -94,7 +94,7 @@ public:
     Q_INVOKABLE void reloadModel();
     Q_INVOKABLE void forceUnloadModel();
     Q_INVOKABLE void forceReloadModel();
-    Q_INVOKABLE void trySwitchContextOfLoadedModel();
+    void trySwitchContextOfLoadedModel();
     void unloadAndDeleteLater();
     void markForDeletion();
 
