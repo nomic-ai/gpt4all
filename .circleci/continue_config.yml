@@ -1094,7 +1094,6 @@ jobs:
             mkdir ../osx-x64
             cp -L *.dylib ../osx-x64
             cp ../../llama.cpp-mainline/*.metal ../osx-x64
-            ls ../osx-x64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
@@ -1103,7 +1102,7 @@ jobs:
 
   build-bindings-backend-windows:
     machine:
-      image: 'windows-server-2022-gui:2023.03.1'
+      image: 'windows-server-2019-vs2019:2022.08.1'
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -1118,11 +1117,25 @@ jobs:
           command: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - restore_cache:
+          keys:
+            - cudawin118
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
-            .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
+            $Folder = 'C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8'
+            if(Test-Path -Path $Folder) {
+              echo 'Cuda restored from cache'
+            } else {
+              echo 'Cache not found, reinstalling cuda'
+              $NvidiaCudaWebUrl = 'https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe'
+              Invoke-WebRequest -Uri $NvidiaCudaWebUrl -OutFile cuda_11.8.0_windows_network.exe
+              .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
+            }
+      - save_cache:
+          key: cudawin118 
+          paths:
+            - C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8
       - run:
           name: Install dependencies
           command: |
@@ -1130,23 +1143,50 @@ jobs:
       - run:
           name: Build Libraries
           command: |
-            $Env:Path += ";C:\Program Files\CMake\bin"
-            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:LIB  = "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64"
+            $Env:INCLUDE  = "C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+            
+            # allow caching of cuda toolkit on windows
+            $Env:CUDAToolkit_ROOT= "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin"
+            $Env:CUDACXX= "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc"
+            
+            $Env:PATH += ";C:\VulkanSDK\1.3.261.1\bin"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             cd gpt4all-backend
-            mkdir runtimes/win-x64_msvc
-            cd runtimes/win-x64_msvc
-            cmake -G "Visual Studio 17 2022" -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -A X64 ../..
-            cmake --build . --parallel --config Release
-            cp bin/Release/*.dll .
+
+            # create cmake build dir in gpt4all-backend.
+            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
+            # We build our binaries to this directory.
+            cmake --build build --parallel
+
+            # create runtimes directory, which will be stored for the next workflow down the line.
+            mkdir -p runtimes/win32-x64
+            robocopy build/bin runtimes/win32-x64/ /s /e
+
+            # wtf robo copy..
+            # https://stackoverflow.com/a/56236247/14709144
+            if ($lastexitcode -lt 8) { exit 0 } else { exit 1 }
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - runtimes/win-x64_msvc/*.dll
+            - runtimes/win32-x64/*.dll
 
   build-nodejs-linux: 
     machine: 
-      - image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:2023.04.2
     steps:
       - checkout
       - attach_workspace:
@@ -1197,15 +1237,19 @@ jobs:
             yarn prebuildify -t 18.16.0 --napi
       - run: 
           name: "Persisting all necessary things to workspace"
-          command: |  
-            mkdir -p gpt4all-backend/prebuilds/darwin-x64
+          command: |
+            # prebuild arm architecture. circleci only supports arm now
+            # but, intel macs should still work, since we build universal gpt4all mac runtimes
+            mkdir -p gpt4all-backend/prebuilds/darwin-arm64
             mkdir -p gpt4all-backend/runtimes/darwin
+            
             cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin
-            cp gpt4all-bindings/typescript/prebuilds/darwin-x64/*.node gpt4all-backend/prebuilds/darwin-x64
+            ls gpt4all-bindings/typescript/prebuilds/
+            cp gpt4all-bindings/typescript/prebuilds/darwin-arm64/*.node gpt4all-backend/prebuilds/darwin-arm64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - prebuilds/darwin-x64/*.node
+            - prebuilds/darwin-*/*.node
             - runtimes/darwin/*-*.*
 
   build-nodejs-windows: 
@@ -1218,20 +1262,15 @@ jobs:
       - attach_workspace:
           at: /tmp/gpt4all-backend
       - run: choco install wget -y
-      - run:
-         command: wget https://nodejs.org/dist/v18.16.0/node-v18.16.0-x86.msi -P C:\Users\circleci\Downloads\
-         shell: cmd.exe
-      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.16.0-x86.msi /qn
       - run: 
           command: |
-              Start-Process powershell -verb runAs -Args "-start GeneralProfile"
-              nvm install 18.16.0
-              nvm use 18.16.0
-      - run: node --version 
+            Start-Process powershell -verb runAs -Args "-start GeneralProfile"
+            python -m pip install setuptools
+            nvm install 18.16.0
+            nvm use 18.16.0
       - run: corepack enable
-      - run:           
+      - run:
           command: |
-            npm install -g yarn
             cd gpt4all-bindings/typescript
             yarn install
       - run:
@@ -1240,11 +1279,15 @@ jobs:
             yarn prebuildify -t 18.16.0 --napi 
       - run: 
           command: |
+            
             mkdir -p gpt4all-backend/prebuilds/win32-x64
             mkdir -p gpt4all-backend/runtimes/win32-x64
-            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll gpt4all-backend/runtimes/win32-x64
+            
+            # copy llama runtimes from previous build step to new directory
+            cp /tmp/gpt4all-backend/runtimes/win32-x64/*-*.dll gpt4all-backend/runtimes/win32-x64/
+            
+            # copy nodejs native addon to new directory
             cp gpt4all-bindings/typescript/prebuilds/win32-x64/*.node gpt4all-backend/prebuilds/win32-x64
-        
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
@@ -1267,28 +1310,34 @@ jobs:
           command: |
             cd gpt4all-bindings/typescript
             # excluding llmodel. nodejs bindings dont need llmodel.dll
+            # PREPARE WINDOWS BINARIES
             mkdir -p runtimes/win32-x64/native
             mkdir -p prebuilds/win32-x64/
-            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll runtimes/win32-x64/native/ 
-            cp /tmp/gpt4all-backend/prebuilds/win32-x64/*.node prebuilds/win32-x64/    
-
+            cp /tmp/gpt4all-backend/runtimes/win32-x64/*-*.dll runtimes/win32-x64/native/
+            cp /tmp/gpt4all-backend/prebuilds/win32-x64/*.node prebuilds/win32-x64/
+            
+            # PREPARE LINUX BINARIES
+            # x64 binaries
             mkdir -p runtimes/linux-x64/native 
             mkdir -p prebuilds/linux-x64/
-            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
-            cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/    
+            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/
+            cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/
+            # arm64 binaries
+            mkdir -p runtimes/linux-arm64/native
+            mkdir -p prebuilds/linux-arm64/
+            cp /tmp/gpt4all-backend/runtimes/linux-arm64/*-*.so runtimes/linux-arm64/native/
+            cp /tmp/gpt4all-backend/prebuilds/linux-arm64/*.node prebuilds/linux-arm64/
 
-            # darwin has univeral runtime libraries
+            # PREPARE DARWIN BINARIES
             mkdir -p runtimes/darwin/native
-            mkdir -p prebuilds/darwin-x64/
-
+            mkdir -p prebuilds/darwin-arm64/
             cp /tmp/gpt4all-backend/runtimes/darwin/*-*.* runtimes/darwin/native/
-
-            cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
+            cp /tmp/gpt4all-backend/prebuilds/darwin-arm64/*.node prebuilds/darwin-arm64/
 
             # copy the backend source we depend on to make fallback builds work
             mkdir backend
             cd ../../gpt4all-backend
-            mv llmodel.h llmodel.cpp llmodel_c.cpp llmodel_c.h sysinfo.h dlhandle.h ../gpt4all-bindings/typescript/backend/
+            cp llmodel.h llmodel.cpp llmodel_c.cpp llmodel_c.h sysinfo.h dlhandle.h dlhandle.cpp ../gpt4all-bindings/typescript/backend/
             
       # Test install
       - node/install-packages:
