@@ -65,8 +65,8 @@ public:
     size_t stateSize() const override;
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
-    void prompt(const std::string &prompt,
-                const std::string &promptTemplate,
+    void prompt(const std::vector<Message> &,
+                std::function<MessageFrame(const Message &)> framingCallback,
                 std::function<bool(int32_t)> promptCallback,
                 std::function<bool(int32_t, const std::string&)> responseCallback,
                 bool allowContextShift,

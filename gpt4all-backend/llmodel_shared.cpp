@@ -15,31 +15,8 @@
 
 namespace ranges = std::ranges;
 
-static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
-{
-    static const std::regex placeholderRegex(R"(%[1-2](?![0-9]))");
-
-    auto it = std::sregex_iterator(tmpl.begin(), tmpl.end(), placeholderRegex);
-    placeholders.clear();
-    placeholders.insert(placeholders.end(), it, std::sregex_iterator());
-
-    if (placeholders.size() > 2) {
-        err = "ERROR: expected at most two placeholders, got " + std::to_string(placeholders.size());
-        return false;
-    }
-    if (placeholders.size() >= 1 && placeholders[0].str() != "%1") {
-        err = "ERROR: first placeholder must be %1, got " + placeholders[0].str();
-        return false;
-    }
-    if (placeholders.size() >= 2 && placeholders[1].str() != "%2") {
-        err = "ERROR: second placeholder must be %2, got " + placeholders[1].str();
-        return false;
-    }
-    return true;
-}
-
-void LLModel::prompt(const std::string &prompt,
-                     const std::string &promptTemplate,
+void LLModel::prompt(const std::vector<Message> &messages,
+                     std::function<MessageFrame(const Message &)> framingCallback,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
                      bool allowContextShift,
@@ -78,45 +55,24 @@ void LLModel::prompt(const std::string &prompt,
         promptCtx.tokens.resize(promptCtx.n_past);
     m_tokenize_last_token = promptCtx.tokens.empty() ? -1 : promptCtx.tokens.back(); // not serialized
 
-    // parse the prompt template
-    std::vector<std::smatch> placeholders;
-    {
-        std::string err;
-        if (!parsePromptTemplate(promptTemplate, placeholders, err)) {
-            responseCallback(-1, err);
-            std::cerr << err << "\n";
-            return;
-        }
-    }
+    const auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
 
-    auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
-
-    // tokenize the user prompt
     std::vector<Token> embd_inp;
-    if (placeholders.empty()) {
-        // this is unusual, but well-defined
-        std::cerr << __func__ << ": prompt template has no placeholder\n";
-        embd_inp = tokenize(promptCtx, promptTemplate, true);
-    } else {
-        // template: beginning of user prompt
-        const auto &phUser = placeholders[0];
-        std::string userPrefix(phUser.prefix());
-        if (!userPrefix.empty()) {
-            embd_inp = tokenize(promptCtx, userPrefix, true);
+    for (const Message &msg : messages) {
+        const MessageFrame msgFrame = framingCallback(msg);
+        if (!msgFrame.before.empty()) {
+            auto tokens = tokenize(promptCtx, msgFrame.before, true);
+            embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
             promptCtx.n_past += embd_inp.size();
         }
 
-        // user input (shouldn't have special token processing)
-        auto tokens = tokenize(promptCtx, prompt, special);
+        // message content (shouldn't have special token processing)
+        auto tokens = tokenize(promptCtx, msg.content, special);
         embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
         promptCtx.n_past += tokens.size();
 
-        // template: end of user prompt + start of assistant prompt
-        size_t start = phUser.position() + phUser.length();
-        size_t end = placeholders.size() >= 2 ? placeholders[1].position() : promptTemplate.length();
-        auto userToAsst = promptTemplate.substr(start, end - start);
-        if (!userToAsst.empty()) {
-            tokens = tokenize(promptCtx, userToAsst, true);
+        if (!msgFrame.after.empty()) {
+            tokens = tokenize(promptCtx, msgFrame.after, true);
             embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
             promptCtx.n_past += tokens.size();
         }
@@ -128,6 +84,24 @@ void LLModel::prompt(const std::string &prompt,
     if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
         return; // error
 
+    // Nothing more to be done if we're not being asked to predict any tokens
+    if (promptCtx.n_predict < 1)
+        return;
+
+    // If we're being asked to predict then we create an assistant message with framing strings
+    Message asstMsg;
+    asstMsg.role = "assistant";
+    MessageFrame asstMsgFrame = framingCallback(asstMsg);
+
+    // Tokenize and decode the prefixed assistant framing string if any
+    if (!asstMsgFrame.before.empty()) {
+        const auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
+        auto tokens = tokenize(promptCtx, asstMsgFrame.before, true);
+        promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
+        if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, tokens))
+            return; // error
+    }
+
     // decode the assistant's reply, either generated or spoofed
     if (fakeReply == nullptr) {
         generateResponse(responseCallback, allowContextShift, promptCtx);
@@ -137,18 +111,13 @@ void LLModel::prompt(const std::string &prompt,
             return; // error
     }
 
-    // decode the rest of the prompt template
-    // template: end of assistant prompt
-    std::string asstSuffix;
-    if (placeholders.size() >= 2) {
-        size_t start = placeholders[1].position() + placeholders[1].length();
-        asstSuffix = promptTemplate.substr(start);
-    } else {
-        asstSuffix = "\n\n"; // default to a blank link, good for e.g. Alpaca
-    }
-    if (!asstSuffix.empty()) {
-        embd_inp = tokenize(promptCtx, asstSuffix, true);
-        decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp);
+    // Tokenize and decode the suffixed assistant framing string if any
+    if (!asstMsgFrame.after.empty()) {
+        const auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
+        auto tokens = tokenize(promptCtx, asstMsgFrame.after, true);
+        promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
+        if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, tokens))
+            return; // error
     }
 }
 

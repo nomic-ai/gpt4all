@@ -137,6 +137,16 @@ public:
         float   contextErase = 0.5f;    // percent of context to erase if we exceed the context window
     };
 
+    struct Message {
+        std::string content;
+        std::string role;
+    };
+
+    struct MessageFrame {
+        std::string before;
+        std::string after;
+    };
+
     using ProgressCallback = std::function<bool(float progress)>;
 
     explicit LLModel() {}
@@ -155,8 +165,8 @@ public:
 
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
-    virtual void prompt(const std::string &prompt,
-                        const std::string &promptTemplate,
+    virtual void prompt(const std::vector<Message> &messages,
+                        std::function<MessageFrame(const Message &)> framingCallback,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         bool allowContextShift,

@@ -102,8 +102,28 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
     return wrapper->llModel->restoreState(src);
 }
 
-void llmodel_prompt(llmodel_model model, const char *prompt,
-                    const char *prompt_template,
+LLModel::Message convertToMessage(const llmodel_message &msg) {
+    return {std::string(msg.content), std::string(msg.role)};
+}
+
+LLModel::MessageFrame convertToMessageFrame(const llmodel_message_frame &frame)
+{
+    return {std::string(frame.before), std::string(frame.after)};
+}
+
+auto wrapFramingCallback(llmodel_framing_callback c_callback)
+{
+    return [c_callback](const LLModel::Message &msg) -> LLModel::MessageFrame {
+        llmodel_message c_message = {msg.content.c_str(), msg.role.c_str()};
+        llmodel_message_frame c_frame = c_callback(c_message);
+        return convertToMessageFrame(c_frame);
+    };
+}
+
+void llmodel_prompt(llmodel_model model,
+                    llmodel_message *messages,
+                    size_t n_messages,
+                    llmodel_framing_callback framing_callback,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     bool allow_context_shift,
@@ -135,8 +155,14 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     auto *fake_reply_p = fake_reply ? &fake_reply_str : nullptr;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, allow_context_shift,
-                             wrapper->promptContext, special, fake_reply_p);
+    std::vector<LLModel::Message> messagesVec;
+    for (size_t i = 0; i < n_messages; ++i)
+        messagesVec.push_back(convertToMessage(messages[i]));
+
+    auto cpp_framing_callback = wrapFramingCallback(framing_callback);
+
+    wrapper->llModel->prompt({ messagesVec }, cpp_framing_callback, prompt_callback, response_func,
+                             allow_context_shift, wrapper->promptContext, special, fake_reply_p);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies

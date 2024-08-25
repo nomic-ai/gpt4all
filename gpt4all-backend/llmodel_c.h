@@ -54,10 +54,27 @@ struct llmodel_gpu_device {
     const char * vendor;
 };
 
+struct llmodel_message {
+    const char * content;
+    const char * role;
+};
+
+struct llmodel_message_frame {
+    const char * before;
+    const char * after;
+};
+
 #ifndef __cplusplus
 typedef struct llmodel_prompt_context llmodel_prompt_context;
 typedef struct llmodel_gpu_device llmodel_gpu_device;
 #endif
+
+/**
+ * Callback type for framing strings.
+ * @param message The message.
+ * @return a message frame with framing strings.
+ */
+typedef llmodel_message_frame (*llmodel_framing_callback)(const llmodel_message message);
 
 /**
  * Callback type for prompt processing.
@@ -164,8 +181,9 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
 /**
  * Generate a response using the model.
  * @param model A pointer to the llmodel_model instance.
- * @param prompt A string representing the input prompt.
- * @param prompt_template A string representing the input prompt template.
+ * @param messages An array of messages.
+ * @param n_messages The number of messages.
+ * @param framing_callback A callback function for retrieving the message framing strings.
  * @param prompt_callback A callback function for handling the processing of prompt.
  * @param response_callback A callback function for handling the generated response.
  * @param allow_context_shift Whether to allow shifting of context to make room for more input.
@@ -173,8 +191,10 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * @param fake_reply A string to insert into context as the model's reply, or NULL to generate one.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
-void llmodel_prompt(llmodel_model model, const char *prompt,
-                    const char *prompt_template,
+void llmodel_prompt(llmodel_model model,
+                    llmodel_message *messages,
+                    size_t n_messages,
+                    llmodel_framing_callback framing_callback,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     bool allow_context_shift,

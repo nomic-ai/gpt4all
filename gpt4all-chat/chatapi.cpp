@@ -86,8 +86,8 @@ size_t ChatAPI::restoreState(const uint8_t *src)
     return 0;
 }
 
-void ChatAPI::prompt(const std::string &prompt,
-                     const std::string &promptTemplate,
+void ChatAPI::prompt(const std::vector<Message> &messages,
+                     std::function<MessageFrame(const Message &)> framingCallback,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
                      bool allowContextShift,
