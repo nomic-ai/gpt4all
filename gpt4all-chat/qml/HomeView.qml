@@ -254,9 +254,9 @@ Rectangle {
                     spacing: 40
 
                     MyFancyLink {
-                        text: qsTr("GPT4All.io")
+                        text: qsTr("nomic.ai/gpt4all")
                         imageSource: "qrc:/gpt4all/icons/globe.svg"
-                        onClicked: { Qt.openUrlExternally("https://gpt4all.io") }
+                        onClicked: { Qt.openUrlExternally("https://nomic.ai/gpt4all") }
                         rightPadding: 15
                     }
                 }
