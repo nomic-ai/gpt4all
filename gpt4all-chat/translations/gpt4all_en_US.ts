@@ -1683,7 +1683,7 @@ NOTE: Higher temperature gives more creative but less predictable outputs.</sour
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
