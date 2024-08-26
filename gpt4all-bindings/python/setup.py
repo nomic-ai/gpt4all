@@ -74,7 +74,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Nomic and the Open Source Community",
     author_email="support@nomic.ai",
-    url="https://gpt4all.io/",
+    url="https://www.nomic.ai/gpt4all",
     project_urls={
         "Documentation": "https://docs.gpt4all.io/gpt4all_python.html",
         "Source code": "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python",
