@@ -1249,8 +1249,8 @@ modelo para comenzar
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation>GPT4All.io</translation>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>

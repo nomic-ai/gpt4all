@@ -1314,13 +1314,13 @@ model to get started</source>
         <translation>GitHub</translation>
     </message>
     <message>
-        <source>GitHub</source>
-        <translation type="vanished">GitHub</translation>
+        <location filename="../qml/HomeView.qml" line="257"/>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
-        <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation>GPT4All.io</translation>
+        <source>GitHub</source>
+        <translation type="vanished">GitHub</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>

@@ -1217,7 +1217,7 @@ model to get started</source>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
+        <source>nomic.ai</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
