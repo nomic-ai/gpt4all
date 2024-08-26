@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - The offline update button now directs users to the offline installer releases page. (by [@3Simplex](https://github.com/3Simplex) in [#2888](https://github.com/nomic-ai/gpt4all/pull/2888))
+- Change the website link on the home page to point to the new URL ([#2915](https://github.com/nomic-ai/gpt4all/pull/2915))
 
 ## [3.2.1] - 2024-08-13
 
