@@ -4,7 +4,7 @@
 
 It is possible you are trying to load a model from HuggingFace whose weights are not compatible with our [backend](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings).
 
-Try downloading one of the officially supported models mentioned our [website](https://gpt4all.io/). If the problem persists, please share your experience on our [Discord](https://discord.com/channels/1076964370942267462).
+Try downloading one of the officially supported models listed in on the main models page in the application. If the problem persists, please share your experience on our [Discord](https://discord.com/channels/1076964370942267462).
 
 ## Bad Responses 
 
