@@ -1227,8 +1227,8 @@ modello per iniziare</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation></translation>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>
@@ -1701,7 +1701,7 @@ NOTA: una temperatura più elevata offre risultati più creativi ma meno prevedi
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Fattore di campionamento del nucleo. Inferiore -&gt; più prevedibile.</translation>
     </message>
     <message>
