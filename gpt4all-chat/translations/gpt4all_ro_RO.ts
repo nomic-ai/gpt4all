@@ -1864,7 +1864,7 @@ model to get started</source>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Factorul de Nucleus Sampling. Mai mic -&gt; predictibilitate mai mare.</translation>
     </message>
     <message>
