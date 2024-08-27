@@ -70,7 +70,7 @@ set(CHAT_EXE_RESOURCES)
 
 # Metal shader library
 if (APPLE)
-    list(APPEND CHAT_EXE_RESOURCES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib")
+    list(APPEND CHAT_EXE_RESOURCES "${GGML_METALLIB}")
 endif()
 
 # App icon

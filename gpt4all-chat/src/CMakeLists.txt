@@ -1,3 +1,5 @@
+set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
+
 qt_add_executable(chat
     main.cpp
     chat.cpp chat.h
