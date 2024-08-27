@@ -4,7 +4,7 @@
 #include "database.h" // IWYU pragma: keep
 #include "modellist.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QElapsedTimer>

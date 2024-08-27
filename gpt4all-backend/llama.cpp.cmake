@@ -811,7 +811,8 @@ function(include_ggml SUFFIX)
             list(APPEND XC_FLAGS -std=${GGML_METAL_STD})
         endif()
 
-        set(GGML_METALLIB ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib)
+        set(GGML_METALLIB "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib")
+        set(GGML_METALLIB "${GGML_METALLIB}" PARENT_SCOPE)
         add_custom_command(
             OUTPUT ${GGML_METALLIB}
             COMMAND xcrun -sdk macosx metal    ${XC_FLAGS} -c ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.air
@@ -822,7 +823,6 @@ function(include_ggml SUFFIX)
             DEPENDS ${DIRECTORY}/ggml/src/ggml-metal.metal ${DIRECTORY}/ggml/src/ggml-common.h
             COMMENT "Compiling Metal kernels"
             )
-        set_source_files_properties(${GGML_METALLIB} DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTIES GENERATED ON)
 
         add_custom_target(
             ggml-metal ALL

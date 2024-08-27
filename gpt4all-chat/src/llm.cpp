@@ -1,7 +1,7 @@
 #include "llm.h"
 
-#include "../gpt4all-backend/llmodel.h"
-#include "../gpt4all-backend/sysinfo.h"
+#include <gpt4all-backend/llmodel.h>
+#include <gpt4all-backend/sysinfo.h>
 
 #include <QCoreApplication>
 #include <QDebug>
