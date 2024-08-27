@@ -105,75 +105,11 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
-qt_add_executable(chat
-    main.cpp
-    chat.h chat.cpp
-    chatllm.h chatllm.cpp
-    chatmodel.h chatlistmodel.h chatlistmodel.cpp
-    chatapi.h chatapi.cpp
-    chatviewtextprocessor.h chatviewtextprocessor.cpp
-    database.h database.cpp
-    download.h download.cpp
-    embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
-    llm.h llm.cpp
-    modellist.h modellist.cpp
-    mysettings.h mysettings.cpp
-    network.h network.cpp
-    server.h server.cpp
-    logger.h logger.cpp
-    ${APP_ICON_RESOURCE}
-    ${CHAT_EXE_RESOURCES}
-)
+add_subdirectory(src)
 
-qt_add_qml_module(chat
-    URI gpt4all
-    VERSION 1.0
-    NO_CACHEGEN
-    QML_FILES
-      main.qml
-      qml/AddCollectionView.qml
-      qml/AddModelView.qml
-      qml/ApplicationSettings.qml
-      qml/ChatDrawer.qml
-      qml/ChatView.qml
-      qml/CollectionsDrawer.qml
-      qml/HomeView.qml
-      qml/LocalDocsSettings.qml
-      qml/LocalDocsView.qml
-      qml/ModelSettings.qml
-      qml/ModelsView.qml
-      qml/NetworkDialog.qml
-      qml/NewVersionDialog.qml
-      qml/PopupDialog.qml
-      qml/SettingsView.qml
-      qml/StartupDialog.qml
-      qml/SwitchModelDialog.qml
-      qml/Theme.qml
-      qml/ThumbsDownDialog.qml
-      qml/Toast.qml
-      qml/ToastManager.qml
-      qml/MyBusyIndicator.qml
-      qml/MyButton.qml
-      qml/MyCheckBox.qml
-      qml/MyComboBox.qml
-      qml/MyDialog.qml
-      qml/MyDirectoryField.qml
-      qml/MyFancyLink.qml
-      qml/MyMenu.qml
-      qml/MyMenuItem.qml
-      qml/MyMiniButton.qml
-      qml/MySettingsButton.qml
-      qml/MySettingsDestructiveButton.qml
-      qml/MySettingsLabel.qml
-      qml/MySettingsStack.qml
-      qml/MySettingsTab.qml
-      qml/MySlug.qml
-      qml/MyTextArea.qml
-      qml/MyTextButton.qml
-      qml/MyTextField.qml
-      qml/MyToolButton.qml
-      qml/MyWelcomeButton.qml
+target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
+
+qt_target_qml_sources(chat
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -286,11 +222,13 @@ endif()
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 
+target_include_directories(chat PRIVATE src)
+
 # usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
 target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
-target_include_directories(chat PRIVATE usearch/include
-                                        usearch/fp16/include)
+target_include_directories(chat PRIVATE deps/usearch/include
+                                        deps/usearch/fp16/include)
 
 if(LINUX)
   target_link_libraries(chat
