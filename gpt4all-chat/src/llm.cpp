@@ -1,7 +1,7 @@
 #include "llm.h"
 
-#include "../gpt4all-backend/llmodel.h"
-#include "../gpt4all-backend/sysinfo.h"
+#include <gpt4all-backend/llmodel.h>
+#include <gpt4all-backend/sysinfo.h>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -51,7 +51,7 @@ bool LLM::checkForUpdates() const
 {
 #ifdef GPT4ALL_OFFLINE_INSTALLER
 #   pragma message(__FILE__ ": WARNING: offline installer build will not check for updates!")
-    return QDesktopServices::openUrl(QUrl("https://gpt4all.io/"));
+    return QDesktopServices::openUrl(QUrl("https://github.com/nomic-ai/gpt4all/releases"));
 #else
     Network::globalInstance()->trackEvent("check_for_updates");
 

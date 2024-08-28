@@ -11,7 +11,7 @@ GPT-J model by following build instructions below.
 
 ## Install
 
-One click installers for macOS, Linux, and Windows at https://gpt4all.io
+One click installers for macOS, Linux, and Windows at https://www.nomic.ai/gpt4all
 
 ## Features
 

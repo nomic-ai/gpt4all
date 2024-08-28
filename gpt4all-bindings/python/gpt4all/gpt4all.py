@@ -357,7 +357,7 @@ class GPT4All:
         expected_md5: str | None = None,
     ) -> str | os.PathLike[str]:
         """
-        Download model from https://gpt4all.io.
+        Download model from gpt4all.io.
 
         Args:
             model_filename: Filename of model (with .gguf extension).

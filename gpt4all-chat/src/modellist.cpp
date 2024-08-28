@@ -4,7 +4,7 @@
 #include "mysettings.h"
 #include "network.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QChar>
 #include <QCoreApplication>
