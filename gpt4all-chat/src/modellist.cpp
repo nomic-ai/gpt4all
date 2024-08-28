@@ -2005,6 +2005,7 @@ void ModelList::handleDiscoveryErrorOccurred(QNetworkReply::NetworkError code)
 enum QuantType {
     Q4_0 = 0,
     Q4_1,
+    Q8_0,
     F16,
     F32,
     Unknown
@@ -2015,6 +2016,7 @@ QuantType toQuantType(const QString& filename)
     QString lowerCaseFilename = filename.toLower();
     if (lowerCaseFilename.contains("q4_0")) return Q4_0;
     if (lowerCaseFilename.contains("q4_1")) return Q4_1;
+    if (lowerCaseFilename.contains("q8_0")) return Q8_0;
     if (lowerCaseFilename.contains("f16")) return F16;
     if (lowerCaseFilename.contains("f32")) return F32;
     return Unknown;
@@ -2025,6 +2027,7 @@ QString toQuantString(const QString& filename)
     QString lowerCaseFilename = filename.toLower();
     if (lowerCaseFilename.contains("q4_0")) return "q4_0";
     if (lowerCaseFilename.contains("q4_1")) return "q4_1";
+    if (lowerCaseFilename.contains("q8_0")) return "q8_0";
     if (lowerCaseFilename.contains("f16")) return "f16";
     if (lowerCaseFilename.contains("f32")) return "f32";
     return QString();
