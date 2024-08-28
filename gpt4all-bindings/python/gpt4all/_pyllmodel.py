@@ -37,7 +37,20 @@ if platform.system() == "Darwin" and platform.processor() == "i386":
         raise RuntimeError(textwrap.dedent("""\
             Running GPT4All under Rosetta is not supported due to CPU feature requirements.
             Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
-        """))
+        """).strip())
+
+# Check for C++ runtime libraries
+if platform.system() == "Windows":
+    try:
+        ctypes.CDLL("msvcp140.dll")
+        ctypes.CDLL("vcruntime140.dll")
+        ctypes.CDLL("vcruntime140_1.dll")
+    except OSError as e:
+        print(textwrap.dedent(f"""\
+            {e!r}
+            The Microsoft Visual C++ runtime libraries were not found. Please install them from
+            https://aka.ms/vs/17/release/vc_redist.x64.exe
+        """), file=sys.stderr)
 
 
 def _load_cuda(rtver: str, blasver: str) -> None:
