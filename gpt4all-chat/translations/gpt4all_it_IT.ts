@@ -1227,8 +1227,8 @@ modello per iniziare</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation></translation>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>
@@ -1352,7 +1352,7 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="293"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Numero massimo di N corrispondenze migliori di frammenti di documento recuperati da aggiungere al contesto del prompt. Numeri più grandi aumentano la probabilità di risposte basate sui fatti, ma comportano anche una generazione più lenta.</translation>
+        <translation>Il numero massimo di frammenti di documento recuperati, che presentano le migliori corrispondenze, da includere nel contesto del prompt. Numeri più alti aumentano la probabilità di ricevere risposte basate sui fatti, ma comportano anche una generazione più lenta.</translation>
     </message>
 </context>
 <context>
@@ -1701,14 +1701,14 @@ NOTA: una temperatura più elevata offre risultati più creativi ma meno prevedi
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Fattore di campionamento del nucleo. Inferiore -&gt; più prevedibile.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="469"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>Possono essere scelti solo i token più probabili fino ad una probabilità totale di top_p.
+        <translation>Solo i token più probabili, fino a un totale di probabilità di top_p, possono essere scelti.
 NOTA: impedisce la scelta di token altamente improbabili.</translation>
     </message>
     <message>
@@ -1724,7 +1724,7 @@ NOTA: impedisce la scelta di token altamente improbabili.</translation>
     <message>
         <location filename="../qml/ModelSettings.qml" line="514"/>
         <source>Sets the minimum relative probability for a token to be considered.</source>
-        <translation>Imposta la probabilità relativa minima che un token venga considerato.</translation>
+        <translation>Imposta la probabilità relativa minima affinché un token venga considerato.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="550"/>
@@ -1734,12 +1734,12 @@ NOTA: impedisce la scelta di token altamente improbabili.</translation>
     <message>
         <location filename="../qml/ModelSettings.qml" line="551"/>
         <source>Size of selection pool for tokens.</source>
-        <translation>Dimensione del pool di selezione per i token.</translation>
+        <translation>Dimensione del lotto di selezione per i token.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="562"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation>Solo i token Top-K più probabili verranno scelti.</translation>
+        <translation>Saranno scelti solo i primi K token più probabili.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="597"/>
@@ -1765,7 +1765,7 @@ NOTA: impedisce la scelta di token altamente improbabili.</translation>
         <location filename="../qml/ModelSettings.qml" line="655"/>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation>Quantità di token del prompt da elaborare contemporaneamente.
+        <translation>Numero di token del prompt da elaborare contemporaneamente.
 NOTA: valori più alti possono velocizzare la lettura dei prompt ma utilizzeranno più RAM.</translation>
     </message>
     <message>

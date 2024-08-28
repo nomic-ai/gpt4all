@@ -1,7 +1,7 @@
 #ifndef CHATAPI_H
 #define CHATAPI_H
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QNetworkReply>

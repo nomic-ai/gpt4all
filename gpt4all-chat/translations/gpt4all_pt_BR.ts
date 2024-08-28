@@ -1230,8 +1230,8 @@ modelo instalado para funcionar</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation>GPT4All.io</translation>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>
@@ -1704,7 +1704,7 @@ Obs.: Uma temperatura mais alta gera resultados mais criativos, mas menos previs
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Amostragem por núcleo. Menor valor, respostas mais previsíveis.</translation>
     </message>
     <message>

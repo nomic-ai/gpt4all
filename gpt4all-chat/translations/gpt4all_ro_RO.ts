@@ -1314,13 +1314,13 @@ model to get started</source>
         <translation>GitHub</translation>
     </message>
     <message>
-        <source>GitHub</source>
-        <translation type="vanished">GitHub</translation>
+        <location filename="../qml/HomeView.qml" line="257"/>
+        <source>nomic.ai</source>
+        <translation>nomic.ai</translation>
     </message>
     <message>
-        <location filename="../qml/HomeView.qml" line="257"/>
-        <source>GPT4All.io</source>
-        <translation>GPT4All.io</translation>
+        <source>GitHub</source>
+        <translation type="vanished">GitHub</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="282"/>
@@ -1864,7 +1864,7 @@ model to get started</source>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
-        <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
+        <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Factorul de Nucleus Sampling. Mai mic -&gt; predictibilitate mai mare.</translation>
     </message>
     <message>

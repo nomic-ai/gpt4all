@@ -1,6 +1,6 @@
 #include "chatapi.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QCoreApplication>
 #include <QGuiApplication>
