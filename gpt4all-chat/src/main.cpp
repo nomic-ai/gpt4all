@@ -16,6 +16,7 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
+#include <QQuickWindow>
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
@@ -26,6 +27,22 @@
 #   include <QIcon>
 #endif
 
+void raiseWindow(QWindow* window) {
+#ifdef Q_OS_WINDOWS
+    HWND hwnd = (HWND)window->winId();
+
+    // check if window is minimized to Windows task bar
+    if (::IsIconic(hwnd)) {
+        ::ShowWindow(hwnd, SW_RESTORE);
+    }
+
+    ::SetForegroundWindow(hwnd);
+#else
+    window->show();
+    window->raise();
+    window->requestActivate();
+#endif
+}
 
 int main(int argc, char *argv[])
 {
@@ -37,7 +54,15 @@ int main(int argc, char *argv[])
 
     Logger::globalInstance();
 
-    SingleApplication app(argc, argv);
+    SingleApplication app(argc, argv, true /*allowSecondary*/);
+    if (app.isSecondary()) {
+#ifdef Q_OS_WINDOWS
+        AllowSetForegroundWindow( DWORD( app.primaryPid() ) );
+#endif
+        app.sendMessage("RAISE_WINDOW");
+        return 0;
+    }
+
 #ifdef Q_OS_LINUX
     app.setWindowIcon(QIcon(":/gpt4all/icons/gpt4all.svg"));
 #endif
@@ -86,6 +111,11 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
         }, Qt::QueuedConnection);
     engine.load(url);
+
+    QObject *rootObject = engine.rootObjects().first();
+    QQuickWindow *windowObject = qobject_cast<QQuickWindow*>(rootObject);
+    QObject::connect(&app, &SingleApplication::receivedMessage,
+                     windowObject, [windowObject] () { raiseWindow(windowObject); } );
 
 #if 0
     QDirIterator it("qrc:", QDirIterator::Subdirectories);
