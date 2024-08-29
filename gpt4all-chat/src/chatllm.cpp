@@ -736,11 +736,11 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
-    if (!m_processedSystemPrompt)
-        processSystemPrompt();
-
     if (!isModelLoaded())
         return false;
+
+    if (!m_processedSystemPrompt)
+        processSystemPrompt();
 
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
