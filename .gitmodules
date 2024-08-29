@@ -5,9 +5,6 @@
 [submodule "gpt4all-chat/usearch"]
 	path = gpt4all-chat/deps/usearch
 	url = https://github.com/nomic-ai/usearch.git
-[submodule "SingleApplication"]
-	path = SingleApplication
-	url = https://github.com/nomic-ai/SingleApplication.git
 [submodule "gpt4all-chat/deps/SingleApplication"]
 	path = gpt4all-chat/deps/SingleApplication
 	url = https://github.com/nomic-ai/SingleApplication.git
