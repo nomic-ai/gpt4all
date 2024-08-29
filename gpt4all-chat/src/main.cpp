@@ -9,6 +9,7 @@
 #include "network.h"
 
 #include <gpt4all-backend/llmodel.h>
+#include <singleapplication.h>
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -20,8 +21,6 @@
 #include <QTranslator>
 #include <QUrl>
 #include <Qt>
-
-#include <singleapplication.h>
 
 #ifdef Q_OS_LINUX
 #   include <QIcon>
