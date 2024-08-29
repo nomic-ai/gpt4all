@@ -21,6 +21,8 @@
 #include <QUrl>
 #include <Qt>
 
+#include <singleapplication.h>
+
 #ifdef Q_OS_LINUX
 #   include <QIcon>
 #endif
@@ -36,7 +38,7 @@ int main(int argc, char *argv[])
 
     Logger::globalInstance();
 
-    QGuiApplication app(argc, argv);
+    SingleApplication app(argc, argv);
 #ifdef Q_OS_LINUX
     app.setWindowIcon(QIcon(":/gpt4all/icons/gpt4all.svg"));
 #endif
