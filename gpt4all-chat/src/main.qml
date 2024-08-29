@@ -422,7 +422,7 @@ Window {
                             return qsTr("The datalake is enabled")
                         else if (currentChat.modelInfo.isOnline)
                             return qsTr("Using a network model")
-                        else if (currentChat.modelInfo.isOnline)
+                        else if (currentChat.isServer)
                             return qsTr("Server mode is enabled")
                         return ""
                     }
