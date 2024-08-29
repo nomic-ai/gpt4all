@@ -249,11 +249,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // and what the type and name of that model is. I've tried to comment extensively in this method
     // to provide an overview of what we're doing here.
 
-    if (isModelLoaded() && this->modelInfo() == modelInfo) {
-        // already acquired -> keep it and reset
-        resetContext();
-        return true; // already loaded
-    }
+    // We're already loaded with this model
+    if (isModelLoaded() && this->modelInfo() == modelInfo)
+        return true;
 
     // reset status
     emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
@@ -661,25 +659,20 @@ void ChatLLM::setModelInfo(const ModelInfo &modelInfo)
     emit modelInfoChanged(modelInfo);
 }
 
-void ChatLLM::acquireModel()
-{
+void ChatLLM::acquireModel() {
     m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
     emit loadedModelInfoChanged();
 }
 
-void ChatLLM::resetModel()
-{
+void ChatLLM::resetModel() {
     m_llModelInfo = {};
     emit loadedModelInfoChanged();
 }
 
 void ChatLLM::modelChangeRequested(const ModelInfo &modelInfo)
 {
-    // ignore attempts to switch to the same model twice
-    if (!isModelLoaded() || this->modelInfo() != modelInfo) {
-        m_shouldBeLoaded = true;
-        loadModel(modelInfo);
-    }
+    m_shouldBeLoaded = true;
+    loadModel(modelInfo);
 }
 
 bool ChatLLM::handlePrompt(int32_t token)
