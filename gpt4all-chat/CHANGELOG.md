@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
+- Use configured system prompt in server mode and ignore system messages ([#2921](https://github.com/nomic-ai/gpt4all/pull/2921))
 
 ### Changed
 - Smaller default window size, dynamic minimum size, and scaling tweaks ([#2904](https://github.com/nomic-ai/gpt4all/pull/2904))

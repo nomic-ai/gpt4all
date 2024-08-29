@@ -719,8 +719,6 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         processRestoreStateFromText();
     }
 
-    if (!m_processedSystemPrompt)
-        processSystemPrompt();
     const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
@@ -740,6 +738,9 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 {
     if (!isModelLoaded())
         return false;
+
+    if (!m_processedSystemPrompt)
+        processSystemPrompt();
 
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
@@ -1206,7 +1207,7 @@ void ChatLLM::restoreState()
 void ChatLLM::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText || m_isServer)
+    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText)
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
