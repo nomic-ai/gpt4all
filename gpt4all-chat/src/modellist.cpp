@@ -1208,132 +1208,139 @@ bool ModelList::modelExists(const QString &modelFilename) const
     return false;
 }
 
+void ModelList::updateOldRemoteModels(const QString &path)
+{
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QFileInfo info = it.nextFileInfo();
+        QString filename = it.fileName();
+        if (!filename.startsWith("chatgpt-") || !filename.endsWith(".txt"))
+            continue;
+
+        QString apikey;
+        QString modelname(filename);
+        modelname.chop(4); // strip ".txt" extension
+        modelname.remove(0, 8); // strip "chatgpt-" prefix
+        QFile file(info.filePath());
+        if (!file.open(QIODevice::ReadOnly)) {
+            qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
+            continue;
+        }
+
+        {
+            QTextStream in(&file);
+            apikey = in.readAll();
+            file.close();
+        }
+
+        QFile newfile(u"%1/gpt4all-%2.rmodel"_s.arg(info.dir().path(), modelname));
+        if (!newfile.open(QIODevice::ReadWrite)) {
+            qWarning().noquote() << tr("cannot create \"%1\": %2").arg(newfile.fileName(), file.errorString());
+            continue;
+        }
+
+        QJsonObject obj {
+            { "apiKey",    apikey    },
+            { "modelName", modelname },
+        };
+
+        QTextStream out(&newfile);
+        out << QJsonDocument(obj).toJson();
+        newfile.close();
+
+        file.remove();
+    }
+}
+
+void ModelList::processModelDirectory(const QString &path)
+{
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QFileInfo info = it.nextFileInfo();
+
+        QString filename = it.fileName();
+        if (filename.startsWith("incomplete") || FILENAME_BLACKLIST.contains(filename))
+            continue;
+        if (!filename.endsWith(".gguf") && !filename.endsWith(".rmodel"))
+            continue;
+
+        bool isOnline(filename.endsWith(".rmodel"));
+        bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
+
+        QString name;
+        QString description;
+        if (isCompatibleApi) {
+            QJsonObject obj;
+            {
+                QFile file(info.filePath());
+                if (!file.open(QIODeviceBase::ReadOnly)) {
+                    qWarning().noquote() << tr("cannot open \"%1\": %2").arg(file.fileName(), file.errorString());
+                    continue;
+                }
+                QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+                obj = doc.object();
+            }
+            {
+                QString apiKey(obj["apiKey"].toString());
+                QString baseUrl(obj["baseUrl"].toString());
+                QString modelName(obj["modelName"].toString());
+                apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
+                name = tr("%1 (%2)").arg(modelName, baseUrl);
+                description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
+                                 "<ul><li>API Key: %1</li>"
+                                 "<li>Base URL: %2</li>"
+                                 "<li>Model Name: %3</li></ul>")
+                                    .arg(apiKey, baseUrl, modelName);
+            }
+        }
+
+        QVector<QString> modelsById;
+        {
+            QMutexLocker locker(&m_mutex);
+            for (ModelInfo *info : m_models)
+                if (info->filename() == filename)
+                    modelsById.append(info->id());
+        }
+
+        if (modelsById.isEmpty()) {
+            if (!contains(filename))
+                addModel(filename);
+            modelsById.append(filename);
+        }
+
+        for (const QString &id : modelsById) {
+            QVector<QPair<int, QVariant>> data {
+                { InstalledRole, true },
+                { FilenameRole, filename },
+                { OnlineRole, isOnline },
+                { CompatibleApiRole, isCompatibleApi },
+                { DirpathRole, info.dir().absolutePath() + "/" },
+                { FilesizeRole, toFileSize(info.size()) },
+            };
+            if (isCompatibleApi) {
+                // The data will be saved to "GPT4All.ini".
+                data.append({ NameRole, name });
+                // The description is hard-coded into "GPT4All.ini" due to performance issue.
+                // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
+                data.append({ DescriptionRole, description });
+                // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
+                data.append({ PromptTemplateRole, "%1" });
+            }
+            updateData(id, data);
+        }
+    }
+}
+
 void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = MySettings::globalInstance()->modelPath();
 
-    auto updateOldRemoteModels = [&](const QString& path) {
-        QDirIterator it(path, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            if (!it.fileInfo().isDir()) {
-                QString filename = it.fileName();
-                if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
-                    QString apikey;
-                    QString modelname(filename);
-                    modelname.chop(4); // strip ".txt" extension
-                    modelname.remove(0, 8); // strip "chatgpt-" prefix
-                    QFile file(path + filename);
-                    if (file.open(QIODevice::ReadWrite)) {
-                        QTextStream in(&file);
-                        apikey = in.readAll();
-                        file.close();
-                    }
-
-                    QJsonObject obj;
-                    obj.insert("apiKey", apikey);
-                    obj.insert("modelName", modelname);
-                    QJsonDocument doc(obj);
-
-                    auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
-                    QFile newfile(path + newfilename);
-                    if (newfile.open(QIODevice::ReadWrite)) {
-                        QTextStream out(&newfile);
-                        out << doc.toJson();
-                        newfile.close();
-                    }
-                    file.remove();
-                }
-            }
-        }
-    };
-
-    auto processDirectory = [&](const QString& path) {
-        QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-
-            QString filename = it.fileName();
-            if (filename.startsWith("incomplete") || FILENAME_BLACKLIST.contains(filename))
-                continue;
-            if (!filename.endsWith(".gguf") && !filename.endsWith(".rmodel"))
-                continue;
-
-            QVector<QString> modelsById;
-            {
-                QMutexLocker locker(&m_mutex);
-                for (ModelInfo *info : m_models)
-                    if (info->filename() == filename)
-                        modelsById.append(info->id());
-            }
-
-            if (modelsById.isEmpty()) {
-                if (!contains(filename))
-                    addModel(filename);
-                modelsById.append(filename);
-            }
-
-            QFileInfo info = it.fileInfo();
-
-            bool isOnline(filename.endsWith(".rmodel"));
-            bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
-
-            QString name;
-            QString description;
-            if (isCompatibleApi) {
-                QJsonObject obj;
-                {
-                    QFile file(path + filename);
-                    bool success = file.open(QIODeviceBase::ReadOnly);
-                    (void)success;
-                    Q_ASSERT(success);
-                    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-                    obj = doc.object();
-                }
-                {
-                    QString apiKey(obj["apiKey"].toString());
-                    QString baseUrl(obj["baseUrl"].toString());
-                    QString modelName(obj["modelName"].toString());
-                    apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
-                    name = tr("%1 (%2)").arg(modelName, baseUrl);
-                    description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
-                                     "<ul><li>API Key: %1</li>"
-                                     "<li>Base URL: %2</li>"
-                                     "<li>Model Name: %3</li></ul>")
-                                        .arg(apiKey, baseUrl, modelName);
-                }
-            }
-
-            for (const QString &id : modelsById) {
-                QVector<QPair<int, QVariant>> data {
-                    { InstalledRole, true },
-                    { FilenameRole, filename },
-                    { OnlineRole, isOnline },
-                    { CompatibleApiRole, isCompatibleApi },
-                    { DirpathRole, info.dir().absolutePath() + "/" },
-                    { FilesizeRole, toFileSize(info.size()) },
-                };
-                if (isCompatibleApi) {
-                    // The data will be saved to "GPT4All.ini".
-                    data.append({ NameRole, name });
-                    // The description is hard-coded into "GPT4All.ini" due to performance issue.
-                    // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
-                    data.append({ DescriptionRole, description });
-                    // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
-                    data.append({ PromptTemplateRole, "%1" });
-                }
-                updateData(id, data);
-            }
-        }
-    };
-
-
     updateOldRemoteModels(exePath);
-    processDirectory(exePath);
+    processModelDirectory(exePath);
     if (localPath != exePath) {
         updateOldRemoteModels(localPath);
-        processDirectory(localPath);
+        processModelDirectory(localPath);
     }
 }
 

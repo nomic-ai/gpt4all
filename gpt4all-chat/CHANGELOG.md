@@ -23,8 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Set the window icon on Linux ([#2880](https://github.com/nomic-ai/gpt4all/pull/2880))
 - Corrections to the Romanian translation (by [@SINAPSA-IC](https://github.com/SINAPSA-IC) in [#2890](https://github.com/nomic-ai/gpt4all/pull/2890))
 - Fix singular/plural forms of LocalDocs "x Sources" (by [@cosmic-snow](https://github.com/cosmic-snow) in [#2885](https://github.com/nomic-ai/gpt4all/pull/2885))
-- Fixed typo in several files. (by [@3Simplex](https://github.com/3Simplex) in [#2916](https://github.com/nomic-ai/gpt4all/pull/2916))
+- Fix a typo in Model Settings (by [@3Simplex](https://github.com/3Simplex) in [#2916](https://github.com/nomic-ai/gpt4all/pull/2916))
 - Fix the antenna icon tooltip when using the local server ([#2922](https://github.com/nomic-ai/gpt4all/pull/2922))
+- Fix a few issues with locating files and handling errors when loading remote models on startup ([#2875](https://github.com/nomic-ai/gpt4all/pull/2875))
 
 ## [3.2.1] - 2024-08-13
 
