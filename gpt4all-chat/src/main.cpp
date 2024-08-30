@@ -118,8 +118,10 @@ int main(int argc, char *argv[])
 
     QObject *rootObject = engine.rootObjects().first();
     QQuickWindow *windowObject = qobject_cast<QQuickWindow *>(rootObject);
-    QObject::connect(&app, &SingleApplication::receivedMessage,
-                     windowObject, [windowObject] () { raiseWindow(windowObject); } );
+    Q_ASSERT(windowObject);
+    if (windowObject)
+        QObject::connect(&app, &SingleApplication::receivedMessage,
+                         windowObject, [windowObject] () { raiseWindow(windowObject); } );
 
 #if 0
     QDirIterator it("qrc:", QDirIterator::Subdirectories);
