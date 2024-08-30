@@ -105,6 +105,8 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
+set(QAPPLICATION_CLASS QGuiApplication)
+add_subdirectory(deps/SingleApplication)
 add_subdirectory(src)
 
 target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
@@ -238,7 +240,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE llmodel SingleApplication)
 
 
 # -- install --
