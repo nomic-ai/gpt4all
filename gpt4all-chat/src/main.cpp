@@ -27,6 +27,10 @@
 #   include <QIcon>
 #endif
 
+#ifdef Q_OS_WINDOWS
+#   include <windows.h>
+#endif
+
 void raiseWindow(QWindow* window) {
 #ifdef Q_OS_WINDOWS
     HWND hwnd = (HWND)window->winId();
