@@ -502,7 +502,7 @@ MySettingsTab {
         }
         MySettingsLabel {
             id: serverChatLabel
-            text: qsTr("Enable Local Server")
+            text: qsTr("Enable Local API Server")
             helpText: qsTr("Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.")
             Layout.row: 13
             Layout.column: 0

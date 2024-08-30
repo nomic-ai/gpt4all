@@ -556,14 +556,18 @@
         <translation>Guardar el estado del modelo de chat en el disco para una carga más rápida. ADVERTENCIA: Usa ~2GB por chat.</translation>
     </message>
     <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
+        <source>Enable Local API Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
         <translation>Exponer un servidor compatible con OpenAI a localhost. ADVERTENCIA: Resulta en un mayor uso de recursos.</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local Server</source>
-        <translation>Habilitar servidor local</translation>
+        <translation type="vanished">Habilitar servidor local</translation>
     </message>
     <message>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased

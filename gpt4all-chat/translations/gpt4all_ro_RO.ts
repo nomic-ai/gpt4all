@@ -600,6 +600,11 @@
         <translation>Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
     </message>
     <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
+        <source>Enable Local API Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
         <translation>Activează pe localhost un Server compatibil cu Open-AI. ATENŢIE: Creşte consumul de resurse.</translation>
@@ -610,9 +615,8 @@
         <translation type="vanished">Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local Server</source>
-        <translation>Activează Serverul local</translation>
+        <translation type="vanished">Activează Serverul local</translation>
     </message>
     <message>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased

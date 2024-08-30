@@ -502,6 +502,11 @@
         <translation>永不</translation>
     </message>
     <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
+        <source>Enable Local API Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="340"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
         <translation>在回覆末尾生成後續建議的問題。</translation>
@@ -573,9 +578,8 @@
         <translation>將交談模型的狀態儲存到磁碟以加快載入速度。警告：每次交談使用約 2GB。</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local Server</source>
-        <translation>啟用本機伺服器</translation>
+        <translation type="vanished">啟用本機伺服器</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>

@@ -569,7 +569,7 @@
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
-        <source>Enable Local Server</source>
+        <source>Enable Local API Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

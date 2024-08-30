@@ -574,8 +574,12 @@
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
+        <source>Enable Local API Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Enable Local Server</source>
-        <translation>Abilita server locale</translation>
+        <translation type="vanished">Abilita server locale</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
