@@ -340,6 +340,10 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         QList<QString> chats;
         for (int i = 0; i < messages.count();  ++i) {
             QJsonValue v = messages.at(i);
+            // FIXME: Deal with system messages correctly
+            QString role = v.toObject()["role"].toString();
+            if (role != "user")
+                continue;
             QString content = v.toObject()["content"].toString();
             if (!content.endsWith("\n") && i < messages.count() - 1)
                 content += "\n";
@@ -357,13 +361,13 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     if (modelInfo.filename().isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
-    } else if (!loadModel(modelInfo)) {
+    }
+
+    // NB: this resets the context, regardless of whether this model is already loaded
+    if (!loadModel(modelInfo)) {
         std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
     }
-
-    // don't remember any context
-    resetContext();
 
     const QString promptTemplate    = modelInfo.promptTemplate();
     const float top_k               = modelInfo.topK();
