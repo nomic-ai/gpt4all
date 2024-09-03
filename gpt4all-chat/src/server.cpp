@@ -111,7 +111,7 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
 
     QJsonArray permissions;
     QJsonObject permissionObj;
-    permissionObj.insert("id", "foobarbaz");
+    permissionObj.insert("id", "placeholder");
     permissionObj.insert("object", "model_permission");
     permissionObj.insert("created", 0);
     permissionObj.insert("allow_create_engine", false);
@@ -618,7 +618,7 @@ void Server::start()
     });
 
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
-        &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
+        &Chat::newPromptResponsePair, Qt::BlockingQueuedConnection);
 }
 
 static auto makeError(auto &&...args) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
@@ -643,13 +643,14 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
 
     // adds prompt/response items to GUI
     emit requestServerNewPromptResponsePair(request.prompt); // blocks
+    resetResponse();
 
     // load the new model if necessary
     setShouldBeLoaded(true);
 
     if (modelInfo.filename().isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << request.model.toStdString() << std::endl;
-        return makeError(QHttpServerResponder::StatusCode::BadRequest);
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
     // NB: this resets the context, regardless of whether this model is already loaded
@@ -658,11 +659,11 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
-    const QString promptTemplate    = modelInfo.promptTemplate();
-    const float top_k               = modelInfo.topK();
-    const int n_batch               = modelInfo.promptBatchSize();
-    const float repeat_penalty      = modelInfo.repeatPenalty();
-    const int repeat_last_n         = modelInfo.repeatPenaltyTokens();
+    // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
+    const int  top_k          = modelInfo.topK();
+    const int  n_batch        = modelInfo.promptBatchSize();
+    const auto repeat_penalty = float(modelInfo.repeatPenalty());
+    const int  repeat_last_n  = modelInfo.repeatPenaltyTokens();
 
     int promptTokens = 0;
     int responseTokens = 0;
@@ -671,7 +672,7 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
         if (!promptInternal(
             m_collections,
             request.prompt,
-            promptTemplate,
+            /*promptTemplate*/ u"%1"_s,
             request.max_tokens,
             top_k,
             request.top_p,
@@ -684,22 +685,23 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
             std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
-        QString echoedPrompt = request.prompt;
-        if (!echoedPrompt.endsWith("\n"))
-            echoedPrompt += "\n";
-        responses.append(qMakePair((request.echo ? u"%1\n"_s.arg(request.prompt) : QString()) + response(), m_databaseResults));
+        QString resp = response(/*trim*/ false);
+        if (request.echo)
+            resp = request.prompt + resp;
+        responses.append({resp, m_databaseResults});
         if (!promptTokens)
-            promptTokens += m_promptTokens;
+            promptTokens = m_promptTokens;
         responseTokens += m_promptResponseTokens - m_promptTokens;
         if (i < request.n - 1)
             resetResponse();
     }
 
-    QJsonObject responseObject;
-    responseObject.insert("id", "foobarbaz");
-    responseObject.insert("object", "text_completion");
-    responseObject.insert("created", QDateTime::currentSecsSinceEpoch());
-    responseObject.insert("model", modelInfo.name());
+    QJsonObject responseObject {
+        { "id",      "placeholder"                      },
+        { "object",  "text_completion"                  },
+        { "created", QDateTime::currentSecsSinceEpoch() },
+        { "model",   modelInfo.name()                   },
+    };
 
     QJsonArray choices;
     {
@@ -707,28 +709,28 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
         for (const auto &r : responses) {
             QString result = r.first;
             QList<ResultInfo> infos = r.second;
-            QJsonObject choice;
-            choice.insert("text", result);
-            choice.insert("index", index++);
-            choice.insert("logprobs", QJsonValue::Null); // We don't support
-            choice.insert("finish_reason", responseTokens == request.max_tokens ? "length" : "stop");
+            QJsonObject choice {
+                { "text",          result                                                   },
+                { "index",         index++                                                  },
+                { "logprobs",      QJsonValue::Null                                         },
+                { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
+            };
             if (MySettings::globalInstance()->localDocsShowReferences()) {
                 QJsonArray references;
                 for (const auto &ref : infos)
                     references.append(resultToJson(ref));
-                choice.insert("references", references);
+                choice.insert("references", references.isEmpty() ? QJsonValue::Null : QJsonValue(references));
             }
             choices.append(choice);
         }
     }
 
     responseObject.insert("choices", choices);
-
-    QJsonObject usage;
-    usage.insert("prompt_tokens", int(promptTokens));
-    usage.insert("completion_tokens", int(responseTokens));
-    usage.insert("total_tokens", int(promptTokens + responseTokens));
-    responseObject.insert("usage", usage);
+    responseObject.insert("usage", QJsonObject {
+        { "prompt_tokens",     promptTokens                  },
+        { "completion_tokens", responseTokens                },
+        { "total_tokens",      promptTokens + responseTokens },
+    });
 
     return {QHttpServerResponse(responseObject), responseObject};
 }
@@ -748,32 +750,12 @@ auto Server::handleChatRequest(const ChatRequest &request)
         }
     }
 
-    // if we're a chat completion we have messages which means we need to use these as the prompt
-    QString actualPrompt = " ";
-    {
-        QList<QString> chats;
-        for (int i = 0; i < request.messages.count(); i++) {
-            auto &m = request.messages.at(i);
-            // FIXME: Deal with system messages correctly
-            if (m.role != ChatRequest::Message::Role::User)
-                continue;
-            QString content = m.content;
-            if (!content.endsWith("\n") && i < request.messages.count() - 1)
-                content += "\n";
-            chats.append(content);
-        }
-        actualPrompt.prepend(chats.join("\n"));
-    }
-
-    // adds prompt/response items to GUI
-    emit requestServerNewPromptResponsePair(actualPrompt); // blocks
-
     // load the new model if necessary
     setShouldBeLoaded(true);
 
     if (modelInfo.filename().isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << request.model.toStdString() << std::endl;
-        return makeError(QHttpServerResponder::StatusCode::BadRequest);
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
     // NB: this resets the context, regardless of whether this model is already loaded
@@ -782,19 +764,31 @@ auto Server::handleChatRequest(const ChatRequest &request)
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
-    const QString promptTemplate    = modelInfo.promptTemplate();
-    const float top_k               = modelInfo.topK();
-    const int n_batch               = modelInfo.promptBatchSize();
-    const float repeat_penalty      = modelInfo.repeatPenalty();
-    const int repeat_last_n         = modelInfo.repeatPenaltyTokens();
+    const QString promptTemplate = modelInfo.promptTemplate();
+    const int     top_k          = modelInfo.topK();
+    const int     n_batch        = modelInfo.promptBatchSize();
+    const auto    repeat_penalty = float(modelInfo.repeatPenalty());
+    const int     repeat_last_n  = modelInfo.repeatPenaltyTokens();
 
     int promptTokens = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
-    for (int i = 0; i < request.n; ++i) {
+    Q_ASSERT(!request.messages.isEmpty());
+    Q_ASSERT(request.messages.size() % 2 == 1);
+    for (int i = 0; i < request.messages.size() - 2; i += 2) {
+        using enum ChatRequest::Message::Role;
+        auto &user      = request.messages[i];
+        auto &assistant = request.messages[i + 1];
+        Q_ASSERT(user.role      == User);
+        Q_ASSERT(assistant.role == Assistant);
+
+        // adds prompt/response items to GUI
+        emit requestServerNewPromptResponsePair(user.content); // blocks
+        resetResponse();
+
         if (!promptInternal(
-            m_collections,
-            actualPrompt,
+            {},
+            user.content,
             promptTemplate,
             request.max_tokens,
             top_k,
@@ -803,24 +797,52 @@ auto Server::handleChatRequest(const ChatRequest &request)
             request.temperature,
             n_batch,
             repeat_penalty,
-            repeat_last_n)) {
-
+            repeat_last_n,
+            assistant.content)
+        ) {
             std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
-        responses.append(qMakePair(response(), m_databaseResults));
-        if (!promptTokens)
+        promptTokens += m_promptResponseTokens; // previous responses are part of current prompt
+    }
+
+    QString lastMessage = request.messages.last().content;
+    // adds prompt/response items to GUI
+    emit requestServerNewPromptResponsePair(lastMessage); // blocks
+    resetResponse();
+
+    for (int i = 0; i < request.n; ++i) {
+        if (!promptInternal(
+            m_collections,
+            lastMessage,
+            promptTemplate,
+            request.max_tokens,
+            top_k,
+            request.top_p,
+            request.min_p,
+            request.temperature,
+            n_batch,
+            repeat_penalty,
+            repeat_last_n)
+        ) {
+            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
+            return makeError(QHttpServerResponder::StatusCode::InternalServerError);
+        }
+        responses.append({response(), m_databaseResults});
+        // FIXME(jared): these are UI counts and do not include framing tokens, which they should
+        if (i == 0)
             promptTokens += m_promptTokens;
         responseTokens += m_promptResponseTokens - m_promptTokens;
-        if (i < request.n - 1)
+        if (i != request.n - 1)
             resetResponse();
     }
 
-    QJsonObject responseObject;
-    responseObject.insert("id", "foobarbaz");
-    responseObject.insert("object", "text_completion");
-    responseObject.insert("created", QDateTime::currentSecsSinceEpoch());
-    responseObject.insert("model", modelInfo.name());
+    QJsonObject responseObject {
+        { "id",      "placeholder"                      },
+        { "object",  "chat.completion"                  },
+        { "created", QDateTime::currentSecsSinceEpoch() },
+        { "model",   modelInfo.name()                   },
+    };
 
     QJsonArray choices;
     {
@@ -828,30 +850,32 @@ auto Server::handleChatRequest(const ChatRequest &request)
         for (const auto &r : responses) {
             QString result = r.first;
             QList<ResultInfo> infos = r.second;
-            QJsonObject choice;
-            choice.insert("index", index++);
-            choice.insert("finish_reason", responseTokens == request.max_tokens ? "length" : "stop");
-            QJsonObject message;
-            message.insert("role", "assistant");
-            message.insert("content", result);
-            choice.insert("message", message);
+            QJsonObject message {
+                { "role",    "assistant" },
+                { "content", result      },
+            };
+            QJsonObject choice {
+                { "index",         index++                                                  },
+                { "message",       message                                                  },
+                { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
+                { "logprobs",      QJsonValue::Null                                         },
+            };
             if (MySettings::globalInstance()->localDocsShowReferences()) {
                 QJsonArray references;
                 for (const auto &ref : infos)
                     references.append(resultToJson(ref));
-                choice.insert("references", references);
+                choice.insert("references", references.isEmpty() ? QJsonValue::Null : QJsonValue(references));
             }
             choices.append(choice);
         }
     }
 
     responseObject.insert("choices", choices);
-
-    QJsonObject usage;
-    usage.insert("prompt_tokens", int(promptTokens));
-    usage.insert("completion_tokens", int(responseTokens));
-    usage.insert("total_tokens", int(promptTokens + responseTokens));
-    responseObject.insert("usage", usage);
+    responseObject.insert("usage", QJsonObject {
+        { "prompt_tokens",     promptTokens                  },
+        { "completion_tokens", responseTokens                },
+        { "total_tokens",      promptTokens + responseTokens },
+    });
 
     return {QHttpServerResponse(responseObject), responseObject};
 }

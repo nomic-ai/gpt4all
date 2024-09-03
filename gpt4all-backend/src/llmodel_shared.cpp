@@ -133,7 +133,7 @@ void LLModel::prompt(const std::string &prompt,
         generateResponse(responseCallback, allowContextShift, promptCtx);
     } else {
         embd_inp = tokenize(promptCtx, *fakeReply, false);
-        if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
+        if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp, true))
             return; // error
     }
 
@@ -157,7 +157,8 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
                            std::function<bool(int32_t, const std::string&)> responseCallback,
                            bool allowContextShift,
                            PromptContext &promptCtx,
-                           std::vector<Token> embd_inp) {
+                           std::vector<Token> embd_inp,
+                           bool isResponse) {
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
         std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
@@ -196,7 +197,9 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         for (size_t t = 0; t < tokens; ++t) {
             promptCtx.tokens.push_back(batch.at(t));
             promptCtx.n_past += 1;
-            if (!promptCallback(batch.at(t)))
+            Token tok = batch.at(t);
+            bool res = isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
+            if (!res)
                 return false;
         }
         i = batch_end;
