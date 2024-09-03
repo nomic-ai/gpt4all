@@ -638,7 +638,7 @@ void Server::start()
     });
 
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
-        &Chat::newPromptResponsePair, Qt::BlockingQueuedConnection);
+        &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
 }
 
 static auto makeError(auto &&...args) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
