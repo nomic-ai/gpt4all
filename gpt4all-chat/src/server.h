@@ -4,14 +4,20 @@
 #include "chatllm.h"
 #include "database.h"
 
-#include <QHttpServerRequest>
 #include <QHttpServerResponse>
-#include <QObject>
+#include <QJsonObject>
 #include <QList>
+#include <QObject>
 #include <QString>
 
+#include <optional>
+#include <utility>
+
 class Chat;
+class ChatRequest;
+class CompletionRequest;
 class QHttpServer;
+
 
 class Server : public ChatLLM
 {
@@ -27,8 +33,11 @@ public Q_SLOTS:
 Q_SIGNALS:
     void requestServerNewPromptResponsePair(const QString &prompt);
 
+private:
+    auto handleCompletionRequest(const CompletionRequest &request) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>;
+    auto handleChatRequest(const ChatRequest &request) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>;
+
 private Q_SLOTS:
-    QHttpServerResponse handleCompletionRequest(const QHttpServerRequest &request, bool isChat);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results) { m_databaseResults = results; }
     void handleCollectionListChanged(const QList<QString> &collectionList) { m_collections = collectionList; }
 
