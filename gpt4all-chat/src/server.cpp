@@ -17,6 +17,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLatin1StringView>
 #include <QPair>
 #include <QVariant>
 #include <Qt>
@@ -238,23 +239,23 @@ protected:
     }
 
     static QCborValue getValue(
-        const QCborMap &obj, const QString &name, std::optional<Type> type = {}, bool required = false,
+        const QCborMap &obj, const char *key, std::optional<Type> type = {}, bool required = false,
         std::optional<qint64> min = {}, std::optional<qint64> max = {}
     ) {
-        auto value = obj.value(name);
+        auto value = obj.take(QLatin1StringView(key));
         if (value.isUndefined())
             value = QCborValue(QCborSimpleType::Null);
         if (required && value.isNull())
-            throw InvalidRequestError(std::format("you must provide a {} parameter", name));
+            throw InvalidRequestError(std::format("you must provide a {} parameter", key));
         if (type && !value.isNull() && !typeMatches(value, *type))
             throw InvalidRequestError(std::format("'{}' is not of type '{}' - '{}'",
-                                                  value.toVariant(), s_typeNames.at(*type), name));
+                                                  value.toVariant(), s_typeNames.at(*type), key));
         if (!value.isNull()) {
             double num = value.toDouble();
             if (min && num < double(*min))
-                throw InvalidRequestError(std::format("{} is less than the minimum of {} - '{}'", num, *min, name));
+                throw InvalidRequestError(std::format("{} is less than the minimum of {} - '{}'", num, *min, key));
             if (max && num > double(*max))
-                throw InvalidRequestError(std::format("{} is greater than the maximum of {} - '{}'", num, *max, name));
+                throw InvalidRequestError(std::format("{} is greater than the maximum of {} - '{}'", num, *max, key));
         }
         return value;
     }
@@ -383,7 +384,7 @@ public:
                 res.content = getValue(msg, "content", String, /*required*/ true).toString();
                 if (res.role != nextRole)
                     throw InvalidRequestError(std::format(
-                        "Invalid 'messages[{}].role': did not expect '{}' here", i, role.toStdString()
+                        "Invalid 'messages[{}].role': did not expect '{}' here", i, role
                     ));
                 this->messages.append(res);
                 nextRole = res.role == Message::Role::User ? Message::Role::Assistant
