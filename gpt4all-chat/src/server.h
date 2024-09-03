@@ -4,19 +4,20 @@
 #include "chatllm.h"
 #include "database.h"
 
+#include <QHttpServer>
 #include <QHttpServerResponse>
 #include <QJsonObject>
 #include <QList>
 #include <QObject>
 #include <QString>
 
+#include <memory>
 #include <optional>
 #include <utility>
 
 class Chat;
 class ChatRequest;
 class CompletionRequest;
-class QHttpServer;
 
 
 class Server : public ChatLLM
@@ -24,8 +25,8 @@ class Server : public ChatLLM
     Q_OBJECT
 
 public:
-    Server(Chat *parent);
-    virtual ~Server();
+    explicit Server(Chat *chat);
+    ~Server() override = default;
 
 public Q_SLOTS:
     void start();
@@ -43,7 +44,7 @@ private Q_SLOTS:
 
 private:
     Chat *m_chat;
-    QHttpServer *m_server;
+    std::unique_ptr<QHttpServer> m_server;
     QList<ResultInfo> m_databaseResults;
     QList<QString> m_collections;
 };

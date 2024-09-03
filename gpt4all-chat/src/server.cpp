@@ -12,7 +12,6 @@
 #include <QDebug>
 #include <QHostAddress>
 #include <QHttpServer>
-#include <QHttpServerRequest>
 #include <QHttpServerResponder>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -451,10 +450,6 @@ Server::Server(Chat *chat)
     connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
-Server::~Server()
-{
-}
-
 static QJsonObject requestFromJson(const QByteArray &request)
 {
     QJsonParseError err;
@@ -469,14 +464,14 @@ static QJsonObject requestFromJson(const QByteArray &request)
 
 void Server::start()
 {
-    m_server = new QHttpServer(this);
+    m_server = std::make_unique<QHttpServer>(this);
     if (!m_server->listen(QHostAddress::LocalHost, MySettings::globalInstance()->networkPort())) {
         qWarning() << "ERROR: Unable to start the server";
         return;
     }
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [](const QHttpServerRequest &) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
@@ -496,7 +491,7 @@ void Server::start()
     );
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Get,
-        [](const QString &model, const QHttpServerRequest &request) {
+        [](const QString &model, const QHttpServerRequest &) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
@@ -567,7 +562,7 @@ void Server::start()
 
     // Respond with code 405 to wrong HTTP methods:
     m_server->route("/v1/models",  QHttpServerRequest::Method::Post,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -579,7 +574,8 @@ void Server::start()
     );
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Post,
-        [](const QString &model, const QHttpServerRequest &request) {
+        [](const QString &model) {
+            (void)model;
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -591,7 +587,7 @@ void Server::start()
     );
 
     m_server->route("/v1/completions", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -602,7 +598,7 @@ void Server::start()
     );
 
     m_server->route("/v1/chat/completions", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
