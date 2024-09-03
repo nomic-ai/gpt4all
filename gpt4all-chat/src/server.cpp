@@ -155,11 +155,22 @@ public:
     BaseCompletionRequest() = default;
     virtual ~BaseCompletionRequest() = default;
 
-    virtual BaseCompletionRequest &parse(const QCborMap &request)
+    virtual BaseCompletionRequest &parse(QCborMap request)
+    {
+        parseImpl(request);
+        if (!request.isEmpty())
+            throw InvalidRequestError(std::format(
+                "Unrecognized request argument supplied: {}", request.keys().constFirst().toString()
+            ));
+        return *this;
+    }
+
+protected:
+    virtual void parseImpl(QCborMap &request)
     {
         using enum Type;
 
-        auto reqValue = [&request](auto &&...args) { return getValue(request, args...); };
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
         QCborValue value;
 
         this->model = reqValue("model", String, /*required*/ true).toString();
@@ -209,11 +220,8 @@ public:
             this->min_p = float(value.toDouble());
 
         reqValue("user", String); // validate but don't use
-
-        return *this;
     }
 
-protected:
     enum class Type : uint8_t {
         Boolean,
         Integer,
@@ -238,8 +246,8 @@ protected:
         Q_UNREACHABLE();
     }
 
-    static QCborValue getValue(
-        const QCborMap &obj, const char *key, std::optional<Type> type = {}, bool required = false,
+    static QCborValue takeValue(
+        QCborMap &obj, const char *key, std::optional<Type> type = {}, bool required = false,
         std::optional<qint64> min = {}, std::optional<qint64> max = {}
     ) {
         auto value = obj.take(QLatin1StringView(key));
@@ -270,14 +278,21 @@ public:
     // some parameters are not supported yet - these ones are
     bool echo = false;
 
-    CompletionRequest &parse(const QCborMap &request) override
+    CompletionRequest &parse(QCborMap request) override
+    {
+        BaseCompletionRequest::parse(std::move(request));
+        return *this;
+    }
+
+protected:
+    void parseImpl(QCborMap &request) override
     {
         using enum Type;
 
-        auto reqValue = [&request](auto &&...args) { return getValue(request, args...); };
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
         QCborValue value;
 
-        BaseCompletionRequest::parse(request);
+        BaseCompletionRequest::parseImpl(request);
 
         this->prompt = reqValue("prompt", String, /*required*/ true).toString();
 
@@ -311,8 +326,6 @@ public:
         value = reqValue("suffix", String);
         if (!value.isNull() && !value.toString().isEmpty())
             throw InvalidRequestError("'suffix' is not supported");
-
-        return *this;
     }
 };
 
@@ -338,14 +351,21 @@ public:
 
     QList<Message> messages; // required
 
-    ChatRequest &parse(const QCborMap &request) override
+    ChatRequest &parse(QCborMap request) override
+    {
+        BaseCompletionRequest::parse(std::move(request));
+        return *this;
+    }
+
+protected:
+    void parseImpl(QCborMap &request) override
     {
         using enum Type;
 
-        auto reqValue = [&request](auto &&...args) { return getValue(request, args...); };
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
         QCborValue value;
 
-        BaseCompletionRequest::parse(request);
+        BaseCompletionRequest::parseImpl(request);
 
         value = reqValue("messages", std::nullopt, /*required*/ true);
         if (!value.isArray() || value.toArray().isEmpty())
@@ -365,9 +385,9 @@ public:
                         "Invalid type for 'messages[{}]': expected an object, but got '{}' instead.",
                         i, elem.toVariant()
                     ));
-                const QCborMap &msg = elem.toMap();
+                QCborMap msg = elem.toMap();
                 Message res;
-                QString role = getValue(msg, "role", String, /*required*/ true).toString();
+                QString role = takeValue(msg, "role", String, /*required*/ true).toString();
                 if (role == u"system"_s)
                     continue; // FIXME(jared): don't ignore these
                 if (role == u"user"_s) {
@@ -381,7 +401,7 @@ public:
                         i, role.toStdString()
                     ));
                 }
-                res.content = getValue(msg, "content", String, /*required*/ true).toString();
+                res.content = takeValue(msg, "content", String, /*required*/ true).toString();
                 if (res.role != nextRole)
                     throw InvalidRequestError(std::format(
                         "Invalid 'messages[{}].role': did not expect '{}' here", i, role
@@ -389,6 +409,11 @@ public:
                 this->messages.append(res);
                 nextRole = res.role == Message::Role::User ? Message::Role::Assistant
                                                            : Message::Role::User;
+
+                if (!msg.isEmpty())
+                    throw InvalidRequestError(std::format(
+                        "Invalid 'messages[{}]': unrecognized key: '{}'", i, msg.keys().constFirst().toString()
+                    ));
             }
         }
 
@@ -429,8 +454,6 @@ public:
         value = reqValue("functions", Array);
         if (!value.isNull())
             throw InvalidRequestError("'functions' is not supported");
-
-        return *this;
     }
 };
 
