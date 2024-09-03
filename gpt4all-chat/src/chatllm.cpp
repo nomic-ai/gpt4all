@@ -801,14 +801,9 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
                                     /*allowContextShift*/ true, m_ctx);
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
-    std::string fakeReplyStr;
-    std::string *fakeReplyP = nullptr;
-    if (fakeReply) {
-        fakeReplyStr = fakeReply->toStdString();
-        fakeReplyP = &fakeReplyStr;
-    }
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc,
-                                /*allowContextShift*/ true, m_ctx, false, fakeReplyP);
+                                /*allowContextShift*/ true, m_ctx, false,
+                                fakeReply.transform(std::mem_fn(&QString::toStdString)));
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -1318,10 +1313,9 @@ void ChatLLM::processRestoreStateFromText()
 
         auto &response = *it++;
         Q_ASSERT(response.first != "Prompt: ");
-        auto responseText = response.second.toStdString();
 
         m_llModelInfo.model->prompt(prompt.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr,
-                                    /*allowContextShift*/ true, m_ctx, false, &responseText);
+                                    /*allowContextShift*/ true, m_ctx, false, response.second.toUtf8().constData());
     }
 
     if (!m_stopGenerating) {

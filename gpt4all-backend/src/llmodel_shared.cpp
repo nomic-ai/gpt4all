@@ -11,6 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ranges = std::ranges;
@@ -45,7 +46,7 @@ void LLModel::prompt(const std::string &prompt,
                      bool allowContextShift,
                      PromptContext &promptCtx,
                      bool special,
-                     std::string *fakeReply)
+                     std::optional<std::string_view> fakeReply)
 {
     if (!isModelLoaded()) {
         std::cerr << implementation().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
@@ -129,7 +130,7 @@ void LLModel::prompt(const std::string &prompt,
         return; // error
 
     // decode the assistant's reply, either generated or spoofed
-    if (fakeReply == nullptr) {
+    if (!fakeReply) {
         generateResponse(responseCallback, allowContextShift, promptCtx);
     } else {
         embd_inp = tokenize(promptCtx, *fakeReply, false);

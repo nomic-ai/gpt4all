@@ -536,13 +536,13 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special)
+std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, std::string_view str, bool special)
 {
     bool atStart = m_tokenize_last_token == -1;
     bool insertSpace = atStart || isSpecialToken(m_tokenize_last_token);
     std::vector<LLModel::Token> fres(str.length() + 4);
     int32_t fres_len = llama_tokenize_gpt4all(
-        d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
+        d_ptr->model, str.data(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
         /*parse_special*/ special, /*insert_space*/ insertSpace
     );
     fres.resize(fres_len);
