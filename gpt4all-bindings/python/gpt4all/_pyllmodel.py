@@ -493,6 +493,7 @@ class LLModel:
         context_erase: float = 0.75,
         reset_context: bool = False,
         special: bool = False,
+        fake_reply: str = "",
     ):
         """
         Generate response from model from a prompt.
@@ -537,7 +538,7 @@ class LLModel:
             True,
             self.context,
             special,
-            ctypes.c_char_p(),
+            ctypes.c_char_p(fake_reply.encode()) if fake_reply else ctypes.c_char_p(),
         )
 
 

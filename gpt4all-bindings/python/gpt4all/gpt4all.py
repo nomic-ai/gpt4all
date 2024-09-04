@@ -496,6 +496,7 @@ class GPT4All:
         n_batch: int = 8,
         n_predict: int | None = None,
         streaming: bool = False,
+        fake_reply: str = "",
         callback: ResponseCallbackType = empty_response_callback,
     ) -> Any:
         """
@@ -513,6 +514,7 @@ class GPT4All:
             n_batch: Number of prompt tokens processed in parallel. Larger values decrease latency but increase resource requirements.
             n_predict: Equivalent to max_tokens, exists for backwards compatibility.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
+            fake_reply: A spoofed reply for the given prompt, used as a way to load chat history.
             callback: A function with arguments token_id:int and response:str, which receives the tokens from the model as they are generated and stops the generation by returning False.
 
         Returns:
@@ -529,6 +531,7 @@ class GPT4All:
             repeat_last_n=repeat_last_n,
             n_batch=n_batch,
             n_predict=n_predict if n_predict is not None else max_tokens,
+            fake_reply=fake_reply,
         )
 
         if self._history is not None:
