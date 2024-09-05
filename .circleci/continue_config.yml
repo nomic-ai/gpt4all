@@ -39,7 +39,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - macos-qt-cache-v3
+            - macos-qt-cache-v4
       - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
@@ -53,7 +53,7 @@ jobs:
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
-          key: macos-qt-cache-v3
+          key: macos-qt-cache-v4
           paths:
             - ~/Qt
       - run:
@@ -171,7 +171,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - macos-qt-cache-v3
+            - macos-qt-cache-v4
       - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
@@ -185,7 +185,7 @@ jobs:
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
-          key: macos-qt-cache-v3
+          key: macos-qt-cache-v4
           paths:
             - ~/Qt
       - run:
@@ -304,7 +304,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - linux-qt-cache-v2
+            - linux-qt-cache-v3
       - run:
           name: Setup Linux and Dependencies
           command: |
@@ -322,7 +322,7 @@ jobs:
               ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
-          key: linux-qt-cache-v2
+          key: linux-qt-cache-v3
           paths:
             - ~/Qt
       - run:
@@ -364,7 +364,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - linux-qt-cache-v2
+            - linux-qt-cache-v3
       - run:
           name: Setup Linux and Dependencies
           command: |
@@ -382,7 +382,7 @@ jobs:
               ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
-          key: linux-qt-cache-v2
+          key: linux-qt-cache-v3
           paths:
             - ~/Qt
       - run:
@@ -427,7 +427,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - windows-qt-cache-v2
+            - windows-qt-cache-v3
       - run:
           name: Installing Qt
           command: |
@@ -436,7 +436,7 @@ jobs:
               & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
-          key: windows-qt-cache-v2
+          key: windows-qt-cache-v3
           paths:
             - C:\Qt
       - run:
@@ -550,7 +550,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - windows-qt-cache-v2
+            - windows-qt-cache-v3
       - run:
           name: Installing Qt
           command: |
@@ -559,7 +559,7 @@ jobs:
               & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
-          key: windows-qt-cache-v2
+          key: windows-qt-cache-v3
           paths:
             - C:\Qt
       - run:
@@ -684,7 +684,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - linux-qt-cache-v2
+            - linux-qt-cache-v3
       - run:
           name: Setup Linux and Dependencies
           command: |
@@ -702,7 +702,7 @@ jobs:
               ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
-          key: linux-qt-cache-v2
+          key: linux-qt-cache-v3
           paths:
             - ~/Qt
       - run:
@@ -729,7 +729,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - windows-qt-cache-v2
+            - windows-qt-cache-v3
       - run:
           name: Installing Qt
           command: |
@@ -738,7 +738,7 @@ jobs:
               & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
-          key: windows-qt-cache-v2
+          key: windows-qt-cache-v3
           paths:
             - C:\Qt
       - run:
@@ -791,7 +791,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - macos-qt-cache-v3
+            - macos-qt-cache-v4
       - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
@@ -805,7 +805,7 @@ jobs:
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
-          key: macos-qt-cache-v3
+          key: macos-qt-cache-v4
           paths:
             - ~/Qt
       - run:
