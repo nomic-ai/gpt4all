@@ -262,7 +262,7 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
         return info.Env().Undefined();
     }
     // defaults copied from python bindings
-    llmodel_prompt_context promptContext = {.logits = nullptr,
+    llmodel_prompt_context promptContext = {
                                             .tokens = nullptr,
                                             .n_past = 0,
                                             .n_ctx = n_ctx,
