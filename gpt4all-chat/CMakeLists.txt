@@ -70,7 +70,7 @@ set(CHAT_EXE_RESOURCES)
 
 # Metal shader library
 if (APPLE)
-    list(APPEND CHAT_EXE_RESOURCES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib")
+    list(APPEND CHAT_EXE_RESOURCES "${GGML_METALLIB}")
 endif()
 
 # App icon
@@ -105,75 +105,13 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
-qt_add_executable(chat
-    main.cpp
-    chat.h chat.cpp
-    chatllm.h chatllm.cpp
-    chatmodel.h chatlistmodel.h chatlistmodel.cpp
-    chatapi.h chatapi.cpp
-    chatviewtextprocessor.h chatviewtextprocessor.cpp
-    database.h database.cpp
-    download.h download.cpp
-    embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
-    llm.h llm.cpp
-    modellist.h modellist.cpp
-    mysettings.h mysettings.cpp
-    network.h network.cpp
-    server.h server.cpp
-    logger.h logger.cpp
-    ${APP_ICON_RESOURCE}
-    ${CHAT_EXE_RESOURCES}
-)
+set(QAPPLICATION_CLASS QGuiApplication)
+add_subdirectory(deps/SingleApplication)
+add_subdirectory(src)
 
-qt_add_qml_module(chat
-    URI gpt4all
-    VERSION 1.0
-    NO_CACHEGEN
-    QML_FILES
-      main.qml
-      qml/AddCollectionView.qml
-      qml/AddModelView.qml
-      qml/ApplicationSettings.qml
-      qml/ChatDrawer.qml
-      qml/ChatView.qml
-      qml/CollectionsDrawer.qml
-      qml/HomeView.qml
-      qml/LocalDocsSettings.qml
-      qml/LocalDocsView.qml
-      qml/ModelSettings.qml
-      qml/ModelsView.qml
-      qml/NetworkDialog.qml
-      qml/NewVersionDialog.qml
-      qml/PopupDialog.qml
-      qml/SettingsView.qml
-      qml/StartupDialog.qml
-      qml/SwitchModelDialog.qml
-      qml/Theme.qml
-      qml/ThumbsDownDialog.qml
-      qml/Toast.qml
-      qml/ToastManager.qml
-      qml/MyBusyIndicator.qml
-      qml/MyButton.qml
-      qml/MyCheckBox.qml
-      qml/MyComboBox.qml
-      qml/MyDialog.qml
-      qml/MyDirectoryField.qml
-      qml/MyFancyLink.qml
-      qml/MyMenu.qml
-      qml/MyMenuItem.qml
-      qml/MyMiniButton.qml
-      qml/MySettingsButton.qml
-      qml/MySettingsDestructiveButton.qml
-      qml/MySettingsLabel.qml
-      qml/MySettingsStack.qml
-      qml/MySettingsTab.qml
-      qml/MySlug.qml
-      qml/MyTextArea.qml
-      qml/MyTextButton.qml
-      qml/MyTextField.qml
-      qml/MyToolButton.qml
-      qml/MyWelcomeButton.qml
+target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
+
+qt_target_qml_sources(chat
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -286,11 +224,13 @@ endif()
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 
+target_include_directories(chat PRIVATE src)
+
 # usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
 target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
-target_include_directories(chat PRIVATE usearch/include
-                                        usearch/fp16/include)
+target_include_directories(chat PRIVATE deps/usearch/include
+                                        deps/usearch/fp16/include)
 
 if(LINUX)
   target_link_libraries(chat
@@ -300,7 +240,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE llmodel SingleApplication)
 
 
 # -- install --
@@ -427,7 +367,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://gpt4all.io")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.nomic.ai/gpt4all")
 set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
@@ -436,7 +376,7 @@ set(CPACK_CREATE_DESKTOP_LINKS "GPT4All")
 set(CPACK_IFW_PACKAGE_NAME "GPT4All")
 set(CPACK_IFW_PACKAGE_TITLE "GPT4All Installer")
 set(CPACK_IFW_PACKAGE_PUBLISHER "Nomic, Inc.")
-set(CPACK_IFW_PRODUCT_URL "https://gpt4all.io")
+set(CPACK_IFW_PRODUCT_URL "https://www.nomic.ai/gpt4all")
 set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
 set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-32.png")

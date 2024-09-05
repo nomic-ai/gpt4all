@@ -15,10 +15,10 @@ import mysettings
 
 Window {
     id: window
-    width: 1920
-    height: 1080
-    minimumWidth: 1280
-    minimumHeight: 720
+    width: 1440
+    height: 810
+    minimumWidth: 658 + 470 * theme.fontScale
+    minimumHeight: 384 + 160 * theme.fontScale
     visible: true
     title: qsTr("GPT4All v%1").arg(Qt.application.version)
 
@@ -422,7 +422,7 @@ Window {
                             return qsTr("The datalake is enabled")
                         else if (currentChat.modelInfo.isOnline)
                             return qsTr("Using a network model")
-                        else if (currentChat.modelInfo.isOnline)
+                        else if (currentChat.isServer)
                             return qsTr("Server mode is enabled")
                         return ""
                     }

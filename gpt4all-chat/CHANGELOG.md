@@ -8,17 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
+- Use configured system prompt in server mode and ignore system messages ([#2921](https://github.com/nomic-ai/gpt4all/pull/2921), [#2924](https://github.com/nomic-ai/gpt4all/pull/2924))
+
+### Changed
+- The offline update button now directs users to the offline installer releases page. (by [@3Simplex](https://github.com/3Simplex) in [#2888](https://github.com/nomic-ai/gpt4all/pull/2888))
+- Change the website link on the home page to point to the new URL ([#2915](https://github.com/nomic-ai/gpt4all/pull/2915))
+- Smaller default window size, dynamic minimum size, and scaling tweaks ([#2904](https://github.com/nomic-ai/gpt4all/pull/2904))
+- Only allow a single instance of program to be run at a time ([#2923](https://github.com/nomic-ai/gpt4all/pull/2923]))
 
 ### Fixed
 - Bring back "Auto" option for Embeddings Device as "Application default," which went missing in v3.1.0 ([#2873](https://github.com/nomic-ai/gpt4all/pull/2873))
-- Correct a few strings in the Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#2872](https://github.com/nomic-ai/gpt4all/pull/2872))
+- Correct a few strings in the Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#2872](https://github.com/nomic-ai/gpt4all/pull/2872) and [#2909](https://github.com/nomic-ai/gpt4all/pull/2909))
 - Correct typos in Traditional Chinese translation (by [@supersonictw](https://github.com/supersonictw) in [#2852](https://github.com/nomic-ai/gpt4all/pull/2852))
 - Set the window icon on Linux ([#2880](https://github.com/nomic-ai/gpt4all/pull/2880))
 - Corrections to the Romanian translation (by [@SINAPSA-IC](https://github.com/SINAPSA-IC) in [#2890](https://github.com/nomic-ai/gpt4all/pull/2890))
 - Fix singular/plural forms of LocalDocs "x Sources" (by [@cosmic-snow](https://github.com/cosmic-snow) in [#2885](https://github.com/nomic-ai/gpt4all/pull/2885))
-
-### Changed
-- The offline update button now directs users to the offline installer releases page. (by [@3Simplex](https://github.com/3Simplex) in [#2888](https://github.com/nomic-ai/gpt4all/pull/2888))
+- Fix a typo in Model Settings (by [@3Simplex](https://github.com/3Simplex) in [#2916](https://github.com/nomic-ai/gpt4all/pull/2916))
+- Fix the antenna icon tooltip when using the local server ([#2922](https://github.com/nomic-ai/gpt4all/pull/2922))
+- Fix a few issues with locating files and handling errors when loading remote models on startup ([#2875](https://github.com/nomic-ai/gpt4all/pull/2875))
 
 ## [3.2.1] - 2024-08-13
 

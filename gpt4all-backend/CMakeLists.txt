@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)  # for PROJECT_IS_TOP_LEVEL
+cmake_minimum_required(VERSION 3.23)  # for FILE_SET
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -47,7 +47,7 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-set(DIRECTORY llama.cpp-mainline)
+set(DIRECTORY deps/llama.cpp-mainline)
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS)
@@ -146,9 +146,12 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp llmodel_shared.cpp)
+        src/llamamodel.cpp src/llmodel_shared.cpp)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
+    target_include_directories(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
+        src include/gpt4all-backend
+    )
     prepare_target(llamamodel-mainline llama-mainline)
 
     if (NOT PROJECT_IS_TOP_LEVEL AND BUILD_VARIANT STREQUAL cuda)
@@ -157,11 +160,19 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp llmodel_shared.cpp
-    llmodel_c.h llmodel_c.cpp
-    dlhandle.cpp
+    src/dlhandle.cpp
+    src/llmodel.cpp
+    src/llmodel_c.cpp
+    src/llmodel_shared.cpp
+)
+target_sources(llmodel PUBLIC
+    FILE_SET public_headers TYPE HEADERS BASE_DIRS include
+    FILES include/gpt4all-backend/llmodel.h
+          include/gpt4all-backend/llmodel_c.h
+          include/gpt4all-backend/sysinfo.h
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+target_include_directories(llmodel PRIVATE src include/gpt4all-backend)
 
 set_target_properties(llmodel PROPERTIES
                               VERSION ${PROJECT_VERSION}
