@@ -8,9 +8,6 @@ parameters:
   run-all-workflows:
     type: boolean
     default: false
-  run-default-workflow:
-    type: boolean
-    default: false
   run-python-workflow:
     type: boolean
     default: false
@@ -22,11 +19,6 @@ parameters:
     default: false
 
 jobs:
-  default-job:
-    docker:
-      - image: circleci/python:3.7
-    steps:
-      - run: echo "CircleCI pipeline triggered"
   build-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
@@ -1295,13 +1287,6 @@ jobs:
 
 workflows:
   version: 2
-  default:
-    when:
-      or:
-       - << pipeline.parameters.run-all-workflows >>
-       - << pipeline.parameters.run-default-workflow >>
-    jobs:
-      - default-job
   build-chat-offline-installers:
     when:
       or:
