@@ -19,6 +19,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLibraryInfo>
 #include <QNetworkRequest>
 #include <QScreen>
 #include <QSettings>
@@ -36,11 +37,34 @@
 #include <cstring>
 #include <utility>
 
+#ifdef __GLIBC__
+#   include <gnu/libc-version.h>
+#endif
+
 using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
+#define STR_(x) #x
+#define STR(x) STR_(x)
+
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
+
+#ifdef __clang__
+#ifdef __apple_build_version__
+static const char COMPILER_NAME[] = "Apple Clang";
+#else
+static const char COMPILER_NAME[] = "LLVM Clang";
+#endif
+static const char COMPILER_VER[]  = STR(__clang_major__) "." STR(__clang_minor__) "." STR(__clang_patchlevel__);
+#elifdef _MSC_VER
+static const char COMPILER_NAME[] = "MSVC";
+static const char COMPILER_VER[]  = STR(_MSC_VER) " (" STR(_MSC_FULL_VER) ")";
+#elifdef __GNUC__
+static const char COMPILER_NAME[] = "GCC";
+static const char COMPILER_VER[]  = STR(__GNUC__) "." STR(__GNUC_MINOR__) "." STR(__GNUC_PATCHLEVEL__);
+#endif
+
 
 #if defined(Q_OS_MAC)
 
@@ -286,12 +310,33 @@ void Network::sendStartup()
 
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
-        {"$screen_dpi", std::round(display->physicalDotsPerInch())},
-        {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
-        {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
-        {"cpu", getCPUModel()},
-        {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
-        {"datalake_active", mySettings->networkIsActive()},
+        // Build info
+        { "build_compiler",     COMPILER_NAME                                                         },
+        { "build_compiler_ver", COMPILER_VER                                                          },
+        { "build_abi",          QSysInfo::buildAbi()                                                  },
+        { "build_cpu_arch",     QSysInfo::buildCpuArchitecture()                                      },
+#ifdef __GLIBC__
+        { "build_glibc_ver",    QStringLiteral(STR(__GLIBC__) "." STR(__GLIBC_MINOR__))               },
+#endif
+        { "qt_version",         QLibraryInfo::version().toString()                                    },
+        { "qt_debug" ,          QLibraryInfo::isDebugBuild()                                          },
+        { "qt_shared",          QLibraryInfo::isSharedBuild()                                         },
+        // System info
+        { "runtime_cpu_arch",   QSysInfo::currentCpuArchitecture()                                    },
+#ifdef __GLIBC__
+        { "runtime_glibc_ver",  gnu_get_libc_version()                                                },
+#endif
+        { "kernel_type",        QSysInfo::kernelType()                                                },
+        { "kernel_version",     QSysInfo::kernelVersion()                                             },
+        { "product_type",       QSysInfo::productType()                                               },
+        { "product_version",    QSysInfo::productVersion()                                            },
+        { "$screen_dpi",        std::round(display->physicalDotsPerInch())                            },
+        { "display",            u"%1x%2"_s.arg(display->size().width()).arg(display->size().height()) },
+        { "ram",                LLM::globalInstance()->systemTotalRAMInGB()                           },
+        { "cpu",                getCPUModel()                                                         },
+        { "cpu_supports_avx2",  LLModel::Implementation::cpuSupportsAVX2()                            },
+        // Datalake status
+        { "datalake_active",    mySettings->networkIsActive()                                         },
     });
     sendIpify();
 
