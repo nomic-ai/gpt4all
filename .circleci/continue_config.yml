@@ -71,7 +71,7 @@ jobs:
           command: |
             mkdir build
             cd build
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S ../gpt4all-chat -B . -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
@@ -203,7 +203,7 @@ jobs:
           command: |
             mkdir build
             cd build
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S ../gpt4all-chat -B . -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
@@ -336,7 +336,7 @@ jobs:
           command: |
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             export PATH=$PATH:/usr/local/cuda/bin
             mkdir build
             cd build
@@ -396,7 +396,7 @@ jobs:
           command: |
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             export PATH=$PATH:/usr/local/cuda/bin
             mkdir build
             cd build
@@ -469,7 +469,7 @@ jobs:
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
             $Env:PATH = "${Env:PATH};C:\VulkanSDK\1.3.261.1\bin"
-            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.7\bin"
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
@@ -597,7 +597,7 @@ jobs:
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
             $Env:PATH = "${Env:PATH};C:\VulkanSDK\1.3.261.1\bin"
-            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.7\bin"
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
