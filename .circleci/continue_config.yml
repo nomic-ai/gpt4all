@@ -49,7 +49,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
               hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
@@ -181,7 +181,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
               hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
@@ -319,7 +319,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
               chmod +x qt-unified-linux-x64-4.6.0-online.run
-              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
           key: linux-qt-cache-v2
@@ -379,7 +379,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
               chmod +x qt-unified-linux-x64-4.6.0-online.run
-              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
           key: linux-qt-cache-v2
@@ -433,7 +433,7 @@ jobs:
           command: |
             if (-not (Test-Path C:\Qt)) {
               Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
           key: windows-qt-cache-v2
@@ -556,7 +556,7 @@ jobs:
           command: |
             if (-not (Test-Path C:\Qt)) {
               Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
           key: windows-qt-cache-v2
@@ -699,7 +699,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
               chmod +x qt-unified-linux-x64-4.6.0-online.run
-              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
           key: linux-qt-cache-v2
@@ -735,7 +735,7 @@ jobs:
           command: |
             if (-not (Test-Path C:\Qt)) {
               Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
           key: windows-qt-cache-v2
@@ -801,7 +801,7 @@ jobs:
             if [ ! -d ~/Qt ]; then
               curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
               hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
