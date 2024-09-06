@@ -355,6 +355,7 @@ jobs:
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
               -DGPT4ALL_OFFLINE_INSTALLER=ON
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
@@ -428,6 +429,7 @@ jobs:
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
               -DGPT4ALL_OFFLINE_INSTALLER=OFF
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
             ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
@@ -637,8 +639,8 @@ jobs:
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache `
-              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
-              "-DGPT4ALL_OFFLINE_INSTALLER=OFF"
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON `
+              -DGPT4ALL_OFFLINE_INSTALLER=OFF
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
             & "C:\Qt\Tools\Ninja\ninja.exe" package
@@ -744,7 +746,8 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-              -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache
+              -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             ~/Qt/Tools/CMake/bin/cmake --build build -j$(nproc) --target all
             ccache -s
       - save_cache:
@@ -804,7 +807,7 @@ jobs:
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache `
-              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON"
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             & "C:\Qt\Tools\Ninja\ninja.exe" -C build
             ccache -s
       - save_cache:
@@ -1135,7 +1138,8 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-              -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache
+              -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             cmake --build . -j$(nproc)
             ccache -s
             mkdir ../linux-x64
