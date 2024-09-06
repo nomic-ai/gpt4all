@@ -42,38 +42,18 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 
 
-template <typename T>
-struct BasicFormatter {
-    virtual ~BasicFormatter() = default;
-
-    template <typename ParseContext>
-    constexpr ParseContext::iterator parse(ParseContext &ctx)
-    {
-        auto it = ctx.begin();
-        if (it != ctx.end() && *it != '}')
-            throw std::format_error("invalid format args for BasicFormatter");
-        return it;
+#define MAKE_FORMATTER(type, conversion)                                      \
+    template <>                                                               \
+    struct std::formatter<type, char>: std::formatter<std::string, char> {    \
+        template <typename FmtContext>                                        \
+        FmtContext::iterator format(const type &value, FmtContext &ctx) const \
+        {                                                                     \
+            return formatter<std::string, char>::format(conversion, ctx);     \
+        }                                                                     \
     }
 
-    template <typename FmtContext>
-    FmtContext::iterator format(const T &value, FmtContext &ctx) const
-    {
-        return ranges::copy(toString(value), ctx.out()).out;
-    }
-
-protected:
-    virtual std::string toString(const T &value) const = 0;
-};
-
-template <>
-struct std::formatter<QString, char>: BasicFormatter<QString> {
-    std::string toString(const QString &value) const override { return value.toStdString(); }
-};
-
-template <>
-struct std::formatter<QVariant, char>: BasicFormatter<QVariant> {
-    std::string toString(const QVariant &value) const override { return value.toString().toStdString(); }
-};
+MAKE_FORMATTER(QString,  value.toStdString()           );
+MAKE_FORMATTER(QVariant, value.toString().toStdString());
 
 namespace {
 
