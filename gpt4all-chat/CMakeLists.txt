@@ -64,6 +64,12 @@ message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+set(FMT_INSTALL OFF)
+set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(deps/fmt)
+set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
+
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(CHAT_EXE_RESOURCES)
@@ -240,7 +246,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication)
+    PRIVATE llmodel SingleApplication fmt::fmt)
 
 
 # -- install --

@@ -4,6 +4,9 @@
 #include "modellist.h"
 #include "mysettings.h"
 
+#include <fmt/base.h>
+#include <fmt/format.h>
+
 #include <QByteArray>
 #include <QCborArray>
 #include <QCborMap>
@@ -44,7 +47,7 @@ using namespace Qt::Literals::StringLiterals;
 
 #define MAKE_FORMATTER(type, conversion)                                      \
     template <>                                                               \
-    struct std::formatter<type, char>: std::formatter<std::string, char> {    \
+    struct fmt::formatter<type, char>: fmt::formatter<std::string, char> {    \
         template <typename FmtContext>                                        \
         FmtContext::iterator format(const type &value, FmtContext &ctx) const \
         {                                                                     \
@@ -139,7 +142,7 @@ public:
     {
         parseImpl(request);
         if (!request.isEmpty())
-            throw InvalidRequestError(std::format(
+            throw InvalidRequestError(fmt::format(
                 "Unrecognized request argument supplied: {}", request.keys().constFirst().toString()
             ));
         return *this;
@@ -234,16 +237,16 @@ protected:
         if (value.isUndefined())
             value = QCborValue(QCborSimpleType::Null);
         if (required && value.isNull())
-            throw InvalidRequestError(std::format("you must provide a {} parameter", key));
+            throw InvalidRequestError(fmt::format("you must provide a {} parameter", key));
         if (type && !value.isNull() && !typeMatches(value, *type))
-            throw InvalidRequestError(std::format("'{}' is not of type '{}' - '{}'",
+            throw InvalidRequestError(fmt::format("'{}' is not of type '{}' - '{}'",
                                                   value.toVariant(), s_typeNames.at(*type), key));
         if (!value.isNull()) {
             double num = value.toDouble();
             if (min && num < double(*min))
-                throw InvalidRequestError(std::format("{} is less than the minimum of {} - '{}'", num, *min, key));
+                throw InvalidRequestError(fmt::format("{} is less than the minimum of {} - '{}'", num, *min, key));
             if (max && num > double(*max))
-                throw InvalidRequestError(std::format("{} is greater than the maximum of {} - '{}'", num, *max, key));
+                throw InvalidRequestError(fmt::format("{} is greater than the maximum of {} - '{}'", num, *max, key));
         }
         return value;
     }
@@ -280,7 +283,7 @@ protected:
         {
             qint64 bof = value.toInteger(1);
             if (this->n > bof)
-                throw InvalidRequestError(std::format(
+                throw InvalidRequestError(fmt::format(
                     "You requested that the server return more choices than it will generate (HINT: you must set 'n' "
                     "(currently {}) to be at most 'best_of' (currently {}), or omit either parameter if you don't "
                     "specifically want to use them.)",
@@ -349,7 +352,7 @@ protected:
 
         value = reqValue("messages", std::nullopt, /*required*/ true);
         if (!value.isArray() || value.toArray().isEmpty())
-            throw InvalidRequestError(std::format(
+            throw InvalidRequestError(fmt::format(
                 "Invalid type for 'messages': expected a non-empty array of objects, but got '{}' instead.",
                 value.toVariant()
             ));
@@ -361,7 +364,7 @@ protected:
             for (qsizetype i = 0; i < arr.size(); i++) {
                 const auto &elem = arr[i];
                 if (!elem.isMap())
-                    throw InvalidRequestError(std::format(
+                    throw InvalidRequestError(fmt::format(
                         "Invalid type for 'messages[{}]': expected an object, but got '{}' instead.",
                         i, elem.toVariant()
                     ));
@@ -375,7 +378,7 @@ protected:
                 } else if (role == u"assistant"_s) {
                     res.role = Message::Role::Assistant;
                 } else {
-                    throw InvalidRequestError(std::format(
+                    throw InvalidRequestError(fmt::format(
                         "Invalid 'messages[{}].role': expected one of 'system', 'assistant', or 'user', but got '{}'"
                         " instead.",
                         i, role.toStdString()
@@ -383,7 +386,7 @@ protected:
                 }
                 res.content = takeValue(msg, "content", String, /*required*/ true).toString();
                 if (res.role != nextRole)
-                    throw InvalidRequestError(std::format(
+                    throw InvalidRequestError(fmt::format(
                         "Invalid 'messages[{}].role': did not expect '{}' here", i, role
                     ));
                 this->messages.append(res);
@@ -391,7 +394,7 @@ protected:
                                                            : Message::Role::User;
 
                 if (!msg.isEmpty())
-                    throw InvalidRequestError(std::format(
+                    throw InvalidRequestError(fmt::format(
                         "Invalid 'messages[{}]': unrecognized key: '{}'", i, msg.keys().constFirst().toString()
                     ));
             }
@@ -459,7 +462,7 @@ static QJsonObject requestFromJson(const QByteArray &request)
     QJsonParseError err;
     const QJsonDocument document = QJsonDocument::fromJson(request, &err);
     if (err.error || !document.isObject())
-        throw InvalidRequestError(std::format(
+        throw InvalidRequestError(fmt::format(
             "error parsing request JSON: {}",
             err.error ? err.errorString().toStdString() : "not an object"s
         ));
