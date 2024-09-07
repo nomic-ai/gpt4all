@@ -29,7 +29,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <format>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
