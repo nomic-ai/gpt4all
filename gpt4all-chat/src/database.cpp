@@ -1124,7 +1124,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
             return -1;
         }
 
-        QString chunk = textSplitter(buffer, m_chunkSize, true /*exceed*/);
+        QString chunk = textSplitter(buffer, m_chunkSize, false /*exceed*/);
 
         // If the stream has an ASCII EOT (end of transmission), then we cannot read any more data
         // even by stream.readAll() yet the stream will not be at an end. We detect this and just
