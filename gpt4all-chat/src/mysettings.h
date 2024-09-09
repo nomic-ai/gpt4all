@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTranslator>
 #include <QVector>
 
 #include <cstdint>

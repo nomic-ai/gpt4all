@@ -4,22 +4,29 @@
 #include "chatllm.h"
 #include "database.h"
 
-#include <QHttpServerRequest>
+#include <QHttpServer>
 #include <QHttpServerResponse>
-#include <QObject>
+#include <QJsonObject>
 #include <QList>
+#include <QObject>
 #include <QString>
 
+#include <memory>
+#include <optional>
+#include <utility>
+
 class Chat;
-class QHttpServer;
+class ChatRequest;
+class CompletionRequest;
+
 
 class Server : public ChatLLM
 {
     Q_OBJECT
 
 public:
-    Server(Chat *parent);
-    virtual ~Server();
+    explicit Server(Chat *chat);
+    ~Server() override = default;
 
 public Q_SLOTS:
     void start();
@@ -27,14 +34,17 @@ public Q_SLOTS:
 Q_SIGNALS:
     void requestServerNewPromptResponsePair(const QString &prompt);
 
+private:
+    auto handleCompletionRequest(const CompletionRequest &request) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>;
+    auto handleChatRequest(const ChatRequest &request) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>;
+
 private Q_SLOTS:
-    QHttpServerResponse handleCompletionRequest(const QHttpServerRequest &request, bool isChat);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results) { m_databaseResults = results; }
     void handleCollectionListChanged(const QList<QString> &collectionList) { m_collections = collectionList; }
 
 private:
     Chat *m_chat;
-    QHttpServer *m_server;
+    std::unique_ptr<QHttpServer> m_server;
     QList<ResultInfo> m_databaseResults;
     QList<QString> m_collections;
 };
