@@ -326,10 +326,10 @@ void Network::sendStartup()
 #ifdef __GLIBC__
         { "runtime_glibc_ver",  gnu_get_libc_version()                                                },
 #endif
-        { "kernel_type",        QSysInfo::kernelType()                                                },
-        { "kernel_version",     QSysInfo::kernelVersion()                                             },
-        { "product_type",       QSysInfo::productType()                                               },
-        { "product_version",    QSysInfo::productVersion()                                            },
+        { "sys_kernel_type",    QSysInfo::kernelType()                                                },
+        { "sys_kernel_ver",     QSysInfo::kernelVersion()                                             },
+        { "sys_product_type",   QSysInfo::productType()                                               },
+        { "sys_product_ver",    QSysInfo::productVersion()                                            },
         { "$screen_dpi",        std::round(display->physicalDotsPerInch())                            },
         { "display",            u"%1x%2"_s.arg(display->size().width()).arg(display->size().height()) },
         { "ram",                LLM::globalInstance()->systemTotalRAMInGB()                           },
