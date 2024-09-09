@@ -1,7 +1,7 @@
 # Building gpt4all-chat from source
 
-Depending upon your operating system, there are many ways that Qt is distributed. 
-Here is the recommended method for getting the Qt dependency installed to setup and build 
+Depending upon your operating system, there are many ways that Qt is distributed.
+Here is the recommended method for getting the Qt dependency installed to setup and build
 gpt4all-chat from source.
 
 ## Prerequisites
