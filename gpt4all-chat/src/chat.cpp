@@ -239,16 +239,17 @@ void Chat::newPromptResponsePair(const QString &prompt)
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ", prompt);
+    m_chatModel->appendResponse("Response: ", QString());
     emit resetResponseRequested();
 }
 
+// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
 void Chat::serverNewPromptResponsePair(const QString &prompt)
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ", prompt);
+    m_chatModel->appendResponse("Response: ", QString());
 }
 
 bool Chat::restoringFromText() const

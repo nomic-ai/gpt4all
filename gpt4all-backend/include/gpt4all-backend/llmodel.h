@@ -162,7 +162,7 @@ public:
                         bool allowContextShift,
                         PromptContext &ctx,
                         bool special = false,
-                        std::string *fakeReply = nullptr);
+                        std::optional<std::string_view> fakeReply = {});
 
     using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
 
@@ -212,7 +212,7 @@ public:
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special = false) = 0;
+    virtual std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special = false) = 0;
     virtual bool isSpecialToken(Token id) const = 0;
     virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
@@ -249,7 +249,8 @@ protected:
                       std::function<bool(int32_t, const std::string&)> responseCallback,
                       bool allowContextShift,
                       PromptContext &promptCtx,
-                      std::vector<Token> embd_inp);
+                      std::vector<Token> embd_inp,
+                      bool isResponse = false);
     void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                           bool allowContextShift,
                           PromptContext &promptCtx);

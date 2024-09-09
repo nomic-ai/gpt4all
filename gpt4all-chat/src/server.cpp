@@ -4,7 +4,13 @@
 #include "modellist.h"
 #include "mysettings.h"
 
+#include <fmt/base.h>
+#include <fmt/format.h>
+
 #include <QByteArray>
+#include <QCborArray>
+#include <QCborMap>
+#include <QCborValue>
 #include <QDateTime>
 #include <QDebug>
 #include <QHostAddress>
@@ -14,18 +20,66 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLatin1StringView>
 #include <QPair>
+#include <QVariant>
 #include <Qt>
+#include <QtCborCommon>
 #include <QtLogging>
 
+#include <algorithm>
+#include <cstdint>
 #include <iostream>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 
+namespace ranges = std::ranges;
+using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
+
+
+#define MAKE_FORMATTER(type, conversion)                                      \
+    template <>                                                               \
+    struct fmt::formatter<type, char>: fmt::formatter<std::string, char> {    \
+        template <typename FmtContext>                                        \
+        FmtContext::iterator format(const type &value, FmtContext &ctx) const \
+        {                                                                     \
+            return formatter<std::string, char>::format(conversion, ctx);     \
+        }                                                                     \
+    }
+
+MAKE_FORMATTER(QString,  value.toStdString()           );
+MAKE_FORMATTER(QVariant, value.toString().toStdString());
+
+namespace {
+
+class InvalidRequestError: public std::invalid_argument {
+    using std::invalid_argument::invalid_argument;
+
+public:
+    QHttpServerResponse asResponse() const
+    {
+        QJsonObject error {
+            { "message", what(),                     },
+            { "type",    u"invalid_request_error"_s, },
+            { "param",   QJsonValue::Null            },
+            { "code",    QJsonValue::Null            },
+        };
+        return { QJsonObject {{ "error", error }},
+                 QHttpServerResponder::StatusCode::BadRequest };
+    }
+
+private:
+    Q_DISABLE_COPY_MOVE(InvalidRequestError)
+};
+
+} // namespace
 
 static inline QJsonObject modelToJson(const ModelInfo &info)
 {
@@ -39,7 +93,7 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
 
     QJsonArray permissions;
     QJsonObject permissionObj;
-    permissionObj.insert("id", "foobarbaz");
+    permissionObj.insert("id", "placeholder");
     permissionObj.insert("object", "model_permission");
     permissionObj.insert("created", 0);
     permissionObj.insert("allow_create_engine", false);
@@ -70,6 +124,328 @@ static inline QJsonObject resultToJson(const ResultInfo &info)
     return result;
 }
 
+class BaseCompletionRequest {
+public:
+    QString model; // required
+    // NB: some parameters are not supported yet
+    int32_t max_tokens = 16;
+    qint64 n = 1;
+    float temperature = 1.f;
+    float top_p = 1.f;
+    float min_p = 0.f;
+
+    BaseCompletionRequest() = default;
+    virtual ~BaseCompletionRequest() = default;
+
+    virtual BaseCompletionRequest &parse(QCborMap request)
+    {
+        parseImpl(request);
+        if (!request.isEmpty())
+            throw InvalidRequestError(fmt::format(
+                "Unrecognized request argument supplied: {}", request.keys().constFirst().toString()
+            ));
+        return *this;
+    }
+
+protected:
+    virtual void parseImpl(QCborMap &request)
+    {
+        using enum Type;
+
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
+        QCborValue value;
+
+        this->model = reqValue("model", String, /*required*/ true).toString();
+
+        value = reqValue("frequency_penalty", Number, false, /*min*/ -2, /*max*/ 2);
+        if (value.isDouble() || value.toInteger() != 0)
+            throw InvalidRequestError("'frequency_penalty' is not supported");
+
+        value = reqValue("max_tokens", Integer, false, /*min*/ 1);
+        if (!value.isNull())
+            this->max_tokens = int32_t(qMin(value.toInteger(), INT32_MAX));
+
+        value = reqValue("n", Integer, false, /*min*/ 1);
+        if (!value.isNull())
+            this->n = value.toInteger();
+
+        value = reqValue("presence_penalty", Number);
+        if (value.isDouble() || value.toInteger() != 0)
+            throw InvalidRequestError("'presence_penalty' is not supported");
+
+        value = reqValue("seed", Integer);
+        if (!value.isNull())
+            throw InvalidRequestError("'seed' is not supported");
+
+        value = reqValue("stop");
+        if (!value.isNull())
+            throw InvalidRequestError("'stop' is not supported");
+
+        value = reqValue("stream", Boolean);
+        if (value.isTrue())
+            throw InvalidRequestError("'stream' is not supported");
+
+        value = reqValue("stream_options", Object);
+        if (!value.isNull())
+            throw InvalidRequestError("'stream_options' is not supported");
+
+        value = reqValue("temperature", Number, false, /*min*/ 0, /*max*/ 2);
+        if (!value.isNull())
+            this->temperature = float(value.toDouble());
+
+        value = reqValue("top_p", Number, /*min*/ 0, /*max*/ 1);
+        if (!value.isNull())
+            this->top_p = float(value.toDouble());
+
+        value = reqValue("min_p", Number, /*min*/ 0, /*max*/ 1);
+        if (!value.isNull())
+            this->min_p = float(value.toDouble());
+
+        reqValue("user", String); // validate but don't use
+    }
+
+    enum class Type : uint8_t {
+        Boolean,
+        Integer,
+        Number,
+        String,
+        Array,
+        Object,
+    };
+
+    static const std::unordered_map<Type, const char *> s_typeNames;
+
+    static bool typeMatches(const QCborValue &value, Type type) noexcept {
+        using enum Type;
+        switch (type) {
+            case Boolean: return value.isBool();
+            case Integer: return value.isInteger();
+            case Number:  return value.isInteger() || value.isDouble();
+            case String:  return value.isString();
+            case Array:   return value.isArray();
+            case Object:  return value.isMap();
+        }
+        Q_UNREACHABLE();
+    }
+
+    static QCborValue takeValue(
+        QCborMap &obj, const char *key, std::optional<Type> type = {}, bool required = false,
+        std::optional<qint64> min = {}, std::optional<qint64> max = {}
+    ) {
+        auto value = obj.take(QLatin1StringView(key));
+        if (value.isUndefined())
+            value = QCborValue(QCborSimpleType::Null);
+        if (required && value.isNull())
+            throw InvalidRequestError(fmt::format("you must provide a {} parameter", key));
+        if (type && !value.isNull() && !typeMatches(value, *type))
+            throw InvalidRequestError(fmt::format("'{}' is not of type '{}' - '{}'",
+                                                  value.toVariant(), s_typeNames.at(*type), key));
+        if (!value.isNull()) {
+            double num = value.toDouble();
+            if (min && num < double(*min))
+                throw InvalidRequestError(fmt::format("{} is less than the minimum of {} - '{}'", num, *min, key));
+            if (max && num > double(*max))
+                throw InvalidRequestError(fmt::format("{} is greater than the maximum of {} - '{}'", num, *max, key));
+        }
+        return value;
+    }
+
+private:
+    Q_DISABLE_COPY_MOVE(BaseCompletionRequest)
+};
+
+class CompletionRequest : public BaseCompletionRequest {
+public:
+    QString prompt; // required
+    // some parameters are not supported yet - these ones are
+    bool echo = false;
+
+    CompletionRequest &parse(QCborMap request) override
+    {
+        BaseCompletionRequest::parse(std::move(request));
+        return *this;
+    }
+
+protected:
+    void parseImpl(QCborMap &request) override
+    {
+        using enum Type;
+
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
+        QCborValue value;
+
+        BaseCompletionRequest::parseImpl(request);
+
+        this->prompt = reqValue("prompt", String, /*required*/ true).toString();
+
+        value = reqValue("best_of", Integer);
+        {
+            qint64 bof = value.toInteger(1);
+            if (this->n > bof)
+                throw InvalidRequestError(fmt::format(
+                    "You requested that the server return more choices than it will generate (HINT: you must set 'n' "
+                    "(currently {}) to be at most 'best_of' (currently {}), or omit either parameter if you don't "
+                    "specifically want to use them.)",
+                    this->n, bof
+                ));
+            if (bof > this->n)
+                throw InvalidRequestError("'best_of' is not supported");
+        }
+
+        value = reqValue("echo", Boolean);
+        if (value.isBool())
+            this->echo = value.toBool();
+
+        // we don't bother deeply typechecking unsupported subobjects for now
+        value = reqValue("logit_bias", Object);
+        if (!value.isNull())
+            throw InvalidRequestError("'logit_bias' is not supported");
+
+        value = reqValue("logprobs", Integer, false, /*min*/ 0);
+        if (!value.isNull())
+            throw InvalidRequestError("'logprobs' is not supported");
+
+        value = reqValue("suffix", String);
+        if (!value.isNull() && !value.toString().isEmpty())
+            throw InvalidRequestError("'suffix' is not supported");
+    }
+};
+
+const std::unordered_map<BaseCompletionRequest::Type, const char *> BaseCompletionRequest::s_typeNames = {
+    { BaseCompletionRequest::Type::Boolean, "boolean" },
+    { BaseCompletionRequest::Type::Integer, "integer" },
+    { BaseCompletionRequest::Type::Number,  "number"  },
+    { BaseCompletionRequest::Type::String,  "string"  },
+    { BaseCompletionRequest::Type::Array,   "array"   },
+    { BaseCompletionRequest::Type::Object,  "object"  },
+};
+
+class ChatRequest : public BaseCompletionRequest {
+public:
+    struct Message {
+        enum class Role : uint8_t {
+            User,
+            Assistant,
+        };
+        Role role;
+        QString content;
+    };
+
+    QList<Message> messages; // required
+
+    ChatRequest &parse(QCborMap request) override
+    {
+        BaseCompletionRequest::parse(std::move(request));
+        return *this;
+    }
+
+protected:
+    void parseImpl(QCborMap &request) override
+    {
+        using enum Type;
+
+        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
+        QCborValue value;
+
+        BaseCompletionRequest::parseImpl(request);
+
+        value = reqValue("messages", std::nullopt, /*required*/ true);
+        if (!value.isArray() || value.toArray().isEmpty())
+            throw InvalidRequestError(fmt::format(
+                "Invalid type for 'messages': expected a non-empty array of objects, but got '{}' instead.",
+                value.toVariant()
+            ));
+
+        this->messages.clear();
+        {
+            QCborArray arr = value.toArray();
+            Message::Role nextRole = Message::Role::User;
+            for (qsizetype i = 0; i < arr.size(); i++) {
+                const auto &elem = arr[i];
+                if (!elem.isMap())
+                    throw InvalidRequestError(fmt::format(
+                        "Invalid type for 'messages[{}]': expected an object, but got '{}' instead.",
+                        i, elem.toVariant()
+                    ));
+                QCborMap msg = elem.toMap();
+                Message res;
+                QString role = takeValue(msg, "role", String, /*required*/ true).toString();
+                if (role == u"system"_s)
+                    continue; // FIXME(jared): don't ignore these
+                if (role == u"user"_s) {
+                    res.role = Message::Role::User;
+                } else if (role == u"assistant"_s) {
+                    res.role = Message::Role::Assistant;
+                } else {
+                    throw InvalidRequestError(fmt::format(
+                        "Invalid 'messages[{}].role': expected one of 'system', 'assistant', or 'user', but got '{}'"
+                        " instead.",
+                        i, role.toStdString()
+                    ));
+                }
+                res.content = takeValue(msg, "content", String, /*required*/ true).toString();
+                if (res.role != nextRole)
+                    throw InvalidRequestError(fmt::format(
+                        "Invalid 'messages[{}].role': did not expect '{}' here", i, role
+                    ));
+                this->messages.append(res);
+                nextRole = res.role == Message::Role::User ? Message::Role::Assistant
+                                                           : Message::Role::User;
+
+                if (!msg.isEmpty())
+                    throw InvalidRequestError(fmt::format(
+                        "Invalid 'messages[{}]': unrecognized key: '{}'", i, msg.keys().constFirst().toString()
+                    ));
+            }
+        }
+
+        // we don't bother deeply typechecking unsupported subobjects for now
+        value = reqValue("logit_bias", Object);
+        if (!value.isNull())
+            throw InvalidRequestError("'logit_bias' is not supported");
+
+        value = reqValue("logprobs", Boolean);
+        if (value.isTrue())
+            throw InvalidRequestError("'logprobs' is not supported");
+
+        value = reqValue("top_logprobs", Integer, false, /*min*/ 0);
+        if (!value.isNull())
+            throw InvalidRequestError("The 'top_logprobs' parameter is only allowed when 'logprobs' is enabled.");
+
+        value = reqValue("response_format", Object);
+        if (!value.isNull())
+            throw InvalidRequestError("'response_format' is not supported");
+
+        reqValue("service_tier", String); // validate but don't use
+
+        value = reqValue("tools", Array);
+        if (!value.isNull())
+            throw InvalidRequestError("'tools' is not supported");
+
+        value = reqValue("tool_choice");
+        if (!value.isNull())
+            throw InvalidRequestError("'tool_choice' is not supported");
+
+        // validate but don't use
+        reqValue("parallel_tool_calls", Boolean);
+
+        value = reqValue("function_call");
+        if (!value.isNull())
+            throw InvalidRequestError("'function_call' is not supported");
+
+        value = reqValue("functions", Array);
+        if (!value.isNull())
+            throw InvalidRequestError("'functions' is not supported");
+    }
+};
+
+template <typename T>
+T &parseRequest(T &request, QJsonObject &&obj)
+{
+    // lossless conversion to CBOR exposes more type information
+    return request.parse(QCborMap::fromJsonObject(obj));
+}
+
 Server::Server(Chat *chat)
     : ChatLLM(chat, true /*isServer*/)
     , m_chat(chat)
@@ -80,20 +456,28 @@ Server::Server(Chat *chat)
     connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
-Server::~Server()
+static QJsonObject requestFromJson(const QByteArray &request)
 {
+    QJsonParseError err;
+    const QJsonDocument document = QJsonDocument::fromJson(request, &err);
+    if (err.error || !document.isObject())
+        throw InvalidRequestError(fmt::format(
+            "error parsing request JSON: {}",
+            err.error ? err.errorString().toStdString() : "not an object"s
+        ));
+    return document.object();
 }
 
 void Server::start()
 {
-    m_server = new QHttpServer(this);
+    m_server = std::make_unique<QHttpServer>(this);
     if (!m_server->listen(QHostAddress::LocalHost, MySettings::globalInstance()->networkPort())) {
         qWarning() << "ERROR: Unable to start the server";
         return;
     }
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [](const QHttpServerRequest &) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
@@ -113,7 +497,7 @@ void Server::start()
     );
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Get,
-        [](const QString &model, const QHttpServerRequest &request) {
+        [](const QString &model, const QHttpServerRequest &) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
@@ -137,7 +521,23 @@ void Server::start()
         [this](const QHttpServerRequest &request) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
-            return handleCompletionRequest(request, false);
+
+            try {
+                auto reqObj = requestFromJson(request.body());
+#if defined(DEBUG)
+                qDebug().noquote() << "/v1/completions request" << QJsonDocument(reqObj).toJson(QJsonDocument::Indented);
+#endif
+                CompletionRequest req;
+                parseRequest(req, std::move(reqObj));
+                auto [resp, respObj] = handleCompletionRequest(req);
+#if defined(DEBUG)
+                if (respObj)
+                    qDebug().noquote() << "/v1/completions reply" << QJsonDocument(*respObj).toJson(QJsonDocument::Indented);
+#endif
+                return std::move(resp);
+            } catch (const InvalidRequestError &e) {
+                return e.asResponse();
+            }
         }
     );
 
@@ -145,13 +545,30 @@ void Server::start()
         [this](const QHttpServerRequest &request) {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
-            return handleCompletionRequest(request, true);
+
+            try {
+                auto reqObj = requestFromJson(request.body());
+#if defined(DEBUG)
+                qDebug().noquote() << "/v1/chat/completions request" << QJsonDocument(reqObj).toJson(QJsonDocument::Indented);
+#endif
+                ChatRequest req;
+                parseRequest(req, std::move(reqObj));
+                auto [resp, respObj] = handleChatRequest(req);
+                (void)respObj;
+#if defined(DEBUG)
+                if (respObj)
+                    qDebug().noquote() << "/v1/chat/completions reply" << QJsonDocument(*respObj).toJson(QJsonDocument::Indented);
+#endif
+                return std::move(resp);
+            } catch (const InvalidRequestError &e) {
+                return e.asResponse();
+            }
         }
     );
 
     // Respond with code 405 to wrong HTTP methods:
     m_server->route("/v1/models",  QHttpServerRequest::Method::Post,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -163,7 +580,8 @@ void Server::start()
     );
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Post,
-        [](const QString &model, const QHttpServerRequest &request) {
+        [](const QString &model) {
+            (void)model;
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -175,7 +593,7 @@ void Server::start()
     );
 
     m_server->route("/v1/completions", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -186,7 +604,7 @@ void Server::start()
     );
 
     m_server->route("/v1/chat/completions", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &request) {
+        [] {
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return QHttpServerResponse(
@@ -205,268 +623,261 @@ void Server::start()
         &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
 }
 
-QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &request, bool isChat)
+static auto makeError(auto &&...args) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
 {
-    // We've been asked to do a completion...
-    QJsonParseError err;
-    const QJsonDocument document = QJsonDocument::fromJson(request.body(), &err);
-    if (err.error || !document.isObject()) {
-        std::cerr << "ERROR: invalid json in completions body" << std::endl;
-        return QHttpServerResponse(QHttpServerResponder::StatusCode::NoContent);
-    }
-#if defined(DEBUG)
-    printf("/v1/completions %s\n", qPrintable(document.toJson(QJsonDocument::Indented)));
-    fflush(stdout);
-#endif
-    const QJsonObject body = document.object();
-    if (!body.contains("model")) { // required
-        std::cerr << "ERROR: completions contains no model" << std::endl;
-        return QHttpServerResponse(QHttpServerResponder::StatusCode::NoContent);
-    }
-    QJsonArray messages;
-    if (isChat) {
-        if (!body.contains("messages")) {
-            std::cerr << "ERROR: chat completions contains no messages" << std::endl;
-            return QHttpServerResponse(QHttpServerResponder::StatusCode::NoContent);
-        }
-        messages = body["messages"].toArray();
-    }
+    return {QHttpServerResponse(args...), std::nullopt};
+}
 
-    const QString modelRequested = body["model"].toString();
+auto Server::handleCompletionRequest(const CompletionRequest &request)
+    -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
+{
     ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
     const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
     for (const ModelInfo &info : modelList) {
         Q_ASSERT(info.installed);
         if (!info.installed)
             continue;
-        if (modelRequested == info.name() || modelRequested == info.filename()) {
+        if (request.model == info.name() || request.model == info.filename()) {
             modelInfo = info;
             break;
         }
     }
 
-    // We only support one prompt for now
-    QList<QString> prompts;
-    if (body.contains("prompt")) {
-        QJsonValue promptValue = body["prompt"];
-        if (promptValue.isString())
-            prompts.append(promptValue.toString());
-        else {
-            QJsonArray array = promptValue.toArray();
-            for (const QJsonValue &v : array)
-                prompts.append(v.toString());
-        }
-    } else
-        prompts.append(" ");
-
-    int max_tokens = 16;
-    if (body.contains("max_tokens"))
-        max_tokens = body["max_tokens"].toInt();
-
-    float temperature = 1.f;
-    if (body.contains("temperature"))
-        temperature = body["temperature"].toDouble();
-
-    float top_p = 1.f;
-    if (body.contains("top_p"))
-        top_p = body["top_p"].toDouble();
-
-    float min_p = 0.f;
-    if (body.contains("min_p"))
-        min_p = body["min_p"].toDouble();
-
-    int n = 1;
-    if (body.contains("n"))
-        n = body["n"].toInt();
-
-    int logprobs = -1; // supposed to be null by default??
-    if (body.contains("logprobs"))
-        logprobs = body["logprobs"].toInt();
-
-    bool echo = false;
-    if (body.contains("echo"))
-        echo = body["echo"].toBool();
-
-    // We currently don't support any of the following...
-#if 0
-    // FIXME: Need configurable reverse prompts
-    QList<QString> stop;
-    if (body.contains("stop")) {
-        QJsonValue stopValue = body["stop"];
-        if (stopValue.isString())
-            stop.append(stopValue.toString());
-        else {
-            QJsonArray array = stopValue.toArray();
-            for (QJsonValue v : array)
-                stop.append(v.toString());
-        }
-    }
-
-    // FIXME: QHttpServer doesn't support server-sent events
-    bool stream = false;
-    if (body.contains("stream"))
-        stream = body["stream"].toBool();
-
-    // FIXME: What does this do?
-    QString suffix;
-    if (body.contains("suffix"))
-        suffix = body["suffix"].toString();
-
-    // FIXME: We don't support
-    float presence_penalty = 0.f;
-    if (body.contains("presence_penalty"))
-        top_p = body["presence_penalty"].toDouble();
-
-    // FIXME: We don't support
-    float frequency_penalty = 0.f;
-    if (body.contains("frequency_penalty"))
-        top_p = body["frequency_penalty"].toDouble();
-
-    // FIXME: We don't support
-    int best_of = 1;
-    if (body.contains("best_of"))
-        logprobs = body["best_of"].toInt();
-
-    // FIXME: We don't need
-    QString user;
-    if (body.contains("user"))
-        suffix = body["user"].toString();
-#endif
-
-    QString actualPrompt = prompts.first();
-
-    // if we're a chat completion we have messages which means we need to prepend these to the prompt
-    if (!messages.isEmpty()) {
-        QList<QString> chats;
-        for (int i = 0; i < messages.count();  ++i) {
-            QJsonValue v = messages.at(i);
-            // FIXME: Deal with system messages correctly
-            QString role = v.toObject()["role"].toString();
-            if (role != "user")
-                continue;
-            QString content = v.toObject()["content"].toString();
-            if (!content.endsWith("\n") && i < messages.count() - 1)
-                content += "\n";
-            chats.append(content);
-        }
-        actualPrompt.prepend(chats.join("\n"));
-    }
-
     // adds prompt/response items to GUI
-    emit requestServerNewPromptResponsePair(actualPrompt); // blocks
+    emit requestServerNewPromptResponsePair(request.prompt); // blocks
+    resetResponse();
 
     // load the new model if necessary
     setShouldBeLoaded(true);
 
     if (modelInfo.filename().isEmpty()) {
-        std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;
-        return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
+        std::cerr << "ERROR: couldn't load default model " << request.model.toStdString() << std::endl;
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
     // NB: this resets the context, regardless of whether this model is already loaded
     if (!loadModel(modelInfo)) {
         std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
-        return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
-    const QString promptTemplate    = modelInfo.promptTemplate();
-    const float top_k               = modelInfo.topK();
-    const int n_batch               = modelInfo.promptBatchSize();
-    const float repeat_penalty      = modelInfo.repeatPenalty();
-    const int repeat_last_n         = modelInfo.repeatPenaltyTokens();
+    // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
+    const int  top_k          = modelInfo.topK();
+    const int  n_batch        = modelInfo.promptBatchSize();
+    const auto repeat_penalty = float(modelInfo.repeatPenalty());
+    const int  repeat_last_n  = modelInfo.repeatPenaltyTokens();
 
     int promptTokens = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < request.n; ++i) {
         if (!promptInternal(
             m_collections,
-            actualPrompt,
-            promptTemplate,
-            max_tokens /*n_predict*/,
+            request.prompt,
+            /*promptTemplate*/ u"%1"_s,
+            request.max_tokens,
             top_k,
-            top_p,
-            min_p,
-            temperature,
+            request.top_p,
+            request.min_p,
+            request.temperature,
             n_batch,
             repeat_penalty,
             repeat_last_n)) {
 
             std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
-            return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
+            return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
-        QString echoedPrompt = actualPrompt;
-        if (!echoedPrompt.endsWith("\n"))
-            echoedPrompt += "\n";
-        responses.append(qMakePair((echo ? u"%1\n"_s.arg(actualPrompt) : QString()) + response(), m_databaseResults));
+        QString resp = response(/*trim*/ false);
+        if (request.echo)
+            resp = request.prompt + resp;
+        responses.append({resp, m_databaseResults});
         if (!promptTokens)
-            promptTokens += m_promptTokens;
+            promptTokens = m_promptTokens;
         responseTokens += m_promptResponseTokens - m_promptTokens;
-        if (i != n - 1)
+        if (i < request.n - 1)
             resetResponse();
     }
 
-    QJsonObject responseObject;
-    responseObject.insert("id", "foobarbaz");
-    responseObject.insert("object", "text_completion");
-    responseObject.insert("created", QDateTime::currentSecsSinceEpoch());
-    responseObject.insert("model", modelInfo.name());
+    QJsonObject responseObject {
+        { "id",      "placeholder"                      },
+        { "object",  "text_completion"                  },
+        { "created", QDateTime::currentSecsSinceEpoch() },
+        { "model",   modelInfo.name()                   },
+    };
 
     QJsonArray choices;
-
-    if (isChat) {
+    {
         int index = 0;
         for (const auto &r : responses) {
             QString result = r.first;
             QList<ResultInfo> infos = r.second;
-            QJsonObject choice;
-            choice.insert("index", index++);
-            choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
-            QJsonObject message;
-            message.insert("role", "assistant");
-            message.insert("content", result);
-            choice.insert("message", message);
+            QJsonObject choice {
+                { "text",          result                                                   },
+                { "index",         index++                                                  },
+                { "logprobs",      QJsonValue::Null                                         },
+                { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
+            };
             if (MySettings::globalInstance()->localDocsShowReferences()) {
                 QJsonArray references;
                 for (const auto &ref : infos)
                     references.append(resultToJson(ref));
-                choice.insert("references", references);
-            }
-            choices.append(choice);
-        }
-    } else {
-        int index = 0;
-        for (const auto &r : responses) {
-            QString result = r.first;
-            QList<ResultInfo> infos = r.second;
-            QJsonObject choice;
-            choice.insert("text", result);
-            choice.insert("index", index++);
-            choice.insert("logprobs", QJsonValue::Null); // We don't support
-            choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
-            if (MySettings::globalInstance()->localDocsShowReferences()) {
-                QJsonArray references;
-                for (const auto &ref : infos)
-                    references.append(resultToJson(ref));
-                choice.insert("references", references);
+                choice.insert("references", references.isEmpty() ? QJsonValue::Null : QJsonValue(references));
             }
             choices.append(choice);
         }
     }
 
     responseObject.insert("choices", choices);
+    responseObject.insert("usage", QJsonObject {
+        { "prompt_tokens",     promptTokens                  },
+        { "completion_tokens", responseTokens                },
+        { "total_tokens",      promptTokens + responseTokens },
+    });
 
-    QJsonObject usage;
-    usage.insert("prompt_tokens", int(promptTokens));
-    usage.insert("completion_tokens", int(responseTokens));
-    usage.insert("total_tokens", int(promptTokens + responseTokens));
-    responseObject.insert("usage", usage);
+    return {QHttpServerResponse(responseObject), responseObject};
+}
 
-#if defined(DEBUG)
-    QJsonDocument newDoc(responseObject);
-    printf("/v1/completions %s\n", qPrintable(newDoc.toJson(QJsonDocument::Indented)));
-    fflush(stdout);
-#endif
+auto Server::handleChatRequest(const ChatRequest &request)
+    -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
+{
+    ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
+    const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
+    for (const ModelInfo &info : modelList) {
+        Q_ASSERT(info.installed);
+        if (!info.installed)
+            continue;
+        if (request.model == info.name() || request.model == info.filename()) {
+            modelInfo = info;
+            break;
+        }
+    }
 
-    return QHttpServerResponse(responseObject);
+    // load the new model if necessary
+    setShouldBeLoaded(true);
+
+    if (modelInfo.filename().isEmpty()) {
+        std::cerr << "ERROR: couldn't load default model " << request.model.toStdString() << std::endl;
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
+    }
+
+    // NB: this resets the context, regardless of whether this model is already loaded
+    if (!loadModel(modelInfo)) {
+        std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
+        return makeError(QHttpServerResponder::StatusCode::InternalServerError);
+    }
+
+    const QString promptTemplate = modelInfo.promptTemplate();
+    const int     top_k          = modelInfo.topK();
+    const int     n_batch        = modelInfo.promptBatchSize();
+    const auto    repeat_penalty = float(modelInfo.repeatPenalty());
+    const int     repeat_last_n  = modelInfo.repeatPenaltyTokens();
+
+    int promptTokens = 0;
+    int responseTokens = 0;
+    QList<QPair<QString, QList<ResultInfo>>> responses;
+    Q_ASSERT(!request.messages.isEmpty());
+    Q_ASSERT(request.messages.size() % 2 == 1);
+    for (int i = 0; i < request.messages.size() - 2; i += 2) {
+        using enum ChatRequest::Message::Role;
+        auto &user      = request.messages[i];
+        auto &assistant = request.messages[i + 1];
+        Q_ASSERT(user.role      == User);
+        Q_ASSERT(assistant.role == Assistant);
+
+        // adds prompt/response items to GUI
+        emit requestServerNewPromptResponsePair(user.content); // blocks
+        resetResponse();
+
+        if (!promptInternal(
+            {},
+            user.content,
+            promptTemplate,
+            request.max_tokens,
+            top_k,
+            request.top_p,
+            request.min_p,
+            request.temperature,
+            n_batch,
+            repeat_penalty,
+            repeat_last_n,
+            assistant.content)
+        ) {
+            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
+            return makeError(QHttpServerResponder::StatusCode::InternalServerError);
+        }
+        promptTokens += m_promptResponseTokens; // previous responses are part of current prompt
+    }
+
+    QString lastMessage = request.messages.last().content;
+    // adds prompt/response items to GUI
+    emit requestServerNewPromptResponsePair(lastMessage); // blocks
+    resetResponse();
+
+    for (int i = 0; i < request.n; ++i) {
+        if (!promptInternal(
+            m_collections,
+            lastMessage,
+            promptTemplate,
+            request.max_tokens,
+            top_k,
+            request.top_p,
+            request.min_p,
+            request.temperature,
+            n_batch,
+            repeat_penalty,
+            repeat_last_n)
+        ) {
+            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
+            return makeError(QHttpServerResponder::StatusCode::InternalServerError);
+        }
+        responses.append({response(), m_databaseResults});
+        // FIXME(jared): these are UI counts and do not include framing tokens, which they should
+        if (i == 0)
+            promptTokens += m_promptTokens;
+        responseTokens += m_promptResponseTokens - m_promptTokens;
+        if (i != request.n - 1)
+            resetResponse();
+    }
+
+    QJsonObject responseObject {
+        { "id",      "placeholder"                      },
+        { "object",  "chat.completion"                  },
+        { "created", QDateTime::currentSecsSinceEpoch() },
+        { "model",   modelInfo.name()                   },
+    };
+
+    QJsonArray choices;
+    {
+        int index = 0;
+        for (const auto &r : responses) {
+            QString result = r.first;
+            QList<ResultInfo> infos = r.second;
+            QJsonObject message {
+                { "role",    "assistant" },
+                { "content", result      },
+            };
+            QJsonObject choice {
+                { "index",         index++                                                  },
+                { "message",       message                                                  },
+                { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
+                { "logprobs",      QJsonValue::Null                                         },
+            };
+            if (MySettings::globalInstance()->localDocsShowReferences()) {
+                QJsonArray references;
+                for (const auto &ref : infos)
+                    references.append(resultToJson(ref));
+                choice.insert("references", references.isEmpty() ? QJsonValue::Null : QJsonValue(references));
+            }
+            choices.append(choice);
+        }
+    }
+
+    responseObject.insert("choices", choices);
+    responseObject.insert("usage", QJsonObject {
+        { "prompt_tokens",     promptTokens                  },
+        { "completion_tokens", responseTokens                },
+        { "total_tokens",      promptTokens + responseTokens },
+    });
+
+    return {QHttpServerResponse(responseObject), responseObject};
 }

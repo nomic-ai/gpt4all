@@ -8,3 +8,6 @@
 [submodule "gpt4all-chat/deps/SingleApplication"]
 	path = gpt4all-chat/deps/SingleApplication
 	url = https://github.com/nomic-ai/SingleApplication.git
+[submodule "gpt4all-chat/deps/fmt"]
+	path = gpt4all-chat/deps/fmt
+	url = https://github.com/fmtlib/fmt.git
