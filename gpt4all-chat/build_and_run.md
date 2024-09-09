@@ -12,21 +12,21 @@ On Windows and Linux, building GPT4All with full GPU support requires the [Vulka
 
 ## Note for Linux users
 
-Linux users may install Qt via their distro's official packages instead of using the Qt installer. You need at least Qt 6.5, with support for QPdf and the Qt HTTP Server. It should be straightforward to build with just cmake and make, but you may continue to follow these instructions to build with Qt Creator.
+Linux users may install Qt via their distro's official packages instead of using the Qt installer. You need at least Qt 6.5, with support for QPdf and the Qt HTTP Server. You may build from the CLI using CMake and Ninja, or with Qt Creator as described later in this document.
 
 On Arch Linux, this looks like:
 ```
-sudo pacman -S --needed base-devel qt6-base qt6-declarative qt6-wayland qt6-svg qt6-httpserver qt6-webengine qt6-5compat qt6-shadertools qtcreator cmake ninja
+sudo pacman -S --needed cmake gcc ninja qt6-5compat qt6-base qt6-declarative qt6-httpserver qt6-svg qtcreator
 ```
 
 On Ubuntu 23.04, this looks like:
 ```
-sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev libqt6core5compat6 qml6-module-qt5compat-graphicaleffects libqt6shadertools6 qtcreator cmake ninja-build
+sudo apt install cmake g++ libgl-dev libqt6core5compat6 ninja-build qml6-module-qt5compat-graphicaleffects qt6-base-dev qt6-declarative-dev qt6-httpserver-dev qt6-svg-dev qtcreator
 ```
 
 On Fedora 39, this looks like:
 ```
-sudo dnf install make gcc gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtwayland-devel qt6-qtsvg-devel qt6-qthttpserver-devel qt6-qtwebengine-devel qt6-qt5compat qt5-qtgraphicaleffects qt6-qtshadertools qt-creator cmake ninja-build
+sudo dnf install cmake gcc-c++ ninja-build qt-creator qt5-qtgraphicaleffects qt6-qt5compat qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qthttpserver-devel qt6-qtsvg-devel
 ```
 
 ## Download Qt
@@ -49,10 +49,7 @@ Under this release (e.g. Qt 6.5.0), select the target platform:
 - On Windows, it is called "MSVC 2019 64-bit" (for 64-bit x86 CPUs). MinGW has not been tested.
 
 Under this release, select the following additional components:
-- Qt Quick 3D
-- Qt Wayland Compositor (for Linux only)
 - Qt 5 Compatibility Module
-- Qt Shader Tools
 - Additional Libraries:
   - Qt HTTP Server
   - Qt PDF
