@@ -20,11 +20,18 @@ function Controller() {
 }
 
 Controller.prototype.TargetDirectoryPageCallback = function() {
-    if (systemInfo.productType === "macos" && vercmp(systemInfo.productVersion, "12.6") < 0) {
+    var failedReq = null;
+    if (systemInfo.productType === "ubuntu" && vercmp(systemInfo.productVersion, "22.04") < 0) {
+        failedReq = "Ubuntu 22.04 LTS";
+    } else if (systemInfo.productType === "macos" && vercmp(systemInfo.productVersion, "12.6") < 0) {
+        failedReq = "macOS Monterey 12.6";
+    }
+
+    if (failedReq !== null) {
         cancelInstaller(
             "Installation cannot continue because GPT4All does not support your operating system: " +
             `${systemInfo.prettyProductName}<br/><br/>` +
-            "GPT4All requires macOS Monterey 12.6 or newer."
+            `GPT4All requires ${failedReq} or newer.`
         );
     }
 }
