@@ -69,13 +69,19 @@ static const char COMPILER_VER[]  = STR(__GNUC__) "." STR(__GNUC_MINOR__) "." ST
 #if defined(Q_OS_MAC)
 
 #include <sys/sysctl.h>
-static QString getCPUModel()
+static std::optional<QString> getSysctl(const char *name)
 {
-    char buffer[256];
+    char buffer[256] = "";
     size_t bufferlen = sizeof(buffer);
-    sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
-    return buffer;
+    if (sysctlbyname(name, &buffer, &bufferlen, NULL, 0) < 0) {
+        int err = errno;
+        qWarning() << "sysctlbyname(" << name << ") failed: " << strerror(err);
+        return std::nullopt;
+    }
+    return std::make_optional<QString>(buffer);
 }
+
+static QString getCPUModel() { return getSysctl("machdep.cpu.brand_string").value_or(u"(unknown)"_s); }
 
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
@@ -330,6 +336,9 @@ void Network::sendStartup()
         { "sys_kernel_ver",     QSysInfo::kernelVersion()                                             },
         { "sys_product_type",   QSysInfo::productType()                                               },
         { "sys_product_ver",    QSysInfo::productVersion()                                            },
+#ifdef Q_OS_MAC
+        { "sys_hw_model",       getSysctl("hw.model").value_or(u"(unknown)"_s)                        },
+#endif
         { "$screen_dpi",        std::round(display->physicalDotsPerInch())                            },
         { "display",            u"%1x%2"_s.arg(display->size().width()).arg(display->size().height()) },
         { "ram",                LLM::globalInstance()->systemTotalRAMInGB()                           },
