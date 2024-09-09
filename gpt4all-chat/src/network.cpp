@@ -75,7 +75,7 @@ static std::optional<QString> getSysctl(const char *name)
     size_t bufferlen = sizeof(buffer);
     if (sysctlbyname(name, &buffer, &bufferlen, NULL, 0) < 0) {
         int err = errno;
-        qWarning() << "sysctlbyname(" << name << ") failed: " << strerror(err);
+        qWarning().nospace() << "sysctlbyname(\"" << name << "\") failed: " << strerror(err);
         return std::nullopt;
     }
     return std::make_optional<QString>(buffer);
