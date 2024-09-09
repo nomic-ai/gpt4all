@@ -366,7 +366,6 @@ void Network::trackEvent(const QString &ev, const QVariantMap &props)
     if (!m_sendUsageStats)
         return;
 
-    Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
 
     properties.insert("token", MIXPANEL_TOKEN);
