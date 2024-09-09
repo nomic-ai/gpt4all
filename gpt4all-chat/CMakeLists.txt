@@ -324,7 +324,7 @@ if (LLMODEL_CUDA)
 endif()
 
 if (NOT APPLE)
-    install(FILES "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+    install(FILES "${LOCAL_EMBEDDING_MODEL_PATH}"
             DESTINATION resources
             COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
