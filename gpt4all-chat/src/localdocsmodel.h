@@ -20,23 +20,24 @@ class LocalDocsCollectionsModel : public QSortFilterProxyModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int updatingCount READ updatingCount NOTIFY updatingCountChanged)
+
 public:
     explicit LocalDocsCollectionsModel(QObject *parent);
+    int count() const { return rowCount(); }
+    int updatingCount() const;
 
 public Q_SLOTS:
-    int count() const { return rowCount(); }
     void setCollections(const QList<QString> &collections);
-    int updatingCount() const;
 
 Q_SIGNALS:
     void countChanged();
     void updatingCountChanged();
 
-private Q_SLOT:
-    void maybeTriggerUpdatingCountChanged();
-
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private Q_SLOTS:
+    void maybeTriggerUpdatingCountChanged();
 
 private:
     QList<QString> m_collections;

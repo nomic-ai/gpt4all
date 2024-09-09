@@ -317,9 +317,9 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex gperf libcublas-dev-11-8 libfontconfig1 libfreetype6
-              libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev libx11-6
-              libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
+              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
+              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
+              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
               libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 patchelf
               python3 vulkan-sdk
@@ -352,6 +352,8 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=gcc-12 \
+              -DCMAKE_CXX_COMPILER=g++-12 \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -391,9 +393,9 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex gperf libcublas-dev-11-8 libfontconfig1 libfreetype6
-              libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev libx11-6
-              libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
+              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
+              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
+              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
               libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 patchelf
               python3 vulkan-sdk
@@ -426,6 +428,8 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=gcc-12 \
+              -DCMAKE_CXX_COMPILER=g++-12 \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -447,7 +451,7 @@ jobs:
 
   build-offline-chat-installer-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -538,7 +542,7 @@ jobs:
 
   sign-offline-chat-installer-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -568,7 +572,7 @@ jobs:
 
   build-online-chat-installer-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -666,7 +670,7 @@ jobs:
 
   sign-online-chat-installer-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -720,9 +724,9 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex gperf libcublas-dev-11-8 libfontconfig1 libfreetype6
-              libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev libx11-6
-              libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
+              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
+              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
+              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
               libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 python3
               vulkan-sdk
@@ -744,6 +748,8 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S gpt4all-chat -B build \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=gcc-12 \
+              -DCMAKE_CXX_COMPILER=g++-12 \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -758,7 +764,7 @@ jobs:
 
   build-gpt4all-chat-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -864,8 +870,8 @@ jobs:
           paths:
             - ../.ccache
 
-  build-ts-docs: 
-    docker: 
+  build-ts-docs:
+    docker:
       - image: cimg/base:stable
     steps:
       - checkout
@@ -887,7 +893,7 @@ jobs:
     docker:
       - image: circleci/python:3.8
     steps:
-      - checkout 
+      - checkout
       - run:
           name: Install dependencies
           command: |
@@ -928,7 +934,8 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
-              build-essential ccache cmake cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server vulkan-sdk
+              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
+              vulkan-sdk
             )
             sudo apt-get update
             sudo apt-get install -y "${packages[@]}"
@@ -942,6 +949,8 @@ jobs:
             cd gpt4all-backend
             cmake -B build \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=gcc-12 \
+              -DCMAKE_CXX_COMPILER=g++-12 \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1014,7 +1023,7 @@ jobs:
 
   build-py-windows:
     machine:
-      image: 'windows-server-2019-vs2019:2022.08.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -1118,11 +1127,12 @@ jobs:
           name: Install dependencies
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list            
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
-              build-essential ccache cmake cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server vulkan-sdk
+              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
+              vulkan-sdk
             )
             sudo apt-get update
             sudo apt-get install -y "${packages[@]}"
@@ -1135,6 +1145,9 @@ jobs:
             mkdir -p runtimes/build
             cd runtimes/build
             cmake ../.. \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=gcc-12 \
+              -DCMAKE_C_COMPILER=g++-12 \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -1204,7 +1217,7 @@ jobs:
 
   build-bindings-backend-windows:
     machine:
-      image: 'windows-server-2022-gui:2023.03.1'
+      image: windows-server-2022-gui:current
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -1230,7 +1243,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'  
+            choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Build Libraries
           command: |
@@ -1263,8 +1276,8 @@ jobs:
           paths:
             - runtimes/win-x64_msvc/*.dll
 
-  build-nodejs-linux: 
-    docker: 
+  build-nodejs-linux:
+    docker:
       - image: cimg/base:stable
     steps:
       - checkout
@@ -1280,10 +1293,10 @@ jobs:
           pkg-manager: yarn
           override-ci-command: yarn install
       - run:
-          command: | 
+          command: |
             cd gpt4all-bindings/typescript
             yarn prebuildify -t 18.16.0 --napi
-      - run: 
+      - run:
           command: |
             mkdir -p gpt4all-backend/prebuilds/linux-x64
             mkdir -p gpt4all-backend/runtimes/linux-x64
@@ -1292,10 +1305,10 @@ jobs:
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - prebuilds/linux-x64/*.node 
+            - prebuilds/linux-x64/*.node
             - runtimes/linux-x64/*-*.so
 
-  build-nodejs-macos: 
+  build-nodejs-macos:
     macos:
       xcode: 15.4.0
     steps:
@@ -1312,12 +1325,12 @@ jobs:
           pkg-manager: yarn
           override-ci-command: yarn install
       - run:
-          command: | 
+          command: |
             cd gpt4all-bindings/typescript
             yarn prebuildify -t 18.16.0 --napi
-      - run: 
+      - run:
           name: "Persisting all necessary things to workspace"
-          command: |  
+          command: |
             mkdir -p gpt4all-backend/prebuilds/darwin-x64
             mkdir -p gpt4all-backend/runtimes/darwin
             cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin
@@ -1328,7 +1341,7 @@ jobs:
             - prebuilds/darwin-x64/*.node
             - runtimes/darwin/*-*.*
 
-  build-nodejs-windows: 
+  build-nodejs-windows:
     executor:
       name: win/default
       size: large
@@ -1342,29 +1355,29 @@ jobs:
          command: wget https://nodejs.org/dist/v18.16.0/node-v18.16.0-x86.msi -P C:\Users\circleci\Downloads\
          shell: cmd.exe
       - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.16.0-x86.msi /qn
-      - run: 
+      - run:
           command: |
               Start-Process powershell -verb runAs -Args "-start GeneralProfile"
               nvm install 18.16.0
               nvm use 18.16.0
-      - run: node --version 
+      - run: node --version
       - run: corepack enable
-      - run:           
+      - run:
           command: |
             npm install -g yarn
             cd gpt4all-bindings/typescript
             yarn install
       - run:
-          command: | 
+          command: |
             cd gpt4all-bindings/typescript
-            yarn prebuildify -t 18.16.0 --napi 
-      - run: 
+            yarn prebuildify -t 18.16.0 --napi
+      - run:
           command: |
             mkdir -p gpt4all-backend/prebuilds/win32-x64
             mkdir -p gpt4all-backend/runtimes/win32-x64
             cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll gpt4all-backend/runtimes/win32-x64
             cp gpt4all-bindings/typescript/prebuilds/win32-x64/*.node gpt4all-backend/prebuilds/win32-x64
-        
+
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
@@ -1372,7 +1385,7 @@ jobs:
             - runtimes/win32-x64/*-*.dll
 
   prepare-npm-pkg:
-    docker: 
+    docker:
       - image: cimg/base:stable
     steps:
       - attach_workspace:
@@ -1383,19 +1396,19 @@ jobs:
           node-version: "18.16"
       - run: node --version
       - run: corepack enable
-      - run: 
+      - run:
           command: |
             cd gpt4all-bindings/typescript
             # excluding llmodel. nodejs bindings dont need llmodel.dll
             mkdir -p runtimes/win32-x64/native
             mkdir -p prebuilds/win32-x64/
-            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll runtimes/win32-x64/native/ 
-            cp /tmp/gpt4all-backend/prebuilds/win32-x64/*.node prebuilds/win32-x64/    
+            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll runtimes/win32-x64/native/
+            cp /tmp/gpt4all-backend/prebuilds/win32-x64/*.node prebuilds/win32-x64/
 
-            mkdir -p runtimes/linux-x64/native 
+            mkdir -p runtimes/linux-x64/native
             mkdir -p prebuilds/linux-x64/
-            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
-            cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/    
+            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/
+            cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/
 
             # darwin has univeral runtime libraries
             mkdir -p runtimes/darwin/native
@@ -1403,22 +1416,22 @@ jobs:
 
             cp /tmp/gpt4all-backend/runtimes/darwin/*-*.* runtimes/darwin/native/
 
-            cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
-            
+            cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/
+
             # Fallback build if user is not on above prebuilds
             mv -f binding.ci.gyp binding.gyp
 
             mkdir gpt4all-backend
             cd ../../gpt4all-backend
             mv llmodel.h llmodel.cpp llmodel_c.cpp llmodel_c.h sysinfo.h dlhandle.h ../gpt4all-bindings/typescript/gpt4all-backend/
-            
+
       # Test install
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
           override-ci-command: yarn install
-      - run: 
-          command: | 
+      - run:
+          command: |
             cd gpt4all-bindings/typescript
             yarn run test
       - run:
@@ -1552,7 +1565,7 @@ workflows:
             - build-py-linux
             - build-py-macos
   build-bindings:
-    when: 
+    when:
       or:
        - << pipeline.parameters.run-all-workflows >>
        - << pipeline.parameters.run-python-workflow >>
@@ -1585,8 +1598,8 @@ workflows:
           requires:
             - hold
 
-      # NodeJs Jobs 
-      - prepare-npm-pkg: 
+      # NodeJs Jobs
+      - prepare-npm-pkg:
           filters:
             branches:
               only:

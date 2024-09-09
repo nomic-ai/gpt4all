@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 struct LLModelWrapper {
@@ -130,13 +131,10 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.repeat_last_n = ctx->repeat_last_n;
     wrapper->promptContext.contextErase = ctx->context_erase;
 
-    std::string fake_reply_str;
-    if (fake_reply) { fake_reply_str = fake_reply; }
-    auto *fake_reply_p = fake_reply ? &fake_reply_str : nullptr;
-
     // Call the C++ prompt method
     wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, allow_context_shift,
-                             wrapper->promptContext, special, fake_reply_p);
+                             wrapper->promptContext, special,
+                             fake_reply ? std::make_optional<std::string_view>(fake_reply) : std::nullopt);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies
