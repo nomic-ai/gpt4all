@@ -378,19 +378,7 @@ function(include_ggml SUFFIX)
         find_package(CUDAToolkit REQUIRED)
         set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
 
-        if (NOT DEFINED GGML_CUDA_ARCHITECTURES)
-            # 52 == lowest CUDA 12 standard
-            # 60 == f16 CUDA intrinsics
-            # 61 == integer CUDA intrinsics
-            # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
-            if (GGML_CUDA_F16 OR GGML_CUDA_DMMV_F16)
-                set(GGML_CUDA_ARCHITECTURES "60;61;70;75") # needed for f16 CUDA intrinsics
-            else()
-                set(GGML_CUDA_ARCHITECTURES "52;61;70;75") # lowest CUDA 12 standard + lowest for integer intrinsics
-                #set(GGML_CUDA_ARCHITECTURES "OFF") # use this to compile much faster, but only F16 models work
-            endif()
-        endif()
-        message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
+        # architectures are set in gpt4all-backend/CMakeLists.txt
 
         set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml/include/ggml-cuda.h)
         file(GLOB   GGML_HEADERS_CUDA "${DIRECTORY}/ggml/src/ggml-cuda/*.cuh")
@@ -823,7 +811,8 @@ function(include_ggml SUFFIX)
             list(APPEND XC_FLAGS -std=${GGML_METAL_STD})
         endif()
 
-        set(GGML_METALLIB ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib)
+        set(GGML_METALLIB "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib")
+        set(GGML_METALLIB "${GGML_METALLIB}" PARENT_SCOPE)
         add_custom_command(
             OUTPUT ${GGML_METALLIB}
             COMMAND xcrun -sdk macosx metal    ${XC_FLAGS} -c ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.air
@@ -834,7 +823,6 @@ function(include_ggml SUFFIX)
             DEPENDS ${DIRECTORY}/ggml/src/ggml-metal.metal ${DIRECTORY}/ggml/src/ggml-common.h
             COMMENT "Compiling Metal kernels"
             )
-        set_source_files_properties(${GGML_METALLIB} DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTIES GENERATED ON)
 
         add_custom_target(
             ggml-metal ALL
@@ -1018,9 +1006,6 @@ function(include_ggml SUFFIX)
         C_STANDARD 11
         C_STANDARD_REQUIRED true
         )
-    if (GGML_CUDA_ARCHITECTURES)
-        set_property(TARGET ggml${SUFFIX} llama${SUFFIX} PROPERTY CUDA_ARCHITECTURES "${GGML_CUDA_ARCHITECTURES}")
-    endif()
 
     target_compile_options(ggml${SUFFIX} PRIVATE "${GGML_COMPILE_OPTS}")
     target_compile_options(llama${SUFFIX} PRIVATE "${GGML_COMPILE_OPTS}")

@@ -209,27 +209,27 @@ class GPT4All:
         self._current_prompt_template: str = "{0}"
 
         device_init = None
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             if device is None:
-                backend = 'auto'  # 'auto' is effectively 'metal' due to currently non-functional fallback
-            elif device == 'cpu':
-                backend = 'cpu'
+                backend = "auto"  # "auto" is effectively "metal" due to currently non-functional fallback
+            elif device == "cpu":
+                backend = "cpu"
             else:
-                if platform.machine() != 'arm64' or device != 'gpu':
-                    raise ValueError(f'Unknown device for this platform: {device}')
-                backend = 'metal'
+                if platform.machine() != "arm64" or device != "gpu":
+                    raise ValueError(f"Unknown device for this platform: {device}")
+                backend = "metal"
         else:
-            backend = 'kompute'
-            if device is None or device == 'cpu':
+            backend = "kompute"
+            if device is None or device == "cpu":
                 pass  # use kompute with no device
-            elif device in ('cuda', 'kompute'):
+            elif device in ("cuda", "kompute"):
                 backend = device
-                device_init = 'gpu'
-            elif device.startswith('cuda:'):
-                backend = 'cuda'
-                device_init = device.removeprefix('cuda:')
+                device_init = "gpu"
+            elif device.startswith("cuda:"):
+                backend = "cuda"
+                device_init = _remove_prefix(device, "cuda:")
             else:
-                device_init = device.removeprefix('kompute:')
+                device_init = _remove_prefix(device, "kompute:")
 
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
@@ -357,7 +357,7 @@ class GPT4All:
         expected_md5: str | None = None,
     ) -> str | os.PathLike[str]:
         """
-        Download model from https://gpt4all.io.
+        Download model from gpt4all.io.
 
         Args:
             model_filename: Filename of model (with .gguf extension).
@@ -706,3 +706,7 @@ def _fsync(fd: int | _HasFileno) -> None:
         else:
             return
     os.fsync(fd)
+
+
+def _remove_prefix(s: str, prefix: str) -> str:
+    return s[len(prefix):] if s.startswith(prefix) else s

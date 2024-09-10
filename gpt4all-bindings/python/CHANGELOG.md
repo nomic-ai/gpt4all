@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Warn on Windows if the Microsoft Visual C++ runtime libraries are not found ([#2920](https://github.com/nomic-ai/gpt4all/pull/2920))
+
+## [2.8.2] - 2024-08-14
+
+### Fixed
+- Fixed incompatibility with Python 3.8 since v2.7.0 and Python <=3.11 since v2.8.1 ([#2871](https://github.com/nomic-ai/gpt4all/pull/2871))
+
+## [2.8.1] - 2024-08-13
+
+### Added
+- Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
+
+### Changed
+- Search for pip-installed CUDA 11 as well as CUDA 12 ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
+- Stop shipping CUBINs to reduce wheel size ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
+- Use llama\_kv\_cache ops to shift context faster ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
+- Don't stop generating at end of context ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
+
+### Fixed
+- Make reverse prompt detection work more reliably and prevent it from breaking output ([#2781](https://github.com/nomic-ai/gpt4all/pull/2781))
+- Explicitly target macOS 12.6 in CI to fix Metal compatibility on older macOS ([#2849](https://github.com/nomic-ai/gpt4all/pull/2849))
+- Do not initialize Vulkan driver when only using CPU ([#2843](https://github.com/nomic-ai/gpt4all/pull/2843))
+- Fix a segfault on exit when using CPU mode on Linux with NVIDIA and EGL ([#2843](https://github.com/nomic-ai/gpt4all/pull/2843))
+
 ## [2.8.0] - 2024-08-05
 
 ### Added
@@ -16,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Detect use of a Python interpreter under Rosetta for a clearer error message ([#2793](https://github.com/nomic-ai/gpt4all/pull/2793))
 
 ### Changed
+- Build against CUDA 11.8 instead of CUDA 12 for better compatibility with older drivers ([#2639](https://github.com/nomic-ai/gpt4all/pull/2639))
 - Update llama.cpp to commit 87e397d00 from July 19th ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 
 ### Removed
@@ -33,4 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Restore leading space removal logic that was incorrectly removed in [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
   - CUDA: Cherry-pick llama.cpp DMMV cols requirement fix that caused a crash with long conversations since [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.2...HEAD
+[2.8.2]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.1...python-v2.8.2
+[2.8.1]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.0...python-v2.8.1
 [2.8.0]: https://github.com/nomic-ai/gpt4all/compare/python-v2.7.0...python-v2.8.0

@@ -68,16 +68,17 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.8.0",
+    version="2.8.3.dev0",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     author="Nomic and the Open Source Community",
     author_email="support@nomic.ai",
-    url="https://gpt4all.io/",
+    url="https://www.nomic.ai/gpt4all",
     project_urls={
         "Documentation": "https://docs.gpt4all.io/gpt4all_python.html",
         "Source code": "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python",
+        "Changelog": "https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/CHANGELOG.md",
     },
     classifiers = [
         "Programming Language :: Python :: 3",
@@ -94,8 +95,8 @@ setup(
     ],
     extras_require={
         'cuda': [
-            'nvidia-cuda-runtime-cu12',
-            'nvidia-cublas-cu12',
+            'nvidia-cuda-runtime-cu11',
+            'nvidia-cublas-cu11',
         ],
         'all': [
             'gpt4all[cuda]; platform_system == "Windows" or platform_system == "Linux"',

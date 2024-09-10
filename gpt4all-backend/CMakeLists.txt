@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)  # for PROJECT_IS_TOP_LEVEL
+cmake_minimum_required(VERSION 3.23)  # for FILE_SET
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -33,7 +33,7 @@ set(LLMODEL_VERSION_PATCH 0)
 set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set(BUILD_SHARED_LIBS ON)
@@ -47,7 +47,7 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-set(DIRECTORY llama.cpp-mainline)
+set(DIRECTORY deps/llama.cpp-mainline)
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS)
@@ -63,9 +63,23 @@ if (LLMODEL_VULKAN)
     list(APPEND BUILD_VARIANTS vulkan vulkan-avxonly)
 endif()
 if (LLMODEL_CUDA)
-    if (DEFINED CMAKE_CUDA_ARCHITECTURES)
-        set(GGML_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+    cmake_minimum_required(VERSION 3.18)  # for CMAKE_CUDA_ARCHITECTURES
+
+    # Defaults must be set before enable_language(CUDA).
+    # Keep this in sync with the arch list in ggml/src/CMakeLists.txt.
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+        # 52 == lowest CUDA 12 standard
+        # 60 == f16 CUDA intrinsics
+        # 61 == integer CUDA intrinsics
+        # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
+        if (GGML_CUDA_F16 OR GGML_CUDA_DMMV_F16)
+            set(CMAKE_CUDA_ARCHITECTURES "60;61;70;75") # needed for f16 CUDA intrinsics
+        else()
+            set(CMAKE_CUDA_ARCHITECTURES "52;61;70;75") # lowest CUDA 12 standard + lowest for integer intrinsics
+            #set(CMAKE_CUDA_ARCHITECTURES "OFF") # use this to compile much faster, but only F16 models work
+        endif()
     endif()
+    message(STATUS "Using CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
 
     include(CheckLanguage)
     check_language(CUDA)
@@ -132,9 +146,12 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp llmodel_shared.cpp)
+        src/llamamodel.cpp src/llmodel_shared.cpp)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
+    target_include_directories(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
+        src include/gpt4all-backend
+    )
     prepare_target(llamamodel-mainline llama-mainline)
 
     if (NOT PROJECT_IS_TOP_LEVEL AND BUILD_VARIANT STREQUAL cuda)
@@ -143,11 +160,19 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp llmodel_shared.cpp
-    llmodel_c.h llmodel_c.cpp
-    dlhandle.cpp
+    src/dlhandle.cpp
+    src/llmodel.cpp
+    src/llmodel_c.cpp
+    src/llmodel_shared.cpp
+)
+target_sources(llmodel PUBLIC
+    FILE_SET public_headers TYPE HEADERS BASE_DIRS include
+    FILES include/gpt4all-backend/llmodel.h
+          include/gpt4all-backend/llmodel_c.h
+          include/gpt4all-backend/sysinfo.h
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+target_include_directories(llmodel PRIVATE src include/gpt4all-backend)
 
 set_target_properties(llmodel PROPERTIES
                               VERSION ${PROJECT_VERSION}

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
@@ -17,7 +17,7 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 1)
+set(APP_VERSION_MINOR 2)
 set(APP_VERSION_PATCH 2)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 set(APP_VERSION "${APP_VERSION_BASE}-dev0")
@@ -31,10 +31,8 @@ project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(GPT4ALL_TRANSLATIONS OFF "Build with translations")
-option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
+option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
 
@@ -44,11 +42,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-if(LINUX)
-  find_package(Qt6 6.4 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf LinguistTools REQUIRED)
-else()
-  find_package(Qt6 6.4 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf LinguistTools REQUIRED)
-endif()
+find_package(Qt6 6.4 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -66,13 +60,19 @@ message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+set(FMT_INSTALL OFF)
+set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(deps/fmt)
+set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
+
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(CHAT_EXE_RESOURCES)
 
 # Metal shader library
 if (APPLE)
-    list(APPEND CHAT_EXE_RESOURCES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib")
+    list(APPEND CHAT_EXE_RESOURCES "${GGML_METALLIB}")
 endif()
 
 # App icon
@@ -107,75 +107,13 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
-qt_add_executable(chat
-    main.cpp
-    chat.h chat.cpp
-    chatllm.h chatllm.cpp
-    chatmodel.h chatlistmodel.h chatlistmodel.cpp
-    chatapi.h chatapi.cpp
-    chatviewtextprocessor.h chatviewtextprocessor.cpp
-    database.h database.cpp
-    download.h download.cpp
-    embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
-    llm.h llm.cpp
-    modellist.h modellist.cpp
-    mysettings.h mysettings.cpp
-    network.h network.cpp
-    server.h server.cpp
-    logger.h logger.cpp
-    ${APP_ICON_RESOURCE}
-    ${CHAT_EXE_RESOURCES}
-)
+set(QAPPLICATION_CLASS QGuiApplication)
+add_subdirectory(deps/SingleApplication)
+add_subdirectory(src)
 
-qt_add_qml_module(chat
-    URI gpt4all
-    VERSION 1.0
-    NO_CACHEGEN
-    QML_FILES
-      main.qml
-      qml/AddCollectionView.qml
-      qml/AddModelView.qml
-      qml/ApplicationSettings.qml
-      qml/ChatDrawer.qml
-      qml/ChatView.qml
-      qml/CollectionsDrawer.qml
-      qml/HomeView.qml
-      qml/LocalDocsSettings.qml
-      qml/LocalDocsView.qml
-      qml/ModelSettings.qml
-      qml/ModelsView.qml
-      qml/NetworkDialog.qml
-      qml/NewVersionDialog.qml
-      qml/PopupDialog.qml
-      qml/SettingsView.qml
-      qml/StartupDialog.qml
-      qml/SwitchModelDialog.qml
-      qml/Theme.qml
-      qml/ThumbsDownDialog.qml
-      qml/Toast.qml
-      qml/ToastManager.qml
-      qml/MyBusyIndicator.qml
-      qml/MyButton.qml
-      qml/MyCheckBox.qml
-      qml/MyComboBox.qml
-      qml/MyDialog.qml
-      qml/MyDirectoryField.qml
-      qml/MyFancyLink.qml
-      qml/MyMenu.qml
-      qml/MyMenuItem.qml
-      qml/MyMiniButton.qml
-      qml/MySettingsButton.qml
-      qml/MySettingsDestructiveButton.qml
-      qml/MySettingsLabel.qml
-      qml/MySettingsStack.qml
-      qml/MySettingsTab.qml
-      qml/MySlug.qml
-      qml/MyTextArea.qml
-      qml/MyTextButton.qml
-      qml/MyTextField.qml
-      qml/MyToolButton.qml
-      qml/MyWelcomeButton.qml
+target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
+
+qt_target_qml_sources(chat
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -229,18 +167,16 @@ qt_add_qml_module(chat
       icons/you.svg
 )
 
-if (GPT4ALL_TRANSLATIONS)
-    qt_add_translations(chat
-        TS_FILES
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
-    )
-endif()
+qt_add_translations(chat
+    TS_FILES
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
+)
 
 set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE
@@ -290,21 +226,18 @@ endif()
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 
+target_include_directories(chat PRIVATE src)
+
 # usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
 target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
-target_include_directories(chat PRIVATE usearch/include
-                                        usearch/fp16/include)
+target_include_directories(chat PRIVATE deps/usearch/include
+                                        deps/usearch/fp16/include)
 
-if(LINUX)
-  target_link_libraries(chat
-      PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)
-else()
-  target_link_libraries(chat
-    PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
-endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
+target_link_libraries(chat
+    PRIVATE llmodel SingleApplication fmt::fmt)
 
 
 # -- install --
@@ -388,7 +321,7 @@ if (LLMODEL_CUDA)
 endif()
 
 if (NOT APPLE)
-    install(FILES "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+    install(FILES "${LOCAL_EMBEDDING_MODEL_PATH}"
             DESTINATION resources
             COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
@@ -431,7 +364,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://gpt4all.io")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.nomic.ai/gpt4all")
 set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
@@ -440,11 +373,12 @@ set(CPACK_CREATE_DESKTOP_LINKS "GPT4All")
 set(CPACK_IFW_PACKAGE_NAME "GPT4All")
 set(CPACK_IFW_PACKAGE_TITLE "GPT4All Installer")
 set(CPACK_IFW_PACKAGE_PUBLISHER "Nomic, Inc.")
-set(CPACK_IFW_PRODUCT_URL "https://gpt4all.io")
+set(CPACK_IFW_PRODUCT_URL "https://www.nomic.ai/gpt4all")
 set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
 set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-32.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
+set(CPACK_IFW_PACKAGE_CONTROL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_control.qs")
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
@@ -457,7 +391,7 @@ endif()
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${APP_VERSION})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "MIT LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
-cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installerscript.qs")
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_component.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
 
 if (GPT4ALL_LOCALHOST)
