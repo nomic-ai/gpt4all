@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Add Gemma-2-9b-it to models3.json (by [@ThiloteE](https://github.com/ThiloteE) in [#2803](https://github.com/nomic-ai/gpt4all/pull/2803))
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
 - Use configured system prompt in server mode and ignore system messages ([#2921](https://github.com/nomic-ai/gpt4all/pull/2921), [#2924](https://github.com/nomic-ai/gpt4all/pull/2924))
 - Add more system information to anonymous usage stats ([#2939](https://github.com/nomic-ai/gpt4all/pull/2939))
