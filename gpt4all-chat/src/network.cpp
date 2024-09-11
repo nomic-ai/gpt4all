@@ -57,10 +57,10 @@ static const char COMPILER_NAME[] = "Apple Clang";
 static const char COMPILER_NAME[] = "LLVM Clang";
 #endif
 static const char COMPILER_VER[]  = STR(__clang_major__) "." STR(__clang_minor__) "." STR(__clang_patchlevel__);
-#elifdef _MSC_VER
+#elif defined(_MSC_VER)
 static const char COMPILER_NAME[] = "MSVC";
 static const char COMPILER_VER[]  = STR(_MSC_VER) " (" STR(_MSC_FULL_VER) ")";
-#elifdef __GNUC__
+#elif defined(__GNUC__)
 static const char COMPILER_NAME[] = "GCC";
 static const char COMPILER_VER[]  = STR(__GNUC__) "." STR(__GNUC_MINOR__) "." STR(__GNUC_PATCHLEVEL__);
 #endif
