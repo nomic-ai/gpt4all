@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(APP_VERSION_MAJOR 3)
+set(APP_VERSION_MINOR 2)
+set(APP_VERSION_PATCH 2)
+set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
+set(APP_VERSION "${APP_VERSION_BASE}-dev0")
+
+project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" OFF)
@@ -16,25 +20,49 @@ if(APPLE)
   endif()
 endif()
 
-set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 2)
-set(APP_VERSION_PATCH 2)
-set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
-set(APP_VERSION "${APP_VERSION_BASE}-dev0")
+option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
+option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
+option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
+
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# conftests
+function(check_cpp_feature FEATURE_NAME MIN_VALUE)
+    message(CHECK_START "Checking for ${FEATURE_NAME} >= ${MIN_VALUE}")
+    string(CONCAT SRC
+        "#include <version>\n"
+        "#if !defined(${FEATURE_NAME}) || ${FEATURE_NAME} < ${MIN_VALUE}\n"
+        "#   error \"${FEATURE_NAME} is not defined or less than ${MIN_VALUE}\"\n"
+        "#endif\n"
+        "int main() { return 0; }\n"
+    )
+    try_compile(HAS_FEATURE SOURCE_FROM_VAR "test_${FEATURE_NAME}.cpp" SRC)
+    if (NOT HAS_FEATURE)
+        message(CHECK_FAIL "fail")
+        message(FATAL_ERROR
+            "The C++ compiler\n  \"${CMAKE_CXX_COMPILER}\"\n"
+            "is too old to support ${FEATURE_NAME} >= ${MIN_VALUE}.\n"
+            "Please specify a newer compiler via -DCMAKE_C_COMPILER/-DCMAKE_CXX_COMPILER."
+        )
+    endif()
+  message(CHECK_PASS "pass")
+endfunction()
+
+# check for monadic operations in std::optional (e.g. transform)
+check_cpp_feature("__cpp_lib_optional" "202110L")
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
-option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
-option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
-option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
 
 # Generate a header file with the version number
 configure_file(
