@@ -1960,10 +1960,9 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
     }
 
+    QHash<int, ResultInfo> tempResults;
     while (q.next()) {
-#if defined(DEBUG)
         const int rowid = q.value(0).toInt();
-#endif
         const QString document_path = q.value(2).toString();
         const QString chunk_text = q.value(3).toString();
         const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
@@ -1985,12 +1984,16 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         info.page = page;
         info.from = from;
         info.to = to;
-        results->append(info);
+        tempResults.insert(rowid, info);
 #if defined(DEBUG)
         qDebug() << "retrieve rowid:" << rowid
                  << "chunk_text:" << chunk_text;
 #endif
     }
+
+    for (int id : searchResults)
+        if (tempResults.contains(id))
+            results->append(tempResults.value(id));
 }
 
 // FIXME This is very slow and non-interruptible and when we close the application and we're
