@@ -50,6 +50,9 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 <p>
   macOS requires Monterey 12.6 or newer. Best results with Apple Silicon M-series processors.
 </p>
+
+See the full [System Requirements](gpt4all-chat/system_requirements.md) for more details.
+
 <br/>
 <br/>
 <p>
