@@ -1,10 +1,9 @@
 ## Latest News
 
-Version 3.2.1 has now been released which fixes an issue with poor quality responses on NVIDIA GPUs in 3.2.0. The new 3.2 minor version brings:
+GPT4All v3.3.0 was released on September 18th. Changes include:
 
-* **Official Language Translations**: Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish.<br/>
-  Go to Settings > Language and Locale to change the application language.
-* **Context Window Improvements**: Significantly faster context recalculation when context runs out
-* **Bugfixes**: Models no longer stop generating when they run out of context
-
-Also, Qwen2-1.5B-Instruct was recently added to the model list, which has good Chinese support.
+* **UI Improvements**: The minimum window size now adapts to the font size. A few labels and links have been fixed. The Embeddings Device selection of "Auto"/"Application default" works again. The window icon is now set on Linux. The antenna icon now displays when the API server is listening.
+* **Single Instance**: Only one instance of GPT4All can be opened at a time. This is now enforced.
+* **Greedy Sampling**: Set temperature to zero to enable greedy sampling.
+* **API Server Changes**: The built-in API server now responds correctly to both legacy completions, and chats with message history. Also, it now uses the system prompt configured in the UI.
+* **Translation Improvements**: The Italian, Romanian, and Traditional Chinese translations have been updated.
