@@ -602,7 +602,7 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
+        <translation>Activează Serverul API local</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
@@ -613,10 +613,6 @@
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB
                 per chat.</source>
         <translation type="vanished">Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
-    </message>
-    <message>
-        <source>Enable Local Server</source>
-        <translation type="vanished">Activează Serverul local</translation>
     </message>
     <message>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased
@@ -1200,37 +1196,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="279"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>EROARE: $MODEL_NAME absent.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>EROARE: $API_KEY absentă</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>EROARE: $API_KEY incorecta</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="307"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>EROARE: Model &quot;%1 (%2)&quot; conflictual.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="326"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1 (%2)&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="350"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Modelul &quot;%1&quot; - îndepărtat</translation>
     </message>
