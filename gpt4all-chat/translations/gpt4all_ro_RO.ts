@@ -731,8 +731,8 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="505"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="505"/>
-        <source>Enable Local Server</source>
-        <translation>Activează Serverul local</translation>
+        <source>Enable Local API Server</source>
+        <translation>Activează Serverul API local</translation>
     </message>
     <message>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased
@@ -1535,7 +1535,7 @@ model to get started</source>
         <location filename="../qml/HomeView.qml" line="246"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/HomeView.qml" line="246"/>
         <source>Github</source>
-        <translation type="unfinished"></translation>
+        <translation>GitHub</translation>
     </message>
     <message>
         <source>GitHub</source>
