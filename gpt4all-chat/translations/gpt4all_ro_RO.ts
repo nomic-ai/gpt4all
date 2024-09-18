@@ -1200,37 +1200,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="279"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>EROARE: $MODEL_NAME absent.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>EROARE: $API_KEY absentă</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>EROARE: $API_KEY incorecta</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="307"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>EROARE: Model &quot;%1 (%2)&quot; conflictual.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="326"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1 (%2)&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="350"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Modelul &quot;%1&quot; - îndepărtat</translation>
     </message>
@@ -2532,13 +2532,20 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
                 care foloseşte datele tale!</translation>
     </message>
     <message>
-        <location filename="../src/qml/StartupDialog.qml" line="67"/>
         <source>### Release notes
 %1### Contributors
 %2</source>
-        <translation>### Despre versiune
+        <translation type="vanished">### Despre versiune
                 %1### Contributori
                 %2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupDialog.qml" line="67"/>
+        <source>### Release Notes
+%1&lt;br/&gt;
+### Contributors
+%2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="87"/>

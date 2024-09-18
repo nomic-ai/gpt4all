@@ -396,8 +396,9 @@ void Download::parseReleaseJsonFile(const QByteArray &jsonData)
         QJsonObject obj = value.toObject();
 
         QString version = obj["version"].toString();
-        QString notes = obj["notes"].toString();
-        QString contributors = obj["contributors"].toString();
+        // "notes" field intentionally has a trailing newline for compatibility
+        QString notes = obj["notes"].toString().trimmed();
+        QString contributors = obj["contributors"].toString().trimmed();
         ReleaseInfo releaseInfo;
         releaseInfo.version = version;
         releaseInfo.notes = notes;

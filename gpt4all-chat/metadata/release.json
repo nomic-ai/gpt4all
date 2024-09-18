@@ -1,1005 +1,207 @@
 [
   {
     "version": "2.2.2",
-    "notes":
-"
-* repeat penalty for both gptj and llama models
-* scroll the context window when conversation reaches context limit
-* persistent thread count setting
-* new default template
-* new settings for model path, repeat penalty
-* bugfix for settings dialog onEditingFinished
-* new tab based settings dialog format
-* bugfix for datalake when conversation contains forbidden json chars
-* new C library API and split the backend into own separate lib for bindings
-* apple signed/notarized dmg installer
-* update llama.cpp submodule to latest
-* bugfix for too large of a prompt
-* support for opt-in only anonymous usage and statistics
-* bugfixes for the model downloader and improve performance
-* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word
-* new startup dialog on first start of a new release displaying release notes and opt-in buttons
-* new logo and icons
-* fixed apple installer so there is now a symlink in the applications folder
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Matthieu Talbot
-* Tim Jobbins
-* chad (eachadea)
-* Community (beta testers, bug reporters)
-"
+    "notes": "* repeat penalty for both gptj and llama models\n* scroll the context window when conversation reaches context limit\n* persistent thread count setting\n* new default template\n* new settings for model path, repeat penalty\n* bugfix for settings dialog onEditingFinished\n* new tab based settings dialog format\n* bugfix for datalake when conversation contains forbidden json chars\n* new C library API and split the backend into own separate lib for bindings\n* apple signed/notarized dmg installer\n* update llama.cpp submodule to latest\n* bugfix for too large of a prompt\n* support for opt-in only anonymous usage and statistics\n* bugfixes for the model downloader and improve performance\n* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word\n* new startup dialog on first start of a new release displaying release notes and opt-in buttons\n* new logo and icons\n* fixed apple installer so there is now a symlink in the applications folder\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Matthieu Talbot\n* Tim Jobbins\n* chad (eachadea)\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.3.0",
-    "notes":
-"
-* repeat penalty for both gptj and llama models
-* scroll the context window when conversation reaches context limit
-* persistent thread count setting
-* new default template
-* new settings for model path, repeat penalty
-* bugfix for settings dialog onEditingFinished
-* new tab based settings dialog format
-* bugfix for datalake when conversation contains forbidden json chars
-* new C library API and split the backend into own separate lib for bindings
-* apple signed/notarized dmg installer
-* update llama.cpp submodule to latest
-* bugfix for too large of a prompt
-* support for opt-in only anonymous usage and statistics
-* bugfixes for the model downloader and improve performance
-* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word
-* new startup dialog on first start of a new release displaying release notes and opt-in buttons
-* new logo and icons
-* fixed apple installer so there is now a symlink in the applications folder
-* fixed bug with versions
-* fixed optout marking
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Matthieu Talbot
-* Tim Jobbins
-* chad (eachadea)
-* Community (beta testers, bug reporters)
-"
+    "notes": "* repeat penalty for both gptj and llama models\n* scroll the context window when conversation reaches context limit\n* persistent thread count setting\n* new default template\n* new settings for model path, repeat penalty\n* bugfix for settings dialog onEditingFinished\n* new tab based settings dialog format\n* bugfix for datalake when conversation contains forbidden json chars\n* new C library API and split the backend into own separate lib for bindings\n* apple signed/notarized dmg installer\n* update llama.cpp submodule to latest\n* bugfix for too large of a prompt\n* support for opt-in only anonymous usage and statistics\n* bugfixes for the model downloader and improve performance\n* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word\n* new startup dialog on first start of a new release displaying release notes and opt-in buttons\n* new logo and icons\n* fixed apple installer so there is now a symlink in the applications folder\n* fixed bug with versions\n* fixed optout marking\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Matthieu Talbot\n* Tim Jobbins\n* chad (eachadea)\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.0",
-    "notes":
-"
-* reverse prompt for both llama and gptj models which should help stop them from repeating the prompt template
-* resumable downloads for models
-* chat list in the drawer drop down
-* add/remove/rename chats
-* persist chats to disk and restore them with full context (WARNING: the average size of each chat on disk is ~1.5GB)
-* NOTE: to turn on the persistent chats feature you need to do so via the settings dialog as it is off by default
-* automatically rename chats using the AI after the first prompt/response pair
-* new usage statistics including more detailed hardware info to help debug problems on older hardware
-* fix dialog sizes for those with smaller displays
-* add support for persistent contexts and internal model state to the C api
-* add a confirm button for deletion of chats
-* bugfix for blocking the gui when changing models
-* datalake now captures all conversations when network opt-in is turned on
-* new much shorter prompt template by default
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* reverse prompt for both llama and gptj models which should help stop them from repeating the prompt template\n* resumable downloads for models\n* chat list in the drawer drop down\n* add/remove/rename chats\n* persist chats to disk and restore them with full context (WARNING: the average size of each chat on disk is ~1.5GB)\n* NOTE: to turn on the persistent chats feature you need to do so via the settings dialog as it is off by default\n* automatically rename chats using the AI after the first prompt/response pair\n* new usage statistics including more detailed hardware info to help debug problems on older hardware\n* fix dialog sizes for those with smaller displays\n* add support for persistent contexts and internal model state to the C api\n* add a confirm button for deletion of chats\n* bugfix for blocking the gui when changing models\n* datalake now captures all conversations when network opt-in is turned on\n* new much shorter prompt template by default\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.1",
-    "notes":
-"
-* compress persistent chats and save order of magnitude disk space on some small chats
-* persistent chat files are now stored in same folder as models
-* use a thread for deserializing chats on startup so the gui shows window faster
-* fail gracefully and early when we detect incompatible hardware
-* repeat penalty restore default bugfix
-* new mpt backend for mosaic ml's new base model and chat model
-* add mpt chat and base model to downloads
-* lower memory required for gptj models by using f16 for kv cache
-* better error handling for when a model is deleted by user and persistent chat remains
-* add a user default model setting so the users preferred model comes up on startup
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Zach Nussbaum (Nomic AI)
-* Aaron Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* compress persistent chats and save order of magnitude disk space on some small chats\n* persistent chat files are now stored in same folder as models\n* use a thread for deserializing chats on startup so the gui shows window faster\n* fail gracefully and early when we detect incompatible hardware\n* repeat penalty restore default bugfix\n* new mpt backend for mosaic ml's new base model and chat model\n* add mpt chat and base model to downloads\n* lower memory required for gptj models by using f16 for kv cache\n* better error handling for when a model is deleted by user and persistent chat remains\n* add a user default model setting so the users preferred model comes up on startup\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Zach Nussbaum (Nomic AI)\n* Aaron Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.2",
-    "notes":
-"
-* add webserver feature that offers mirror api to chatgpt on localhost:4891
-* add chatgpt models installed using openai key to chat client gui
-* fixup the memory handling when switching between chats/models to decrease RAM load across the board
-* fix bug in thread safety for mpt model and de-duplicated code
-* uses compact json format for network
-* add remove model option in download dialog
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* add webserver feature that offers mirror api to chatgpt on localhost:4891\n* add chatgpt models installed using openai key to chat client gui\n* fixup the memory handling when switching between chats/models to decrease RAM load across the board\n* fix bug in thread safety for mpt model and de-duplicated code\n* uses compact json format for network\n* add remove model option in download dialog\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.3",
-    "notes":
-"
-* add webserver feature that offers mirror api to chatgpt on localhost:4891
-* add chatgpt models installed using openai key to chat client gui
-* fixup the memory handling when switching between chats/models to decrease RAM load across the board
-* fix bug in thread safety for mpt model and de-duplicated code
-* uses compact json format for network
-* add remove model option in download dialog
-* remove text-davinci-003 as it is not a chat model
-* fix installers on mac and linux to include libllmodel versions
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* add webserver feature that offers mirror api to chatgpt on localhost:4891\n* add chatgpt models installed using openai key to chat client gui\n* fixup the memory handling when switching between chats/models to decrease RAM load across the board\n* fix bug in thread safety for mpt model and de-duplicated code\n* uses compact json format for network\n* add remove model option in download dialog\n* remove text-davinci-003 as it is not a chat model\n* fix installers on mac and linux to include libllmodel versions\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.4",
-    "notes":
-"
-* fix buffer overrun in backend
-* bugfix for browse for model directory
-* dedup of qml code
-* revamp settings dialog UI
-* add localdocs plugin (beta) feature allowing scanning of local docs
-* various other bugfixes and performance improvements
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller
-* Juuso Alasuutari
-* Justin Wang
-* Community (beta testers, bug reporters)
-"
+    "notes": "* fix buffer overrun in backend\n* bugfix for browse for model directory\n* dedup of qml code\n* revamp settings dialog UI\n* add localdocs plugin (beta) feature allowing scanning of local docs\n* various other bugfixes and performance improvements\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller\n* Juuso Alasuutari\n* Justin Wang\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.5",
-    "notes":
-"
-* bugfix for model download remove
-* bugfix for blocking on regenerate
-* lots of various ui improvements enhancements
-* big new change that brings us up2date with llama.cpp/ggml support for latest models
-* advanced avx detection allowing us to fold the two installers into one
-* new logging mechanism that allows for bug reports to have more detail
-* make localdocs work with server mode
-* localdocs fix for stale references after we regenerate
-* fix so that browse to dialog on linux
-* fix so that you can also just add a path to the textfield
-* bugfix for chatgpt and resetting context
-* move models.json to github repo so people can pr suggested new models
-* allow for new models to be directly downloaded from huggingface in said prs
-* better ui for localdocs settings
-* better error handling when model fails to load
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Konstantin Gukov
-* Joseph Mearman
-* Nandakumar
-* Chase McDougall
-* mvenditto
-* Andriy Mulyar (Nomic AI)
-* FoivosC
-* Ettore Di Giacinto
-* Tim Miller
-* Peter Gagarinov
-* Community (beta testers, bug reporters)
-"
+    "notes": "* bugfix for model download remove\n* bugfix for blocking on regenerate\n* lots of various ui improvements enhancements\n* big new change that brings us up2date with llama.cpp/ggml support for latest models\n* advanced avx detection allowing us to fold the two installers into one\n* new logging mechanism that allows for bug reports to have more detail\n* make localdocs work with server mode\n* localdocs fix for stale references after we regenerate\n* fix so that browse to dialog on linux\n* fix so that you can also just add a path to the textfield\n* bugfix for chatgpt and resetting context\n* move models.json to github repo so people can pr suggested new models\n* allow for new models to be directly downloaded from huggingface in said prs\n* better ui for localdocs settings\n* better error handling when model fails to load\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Konstantin Gukov\n* Joseph Mearman\n* Nandakumar\n* Chase McDougall\n* mvenditto\n* Andriy Mulyar (Nomic AI)\n* FoivosC\n* Ettore Di Giacinto\n* Tim Miller\n* Peter Gagarinov\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.6",
-    "notes":
-"
-* bugfix for model download remove
-* bugfix for blocking on regenerate
-* lots of various ui improvements enhancements
-* big new change that brings us up2date with llama.cpp/ggml support for latest models
-* advanced avx detection allowing us to fold the two installers into one
-* new logging mechanism that allows for bug reports to have more detail
-* make localdocs work with server mode
-* localdocs fix for stale references after we regenerate
-* fix so that browse to dialog on linux
-* fix so that you can also just add a path to the textfield
-* bugfix for chatgpt and resetting context
-* move models.json to github repo so people can pr suggested new models
-* allow for new models to be directly downloaded from huggingface in said prs
-* better ui for localdocs settings
-* better error handling when model fails to load
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Konstantin Gukov
-* Joseph Mearman
-* Nandakumar
-* Chase McDougall
-* mvenditto
-* Andriy Mulyar (Nomic AI)
-* FoivosC
-* Ettore Di Giacinto
-* Tim Miller
-* Peter Gagarinov
-* Community (beta testers, bug reporters)
-"
+    "notes": "* bugfix for model download remove\n* bugfix for blocking on regenerate\n* lots of various ui improvements enhancements\n* big new change that brings us up2date with llama.cpp/ggml support for latest models\n* advanced avx detection allowing us to fold the two installers into one\n* new logging mechanism that allows for bug reports to have more detail\n* make localdocs work with server mode\n* localdocs fix for stale references after we regenerate\n* fix so that browse to dialog on linux\n* fix so that you can also just add a path to the textfield\n* bugfix for chatgpt and resetting context\n* move models.json to github repo so people can pr suggested new models\n* allow for new models to be directly downloaded from huggingface in said prs\n* better ui for localdocs settings\n* better error handling when model fails to load\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Konstantin Gukov\n* Joseph Mearman\n* Nandakumar\n* Chase McDougall\n* mvenditto\n* Andriy Mulyar (Nomic AI)\n* FoivosC\n* Ettore Di Giacinto\n* Tim Miller\n* Peter Gagarinov\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.7",
-    "notes":
-"
-* replit model support
-* macos metal accelerated support
-* fix markdown for localdocs references
-* inline syntax highlighting for python and cpp with more languages coming
-* synced with upstream llama.cpp
-* ui fixes and default generation settings changes
-* backend bugfixes
-* allow for loading files directly from huggingface via TheBloke without name changes
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Andriy Mulyar (Nomic AI)
-* Ettore Di Giacinto
-* AMOGUS
-* Felix Zaslavskiy
-* Tim Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* replit model support\n* macos metal accelerated support\n* fix markdown for localdocs references\n* inline syntax highlighting for python and cpp with more languages coming\n* synced with upstream llama.cpp\n* ui fixes and default generation settings changes\n* backend bugfixes\n* allow for loading files directly from huggingface via TheBloke without name changes\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* Ettore Di Giacinto\n* AMOGUS\n* Felix Zaslavskiy\n* Tim Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.8",
-    "notes":
-"
-* replit model support
-* macos metal accelerated support
-* fix markdown for localdocs references
-* inline syntax highlighting for python and cpp with more languages coming
-* synced with upstream llama.cpp
-* ui fixes and default generation settings changes
-* backend bugfixes
-* allow for loading files directly from huggingface via TheBloke without name changes
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Andriy Mulyar (Nomic AI)
-* Ettore Di Giacinto
-* AMOGUS
-* Felix Zaslavskiy
-* Tim Miller
-* Community (beta testers, bug reporters)
-"
+    "notes": "* replit model support\n* macos metal accelerated support\n* fix markdown for localdocs references\n* inline syntax highlighting for python and cpp with more languages coming\n* synced with upstream llama.cpp\n* ui fixes and default generation settings changes\n* backend bugfixes\n* allow for loading files directly from huggingface via TheBloke without name changes\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* Ettore Di Giacinto\n* AMOGUS\n* Felix Zaslavskiy\n* Tim Miller\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.9",
-    "notes":
-"
-* New GPT4All Falcon model
-* New Orca models
-* Token generation speed is now reported in GUI
-* Bugfix for localdocs references when regenerating
-* General fixes for thread safety
-* Many fixes to UI to add descriptions for error conditions
-* Fixes for saving/reloading chats
-* Complete refactor of the model download dialog with metadata about models available
-* Resume downloads bugfix
-* CORS fix
-* Documentation fixes and typos
-* Latest llama.cpp update
-* Update of replit
-* Force metal setting
-* Fixes for model loading with metal on macOS
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Andriy Mulyar (Nomic AI)
-* cosmic-snow
-* AMOGUS
-* Community (beta testers, bug reporters)
-"
+    "notes": "* New GPT4All Falcon model\n* New Orca models\n* Token generation speed is now reported in GUI\n* Bugfix for localdocs references when regenerating\n* General fixes for thread safety\n* Many fixes to UI to add descriptions for error conditions\n* Fixes for saving/reloading chats\n* Complete refactor of the model download dialog with metadata about models available\n* Resume downloads bugfix\n* CORS fix\n* Documentation fixes and typos\n* Latest llama.cpp update\n* Update of replit\n* Force metal setting\n* Fixes for model loading with metal on macOS\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* cosmic-snow\n* AMOGUS\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.10",
-    "notes":
-"
-* New GPT4All Falcon model
-* New Orca models
-* Token generation speed is now reported in GUI
-* Bugfix for localdocs references when regenerating
-* General fixes for thread safety
-* Many fixes to UI to add descriptions for error conditions
-* Fixes for saving/reloading chats
-* Complete refactor of the model download dialog with metadata about models available
-* Resume downloads bugfix
-* CORS fix
-* Documentation fixes and typos
-* Latest llama.cpp update
-* Update of replit
-* Force metal setting
-* Fixes for model loading with metal on macOS
-",
-    "contributors":
-"
-* Nils Sauer (Nomic AI)
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Richard Guo (Nomic AI)
-* Andriy Mulyar (Nomic AI)
-* cosmic-snow
-* AMOGUS
-* Community (beta testers, bug reporters)
-"
+    "notes": "* New GPT4All Falcon model\n* New Orca models\n* Token generation speed is now reported in GUI\n* Bugfix for localdocs references when regenerating\n* General fixes for thread safety\n* Many fixes to UI to add descriptions for error conditions\n* Fixes for saving/reloading chats\n* Complete refactor of the model download dialog with metadata about models available\n* Resume downloads bugfix\n* CORS fix\n* Documentation fixes and typos\n* Latest llama.cpp update\n* Update of replit\n* Force metal setting\n* Fixes for model loading with metal on macOS\n",
+    "contributors": "* Nils Sauer (Nomic AI)\n* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Richard Guo (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* cosmic-snow\n* AMOGUS\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.11",
-    "notes":
-"
-* Per model settings
-* Character settings
-* Adding a system prompt
-* Important bugfix for chatgpt install
-* Complete refactor and revamp of settings dialog
-* New syntax highlighting for java, bash, go
-* Use monospace font for syntax highlighting of codeblocks
-* New setting for turning off references in localdocs
-* Fix memory leaks in falcon model
-* Fix for backend memory handling
-* Server mode bugfix
-* Models.json retrieve bugfix
-* Free metal context bugfix
-* Add a close dialog feature to all chat dialogs
-",
-    "contributors":
-"
-* Lakshay Kansal (Nomic AI)
-* Matthew Gill
-* Brandon Beiler
-* cosmic-snow
-* Felix Zaslavskiy
-* Andriy Mulyar (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters)
-"
+    "notes": "* Per model settings\n* Character settings\n* Adding a system prompt\n* Important bugfix for chatgpt install\n* Complete refactor and revamp of settings dialog\n* New syntax highlighting for java, bash, go\n* Use monospace font for syntax highlighting of codeblocks\n* New setting for turning off references in localdocs\n* Fix memory leaks in falcon model\n* Fix for backend memory handling\n* Server mode bugfix\n* Models.json retrieve bugfix\n* Free metal context bugfix\n* Add a close dialog feature to all chat dialogs\n",
+    "contributors": "* Lakshay Kansal (Nomic AI)\n* Matthew Gill\n* Brandon Beiler\n* cosmic-snow\n* Felix Zaslavskiy\n* Andriy Mulyar (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.12",
-    "notes":
-"
-* Fix bad bug that was breaking numerous current installs (sorry folks!)
-* Fix bug with 'browse' button in settings dialog
-* Wayland support on linux
-* Reduce template ui size in settings dialog
-",
-    "contributors":
-"
-* Akarshan Biswas
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters)
-"
+    "notes": "* Fix bad bug that was breaking numerous current installs (sorry folks!)\n* Fix bug with 'browse' button in settings dialog\n* Wayland support on linux\n* Reduce template ui size in settings dialog\n",
+    "contributors": "* Akarshan Biswas\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.13",
-    "notes":
-"
-* Fix bug with prolonging shutdown with generation
-* Fix bug with update model info on deleting chats
-* Fix bug with preventing closing of model download dialog
-* Allows allow closing the model download dialog
-* Fix numerous bugs with download of models.json and provide backup option
-* Add json and c# highlighting
-* Fix bug with chatgpt crashing
-* Fix bug with chatgpt not working for some keys
-* Fix bug with mixpanel opt outs not counting
-* Fix problem with OOM errors causing crash and then repeating on next start
-* Fix default thread setting and provide guardrails
-* Fix tap handler in settings dialog for buttons
-* Fix color of some text fields on macOS for settings dialog
-* Fix problem with startup dialog not closing
-* Provide error dialog for settings file not accessible
-* Try and fix problems with avx-only detection
-* Fix showing error in model downloads unnecessarily
-* Prefer 7b models to load by default
-* Add Wizard v1.1 to download list
-* Rename Orca models to Mini Orca
-* Don't use a system prompt unless model was trained with one by default
-",
-    "contributors":
-"
-* Lakshay Kansal (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters)
-"
+    "notes": "* Fix bug with prolonging shutdown with generation\n* Fix bug with update model info on deleting chats\n* Fix bug with preventing closing of model download dialog\n* Allows allow closing the model download dialog\n* Fix numerous bugs with download of models.json and provide backup option\n* Add json and c# highlighting\n* Fix bug with chatgpt crashing\n* Fix bug with chatgpt not working for some keys\n* Fix bug with mixpanel opt outs not counting\n* Fix problem with OOM errors causing crash and then repeating on next start\n* Fix default thread setting and provide guardrails\n* Fix tap handler in settings dialog for buttons\n* Fix color of some text fields on macOS for settings dialog\n* Fix problem with startup dialog not closing\n* Provide error dialog for settings file not accessible\n* Try and fix problems with avx-only detection\n* Fix showing error in model downloads unnecessarily\n* Prefer 7b models to load by default\n* Add Wizard v1.1 to download list\n* Rename Orca models to Mini Orca\n* Don't use a system prompt unless model was trained with one by default\n",
+    "contributors": "* Lakshay Kansal (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters)"
   },
   {
     "version": "2.4.14",
-    "notes":
-"
-* Add starcoder model support
-* Add ability to switch between light mode/dark mode
-* Increase the size of fonts in monospace code blocks a bit
-",
-    "contributors":
-"
-* Lakshay Kansal (Nomic AI)
-* Adam Treat (Nomic AI)
-"
+    "notes": "* Add starcoder model support\n* Add ability to switch between light mode/dark mode\n* Increase the size of fonts in monospace code blocks a bit\n",
+    "contributors": "* Lakshay Kansal (Nomic AI)\n* Adam Treat (Nomic AI)"
   },
   {
     "version": "2.4.15",
-    "notes":
-"
-* Add Vulkan GPU backend which allows inference on AMD, Intel and NVIDIA GPUs
-* Add ability to switch font sizes
-* Various bug fixes
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-* Nils Sauer (Nomic AI)
-* Lakshay Kansal (Nomic AI)
-"
+    "notes": "* Add Vulkan GPU backend which allows inference on AMD, Intel and NVIDIA GPUs\n* Add ability to switch font sizes\n* Various bug fixes\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)\n* Nils Sauer (Nomic AI)\n* Lakshay Kansal (Nomic AI)"
   },
   {
     "version": "2.4.16",
-    "notes":
-"
-* Bugfix for properly falling back to CPU when GPU can't be used
-* Report the actual device we're using
-* Fix context bugs for GPU accelerated models
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-"
+    "notes": "* Bugfix for properly falling back to CPU when GPU can't be used\n* Report the actual device we're using\n* Fix context bugs for GPU accelerated models\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)"
   },
   {
     "version": "2.4.17",
-    "notes":
-"
-* Bugfix for properly falling back to CPU when GPU is out of memory
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Aaron Miller (Nomic AI)
-"
+    "notes": "* Bugfix for properly falling back to CPU when GPU is out of memory\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Aaron Miller (Nomic AI)"
   },
   {
     "version": "2.4.18",
-    "notes":
-"
-* Bugfix for devices to show up in the settings combobox on application start and not just on model load
-* Send information on requested device and actual device on model load to help assess which model/gpu/os combos are working
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-"
+    "notes": "* Bugfix for devices to show up in the settings combobox on application start and not just on model load\n* Send information on requested device and actual device on model load to help assess which model/gpu/os combos are working\n",
+    "contributors": "* Adam Treat (Nomic AI)"
   },
   {
     "version": "2.4.19",
-    "notes":
-"
-* Fix a crash on systems with corrupted vulkan drivers or corrupted vulkan dlls
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-"
+    "notes": "* Fix a crash on systems with corrupted vulkan drivers or corrupted vulkan dlls\n",
+    "contributors": "* Adam Treat (Nomic AI)"
   },
   {
     "version": "2.5.0",
-    "notes":
-"
-* Major new release supports GGUF models only!
-* New models like Mistral Instruct, Replit 1.5, Rift Coder and more
-* All previous version of ggml-based models are no longer supported
-* Extensive changes to vulkan support
-* Better GPU error messages
-* Prompt processing on the GPU
-* Save chats now saves to text (less harddrive space)
-* Many more changes
-",
-    "contributors":
-"
-* Aaron Miller (Nomic AI)
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Major new release supports GGUF models only!\n* New models like Mistral Instruct, Replit 1.5, Rift Coder and more\n* All previous version of ggml-based models are no longer supported\n* Extensive changes to vulkan support\n* Better GPU error messages\n* Prompt processing on the GPU\n* Save chats now saves to text (less harddrive space)\n* Many more changes\n",
+    "contributors": "* Aaron Miller (Nomic AI)\n* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.5.1",
-    "notes":
-"
-* Accessibility fixes
-* Bugfix for crasher on Windows
-",
-    "contributors":
-"
-* Aaron Miller (Nomic AI)
-* Jared Van Bortel (Nomic AI)
-* Victor Tsaran <vtsaran@yahoo.com>
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Accessibility fixes\n* Bugfix for crasher on Windows\n",
+    "contributors": "* Aaron Miller (Nomic AI)\n* Jared Van Bortel (Nomic AI)\n* Victor Tsaran <vtsaran@yahoo.com>\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.5.2",
-    "notes":
-"
-* Support for GGUF v3 models
-* Important fixes for AMD GPUs
-* Don't start recalculating context immediately for saved chats
-* UI fixes for chat name generation
-* UI fixes for leading whitespaces in chat generation
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Support for GGUF v3 models\n* Important fixes for AMD GPUs\n* Don't start recalculating context immediately for saved chats\n* UI fixes for chat name generation\n* UI fixes for leading whitespaces in chat generation\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.5.3",
-    "notes":
-"
-* Major feature update for localdocs!
-* Localdocs now uses an embedding model for retrieval augmented generation
-* Localdocs can now search while your collections are indexing
-* You're guaranteed to get hits from localdocs for every prompt you enter
-* Fix: AMD gpu fixes
-* Fix: Better error messages
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Major feature update for localdocs!\n* Localdocs now uses an embedding model for retrieval augmented generation\n* Localdocs can now search while your collections are indexing\n* You're guaranteed to get hits from localdocs for every prompt you enter\n* Fix: AMD gpu fixes\n* Fix: Better error messages\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.5.4",
-    "notes":
-"
-* Major bugfix release with new models!
-* Model: Recently released Orca 2 model which does exceptionally well on reasoning tasks
-* Fix: System prompt was not always being honored
-* Fix: Download network retry on cloudflare errors
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Jared Van Bortel (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Major bugfix release with new models!\n* Model: Recently released Orca 2 model which does exceptionally well on reasoning tasks\n* Fix: System prompt was not always being honored\n* Fix: Download network retry on cloudflare errors\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.6.1",
-    "notes":
-"
-* Update to newer llama.cpp
-* Implemented configurable context length
-* Bugfixes for localdocs
-* Bugfixes for serialization to disk
-* Bugfixes for AVX
-* Bugfixes for Windows builds
-* Bugfixes for context retention and clearing
-* Add a button to collections dialog
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Update to newer llama.cpp\n* Implemented configurable context length\n* Bugfixes for localdocs\n* Bugfixes for serialization to disk\n* Bugfixes for AVX\n* Bugfixes for Windows builds\n* Bugfixes for context retention and clearing\n* Add a button to collections dialog\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.6.2",
-    "notes":
-"
-* Update to latest llama.cpp
-* Update to newly merged vulkan backend
-* Partial GPU offloading support
-* New localdocs speed increases and features
-* New GUI settings option for configuring how many layers to put on GPU
-* New lightmode theme, darkmode theme and legacy theme
-* Lots of UI updates and enhancements
-* Scores of bugfixes for stability and usability
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Karthik Nair
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Update to latest llama.cpp\n* Update to newly merged vulkan backend\n* Partial GPU offloading support\n* New localdocs speed increases and features\n* New GUI settings option for configuring how many layers to put on GPU\n* New lightmode theme, darkmode theme and legacy theme\n* Lots of UI updates and enhancements\n* Scores of bugfixes for stability and usability\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Karthik Nair\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.0",
-    "notes":
-"
-* Add support for twelve new model architectures
-* Including Baichuan, BLOOM, CodeShell, GPT-2, Orion, Persimmon, Phi and Phi-2, Plamo, Qwen, Qwen2, Refact, and StableLM
-* Fix for progress bar colors on legacy theme
-* Fix sizing for model download dialog elements
-* Fix dialog sizes to use more screen realestate where available
-* Fix for vram leak when model loading fails
-* Fix for making the collection dialog progress bar more readable
-* Fix for smaller minimum size for main screen
-* Fix for mistral crash
-* Fix for mistral openorca prompt template to ChatLM
-* Fix for excluding non-text documents from localdoc scanning
-* Fix for scrollbar missing on main conversation
-* Fix accessibility issues for screen readers
-* Fix for not showing the download button when not online
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Add support for twelve new model architectures\n* Including Baichuan, BLOOM, CodeShell, GPT-2, Orion, Persimmon, Phi and Phi-2, Plamo, Qwen, Qwen2, Refact, and StableLM\n* Fix for progress bar colors on legacy theme\n* Fix sizing for model download dialog elements\n* Fix dialog sizes to use more screen realestate where available\n* Fix for vram leak when model loading fails\n* Fix for making the collection dialog progress bar more readable\n* Fix for smaller minimum size for main screen\n* Fix for mistral crash\n* Fix for mistral openorca prompt template to ChatLM\n* Fix for excluding non-text documents from localdoc scanning\n* Fix for scrollbar missing on main conversation\n* Fix accessibility issues for screen readers\n* Fix for not showing the download button when not online\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.1",
-    "notes":
-"
-* Update to latest llama.cpp with support for Google Gemma
-* Gemma, Phi and Phi-2, Qwen2, and StableLM are now all GPU accelerated
-* Large revamp of the model loading to support explicit unload/reload
-* Bugfixes for ChatML and improved version of Mistral OpenOrca
-* We no longer load a model by default on application start
-* We no longer load a model by default on chat context switch
-* Fixes for visual artifacts in update reminder dialog
-* Blacklist Intel GPU's for now as we don't support yet
-* Fixes for binary save/restore of chat
-* Save and restore of window geometry across application starts
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Update to latest llama.cpp with support for Google Gemma\n* Gemma, Phi and Phi-2, Qwen2, and StableLM are now all GPU accelerated\n* Large revamp of the model loading to support explicit unload/reload\n* Bugfixes for ChatML and improved version of Mistral OpenOrca\n* We no longer load a model by default on application start\n* We no longer load a model by default on chat context switch\n* Fixes for visual artifacts in update reminder dialog\n* Blacklist Intel GPU's for now as we don't support yet\n* Fixes for binary save/restore of chat\n* Save and restore of window geometry across application starts\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.2",
-    "notes":
-"
-* New support for model search/discovery using huggingface search in downloads
-* Support for more model architectures for GPU acceleration
-* Three different crash fixes for corner case settings
-* Add a minp sampling parameter
-* Bert layoer norm epsilon value
-* Fix problem with blank lines between reply and next prompt
-",
-    "contributors":
-"
-* Christopher Barrera
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* New support for model search/discovery using huggingface search in downloads\n* Support for more model architectures for GPU acceleration\n* Three different crash fixes for corner case settings\n* Add a minp sampling parameter\n* Bert layoer norm epsilon value\n* Fix problem with blank lines between reply and next prompt\n",
+    "contributors": "* Christopher Barrera\n* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.3",
-    "notes":
-"
-* Fix for network reachability unknown
-* Fix undefined behavior with resetContext
-* Fix ChatGPT which was broken with previous release
-* Fix for clean up of chat llm thread destruction
-* Display of model loading warnings
-* Fix for issue 2080 where the GUI appears to hang when a chat is deleted
-* Fix for issue 2077 better responsiveness of model download dialog when download is taking place
-* Fix for issue 2092 don't include models that are disabled for GUI in application default model list
-* Fix for issue 2087 where cloned modelds were lost and listed in download dialog erroneously
-* Fix for MPT models without duplicated token embd weight
-* New feature with api server port setting
-* Fix for issue 2024 where combobox for model settings uses currently used model by default
-* Clean up settings properly for removed models and don't list stale model settings in download dialog
-* Fix for issue 2105 where the cancel button was not working for discovered model downloads
-",
-    "contributors":
-"
-* Christopher Barrera
-* Daniel Alencar
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "* Fix for network reachability unknown\n* Fix undefined behavior with resetContext\n* Fix ChatGPT which was broken with previous release\n* Fix for clean up of chat llm thread destruction\n* Display of model loading warnings\n* Fix for issue 2080 where the GUI appears to hang when a chat is deleted\n* Fix for issue 2077 better responsiveness of model download dialog when download is taking place\n* Fix for issue 2092 don't include models that are disabled for GUI in application default model list\n* Fix for issue 2087 where cloned modelds were lost and listed in download dialog erroneously\n* Fix for MPT models without duplicated token embd weight\n* New feature with api server port setting\n* Fix for issue 2024 where combobox for model settings uses currently used model by default\n* Clean up settings properly for removed models and don't list stale model settings in download dialog\n* Fix for issue 2105 where the cancel button was not working for discovered model downloads\n",
+    "contributors": "* Christopher Barrera\n* Daniel Alencar\n* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.4",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Add a right-click menu to the chat (by @kryotek777 in PR #2108)
-* Change the left sidebar to stay open (PR #2117)
-* Limit the width of text in the chat (PR #2118)
-* Move to llama.cpp's SBert implementation (PR #2086)
-* Support models provided by the Mistral AI API (by @Olyxz16 in PR #2053)
-* Models List: Add Ghost 7B v0.9.1 (by @lh0x00 in PR #2127)
-* Add Documentation and FAQ links to the New Chat page (by @3Simplex in PR #2183)
-* Models List: Simplify Mistral OpenOrca system prompt (PR #2220)
-* Models List: Add Llama 3 Instruct (PR #2242)
-* Models List: Add Phi-3 Mini Instruct (PR #2252)
-* Improve accuracy of anonymous usage statistics (PR #2238)
-
-<b>&mdash; Fixes &mdash;</b>
-* Detect unsupported CPUs correctly on Windows (PR #2141)
-* Fix the colors used by the server chat (PR #2150)
-* Fix startup issues when encountering non-Latin characters in paths (PR #2162)
-* Fix issues causing LocalDocs context links to not work sometimes (PR #2218)
-* Fix incorrect display of certain code block syntax in the chat (PR #2232)
-* Fix an issue causing unnecessary indexing of document collections on startup (PR #2236)
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Lam Hieu (`@lh0x00`)
-* 3Simplex (`@3Simplex`)
-* Kryotek (`@kryotek777`)
-* Olyxz16 (`@Olyxz16`)
-* Robin Verduijn (`@robinverduijn`)
-* Tim453 (`@Tim453`)
-* Xu Zhen (`@xuzhen`)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Add a right-click menu to the chat (by @kryotek777 in PR #2108)\n* Change the left sidebar to stay open (PR #2117)\n* Limit the width of text in the chat (PR #2118)\n* Move to llama.cpp's SBert implementation (PR #2086)\n* Support models provided by the Mistral AI API (by @Olyxz16 in PR #2053)\n* Models List: Add Ghost 7B v0.9.1 (by @lh0x00 in PR #2127)\n* Add Documentation and FAQ links to the New Chat page (by @3Simplex in PR #2183)\n* Models List: Simplify Mistral OpenOrca system prompt (PR #2220)\n* Models List: Add Llama 3 Instruct (PR #2242)\n* Models List: Add Phi-3 Mini Instruct (PR #2252)\n* Improve accuracy of anonymous usage statistics (PR #2238)\n\n<b>&mdash; Fixes &mdash;</b>\n* Detect unsupported CPUs correctly on Windows (PR #2141)\n* Fix the colors used by the server chat (PR #2150)\n* Fix startup issues when encountering non-Latin characters in paths (PR #2162)\n* Fix issues causing LocalDocs context links to not work sometimes (PR #2218)\n* Fix incorrect display of certain code block syntax in the chat (PR #2232)\n* Fix an issue causing unnecessary indexing of document collections on startup (PR #2236)\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Lam Hieu (`@lh0x00`)\n* 3Simplex (`@3Simplex`)\n* Kryotek (`@kryotek777`)\n* Olyxz16 (`@Olyxz16`)\n* Robin Verduijn (`@robinverduijn`)\n* Tim453 (`@Tim453`)\n* Xu Zhen (`@xuzhen`)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.7.5",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Improve accuracy of anonymous usage statistics (PR #2297, PR #2299)
-
-<b>&mdash; Fixes &mdash;</b>
-* Fix some issues with anonymous usage statistics (PR #2270, PR #2296)
-* Default to GPU with most VRAM on Windows and Linux, not least (PR #2297)
-* Fix initial failure to generate embeddings with Nomic Embed (PR #2284)
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Improve accuracy of anonymous usage statistics (PR #2297, PR #2299)\n\n<b>&mdash; Fixes &mdash;</b>\n* Fix some issues with anonymous usage statistics (PR #2270, PR #2296)\n* Default to GPU with most VRAM on Windows and Linux, not least (PR #2297)\n* Fix initial failure to generate embeddings with Nomic Embed (PR #2284)\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "2.8.0",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Context Menu: Replace \"Select All\" on message with \"Copy Message\" (PR #2324)
-* Context Menu: Hide Copy/Cut when nothing is selected (PR #2324)
-* Improve speed of context switch after quickly switching between several chats (PR #2343)
-* New Chat: Always switch to the new chat when the button is clicked (PR #2330)
-* New Chat: Always scroll to the top of the list when the button is clicked (PR #2330)
-* Update to latest llama.cpp as of May 9, 2024 (PR #2310)
-* **Add support for the llama.cpp CUDA backend** (PR #2310, PR #2357)
-  * Nomic Vulkan is still used by default, but CUDA devices can now be selected in Settings
-  * When in use: Greatly improved prompt processing and generation speed on some devices
-  * When in use: GPU support for Q5\_0, Q5\_1, Q8\_0, K-quants, I-quants, and Mixtral
-* Add support for InternLM models (PR #2310)
-
-<b>&mdash; Fixes &mdash;</b>
-* Do not allow sending a message while the LLM is responding (PR #2323)
-* Fix poor quality of generated chat titles with many models (PR #2322)
-* Set the window icon correctly on Windows (PR #2321)
-* Fix a few memory leaks (PR #2328, PR #2348, PR #2310)
-* Do not crash if a model file has no architecture key (PR #2346)
-* Fix several instances of model loading progress displaying incorrectly (PR #2337, PR #2343)
-* New Chat: Fix the new chat being scrolled above the top of the list on startup (PR #2330)
-* macOS: Show a \"Metal\" device option, and actually use the CPU when \"CPU\" is selected (PR #2310)
-* Remove unsupported Mamba, Persimmon, and PLaMo models from the whitelist (PR #2310)
-* Fix GPT4All.desktop being created by offline installers on macOS (PR #2361)
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Tim453 (`@Tim453`)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Context Menu: Replace \"Select All\" on message with \"Copy Message\" (PR #2324)\n* Context Menu: Hide Copy/Cut when nothing is selected (PR #2324)\n* Improve speed of context switch after quickly switching between several chats (PR #2343)\n* New Chat: Always switch to the new chat when the button is clicked (PR #2330)\n* New Chat: Always scroll to the top of the list when the button is clicked (PR #2330)\n* Update to latest llama.cpp as of May 9, 2024 (PR #2310)\n* **Add support for the llama.cpp CUDA backend** (PR #2310, PR #2357)\n  * Nomic Vulkan is still used by default, but CUDA devices can now be selected in Settings\n  * When in use: Greatly improved prompt processing and generation speed on some devices\n  * When in use: GPU support for Q5\\_0, Q5\\_1, Q8\\_0, K-quants, I-quants, and Mixtral\n* Add support for InternLM models (PR #2310)\n\n<b>&mdash; Fixes &mdash;</b>\n* Do not allow sending a message while the LLM is responding (PR #2323)\n* Fix poor quality of generated chat titles with many models (PR #2322)\n* Set the window icon correctly on Windows (PR #2321)\n* Fix a few memory leaks (PR #2328, PR #2348, PR #2310)\n* Do not crash if a model file has no architecture key (PR #2346)\n* Fix several instances of model loading progress displaying incorrectly (PR #2337, PR #2343)\n* New Chat: Fix the new chat being scrolled above the top of the list on startup (PR #2330)\n* macOS: Show a \"Metal\" device option, and actually use the CPU when \"CPU\" is selected (PR #2310)\n* Remove unsupported Mamba, Persimmon, and PLaMo models from the whitelist (PR #2310)\n* Fix GPT4All.desktop being created by offline installers on macOS (PR #2361)\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Tim453 (`@Tim453`)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "3.0.0",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Complete UI overhaul (PR #2396)
-* LocalDocs improvements (PR #2396)
-  * Use nomic-embed-text-v1.5 as local model instead of SBert
-  * Ship local model with application instead of downloading afterwards
-  * Store embeddings flat in SQLite DB instead of in hnswlib index
-  * Do exact KNN search with usearch instead of approximate KNN search with hnswlib
-* Markdown support (PR #2476)
-* Support CUDA/Metal device option for embeddings (PR #2477)
-
-<b>&mdash; Fixes &mdash;</b>
-* Fix embedding tokenization after PR #2310 (PR #2381)
-* Fix a crash when loading certain models with \"code\" in their name (PR #2382)
-* Fix an embedding crash with large chunk sizes after PR #2310 (PR #2383)
-* Fix inability to load models with non-ASCII path on Windows (PR #2388)
-* CUDA: Do not show non-fatal DLL errors on Windows (PR #2389)
-* LocalDocs fixes (PR #2396)
-  * Always use requested number of snippets even if there are better matches in unselected collections
-  * Check for deleted files on startup
-* CUDA: Fix PTX errors with some GPT4All builds (PR #2421)
-* Fix blank device in UI after model switch and improve usage stats (PR #2409)
-* Use CPU instead of CUDA backend when GPU loading fails the first time (ngl=0 is not enough) (PR #2477)
-* Fix crash when sending a message greater than n\_ctx tokens after PR #1970 (PR #2498)
-",
-    "contributors":
-"
-* Vincent Giardina (Nomic AI)
-* Jared Van Bortel (Nomic AI)
-* John W. Parent (Kitware)
-* Paige Lee (Nomic AI)
-* Max Cembalest (Nomic AI)
-* Andriy Mulyar (Nomic AI)
-* Adam Treat (Nomic AI)
-* cosmic-snow (`@cosmic-snow`)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Complete UI overhaul (PR #2396)\n* LocalDocs improvements (PR #2396)\n  * Use nomic-embed-text-v1.5 as local model instead of SBert\n  * Ship local model with application instead of downloading afterwards\n  * Store embeddings flat in SQLite DB instead of in hnswlib index\n  * Do exact KNN search with usearch instead of approximate KNN search with hnswlib\n* Markdown support (PR #2476)\n* Support CUDA/Metal device option for embeddings (PR #2477)\n\n<b>&mdash; Fixes &mdash;</b>\n* Fix embedding tokenization after PR #2310 (PR #2381)\n* Fix a crash when loading certain models with \"code\" in their name (PR #2382)\n* Fix an embedding crash with large chunk sizes after PR #2310 (PR #2383)\n* Fix inability to load models with non-ASCII path on Windows (PR #2388)\n* CUDA: Do not show non-fatal DLL errors on Windows (PR #2389)\n* LocalDocs fixes (PR #2396)\n  * Always use requested number of snippets even if there are better matches in unselected collections\n  * Check for deleted files on startup\n* CUDA: Fix PTX errors with some GPT4All builds (PR #2421)\n* Fix blank device in UI after model switch and improve usage stats (PR #2409)\n* Use CPU instead of CUDA backend when GPU loading fails the first time (ngl=0 is not enough) (PR #2477)\n* Fix crash when sending a message greater than n\\_ctx tokens after PR #1970 (PR #2498)\n",
+    "contributors": "* Vincent Giardina (Nomic AI)\n* Jared Van Bortel (Nomic AI)\n* John W. Parent (Kitware)\n* Paige Lee (Nomic AI)\n* Max Cembalest (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* Adam Treat (Nomic AI)\n* cosmic-snow (`@cosmic-snow`)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "3.1.0",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Generate suggested follow-up questions feature (#2634)
-
-<b>&mdash; What's Changed &mdash;</b>
-* Customize combo boxes and context menus to fit the new style (#2535)
-* Improve view bar scaling and Model Settings layout (#2520)
-* Make the logo spin while the model is generating (#2557)
-* Server: Reply to wrong GET/POST method with HTTP 405 instead of 404 (#2615)
-* Update theme for menus (#2578)
-* Move the \"stop\" button to the message box (#2561)
-* Build with CUDA 11.8 for better compatibility (#2639)
-* Make links in latest news section clickable (#2643)
-* Support translation of settings choices (#2667), (#2690)
-* Improve LocalDocs view's error message (by @cosmic-snow in #2679)
-* Ignore case of LocalDocs file extensions (#2642), (#2684)
-* Update llama.cpp to commit 87e397d00 from July 19th (#2694)
-  * Add support for GPT-NeoX, Gemma 2, OpenELM, ChatGLM, and Jais architectures (all with Vulkan support)
-  * Enable Vulkan support for StarCoder2, XVERSE, Command R, and OLMo
-* Show scrollbar in chat collections list as needed (#2691)
-
-<b>&mdash; What's Removed &mdash;</b>
-* Remove support for GPT-J models (#2676)
-
-<b>&mdash; Fixes &mdash;</b>
-* Fix placement of thumbs-down and datalake opt-in dialogs (#2540)
-* Select the correct folder with the Linux fallback folder dialog (#2541)
-* Fix clone button sometimes producing blank model info (#2545)
-* Fix jerky chat view scrolling (#2555)
-* Fix \"reload\" showing for chats with missing models (#2520)
-* Fix property binding loop warning (#2601)
-* Fix UI hang with certain chat view content (#2543)
-* Fix crash when Kompute falls back to CPU (#2640)
-* Fix several Vulkan resource management issues (#2694)
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* cosmic-snow (`@cosmic-snow`)
-* 3Simplex (`@3Simplex`)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Generate suggested follow-up questions feature (#2634)\n\n<b>&mdash; What's Changed &mdash;</b>\n* Customize combo boxes and context menus to fit the new style (#2535)\n* Improve view bar scaling and Model Settings layout (#2520)\n* Make the logo spin while the model is generating (#2557)\n* Server: Reply to wrong GET/POST method with HTTP 405 instead of 404 (#2615)\n* Update theme for menus (#2578)\n* Move the \"stop\" button to the message box (#2561)\n* Build with CUDA 11.8 for better compatibility (#2639)\n* Make links in latest news section clickable (#2643)\n* Support translation of settings choices (#2667), (#2690)\n* Improve LocalDocs view's error message (by @cosmic-snow in #2679)\n* Ignore case of LocalDocs file extensions (#2642), (#2684)\n* Update llama.cpp to commit 87e397d00 from July 19th (#2694)\n  * Add support for GPT-NeoX, Gemma 2, OpenELM, ChatGLM, and Jais architectures (all with Vulkan support)\n  * Enable Vulkan support for StarCoder2, XVERSE, Command R, and OLMo\n* Show scrollbar in chat collections list as needed (#2691)\n\n<b>&mdash; What's Removed &mdash;</b>\n* Remove support for GPT-J models (#2676)\n\n<b>&mdash; Fixes &mdash;</b>\n* Fix placement of thumbs-down and datalake opt-in dialogs (#2540)\n* Select the correct folder with the Linux fallback folder dialog (#2541)\n* Fix clone button sometimes producing blank model info (#2545)\n* Fix jerky chat view scrolling (#2555)\n* Fix \"reload\" showing for chats with missing models (#2520)\n* Fix property binding loop warning (#2601)\n* Fix UI hang with certain chat view content (#2543)\n* Fix crash when Kompute falls back to CPU (#2640)\n* Fix several Vulkan resource management issues (#2694)\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* cosmic-snow (`@cosmic-snow`)\n* 3Simplex (`@3Simplex`)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "3.1.1",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Ability to add OpenAI compatible remote models (#2683)
-
-<b>&mdash; Fixes &mdash;</b>
-* Update llama.cpp to cherry-pick Llama 3.1 RoPE fix. (#2758)
-",
-    "contributors":
-"
-* Adam Treat (Nomic AI)
-* Jared Van Bortel (Nomic AI)
-* Shiranui (@supersonictw)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Ability to add OpenAI compatible remote models (#2683)\n\n<b>&mdash; Fixes &mdash;</b>\n* Update llama.cpp to cherry-pick Llama 3.1 RoPE fix. (#2758)\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)\n* Shiranui (@supersonictw)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "3.2.0",
-    "notes":
-"
-<b>&mdash; What's New &mdash;</b>
-* Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish
-* Significantly faster context recalculation when context runs out
-* Models no longer stop generating when they run out of context
-* Add Qwen2-1.5B-Instruct to the model list
-
-<b>&mdash; Fixes &mdash;</b>
-* Fix a CUDA crash with long conversations since v3.1.0
-* Fix \"file(s)\" and \"word(s)\" appearing in UI instead of proper plurals
-* Show the correct icons for LocalDocs sources with uppercase extensions
-* More reliable reverse prompt detection
-* Fix a minor prompting issue introduced in v3.1.0
-* Disallow context shift for chat name and follow-up generation
-* Fix potential incompatibility with macOS 12 and 13
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-* Adam Treat (Nomic AI)
-* Riccardo Giovanetti (`@Harvester62`)
-* Victor Emanuel (`@SINAPSA-IC`)
-* Jeremy Tayco (`@jstayco`)
-* Shiranui (`@supersonictw`)
-* Thiago Ramos (`@thiagojramos`)
-* ThiloteE (`@ThiloteE`)
-* Dominik (`@cosmic-snow`)
-* Jack (`@wuodoo`)
-* Community (beta testers, bug reporters, bindings authors)
-"
+    "notes": "<b>&mdash; What's New &mdash;</b>\n* Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish\n* Significantly faster context recalculation when context runs out\n* Models no longer stop generating when they run out of context\n* Add Qwen2-1.5B-Instruct to the model list\n\n<b>&mdash; Fixes &mdash;</b>\n* Fix a CUDA crash with long conversations since v3.1.0\n* Fix \"file(s)\" and \"word(s)\" appearing in UI instead of proper plurals\n* Show the correct icons for LocalDocs sources with uppercase extensions\n* More reliable reverse prompt detection\n* Fix a minor prompting issue introduced in v3.1.0\n* Disallow context shift for chat name and follow-up generation\n* Fix potential incompatibility with macOS 12 and 13\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Riccardo Giovanetti (`@Harvester62`)\n* Victor Emanuel (`@SINAPSA-IC`)\n* Jeremy Tayco (`@jstayco`)\n* Shiranui (`@supersonictw`)\n* Thiago Ramos (`@thiagojramos`)\n* ThiloteE (`@ThiloteE`)\n* Dominik (`@cosmic-snow`)\n* Jack (`@wuodoo`)\n* Community (beta testers, bug reporters, bindings authors)"
   },
   {
     "version": "3.2.1",
-    "notes":
-"
-<b>&mdash; Fixes &mdash;</b>
-* Fix a potential Vulkan crash on application exit on some Linux systems
-* Fix a bad CUDA build option that led to gibberish on newer NVIDIA GPUs
-",
-    "contributors":
-"
-* Jared Van Bortel (Nomic AI)
-"
+    "notes": "<b>&mdash; Fixes &mdash;</b>\n* Fix a potential Vulkan crash on application exit on some Linux systems\n* Fix a bad CUDA build option that led to gibberish on newer NVIDIA GPUs\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)"
   }
 ]

@@ -1134,37 +1134,37 @@ modelo para comenzar
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="279"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>El modelo &quot;%1&quot; se ha instalado correctamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>ERROR: $MODEL_NAME está vacío.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>ERROR: $API_KEY está vacía.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>ERROR: $BASE_URL no es válida.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="307"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>ERROR: El modelo &quot;%1 (%2)&quot; está en conflicto.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="326"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>El modelo &quot;%1 (%2)&quot; se ha instalado correctamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="350"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>El modelo &quot;%1&quot; ha sido eliminado.</translation>
     </message>
@@ -2284,6 +2284,14 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
         <translation>¡Bienvenido!</translation>
     </message>
     <message>
+        <location filename="../src/qml/StartupDialog.qml" line="67"/>
+        <source>### Release Notes
+%1&lt;br/&gt;
+### Contributors
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/qml/StartupDialog.qml" line="71"/>
         <source>Release notes</source>
         <translation>Notas de la versión</translation>
@@ -2384,11 +2392,10 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
         <translation>Permitir rechazar el compartir anónimo de chats con el Datalake de GPT4All</translation>
     </message>
     <message>
-        <location filename="../src/qml/StartupDialog.qml" line="67"/>
         <source>### Release notes
 %1### Contributors
 %2</source>
-        <translation>### Notas de la versión
+        <translation type="vanished">### Notas de la versión
 %1### Colaboradores
 %2
         </translation>
