@@ -1,48 +1,65 @@
 <h1 align="center">GPT4All</h1>
 
-<p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>
-
-https://github.com/nomic-ai/gpt4all/assets/70534565/513a0f15-4964-4109-89e4-4f9a9011f311
-
 <p align="center">
-  <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
-    <img src="gpt4all-bindings/python/docs/assets/windows.png" width="80" height="80"><br>
-    Download for Windows
-  </a>
+  <a href="https://www.nomic.ai/gpt4all">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a> &bull; <a href="https://www.youtube.com/watch?v=gQcZDXRVJok">YouTube Tutorial</a>
 </p>
 
 <p align="center">
-  <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
-    <img src="gpt4all-bindings/python/docs/assets/mac.png" width="85" height="100"><br>
-    Download for MacOS
-  </a>
+  GPT4All runs large language models (LLMs) privately on everyday desktops & laptops.
+</p>
+<p align="center">
+  No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>.
 </p>
 
 <p align="center">
-  <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
-    <img src="gpt4all-bindings/python/docs/assets/ubuntu.svg" width="120" height="120"><br>
-    Download for Ubuntu
-  </a>
-</p>
-
-<p align="center">
-  <a href='https://flathub.org/apps/io.gpt4all.gpt4all'>
-    <img width='240' alt='Get it on Flathub' src='https://flathub.org/api/badge?locale=en'><br>
-    Get it on Flathub (community maintained)
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://gpt4all.io">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
+  Read about what's new in <a href="https://www.nomic.ai/blog/tag/gpt4all">our blog</a>.
 </p>
 <p align="center">
   <a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Subscribe to the newsletter</a>
 </p>
+
+https://github.com/nomic-ai/gpt4all/assets/70534565/513a0f15-4964-4109-89e4-4f9a9011f311
+
 <p align="center">
 GPT4All is made possible by our compute partner <a href="https://www.paperspace.com/">Paperspace</a>.
 </p>
 <p align="center">
  <a href="https://www.phorm.ai/query?projectId=755eecd3-24ad-49cc-abf4-0ab84caacf63"><img src="https://img.shields.io/badge/Phorm-Ask_AI-%23F2777A.svg" alt="phorm.ai"></a>
+</p>
+
+## Download Links
+
+<p>
+  &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
+    <img src="gpt4all-bindings/python/docs/assets/windows.png" style="height: 1em; width: auto" /> Windows Installer
+  </a> &mdash;
+</p>
+<p>
+  &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
+    <img src="gpt4all-bindings/python/docs/assets/mac.png" style="height: 1em; width: auto" /> macOS Installer
+  </a> &mdash;
+</p>
+<p>
+  &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
+    <img src="gpt4all-bindings/python/docs/assets/ubuntu.svg" style="height: 1em; width: auto" /> Ubuntu Installer
+  </a> &mdash;
+</p>
+<p>
+  Windows and Linux require Intel Core i3 2nd Gen / AMD Bulldozer, or better. x86-64 only, no ARM.
+</p>
+<p>
+  macOS requires Monterey 12.6 or newer. Best results with Apple Silicon M-series processors.
+</p>
+
+See the full [System Requirements](gpt4all-chat/system_requirements.md) for more details.
+
+<br/>
+<br/>
+<p>
+  <a href='https://flathub.org/apps/io.gpt4all.gpt4all'>
+    <img style="height: 2em; width: auto" alt='Get it on Flathub' src='https://flathub.org/api/badge'><br/>
+    Flathub (community maintained)
+  </a>
 </p>
 
 ## Install GPT4All Python
@@ -75,7 +92,7 @@ with model.chat_session():
     - Improved user workflow for LocalDocs
     - Expanded access to more model architectures
 - **October 19th, 2023**: GGUF Support Launches with Support for:
-    - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
+    - Mistral 7b base model, an updated model gallery on our website, several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
     - Offline build support for running old versions of the GPT4All Local LLM Chat Client.
 - **September 18th, 2023**: [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) launches supporting local LLM inference on NVIDIA and AMD GPUs.
