@@ -1202,37 +1202,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="279"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>模型 &quot;%1&quot; 安装成功</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>错误：$MODEL_NAME 为空</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>错误：$API_KEY为空</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>错误：$BASE_URL 非法</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="307"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>错误: 模型 &quot;%1 (%2)&quot; 有冲突.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="326"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>模型 &quot;%1 (%2)&quot; 安装成功.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="350"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>模型 &quot;%1&quot; 已删除.</translation>
     </message>
@@ -2370,11 +2370,13 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="67"/>
-        <source>### Release notes
-%1### Contributors
+        <source>### Release Notes
+%1&lt;br/&gt;
+### Contributors
 %2</source>
         <translation>### 发布日志
-%1### 贡献者
+%1&lt;br/&gt;
+### 贡献者
 %2</translation>
     </message>
     <message>

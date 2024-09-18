@@ -1115,37 +1115,37 @@ modelo instalado para funcionar</translation>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="279"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Modelo &quot;%1&quot; instalado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>ERRO: O nome do modelo ($MODEL_NAME) está vazio.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>ERRO: A chave da API ($API_KEY) está vazia.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>ERRO: A URL base ($BASE_URL) é inválida.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="307"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>ERRO: Conflito com o modelo &quot;%1 (%2)&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="326"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Modelo &quot;%1 (%2)&quot; instalado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="350"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Modelo &quot;%1&quot; removido.</translation>
     </message>
@@ -2227,11 +2227,13 @@ OBS.: Ao ativar este recurso, você estará enviando seus dados para o Datalake 
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="67"/>
-        <source>### Release notes
-%1### Contributors
+        <source>### Release Notes
+%1&lt;br/&gt;
+### Contributors
 %2</source>
         <translation>### Notas de lançamento
-%1### Colaboradores
+%1&lt;br/&gt;
+### Colaboradores
 %2</translation>
     </message>
     <message>

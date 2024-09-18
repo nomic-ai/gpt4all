@@ -1105,37 +1105,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="279"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>模型「%1」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>錯誤：$BASE_URL 無效。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="307"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>錯誤：模型「%1 （%2）」發生衝突。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="326"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>模型「%1（%2）」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="350"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>模型「%1」已移除。</translation>
     </message>
@@ -2274,11 +2274,13 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="67"/>
-        <source>### Release notes
-%1### Contributors
+        <source>### Release Notes
+%1&lt;br/&gt;
+### Contributors
 %2</source>
         <translation>### 版本資訊
-%1### 貢獻者
+%1&lt;br/&gt;
+### 貢獻者
 %2</translation>
     </message>
     <message>
