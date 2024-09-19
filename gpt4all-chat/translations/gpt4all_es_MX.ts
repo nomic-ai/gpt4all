@@ -431,10 +431,6 @@
         <translation>Dispositivo</translation>
     </message>
     <message>
-        <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or Metal.</source>
-        <translation type="vanished">El dispositivo de cómputo utilizado para la generación de texto. &quot;Auto&quot; utiliza Vulkan o Metal.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="151"/>
         <source>Small</source>
         <translation>Pequeño</translation>
@@ -1665,12 +1661,6 @@ modelo para comenzar
         <translation>Número de tokens de entrada y salida que el modelo ve.</translation>
     </message>
     <message>
-        <source>Maximum combined prompt/response tokens before information is lost. Using more context than the model was trained on will yield poor results.
-NOTE: Does not take effect until you reload the model.</source>
-        <translation type="vanished">Máximo de tokens combinados de indicación/respuesta antes de que se pierda información. Usar más contexto del que se utilizó para entrenar el modelo producirá resultados pobres.
-NOTA: No tiene efecto hasta que recargues el modelo.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ModelSettings.qml" line="412"/>
         <source>Temperature</source>
         <translation>Temperatura</translation>
@@ -2220,17 +2210,6 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
         <location filename="../src/qml/StartupDialog.qml" line="72"/>
         <source>Release notes for this version</source>
         <translation>Notas de la versión para esta versión</translation>
-    </message>
-    <message>
-        <source>### Opt-ins for anonymous usage analytics and datalake By enabling these features, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
-                
-When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
-
-NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation type="vanished">### Autorización para análisis de uso anónimo y datalake Al habilitar estas funciones, podrás participar en el proceso democrático de entrenar un modelo de lenguaje grande contribuyendo con datos para futuras mejoras del modelo. Cuando un modelo GPT4All te responda y hayas aceptado participar, tu conversación se enviará al Datalake de Código Abierto de GPT4All. Además, podrás indicar si te gusta o no su respuesta. Si no te gusta una respuesta, puedes sugerir una alternativa. Estos datos se recopilarán y agregarán en el Datalake de GPT4All.
-                
-NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Código Abierto de GPT4All. No debes esperar privacidad en el chat cuando esta función esté habilitada. Sin embargo, puedes esperar una atribución opcional si lo deseas. Tus datos de chat estarán disponibles abiertamente para que cualquiera los descargue y serán utilizados por Nomic AI para mejorar futuros modelos de GPT4All. Nomic AI conservará toda la información de atribución adjunta a tus datos y se te acreditará como colaborador en cualquier lanzamiento de modelo GPT4All que utilice tus datos.
-            </translation>
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="106"/>
