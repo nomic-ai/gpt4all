@@ -371,6 +371,11 @@
         <translation>optional: partajarea (share) de comentarii/conversatii</translation>
     </message>
     <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>EROARE: Sistemul de Update nu poate găsi componenta MaintenanceTool necesară căutării de versiuni noi!&lt;br&gt;&lt;br&gt; Ai instalat acest program folosind kitul online? Dacă da, atunci MaintenanceTool trebuie să fie un nivel mai sus de folderul unde ai instalat programul.&lt;br&gt;&lt;br&gt; Dacă nu poate fi lansată manual, atunci programul trebuie reinstalat.</translation>
+    </message>
+    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>Eroare</translation>
@@ -429,17 +434,6 @@
         <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or
                 Metal.</source>
         <translation type="vanished">Dispozitivul de calcul utilizat pentru generarea de text. &quot;Auto&quot; apelează la Vulkan sau la Metal.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation>EROARE: Sistemul de Update nu poate găsi componenta MaintenanceTool&lt;br&gt; necesară căutării de versiuni noi!&lt;br&gt;&lt;br&gt; Ai instalat acest program folosind kitul online? Dacă da,&lt;br&gt; atunci MaintenanceTool trebuie să fie un nivel mai sus de folderul&lt;br&gt; unde ai instalat programul.&lt;br&gt;&lt;br&gt; Dacă nu poate fi lansată manual, atunci programul trebuie reinstalat.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="151"/>
@@ -2111,103 +2105,60 @@ NOTE: Does not take effect until you reload the model.</source>
         <translation>Contribuie cu date/informaţii la componenta Open-source DataLake a GPT4All.</translation>
     </message>
     <message>
-        <source>By enabling this feature, you will be able to participate in the democratic
-                process of training a large language model by contributing data for future model
-                improvements.
-
-                When a GPT4All model responds to you and you have opted-in, your conversation will
-                be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its
-                response. If you dislike a response, you can suggest an alternative response. This
-                data will be collected and aggregated in the GPT4All Datalake.
-
-                NOTE: By turning on this feature, you will be sending your data to the GPT4All Open
-                Source Datalake. You should have no expectation of chat privacy when this feature is
-                enabled. You should; however, have an expectation of an optional attribution if you
-                wish. Your chat data will be openly available for anyone to download and will be
-                used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
-                attribution information attached to your data and you will be credited as a
-                contributor to any GPT4All model release that uses your data!</source>
-        <translation type="vanished">Dacă activezi această funcţionalitate, vei participa la procesul democratic
-                de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
-
-                Când un model în GPT4All Îţi răspunde şi îi accepţi replica, atunci conversaţia va fi
-                trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica,
-                Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. 
-                Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
-
-                NOTă: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
-                DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi
-                această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti.
-                Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi
-                utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra
-                toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-                participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
-    </message>
-    <message>
         <location filename="../src/qml/NetworkDialog.qml" line="55"/>
         <source>By enabling this feature, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
 
 When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation>Dacă activezi această funcţionalitate, vei participa la procesul democratic
-                de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
+        <translation>Dacă activezi această funcţionalitate, vei participa la procesul democratic de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
 
-                Când un model în GPT4All îţi răspunde şi îi accepţi replica, atunci conversaţia va fi
-                trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica,
-                Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. 
-                Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
+Când un model în GPT4All îţi răspunde şi îi accepţi replica, atunci conversaţia va fi trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica, Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
 
-                NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
-                DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi
-                această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti.
-                Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi
-                utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra
-                toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-                participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
+NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti. Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Termenii pentru participare</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Descrie ce se întâmplă când participi</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Specifică o denumire pentru această apreciere (opţional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Apreciere (opţional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Apreciază</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Activează</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Activează participarea</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Anulare</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Anulează participarea</translation>
     </message>

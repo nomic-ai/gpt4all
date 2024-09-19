@@ -371,17 +371,6 @@
         <translation>optar por compartir comentarios/conversaciones</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>Diálogo de error</translation>
@@ -415,6 +404,11 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
         <translation>Claro</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>ERROR: El sistema de actualización no pudo encontrar la Herramienta de Mantenimiento utilizada para buscar actualizaciones.&lt;br&gt;&lt;br&gt;¿Instaló esta aplicación utilizando el instalador en línea? Si es así, el ejecutable de la Herramienta de Mantenimiento debería estar ubicado un directorio por encima de donde reside esta aplicación en su sistema de archivos.&lt;br&gt;&lt;br&gt;Si no puede iniciarlo manualmente, me temo que tendrá que reinstalar la aplicación.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="114"/>
@@ -605,22 +599,6 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="297"/>
         <source>Application default</source>
         <translation>Predeterminado de la aplicación</translation>
-    </message>
-    <message>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                       to check for updates!&lt;br&gt;&lt;br&gt;
-                       Did you install this application using the online installer? If so,&lt;br&gt;
-                       the MaintenanceTool executable should be located one directory&lt;br&gt;
-                       above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                       If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                       reinstall.</source>
-        <translation type="vanished">ERROR: El sistema de actualización no pudo encontrar la Herramienta de Mantenimiento utilizada&lt;br&gt;
-                       para buscar actualizaciones.&lt;br&gt;&lt;br&gt;
-                       ¿Instaló esta aplicación utilizando el instalador en línea? Si es así,&lt;br&gt;
-                       el ejecutable de la Herramienta de Mantenimiento debería estar ubicado un directorio&lt;br&gt;
-                       por encima de donde reside esta aplicación en su sistema de archivos.&lt;br&gt;&lt;br&gt;
-                       Si no puede iniciarlo manualmente, me temo que tendrá que&lt;br&gt;
-                       reinstalar la aplicación.</translation>
     </message>
 </context>
 <context>
@@ -2105,47 +2083,47 @@ Cuando un modelo GPT4All te responda y hayas aceptado participar, tu conversaci�
 NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Código Abierto de GPT4All. No debes esperar privacidad en el chat cuando esta función esté habilitada. Sin embargo, puedes esperar una atribución opcional si lo deseas. Tus datos de chat estarán disponibles abiertamente para que cualquiera los descargue y serán utilizados por Nomic AI para mejorar futuros modelos de GPT4All. Nomic AI conservará toda la información de atribución adjunta a tus datos y se te acreditará como contribuyente en cualquier lanzamiento de modelo GPT4All que utilice tus datos.</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Términos para optar por participar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Describe lo que sucederá cuando opte por participar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Por favor, proporcione un nombre para la atribución (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Atribución (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Proporcionar atribución</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Habilitar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Habilitar participación</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Cancelar participación</translation>
     </message>

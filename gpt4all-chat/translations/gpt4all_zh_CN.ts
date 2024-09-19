@@ -371,20 +371,6 @@
         <translation>选择加入以共享反馈/对话</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation>错误：更新系统无法找到用于检查更新的 MaintenanceTool！     
-        您是否使用在线安装程序安装了此应用程序？如果是的话，
-        MaintenanceTool 可执行文件应该位于文件系统中此应用程序所在目录的上一级目录。
-        如果无法手动启动它，那么恐怕您需要重新安装。</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>错误对话</translation>
@@ -418,6 +404,11 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
         <translation>亮色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>错误：更新系统无法找到用于检查更新的 MaintenanceTool！&lt;br&gt;&lt;br&gt;您是否使用在线安装程序安装了此应用程序？如果是的话，MaintenanceTool 可执行文件应该位于文件系统中此应用程序所在目录的上一级目录。&lt;br&gt;&lt;br&gt;如果无法手动启动它，那么恐怕您需要重新安装。</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="114"/>
@@ -2085,47 +2076,47 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         注意：通过启用此功能，您将把数据发送到 GPT4All 开源数据湖。启用此功能后，您不应该期望聊天隐私。但是，如果您愿意，您应该期望可选的归因。您的聊天数据将公开供任何人下载，并将被 Nomic AI 用于改进未来的 GPT4All 模型。Nomic AI 将保留与您的数据相关的所有归因信息，并且您将被视为使用您的数据的任何 GPT4All 模型发布的贡献者！</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>选择加入的条款</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>描述选择加入时会发生的情况</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>填写名称属性 (可选)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>属性 (可选)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>提供属性</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>启用选择加入</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>取消加入</translation>
     </message>

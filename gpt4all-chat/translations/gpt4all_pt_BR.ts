@@ -371,23 +371,6 @@
         <translation>Compartilhar feedback e conversas</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation>ERRO: O sistema de atualização não encontrou a Ferramenta de Manutenção&lt;br&gt;
-                   necessária para verificar atualizações!&lt;br&gt;&lt;br&gt;
-                   Você instalou este aplicativo usando o instalador online? Se sim,&lt;br&gt;
-                   o executável da Ferramenta de Manutenção deve estar localizado um diretório&lt;br&gt;
-                   acima de onde este aplicativo está instalado.&lt;br&gt;&lt;br&gt;
-                   Se você não conseguir iniciá-lo manualmente, será necessário&lt;br&gt;
-                   reinstalar o aplicativo.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>Mensagens de erro</translation>
@@ -421,6 +404,11 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
         <translation>Modo Claro</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>ERRO: O sistema de atualização não encontrou a Ferramenta de Manutenção necessária para verificar atualizações!&lt;br&gt;&lt;br&gt;Você instalou este aplicativo usando o instalador online? Se sim, o executável da Ferramenta de Manutenção deve estar localizado um diretório acima de onde este aplicativo está instalado.&lt;br&gt;&lt;br&gt;Se você não conseguir iniciá-lo manualmente, será necessário reinstalar o aplicativo.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="114"/>
@@ -2087,47 +2075,47 @@ Quando um modelo GPT4All responder a você e você tiver optado por participar, 
 OBS.: Ao ativar este recurso, você estará enviando seus dados para o Datalake de Código Aberto do GPT4All. Você não deve ter nenhuma expectativa de privacidade no chat quando este recurso estiver ativado. No entanto, você deve ter a expectativa de uma atribuição opcional, se desejar. Seus dados de chat estarão disponíveis para qualquer pessoa baixar e serão usados pela Nomic AI para melhorar os futuros modelos GPT4All. A Nomic AI manterá todas as informações de atribuição anexadas aos seus dados e você será creditado como colaborador em qualquer versão do modelo GPT4All que utilize seus dados!</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Termos de participação</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Descrição do que acontece ao participar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Forneça um nome para atribuição (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Atribuição (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Fornecer atribuição</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Habilitar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Ativar participação</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Cancelar participação</translation>
     </message>

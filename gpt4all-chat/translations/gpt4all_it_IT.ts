@@ -371,17 +371,6 @@
         <translation>aderisci per condividere feedback/conversazioni</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>Dialogo d&apos;errore</translation>
@@ -415,6 +404,11 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
         <translation>Chiaro</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="114"/>
@@ -884,10 +878,6 @@ modello per iniziare</translation>
         <location filename="../src/qml/ChatView.qml" line="854"/>
         <source>You</source>
         <translation>Tu</translation>
-    </message>
-    <message>
-        <source>recalculating context ...</source>
-        <translation type="vanished">ricalcolo contesto ...</translation>
     </message>
     <message>
         <location filename="../src/qml/ChatView.qml" line="878"/>
@@ -1375,10 +1365,6 @@ modello per iniziare</translation>
         <location filename="../src/qml/LocalDocsView.qml" line="71"/>
         <source>＋ Add Collection</source>
         <translation>＋ Aggiungi raccolta</translation>
-    </message>
-    <message>
-        <source>ERROR: The LocalDocs database is not valid.</source>
-        <translation type="vanished">ERRORE: il database di LocalDocs non è valido.</translation>
     </message>
     <message>
         <location filename="../src/qml/LocalDocsView.qml" line="85"/>
@@ -2096,47 +2082,47 @@ Quando un modello di GPT4All ti risponde e tu hai aderito, la tua conversazione 
 NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di GPT4All. Non dovresti avere aspettative sulla privacy della chat quando questa funzione è abilitata. Dovresti, tuttavia, aspettarti un&apos;attribuzione facoltativa, se lo desideri. I tuoi dati di chat saranno liberamente disponibili per essere scaricati da chiunque e verranno utilizzati da Nomic AI per migliorare i futuri modelli GPT4All. Nomic AI conserverà tutte le informazioni di attribuzione allegate ai tuoi dati e verrai accreditato come collaboratore a qualsiasi versione del modello GPT4All che utilizza i tuoi dati!</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Termini per l&apos;adesione</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Descrive cosa accadrà quando effettuerai l&apos;adesione</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Fornisci un nome per l&apos;attribuzione (facoltativo)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Attribuzione (facoltativo)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Fornire attribuzione</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Abilita</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Abilita l&apos;adesione</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Annulla l&apos;adesione</translation>
     </message>

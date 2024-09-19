@@ -32,15 +32,15 @@ MySettingsTab {
         anchors.centerIn: parent
         modal: false
         padding: 20
+        width: 40 + 400 * theme.fontScale
         Text {
+            anchors.fill: parent
             horizontalAlignment: Text.AlignJustify
-            text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
-                   to check for updates!<br><br>
-                   Did you install this application using the online installer? If so,<br>
-                   the MaintenanceTool executable should be located one directory<br>
-                   above where this application resides on your filesystem.<br><br>
-                   If you can't start it manually, then I'm afraid you'll have to<br>
-                   reinstall.")
+            text: qsTr("ERROR: Update system could not find the MaintenanceTool used to check for updates!<br/><br/>"
+                  + "Did you install this application using the online installer? If so, the MaintenanceTool "
+                  + "executable should be located one directory above where this application resides on your "
+                  + "filesystem.<br/><br/>If you can't start it manually, then I'm afraid you'll have to reinstall.")
+            wrapMode: Text.WordWrap
             color: theme.textErrorColor
             font.pixelSize: theme.fontSizeLarge
             Accessible.role: Accessible.Dialog
