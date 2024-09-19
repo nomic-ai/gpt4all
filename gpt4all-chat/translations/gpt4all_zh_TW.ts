@@ -504,7 +504,7 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
+        <translation>啟用本機 API 伺服器</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="340"/>
@@ -576,10 +576,6 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="489"/>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
         <translation>將交談模型的狀態儲存到磁碟以加快載入速度。警告：每次交談使用約 2GB。</translation>
-    </message>
-    <message>
-        <source>Enable Local Server</source>
-        <translation type="vanished">啟用本機伺服器</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
@@ -1105,37 +1101,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="279"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>模型「%1」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>錯誤：$BASE_URL 無效。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="307"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>錯誤：模型「%1 （%2）」發生衝突。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="326"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>模型「%1（%2）」已安裝成功。</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="350"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>模型「%1」已移除。</translation>
     </message>
@@ -1509,12 +1505,12 @@ model to get started</source>
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>無法開啟“%1”：%2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>無法建立“%1”：%2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1288"/>

@@ -558,22 +558,12 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
+        <translation>Habilitar el servidor API local</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
         <translation>Exponer un servidor compatible con OpenAI a localhost. ADVERTENCIA: Resulta en un mayor uso de recursos.</translation>
-    </message>
-    <message>
-        <source>Enable Local Server</source>
-        <translation type="vanished">Habilitar servidor local</translation>
-    </message>
-    <message>
-        <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased
-                resource usage.</source>
-        <translation type="vanished">Exponer un servidor compatible con OpenAI a localhost. ADVERTENCIA: Resulta
-                en un mayor uso de recursos.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="522"/>
@@ -905,10 +895,6 @@
         <translation>Tú</translation>
     </message>
     <message>
-        <source>recalculating context ...</source>
-        <translation type="vanished">recalculando contexto ...</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ChatView.qml" line="878"/>
         <source>response stopped ...</source>
         <translation>respuesta detenida ...</translation>
@@ -1134,37 +1120,37 @@ modelo para comenzar
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="279"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>El modelo &quot;%1&quot; se ha instalado correctamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>ERROR: $MODEL_NAME está vacío.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>ERROR: $API_KEY está vacía.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>ERROR: $BASE_URL no es válida.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="307"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>ERROR: El modelo &quot;%1 (%2)&quot; está en conflicto.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="326"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>El modelo &quot;%1 (%2)&quot; se ha instalado correctamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="350"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>El modelo &quot;%1&quot; ha sido eliminado.</translation>
     </message>
@@ -1285,12 +1271,6 @@ modelo para comenzar
         <translation>Extensiones de archivo permitidas</translation>
     </message>
     <message>
-        <source>Comma-separated list. LocalDocs will only attempt to process files with these
-                extensions.</source>
-        <translation type="vanished">Lista separada por comas. DocumentosLocales solo intentará procesar
-                archivos con estas extensiones.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="100"/>
         <source>Embedding</source>
         <translation>Incrustación</translation>
@@ -1299,12 +1279,6 @@ modelo para comenzar
         <location filename="../src/qml/LocalDocsSettings.qml" line="112"/>
         <source>Use Nomic Embed API</source>
         <translation>Usar API de incrustación Nomic</translation>
-    </message>
-    <message>
-        <source>Embed documents using the fast Nomic API instead of a private local model.
-                Requires restart.</source>
-        <translation type="vanished">Incrustar documentos usando la rápida API de Nomic en lugar de un modelo
-                local privado. Requiere reinicio.</translation>
     </message>
     <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="130"/>
@@ -1382,11 +1356,6 @@ modelo para comenzar
         <translation>Máximo de N mejores coincidencias de fragmentos de documentos recuperados para añadir al contexto del prompt. Números más grandes aumentan la probabilidad de respuestas verídicas, pero también resultan en una generación más lenta.</translation>
     </message>
     <message>
-        <source> Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.
-            </source>
-        <translation type="vanished"> Valores demasiado grandes pueden causar fallos en documentos locales, respuestas extremadamente lentas o falta de respuesta. En términos generales, los {N caracteres x N fragmentos} se agregan a la ventana de contexto del modelo. Más información &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aquí&lt;/a&gt;.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="266"/>
         <source>Document snippet size (characters)</source>
         <translation>Tamaño del fragmento de documento (caracteres)</translation>
@@ -1413,10 +1382,6 @@ modelo para comenzar
         <location filename="../src/qml/LocalDocsView.qml" line="71"/>
         <source>＋ Add Collection</source>
         <translation>＋ Agregar colección</translation>
-    </message>
-    <message>
-        <source>ERROR: The LocalDocs database is not valid.</source>
-        <translation type="vanished">ERROR: La base de datos de DocumentosLocales no es válida.</translation>
     </message>
     <message>
         <location filename="../src/qml/LocalDocsView.qml" line="109"/>
@@ -1563,12 +1528,6 @@ modelo para comenzar
         <translation>&lt;ul&gt;&lt;li&gt;Requiere clave API personal de OpenAI.&lt;/li&gt;&lt;li&gt;ADVERTENCIA: ¡Enviará sus chats a OpenAI!&lt;/li&gt;&lt;li&gt;Su clave API se almacenará en el disco&lt;/li&gt;&lt;li&gt;Solo se usará para comunicarse con OpenAI&lt;/li&gt;&lt;li&gt;Puede solicitar una clave API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aquí.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;
-                %1</source>
-        <translation type="vanished">&lt;strong&gt;Modelo ChatGPT GPT-3.5 Turbo de
-                OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
-    </message>
-    <message>
         <location filename="../src/modellist.cpp" line="1585"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo ChatGPT GPT-3.5 Turbo de OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
@@ -1617,12 +1576,12 @@ modelo para comenzar
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>no se puede abrir &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>no se puede crear &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1289"/>
@@ -2133,19 +2092,6 @@ NOTA: No surte efecto hasta que recargue el modelo.</translation>
         <translation>Contribuir datos al Datalake de código abierto de GPT4All.</translation>
     </message>
     <message>
-        <source>By enabling this feature, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
- 
-When a GPT4All model responds to you and you have opted-in, your conversation will
-be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its
-response. If you dislike a response, you can suggest an alternative response. This
-data will be collected and aggregated in the GPT4All Datalake.
-
-NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation type="vanished">Al habilitar esta función, podrá participar en el proceso democrático de entrenamiento de un modelo de lenguaje grande contribuyendo con datos para futuras mejoras del modelo. Cuando un modelo GPT4All le responda y usted haya aceptado, su conversación se enviará al Datalake de código abierto de GPT4All. Además, puede dar me gusta/no me gusta a su respuesta. Si no le gusta una respuesta, puede sugerir una alternativa. Estos datos se recopilarán y agregarán en el Datalake de GPT4All.
-                
-NOTA: Al activar esta función, enviará sus datos al Datalake de código abierto de GPT4All. No debe esperar privacidad en el chat cuando esta función esté habilitada. Sin embargo, puede esperar una atribución opcional si lo desea. Sus datos de chat estarán disponibles abiertamente para que cualquiera los descargue y serán utilizados por Nomic AI para mejorar futuros modelos de GPT4All. Nomic AI conservará toda la información de atribución adjunta a sus datos y se le acreditará como contribuyente en cualquier lanzamiento de modelo GPT4All que utilice sus datos.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/NetworkDialog.qml" line="55"/>
         <source>By enabling this feature, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
 
@@ -2241,13 +2187,6 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
     </message>
 </context>
 <context>
-    <name>QObject</name>
-    <message>
-        <source>Default</source>
-        <translation type="vanished">Predeterminado</translation>
-    </message>
-</context>
-<context>
     <name>SettingsView</name>
     <message>
         <location filename="../src/qml/SettingsView.qml" line="22"/>
@@ -2289,7 +2228,10 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
 %1&lt;br/&gt;
 ### Contributors
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>### Notas de la versión
+%1&lt;br/&gt;
+### Colaboradores
+%2</translation>
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="71"/>
@@ -2300,16 +2242,6 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
         <location filename="../src/qml/StartupDialog.qml" line="72"/>
         <source>Release notes for this version</source>
         <translation>Notas de la versión para esta versión</translation>
-    </message>
-    <message>
-        <source>### Release notes
-%1### Contributors
-%2
-            </source>
-        <translation type="vanished">### Notas de la versión
-%1### Colaboradores
-%2
-            </translation>
     </message>
     <message>
         <source>### Opt-ins for anonymous usage analytics and datalake By enabling these features, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
@@ -2392,15 +2324,6 @@ NOTA: Al activar esta función, estarás enviando tus datos al Datalake de Códi
         <translation>Permitir rechazar el compartir anónimo de chats con el Datalake de GPT4All</translation>
     </message>
     <message>
-        <source>### Release notes
-%1### Contributors
-%2</source>
-        <translation type="vanished">### Notas de la versión
-%1### Colaboradores
-%2
-        </translation>
-    </message>
-    <message>
         <location filename="../src/qml/StartupDialog.qml" line="87"/>
         <source>### Opt-ins for anonymous usage analytics and datalake
 By enabling these features, you will be able to participate in the democratic process of training a
@@ -2434,12 +2357,6 @@ lanzamiento de modelo GPT4All que utilice sus datos.</translation>
 </context>
 <context>
     <name>SwitchModelDialog</name>
-    <message>
-        <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current
-                conversation. Do you wish to continue?</source>
-        <translation type="vanished">&lt;b&gt;Advertencia:&lt;/b&gt; cambiar el modelo borrará la conversación
-                actual. ¿Desea continuar?</translation>
-    </message>
     <message>
         <location filename="../src/qml/SwitchModelDialog.qml" line="22"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
