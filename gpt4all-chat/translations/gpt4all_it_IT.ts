@@ -575,7 +575,7 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
+        <translation>Abilita il server API locale</translation>
     </message>
     <message>
         <source>Enable Local Server</source>
@@ -1558,12 +1558,12 @@ modello per iniziare</translation>
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>impossibile aprire &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>impossibile creare &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1288"/>
