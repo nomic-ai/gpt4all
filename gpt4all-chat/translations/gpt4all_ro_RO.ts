@@ -14,11 +14,6 @@
         <translation>Adaugă o Colecţie de documente</translation>
     </message>
     <message>
-        <source>Add a folder containing plain text files, PDFs, or Markdown. Configure
-                additional extensions in Settings.</source>
-        <translation type="vanished">Adaugă un folder care conţine fişiere în cu text-simplu, PDF sau Markdown. Extensii suplimentare pot fi specificate în Configurare.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
         <translation>Adaugă un folder cu fişiere în format text, PDF sau Markdown. Alte extensii pot fi specificate în Configurare.</translation>
@@ -244,12 +239,6 @@
         <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your
-                hardware. Model requires more memory (%1 GB) than your system has available
-                (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
         <location filename="../src/qml/AddModelView.qml" line="716"/>
         <source>%1 GB</source>
         <translation>%1 GB</translation>
@@ -264,11 +253,6 @@
         <location filename="../src/qml/AddModelView.qml" line="508"/>
         <source>Describes an error that occurred when downloading</source>
         <translation>Descrie eroarea apărută în timpul descărcării</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a
-                href=&quot;#eroare&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#eroare&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/qml/AddModelView.qml" line="527"/>
@@ -387,15 +371,9 @@
         <translation>optional: partajarea (share) de comentarii/conversatii</translation>
     </message>
     <message>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                to check for updates!&lt;br&gt;&lt;br&gt;
-                Did you install this application using the online installer? If so,&lt;br&gt;
-                the MaintenanceTool executable should be located one directory&lt;br&gt;
-                above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have
-                to&lt;br&gt;
-                reinstall.</source>
-        <translation type="vanished">EROARE: Sistemul de actualizare nu poate găsi componenta MaintenanceTool&lt;br&gt; necesară căutării de versiuni noi!&lt;br&gt;&lt;br&gt; Ai instalat acest program folosind kitul online? Dacă da,&lt;br&gt; atunci MaintenanceTool trebuie să fie un nivel mai sus de folderul&lt;br&gt; unde ai instalat programul.&lt;br&gt;&lt;br&gt; Dacă nu poate fi lansată manual, atunci programul trebuie reinstalat.</translation>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>EROARE: Sistemul de Update nu poate găsi componenta MaintenanceTool necesară căutării de versiuni noi!&lt;br&gt;&lt;br&gt; Ai instalat acest program folosind kitul online? Dacă da, atunci MaintenanceTool trebuie să fie un nivel mai sus de folderul unde ai instalat programul.&lt;br&gt;&lt;br&gt; Dacă nu poate fi lansată manual, atunci programul trebuie reinstalat.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
@@ -456,17 +434,6 @@
         <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or
                 Metal.</source>
         <translation type="vanished">Dispozitivul de calcul utilizat pentru generarea de text. &quot;Auto&quot; apelează la Vulkan sau la Metal.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation>EROARE: Sistemul de Update nu poate găsi componenta MaintenanceTool&lt;br&gt; necesară căutării de versiuni noi!&lt;br&gt;&lt;br&gt; Ai instalat acest program folosind kitul online? Dacă da,&lt;br&gt; atunci MaintenanceTool trebuie să fie un nivel mai sus de folderul&lt;br&gt; unde ai instalat programul.&lt;br&gt;&lt;br&gt; Dacă nu poate fi lansată manual, atunci programul trebuie reinstalat.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="151"/>
@@ -608,16 +575,6 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
         <translation>Activează pe localhost un Server compatibil cu Open-AI. ATENŢIE: Creşte consumul de resurse.</translation>
-    </message>
-    <message>
-        <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB
-                per chat.</source>
-        <translation type="vanished">Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
-    </message>
-    <message>
-        <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased
-                resource usage.</source>
-        <translation type="vanished">Activează pe localhost un Server compatibil cu Open-AI. ATENŢIE: Creşte consumul de resurse.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="522"/>
@@ -882,11 +839,6 @@
         <translation>Niciun model instalat</translation>
     </message>
     <message>
-        <source>GPT4All requires that you install at least one
-                model to get started</source>
-        <translation type="vanished">GPT4All necesită cel puţin un model pentru a putea porni</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ChatView.qml" line="58"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
         <translation>&lt;h3&gt;EROARE la încărcarea
@@ -940,10 +892,6 @@ model to get started</source>
         <location filename="../src/qml/ChatView.qml" line="854"/>
         <source>You</source>
         <translation>Tu</translation>
-    </message>
-    <message>
-        <source>recalculating context ...</source>
-        <translation type="vanished">se recalculează contextul...</translation>
     </message>
     <message>
         <location filename="../src/qml/ChatView.qml" line="878"/>
@@ -1319,10 +1267,6 @@ model to get started</source>
         <translation>nomic.ai</translation>
     </message>
     <message>
-        <source>GitHub</source>
-        <translation type="vanished">GitHub</translation>
-    </message>
-    <message>
         <location filename="../src/qml/HomeView.qml" line="282"/>
         <source>Subscribe to Newsletter</source>
         <translation>Abonare la Newsletter</translation>
@@ -1351,11 +1295,6 @@ model to get started</source>
         <translation>Extensii compatibile de fişier</translation>
     </message>
     <message>
-        <source>Comma-separated list. LocalDocs will only attempt to process files with these
-                extensions.</source>
-        <translation type="vanished">Extensiile, separate prin virgulă. LocalDocs va încerca procesarea numai a fişierelor cu aceste extensii.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="100"/>
         <source>Embedding</source>
         <translation>Embedding</translation>
@@ -1366,20 +1305,9 @@ model to get started</source>
         <translation>Folosesc Nomic Embed API</translation>
     </message>
     <message>
-        <source>Embed documents using the fast Nomic API instead of a private local model.
-                Requires restart.</source>
-        <translation type="vanished">Embedding pe documente folosind API de la Nomic în locul unui model local. Necesită repornire.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="130"/>
         <source>Nomic API Key</source>
         <translation>Cheia API Nomic</translation>
-    </message>
-    <message>
-        <source>API key to use for Nomic Embed. Get one from the Atlas &lt;a
-                href=&quot;https://atlas.nomic.ai/cli-login&quot;&gt;API keys page&lt;/a&gt;.
-                Requires restart.</source>
-        <translation type="vanished">Cheia API de utilizat cu Nomic Embed. Obţine o cheie prin Atlas: &lt;a href=&quot;https://atlas.nomic.ai/cli-login&quot;&gt;pagina cheilor API&lt;/a&gt; Necesită repornire.</translation>
     </message>
     <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="165"/>
@@ -1452,34 +1380,14 @@ model to get started</source>
         <translation>Numărul maxim al citatelor ce corespund şi care vor fi adăugate la contextul pentru prompt. Numere mari amplifică probabilitatea unor replici corecte, dar de asemenea cauzează generare lentă.</translation>
     </message>
     <message>
-        <source>
-                Values too large may cause localdocs failure, extremely slow responses or
-                failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to
-                the model&apos;s context window. More info &lt;a
-                href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation type="vanished">
-                Valori prea mari pot cauza erori cu LocalDocs, replici lente sau absenţa lor completă. în mare, numărul {N caractere x N citate} este adăugat la Context Window/Size/Length a modelului. Mai multe informaţii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="266"/>
         <source>Document snippet size (characters)</source>
         <translation>Lungimea (în caractere) a citatelor din documente</translation>
     </message>
     <message>
-        <source>Number of characters per document snippet. Larger numbers increase likelihood of
-                factual responses, but also result in slower generation.</source>
-        <translation type="vanished">numărul caracterelor din fiecare citat. Numere mari amplifică probabilitatea unor replici corecte, dar de asemenea pot cauza generare lentă.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsSettings.qml" line="292"/>
         <source>Max document snippets per prompt</source>
         <translation>Numărul maxim de citate per prompt</translation>
-    </message>
-    <message>
-        <source>Max best N matches of retrieved document snippets to add to the context for
-                prompt. Larger numbers increase likelihood of factual responses, but also result in
-                slower generation.</source>
-        <translation type="vanished">Numărul maxim al citatelor ce corespund şi care vor fi adăugate la contextul pentru prompt. Numere mari amplifică probabilitatea unor replici corecte, dar de asemenea pot cauza generare lentă.</translation>
     </message>
 </context>
 <context>
@@ -1498,10 +1406,6 @@ model to get started</source>
         <location filename="../src/qml/LocalDocsView.qml" line="71"/>
         <source>＋ Add Collection</source>
         <translation>＋ Adaugă o Colecţie</translation>
-    </message>
-    <message>
-        <source>ERROR: The LocalDocs database is not valid.</source>
-        <translation type="vanished">EROARE: Baza de date LocalDocs nu e validă.</translation>
     </message>
     <message>
         <location filename="../src/qml/LocalDocsView.qml" line="85"/>
@@ -1645,31 +1549,15 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <source>
-                &lt;ul&gt;&lt;li&gt;Requires personal OpenAI API
-                key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to
-                OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on
-                disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with
-                OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a
-                href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
-        <translation type="vanished">
-                &lt;ul&gt;&lt;li&gt;Necesită o cheie API OpenAI personală. &lt;/li&gt;&lt;li&gt;ATENţIE: Conversaţiile tale vor fi trimise la OpenAI! &lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local) &lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu OpenAI&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aici.&lt;/a&gt;&lt;/li&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;
-                %1</source>
-        <translation type="vanished">&lt;strong&gt;Modelul ChatGPT GPT-3.5 Turbo al OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
-    </message>
-    <message>
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>nu se poate deschide „%1”: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>nu se poate crea „%1”: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1288"/>
@@ -1736,29 +1624,6 @@ model to get started</source>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Creat de către %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informaţii pot fi găsite la: &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
-    <message>
-        <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does
-                not guarantee API key access. Contact OpenAI for more info.</source>
-        <translation type="vanished">&lt;br&gt;&lt;br&gt;&lt;i&gt;* Chiar dacă plăteşti la OpenAI pentru ChatGPT-4, aceasta nu garantează accesul la cheia API. Contactează OpenAI pentru mai multe informaţii.</translation>
-    </message>
-    <message>
-        <source>
-                &lt;ul&gt;&lt;li&gt;Requires personal Mistral API
-                key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to
-                Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on
-                disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with
-                Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a
-                href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
-        <translation type="vanished">
-                &lt;ul&gt;&lt;li&gt;Necesită cheia personală Mistral API. &lt;/li&gt;&lt;li&gt;ATENţIE: Conversaţiile tale vor fi trimise la Mistral!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu Mistral&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aici&lt;/a&gt;.&lt;/li&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Created by
-                %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model
-                has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found
-                &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
-        <translation type="vanished">&lt;strong&gt;Creat de către %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informaţii pot fi găsite la: &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
-    </message>
 </context>
 <context>
     <name>ModelSettings</name>
@@ -1798,11 +1663,6 @@ model to get started</source>
         <translation>System Prompt</translation>
     </message>
     <message>
-        <source>Prefixed at the beginning of every conversation. Must contain the appropriate
-                framing tokens.</source>
-        <translation type="vanished">Plasat la Începutul fiecărei conversaţii. Trebuie să conţină token-uri(le) adecvate de Încadrare.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ModelSettings.qml" line="205"/>
         <source>Prompt Template</source>
         <translation>Prompt Template</translation>
@@ -1811,11 +1671,6 @@ model to get started</source>
         <location filename="../src/qml/ModelSettings.qml" line="206"/>
         <source>The template that wraps every prompt.</source>
         <translation>Standardul de formulare a fiecărui prompt.</translation>
-    </message>
-    <message>
-        <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s
-                input.</source>
-        <translation type="vanished">Trebuie să conţină textul &quot;%1&quot; care va fi Înlocuit cu ceea ce scrie utilizatorul.</translation>
     </message>
     <message>
         <location filename="../src/qml/ModelSettings.qml" line="255"/>
@@ -1848,12 +1703,6 @@ model to get started</source>
         <translation>Numărul token-urilor de input şi de output văzute de model.</translation>
     </message>
     <message>
-        <source>Maximum combined prompt/response tokens before information is lost.
-                Using more context than the model was trained on will yield poor results.
-                NOTE: Does not take effect until you reload the model.</source>
-        <translation type="vanished">Numărul maxim combinat al token-urilor în prompt+replică înainte de a se pierde informaţie. Utilizarea unui context mai mare decât cel cu care a fost instruit modelul va întoarce rezultate mai slabe. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ModelSettings.qml" line="412"/>
         <source>Temperature</source>
         <translation>Temperatura</translation>
@@ -1864,11 +1713,6 @@ model to get started</source>
         <translation>Libertatea/Confuzia din replica modelului. Mai mare -&gt; mai multă libertate.</translation>
     </message>
     <message>
-        <source>Temperature increases the chances of choosing less likely tokens.
-                NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation type="vanished">Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTĂ: O temperatură tot mai înaltă determină replici tot mai creative şi mai puţin predictibile.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ModelSettings.qml" line="458"/>
         <source>Top-P</source>
         <translation>Top-P</translation>
@@ -1877,11 +1721,6 @@ model to get started</source>
         <location filename="../src/qml/ModelSettings.qml" line="459"/>
         <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Factorul de Nucleus Sampling. Mai mic -&gt; predictibilitate mai mare.</translation>
-    </message>
-    <message>
-        <source>Only the most likely tokens up to a total probability of top_p can be chosen.
-                NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation type="vanished">Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTĂ: Se evită selectarea token-urilor foarte improbabile.</translation>
     </message>
     <message>
         <location filename="../src/qml/ModelSettings.qml" line="159"/>
@@ -1976,11 +1815,6 @@ NOTE: Does not take effect until you reload the model.</source>
         <translation>Cât de multe layere ale modelului să fie încărcate în VRAM. Valori mici trebuie folosite dacă GPT4All rămâne fără VRAM în timp ce încarcă modelul. Valorile tot mai mici cresc utilizarea CPU şi a RAM şi încetinesc inferenţa. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
     <message>
-        <source>Amount of prompt tokens to process at once.
-                NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation type="vanished">numărul token-urilor procesate simultan. NOTĂ: Valori tot mai mari pot accelera citirea prompt-urilor, dar şi utiliza mai multă RAM.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ModelSettings.qml" line="690"/>
         <source>Repeat Penalty</source>
         <translation>Penalizarea pentru repetare</translation>
@@ -2009,13 +1843,6 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../src/qml/ModelSettings.qml" line="782"/>
         <source>Number of model layers to load into VRAM.</source>
         <translation>Numărul layerelor modelului ce vor fi Încărcate în VRAM.</translation>
-    </message>
-    <message>
-        <source>How many model layers to load into VRAM. Decrease this if GPT4All runs out of
-                VRAM while loading this model.
-                Lower values increase CPU load and RAM usage, and make inference slower.
-                NOTE: Does not take effect until you reload the model.</source>
-        <translation type="vanished">Cât de multe layere ale modelului să fie încărcate în VRAM. Valori mici trebuie folosite dacă GPT4All rămâne fără VRAM în timp ce încarcă modelul. Valorile tot mai mici cresc utilizarea CPU şi a RAM şi încetinesc inferenţa. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
 </context>
 <context>
@@ -2106,17 +1933,6 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../src/qml/ModelsView.qml" line="272"/>
         <source>Install online model</source>
         <translation>Instalez un model din online</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a
-                href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#eroare&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your
-                hardware. Model requires more memory (%1 GB) than your system has available
-                (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENţIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are sistemul tău (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/qml/ModelsView.qml" line="496"/>
@@ -2289,103 +2105,60 @@ NOTE: Does not take effect until you reload the model.</source>
         <translation>Contribuie cu date/informaţii la componenta Open-source DataLake a GPT4All.</translation>
     </message>
     <message>
-        <source>By enabling this feature, you will be able to participate in the democratic
-                process of training a large language model by contributing data for future model
-                improvements.
-
-                When a GPT4All model responds to you and you have opted-in, your conversation will
-                be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its
-                response. If you dislike a response, you can suggest an alternative response. This
-                data will be collected and aggregated in the GPT4All Datalake.
-
-                NOTE: By turning on this feature, you will be sending your data to the GPT4All Open
-                Source Datalake. You should have no expectation of chat privacy when this feature is
-                enabled. You should; however, have an expectation of an optional attribution if you
-                wish. Your chat data will be openly available for anyone to download and will be
-                used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
-                attribution information attached to your data and you will be credited as a
-                contributor to any GPT4All model release that uses your data!</source>
-        <translation type="vanished">Dacă activezi această funcţionalitate, vei participa la procesul democratic
-                de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
-
-                Când un model în GPT4All Îţi răspunde şi îi accepţi replica, atunci conversaţia va fi
-                trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica,
-                Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. 
-                Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
-
-                NOTă: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
-                DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi
-                această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti.
-                Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi
-                utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra
-                toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-                participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
-    </message>
-    <message>
         <location filename="../src/qml/NetworkDialog.qml" line="55"/>
         <source>By enabling this feature, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
 
 When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation>Dacă activezi această funcţionalitate, vei participa la procesul democratic
-                de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
+        <translation>Dacă activezi această funcţionalitate, vei participa la procesul democratic de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
 
-                Când un model în GPT4All îţi răspunde şi îi accepţi replica, atunci conversaţia va fi
-                trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica,
-                Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. 
-                Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
+Când un model în GPT4All îţi răspunde şi îi accepţi replica, atunci conversaţia va fi trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica, Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
 
-                NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
-                DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi
-                această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti.
-                Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi
-                utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra
-                toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-                participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
+NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti. Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Termenii pentru participare</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Descrie ce se întâmplă când participi</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Specifică o denumire pentru această apreciere (opţional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Apreciere (opţional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Apreciază</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Activează</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Activează participarea</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Anulare</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Anulează participarea</translation>
     </message>
@@ -2463,14 +2236,6 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <translation>Bun venit!</translation>
     </message>
     <message>
-        <source>### Release notes
-                %1### Contributors
-                %2</source>
-        <translation type="vanished">### Despre versiune
-                %1### Contributori
-                %2</translation>
-    </message>
-    <message>
         <location filename="../src/qml/StartupDialog.qml" line="71"/>
         <source>Release notes</source>
         <translation>Despre versiune</translation>
@@ -2528,20 +2293,15 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
                 care foloseşte datele tale!</translation>
     </message>
     <message>
-        <source>### Release notes
-%1### Contributors
-%2</source>
-        <translation type="vanished">### Despre versiune
-                %1### Contributori
-                %2</translation>
-    </message>
-    <message>
         <location filename="../src/qml/StartupDialog.qml" line="67"/>
         <source>### Release Notes
 %1&lt;br/&gt;
 ### Contributors
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>### Despre versiune
+%1&lt;br/&gt;
+### Contributori
+%2</translation>
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="87"/>
@@ -2652,11 +2412,6 @@ care foloseşte datele tale!</translation>
 <context>
     <name>SwitchModelDialog</name>
     <message>
-        <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current
-                conversation. Do you wish to continue?</source>
-        <translation type="vanished">&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va şterge conversaţia curentă. Confirmi aceasta?</translation>
-    </message>
-    <message>
         <location filename="../src/qml/SwitchModelDialog.qml" line="22"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
         <translation>&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va şterge conversaţia curentă. Confirmi aceasta?</translation>
@@ -2714,36 +2469,9 @@ care foloseşte datele tale!</translation>
 <context>
     <name>main</name>
     <message>
-        <source>
-                &lt;h3&gt;Encountered an error starting
-                up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware
-                detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet
-                the minimal requirements to run this program. In particular, it does not support AVX
-                intrinsics which this program requires to successfully run a modern large language
-                model. The only soluţion at this time is to upgrade your hardware to a more modern
-                CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a
-                href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="vanished">
-                &lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
-    </message>
-    <message>
         <location filename="../src/main.qml" line="23"/>
         <source>GPT4All v%1</source>
         <translation>GPT4All v%1</translation>
-    </message>
-    <message>
-        <source>&lt;h3&gt;Encountered an error starting
-                up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings
-                file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the
-                program from accessing the settings file. This could be caused by incorrect
-                permissions in the local app config directory where the settings file is located.
-                Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord
-                channel&lt;/a&gt; for help.</source>
-        <translation type="vanished">&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
-    </message>
-    <message>
-        <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only soluţion at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="vanished">&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/main.qml" line="111"/>
