@@ -1664,12 +1664,12 @@ model to get started</source>
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>nu pot accesa &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>nu pot crea &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1288"/>
@@ -2541,7 +2541,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
 %1&lt;br/&gt;
 ### Contributors
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>### Aceasta versiune
+%1&lt;br/&gt;
+### Contributori
+%2</translation>
     </message>
     <message>
         <location filename="../src/qml/StartupDialog.qml" line="87"/>
