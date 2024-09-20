@@ -1,4 +1,6 @@
-set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
+if (DEFINED GGML_METALLIB)
+    set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
+endif()
 
 qt_add_executable(chat
     main.cpp
