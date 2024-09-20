@@ -114,8 +114,6 @@ elseif (APPLE)
 
     # And the following tells CMake where to find and install the file itself.
     set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
-    set_source_files_properties(${APP_ICON_RESOURCE} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources")
     list(APPEND CHAT_EXE_RESOURCES "${APP_ICON_RESOURCE}")
 endif()
 
@@ -138,8 +136,6 @@ endif()
 set(QAPPLICATION_CLASS QGuiApplication)
 add_subdirectory(deps/SingleApplication)
 add_subdirectory(src)
-
-target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
 
 qt_target_qml_sources(chat
     RESOURCES
@@ -223,7 +219,6 @@ if (APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER gpt4all
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        RESOURCE "${CHAT_EXE_RESOURCES}"
         OUTPUT_NAME gpt4all
     )
     add_dependencies(chat ggml-metal)

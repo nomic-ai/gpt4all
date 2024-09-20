@@ -1,6 +1,9 @@
 if (DEFINED GGML_METALLIB)
     set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
 endif()
+if (APPLE)
+    set_source_files_properties(${CHAT_EXE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
 qt_add_executable(chat
     main.cpp
@@ -21,6 +24,7 @@ qt_add_executable(chat
     mysettings.cpp mysettings.h
     network.cpp network.h
     server.cpp server.h
+    ${CHAT_EXE_RESOURCES}
 )
 
 qt_add_qml_module(chat
