@@ -288,7 +288,7 @@ macro(REPORT_MISSING_SIGNING_CONTEXT)
         ]=])
 endmacro()
 
-if (APPLE)
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
     set_target_properties(chat PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER gpt4all
