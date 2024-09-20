@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Significantly improve API server request parsing and response correctness ([#2929](https://github.com/nomic-ai/gpt4all/pull/2929))
 - Remove unnecessary dependency on Qt WaylandCompositor module ([#2949](https://github.com/nomic-ai/gpt4all/pull/2949))
 - Update translations ([#2970](https://github.com/nomic-ai/gpt4all/pull/2970))
+- Fix macOS installer and remove extra installed copy of Nomic Embed ([#2973](https://github.com/nomic-ai/gpt4all/pull/2973))
 
 ## [3.2.1] - 2024-08-13
 
