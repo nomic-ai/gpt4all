@@ -135,9 +135,84 @@ endif()
 
 set(QAPPLICATION_CLASS QGuiApplication)
 add_subdirectory(deps/SingleApplication)
-add_subdirectory(src)
 
-qt_target_qml_sources(chat
+if (DEFINED GGML_METALLIB)
+    set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
+endif()
+if (APPLE)
+    set_source_files_properties(${CHAT_EXE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
+
+qt_add_executable(chat
+    src/main.cpp
+    src/chat.cpp                  src/chat.h
+    src/chatapi.cpp               src/chatapi.h
+    src/chatlistmodel.cpp         src/chatlistmodel.h
+    src/chatllm.cpp               src/chatllm.h
+    src/chatmodel.h
+    src/chatviewtextprocessor.cpp src/chatviewtextprocessor.h
+    src/database.cpp              src/database.h
+    src/download.cpp              src/download.h
+    src/embllm.cpp                src/embllm.h
+    src/llm.cpp                   src/llm.h
+    src/localdocs.cpp             src/localdocs.h
+    src/localdocsmodel.cpp        src/localdocsmodel.h
+    src/logger.cpp                src/logger.h
+    src/modellist.cpp             src/modellist.h
+    src/mysettings.cpp            src/mysettings.h
+    src/network.cpp               src/network.h
+    src/server.cpp                src/server.h
+    ${CHAT_EXE_RESOURCES}
+)
+
+qt_add_qml_module(chat
+    URI gpt4all
+    VERSION 1.0
+    NO_CACHEGEN
+    QML_FILES
+      main.qml
+      qml/AddCollectionView.qml
+      qml/AddModelView.qml
+      qml/ApplicationSettings.qml
+      qml/ChatDrawer.qml
+      qml/ChatView.qml
+      qml/CollectionsDrawer.qml
+      qml/HomeView.qml
+      qml/LocalDocsSettings.qml
+      qml/LocalDocsView.qml
+      qml/ModelSettings.qml
+      qml/ModelsView.qml
+      qml/NetworkDialog.qml
+      qml/NewVersionDialog.qml
+      qml/PopupDialog.qml
+      qml/SettingsView.qml
+      qml/StartupDialog.qml
+      qml/SwitchModelDialog.qml
+      qml/Theme.qml
+      qml/ThumbsDownDialog.qml
+      qml/Toast.qml
+      qml/ToastManager.qml
+      qml/MyBusyIndicator.qml
+      qml/MyButton.qml
+      qml/MyCheckBox.qml
+      qml/MyComboBox.qml
+      qml/MyDialog.qml
+      qml/MyDirectoryField.qml
+      qml/MyFancyLink.qml
+      qml/MyMenu.qml
+      qml/MyMenuItem.qml
+      qml/MyMiniButton.qml
+      qml/MySettingsButton.qml
+      qml/MySettingsDestructiveButton.qml
+      qml/MySettingsLabel.qml
+      qml/MySettingsStack.qml
+      qml/MySettingsTab.qml
+      qml/MySlug.qml
+      qml/MyTextArea.qml
+      qml/MyTextButton.qml
+      qml/MyTextField.qml
+      qml/MyToolButton.qml
+      qml/MyWelcomeButton.qml
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
