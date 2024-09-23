@@ -10,7 +10,6 @@
 #include <QList>
 #include <QMap>
 #include <QObject>
-#include <QQueue>
 #include <QSet>
 #include <QSqlDatabase>
 #include <QString>
@@ -20,6 +19,8 @@
 #include <QVector>
 
 #include <cstddef>
+#include <list>
+#include <map>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -200,8 +201,8 @@ private:
     size_t countOfBytes(int folder_id) const;
     DocumentInfo dequeueDocument();
     void removeFolderFromDocumentQueue(int folder_id);
-    void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
-    void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
+    void enqueueDocumentInternal(DocumentInfo &&info, bool prepend = false);
+    void enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos);
     void scanQueue();
     bool cleanDB();
     void addFolderToWatch(const QString &path);
@@ -224,7 +225,7 @@ private:
     int m_chunkSize;
     QStringList m_scannedFileExtensions;
     QTimer *m_scanTimer;
-    QMap<int, QQueue<DocumentInfo>> m_docsToScan;
+    std::map<int, std::list<DocumentInfo>> m_docsToScan;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;

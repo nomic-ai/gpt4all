@@ -1190,61 +1190,56 @@ void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const
 
 size_t Database::countOfDocuments(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    return m_docsToScan.value(folder_id).size();
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
+        return it->second.size();
+    return 0;
 }
 
 size_t Database::countOfBytes(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    size_t totalBytes = 0;
-    const QQueue<DocumentInfo> &docs = m_docsToScan.value(folder_id);
-    for (const DocumentInfo &f : docs)
-        totalBytes += f.doc.size();
-    return totalBytes;
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end()) {
+        size_t totalBytes = 0;
+        for (const DocumentInfo &f : it->second)
+            totalBytes += f.file.size();
+        return totalBytes;
+    }
+    return 0;
 }
 
 DocumentInfo Database::dequeueDocument()
 {
-    Q_ASSERT(!m_docsToScan.isEmpty());
-    const int firstKey = m_docsToScan.firstKey();
-    QQueue<DocumentInfo> &queue = m_docsToScan[firstKey];
-    Q_ASSERT(!queue.isEmpty());
-    DocumentInfo result = queue.dequeue();
-    if (queue.isEmpty())
-        m_docsToScan.remove(firstKey);
+    Q_ASSERT(!m_docsToScan.empty());
+    auto firstEntry = m_docsToScan.begin();
+    auto &[firstKey, queue] = *firstEntry;
+    Q_ASSERT(!queue.empty());
+    DocumentInfo result = std::move(queue.front());
+    queue.pop_front();
+    if (queue.empty())
+        m_docsToScan.erase(firstEntry);
     return result;
 }
 
 void Database::removeFolderFromDocumentQueue(int folder_id)
 {
-    if (!m_docsToScan.contains(folder_id))
-        return;
-    m_docsToScan.remove(folder_id);
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
+        m_docsToScan.erase(it);
 }
 
-void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
+void Database::enqueueDocumentInternal(DocumentInfo &&info, bool prepend)
 {
-    const int key = info.folder;
-    if (!m_docsToScan.contains(key))
-        m_docsToScan[key] = QQueue<DocumentInfo>();
-    if (prepend)
-        m_docsToScan[key].prepend(info);
-    else
-        m_docsToScan[key].enqueue(info);
+    auto &queue = m_docsToScan[info.folder];
+    queue.insert(prepend ? queue.begin() : queue.end(), std::move(info));
 }
 
-void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos)
+void Database::enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos)
 {
-    for (int i = 0; i < infos.size(); ++i)
-        enqueueDocumentInternal(infos[i]);
-    const size_t count = countOfDocuments(folder_id);
+    // enqueue all documents
+    auto &queue = m_docsToScan[folder_id];
+    queue.splice(queue.end(), std::move(infos));
 
     CollectionItem item = guiCollectionItem(folder_id);
-    item.currentDocsToIndex = count;
-    item.totalDocsToIndex = count;
+    item.currentDocsToIndex = queue.size();
+    item.totalDocsToIndex = queue.size();
     const size_t bytes = countOfBytes(folder_id);
     item.currentBytesToIndex = bytes;
     item.totalBytesToIndex = bytes;
@@ -1260,12 +1255,12 @@ void Database::scanQueueBatch()
     transaction();
 
     // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
+    while (!m_docsToScan.empty() && timer.elapsed() < 100)
         scanQueue();
 
     commit();
 
-    if (m_docsToScan.isEmpty())
+    if (m_docsToScan.empty())
         m_scanTimer->stop();
 }
 
@@ -1374,7 +1369,7 @@ void Database::scanQueue()
         if (info.currentPage < doc.pageCount()) {
             info.currentPage += 1;
             info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
+            enqueueDocumentInternal(std::move(info), true /*prepend*/);
             return updateFolderToIndex(folder_id, countForFolder + 1);
         }
 
@@ -1454,7 +1449,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 
     QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
                     QDirIterator::Subdirectories);
-    QVector<DocumentInfo> infos;
+    std::list<DocumentInfo> infos;
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo = it.fileInfo();
@@ -1466,17 +1461,14 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
         if (!m_scannedFileExtensions.contains(fileInfo.suffix(), Qt::CaseInsensitive))
             continue;
 
-        DocumentInfo info;
-        info.folder = folder_id;
-        info.doc = fileInfo;
-        infos.append(info);
+        infos.emplace_back(folder_id, fileInfo);
     }
 
-    if (!infos.isEmpty()) {
+    if (!infos.empty()) {
         CollectionItem item = guiCollectionItem(folder_id);
         item.indexing = true;
         updateGuiForCollectionItem(item);
-        enqueueDocuments(folder_id, infos);
+        enqueueDocuments(folder_id, std::move(infos));
     } else {
         updateFolderToIndex(folder_id, 0, false);
     }
