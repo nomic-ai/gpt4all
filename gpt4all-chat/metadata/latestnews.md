@@ -1,6 +1,6 @@
 ## Latest News
 
-GPT4All v3.3.0 was released on September 18th. Changes include:
+GPT4All v3.3.0 was released on September 23rd. Changes include:
 
 * **UI Improvements**: The minimum window size now adapts to the font size. A few labels and links have been fixed. The Embeddings Device selection of "Auto"/"Application default" works again. The window icon is now set on Linux. The antenna icon now displays when the API server is listening.
 * **Single Instance**: Only one instance of GPT4All can be opened at a time. This is now enforced.
