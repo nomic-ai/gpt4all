@@ -27,7 +27,7 @@ Unfortunately, no for three reasons:
 
 # What is being done to make them more compatible?
 
-A few things. Number one, we are maintaining compatibility with our current model zoo by way of the submodule pinning. However, we are also exploring how we can update to newer versions of llama.cpp without breaking our current models. This might involve an additional magic header check or it could possibly involve keeping the currently pinned submodule and also adding a new submodule with later changes and differencing them with namespaces or some other manner. Investigations continue.
+A few things. Number one, we are maintaining compatibility with our current model zoo by way of the submodule pinning. However, we are also exploring how we can update to newer versions of llama.cpp without breaking our current models. This might involve an additional magic header check or it could possibly involve keeping the currently pinned submodule and also adding a new submodule with later changes and differentiating them with namespaces or some other manner. Investigations continue.
 
 # What about GPU inference?
 
