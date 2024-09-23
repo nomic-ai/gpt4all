@@ -128,6 +128,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Include GGML
     include_ggml(-mainline-${BUILD_VARIANT})
 
+    if (BUILD_VARIANT MATCHES metal)
+        set(GGML_METALLIB "${GGML_METALLIB}" PARENT_SCOPE)
+    endif()
+
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
         set(TARGET_NAME ${TARGET_NAME}-${BUILD_VARIANT})

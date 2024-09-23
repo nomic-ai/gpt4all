@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.3.0] - 2024-09-20
 
 ### Added
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Significantly improve API server request parsing and response correctness ([#2929](https://github.com/nomic-ai/gpt4all/pull/2929))
 - Remove unnecessary dependency on Qt WaylandCompositor module ([#2949](https://github.com/nomic-ai/gpt4all/pull/2949))
 - Update translations ([#2970](https://github.com/nomic-ai/gpt4all/pull/2970))
+- Fix macOS installer and remove extra installed copy of Nomic Embed ([#2973](https://github.com/nomic-ai/gpt4all/pull/2973))
 
 ## [3.2.1] - 2024-08-13
 
@@ -118,7 +119,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...HEAD
+[3.3.0]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...v3.3.0
 [3.2.1]: https://github.com/nomic-ai/gpt4all/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nomic-ai/gpt4all/compare/v3.1.0...v3.1.1
