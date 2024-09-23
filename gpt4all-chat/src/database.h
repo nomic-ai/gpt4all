@@ -41,7 +41,7 @@ static const int LOCALDOCS_VERSION = 2;
 struct DocumentInfo
 {
     int folder;
-    QFileInfo doc;
+    QFileInfo file;
     int currentPage = 0;
     size_t currentPosition = 0;
     bool currentlyProcessing = false;

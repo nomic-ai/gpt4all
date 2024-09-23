@@ -1271,15 +1271,15 @@ void Database::scanQueue()
     const int folder_id = info.folder;
 
     // Update info
-    info.doc.stat();
+    info.file.stat();
 
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
-    if (!info.doc.exists() || !info.doc.isReadable())
+    if (!info.file.exists() || !info.file.isReadable())
         return updateFolderToIndex(folder_id, countForFolder);
 
-    const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
-    const QString document_path = info.doc.canonicalFilePath();
+    const qint64 document_time = info.file.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
+    const QString document_path = info.file.canonicalFilePath();
     const bool currentlyProcessing = info.currentlyProcessing;
 
     // Check and see if we already have this document
@@ -1342,12 +1342,12 @@ void Database::scanQueue()
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
         QPdfDocument doc;
-        if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
+        if (QPdfDocument::Error::None != doc.load(info.file.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
                 document_id, document_path, q.lastError());
             return updateFolderToIndex(folder_id, countForFolder);
         }
-        const size_t bytes = info.doc.size();
+        const size_t bytes = info.file.size();
         const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
         const int pageIndex = info.currentPage;
 #if defined(DEBUG)
@@ -1356,7 +1356,7 @@ void Database::scanQueue()
         const QPdfSelection selection = doc.getAllText(pageIndex);
         QString text = selection.text();
         QTextStream stream(&text);
-        chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
+        chunkStream(stream, info.folder, document_id, embedding_model, info.file.fileName(),
             doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
@@ -1384,7 +1384,7 @@ void Database::scanQueue()
         }
         Q_ASSERT(!file.isSequential()); // we need to seek
 
-        const size_t bytes = info.doc.size();
+        const size_t bytes = info.file.size();
         QTextStream stream(&file);
         const size_t byteIndex = info.currentPosition;
         if (byteIndex) {
@@ -1401,7 +1401,7 @@ void Database::scanQueue()
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
 #endif
-        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
+        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.file.fileName(),
             QString() /*title*/, QString() /*author*/, QString() /*subject*/, QString() /*keywords*/, -1 /*page*/,
             100 /*maxChunks*/);
         if (pos < 0) {
