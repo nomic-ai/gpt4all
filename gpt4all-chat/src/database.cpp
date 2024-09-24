@@ -2270,11 +2270,15 @@ QList<int> Database::reciprocalRankFusion(const std::vector<float> &query, const
             const int bEmbeddingRank = embeddingRanks.value(b, embeddingResults.size() + 1);
             Q_ASSERT(embeddingRanks.contains(b));
 
-            const float aRRFScore = bmWeight * (1.0f / (fusion_k + aBm25Rank)) + (1.f - bmWeight) * (1.0f / (fusion_k + aEmbeddingRank));
-            const float bRRFScore = bmWeight * (1.0f / (fusion_k + bBm25Rank)) + (1.f - bmWeight) * (1.0f / (fusion_k + bEmbeddingRank));
+            const float aBm25Score = 1.0f / (fusion_k + aBm25Rank);
+            const float bBm25Score = 1.0f / (fusion_k + bBm25Rank);
+            const float aEmbeddingScore = 1.0f / (fusion_k + aEmbeddingRank);
+            const float bEmbeddingScore = 1.0f / (fusion_k + bEmbeddingRank);
+            const float aWeightedScore = bmWeight * aBm25Score + (1.f - bmWeight) * aEmbeddingScore;
+            const float bWeightedScore = bmWeight * bBm25Score + (1.f - bmWeight) * bEmbeddingScore;
 
             // Higher RRF score means better ranking, so we use greater than for sorting
-            return aRRFScore > bRRFScore;
+            return aWeightedScore > bWeightedScore;
         }
     );
 
