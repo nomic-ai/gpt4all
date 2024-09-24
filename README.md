@@ -1,7 +1,7 @@
 <h1 align="center">GPT4All</h1>
 
 <p align="center">
-  <a href="https://gpt4all.io">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
+  <a href="https://www.nomic.ai/gpt4all">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a> &bull; <a href="https://www.youtube.com/watch?v=gQcZDXRVJok">YouTube Tutorial</a>
 </p>
 
 <p align="center">
@@ -50,6 +50,9 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 <p>
   macOS requires Monterey 12.6 or newer. Best results with Apple Silicon M-series processors.
 </p>
+
+See the full [System Requirements](gpt4all-chat/system_requirements.md) for more details.
+
 <br/>
 <br/>
 <p>
@@ -89,7 +92,7 @@ with model.chat_session():
     - Improved user workflow for LocalDocs
     - Expanded access to more model architectures
 - **October 19th, 2023**: GGUF Support Launches with Support for:
-    - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
+    - Mistral 7b base model, an updated model gallery on our website, several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
     - Offline build support for running old versions of the GPT4All Local LLM Chat Client.
 - **September 18th, 2023**: [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) launches supporting local LLM inference on NVIDIA and AMD GPUs.

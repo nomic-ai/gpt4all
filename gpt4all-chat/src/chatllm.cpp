@@ -249,9 +249,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // and what the type and name of that model is. I've tried to comment extensively in this method
     // to provide an overview of what we're doing here.
 
-    // We're already loaded with this model
-    if (isModelLoaded() && this->modelInfo() == modelInfo)
-        return true;
+    if (isModelLoaded() && this->modelInfo() == modelInfo) {
+        // already acquired -> keep it and reset
+        resetContext();
+        return true; // already loaded
+    }
 
     // reset status
     emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
@@ -624,16 +626,16 @@ void ChatLLM::regenerateResponse()
     m_ctx.tokens.erase(m_ctx.tokens.end() - m_promptResponseTokens, m_ctx.tokens.end());
     m_promptResponseTokens = 0;
     m_promptTokens = 0;
-    m_response = std::string();
-    emit responseChanged(QString::fromStdString(m_response));
+    m_response = m_trimmedResponse = std::string();
+    emit responseChanged(QString::fromStdString(m_trimmedResponse));
 }
 
 void ChatLLM::resetResponse()
 {
     m_promptTokens = 0;
     m_promptResponseTokens = 0;
-    m_response = std::string();
-    emit responseChanged(QString::fromStdString(m_response));
+    m_response = m_trimmedResponse = std::string();
+    emit responseChanged(QString::fromStdString(m_trimmedResponse));
 }
 
 void ChatLLM::resetContext()
@@ -643,9 +645,12 @@ void ChatLLM::resetContext()
     m_ctx = LLModel::PromptContext();
 }
 
-QString ChatLLM::response() const
+QString ChatLLM::response(bool trim) const
 {
-    return QString::fromStdString(remove_leading_whitespace(m_response));
+    std::string resp = m_response;
+    if (trim)
+        resp = remove_leading_whitespace(resp);
+    return QString::fromStdString(resp);
 }
 
 ModelInfo ChatLLM::modelInfo() const
@@ -659,20 +664,25 @@ void ChatLLM::setModelInfo(const ModelInfo &modelInfo)
     emit modelInfoChanged(modelInfo);
 }
 
-void ChatLLM::acquireModel() {
+void ChatLLM::acquireModel()
+{
     m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
     emit loadedModelInfoChanged();
 }
 
-void ChatLLM::resetModel() {
+void ChatLLM::resetModel()
+{
     m_llModelInfo = {};
     emit loadedModelInfoChanged();
 }
 
 void ChatLLM::modelChangeRequested(const ModelInfo &modelInfo)
 {
-    m_shouldBeLoaded = true;
-    loadModel(modelInfo);
+    // ignore attempts to switch to the same model twice
+    if (!isModelLoaded() || this->modelInfo() != modelInfo) {
+        m_shouldBeLoaded = true;
+        loadModel(modelInfo);
+    }
 }
 
 bool ChatLLM::handlePrompt(int32_t token)
@@ -698,7 +708,8 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     // check for error
     if (token < 0) {
         m_response.append(response);
-        emit responseChanged(QString::fromStdString(remove_leading_whitespace(m_response)));
+        m_trimmedResponse = remove_leading_whitespace(m_response);
+        emit responseChanged(QString::fromStdString(m_trimmedResponse));
         return false;
     }
 
@@ -708,7 +719,8 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     m_timer->inc();
     Q_ASSERT(!response.empty());
     m_response.append(response);
-    emit responseChanged(QString::fromStdString(remove_leading_whitespace(m_response)));
+    m_trimmedResponse = remove_leading_whitespace(m_response);
+    emit responseChanged(QString::fromStdString(m_trimmedResponse));
     return !m_stopGenerating;
 }
 
@@ -719,8 +731,6 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         processRestoreStateFromText();
     }
 
-    if (!m_processedSystemPrompt)
-        processSystemPrompt();
     const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
@@ -736,14 +746,17 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
 
 bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
     int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-    int32_t repeat_penalty_tokens)
+    int32_t repeat_penalty_tokens, std::optional<QString> fakeReply)
 {
     if (!isModelLoaded())
         return false;
 
+    if (!m_processedSystemPrompt)
+        processSystemPrompt();
+
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    if (!collectionList.isEmpty()) {
+    if (!fakeReply && !collectionList.isEmpty()) {
         emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
         emit databaseResultsChanged(databaseResults);
     }
@@ -789,7 +802,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc,
-                                /*allowContextShift*/ true, m_ctx);
+                                /*allowContextShift*/ true, m_ctx, false,
+                                fakeReply.transform(std::mem_fn(&QString::toStdString)));
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -797,9 +811,9 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
     std::string trimmed = trim_whitespace(m_response);
-    if (trimmed != m_response) {
-        m_response = trimmed;
-        emit responseChanged(QString::fromStdString(m_response));
+    if (trimmed != m_trimmedResponse) {
+        m_trimmedResponse = trimmed;
+        emit responseChanged(QString::fromStdString(m_trimmedResponse));
     }
 
     SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
@@ -1070,6 +1084,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     QString response;
     stream >> response;
     m_response = response.toStdString();
+    m_trimmedResponse = trim_whitespace(m_response);
     QString nameResponse;
     stream >> nameResponse;
     m_nameResponse = nameResponse.toStdString();
@@ -1206,7 +1221,7 @@ void ChatLLM::restoreState()
 void ChatLLM::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText || m_isServer)
+    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText)
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
@@ -1298,10 +1313,9 @@ void ChatLLM::processRestoreStateFromText()
 
         auto &response = *it++;
         Q_ASSERT(response.first != "Prompt: ");
-        auto responseText = response.second.toStdString();
 
         m_llModelInfo.model->prompt(prompt.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr,
-                                    /*allowContextShift*/ true, m_ctx, false, &responseText);
+                                    /*allowContextShift*/ true, m_ctx, false, response.second.toUtf8().constData());
     }
 
     if (!m_stopGenerating) {

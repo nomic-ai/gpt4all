@@ -4,6 +4,8 @@ The GPT4All Desktop Application allows you to download and run large language mo
 
 With GPT4All, you can chat with models, turn your local files into information sources for models [(LocalDocs)](localdocs.md), or browse models available online to download onto your device.
 
+[Official Video Tutorial](https://www.youtube.com/watch?v=gQcZDXRVJok)
+
 ## Quickstart
 
 !!! note "Quickstart"

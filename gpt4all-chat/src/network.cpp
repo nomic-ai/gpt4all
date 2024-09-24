@@ -9,7 +9,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -19,6 +19,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLibraryInfo>
 #include <QNetworkRequest>
 #include <QScreen>
 #include <QSettings>
@@ -36,22 +37,51 @@
 #include <cstring>
 #include <utility>
 
+#ifdef __GLIBC__
+#   include <gnu/libc-version.h>
+#endif
+
 using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
+#define STR_(x) #x
+#define STR(x) STR_(x)
+
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
+
+#ifdef __clang__
+#ifdef __apple_build_version__
+static const char COMPILER_NAME[] = "Apple Clang";
+#else
+static const char COMPILER_NAME[] = "LLVM Clang";
+#endif
+static const char COMPILER_VER[]  = STR(__clang_major__) "." STR(__clang_minor__) "." STR(__clang_patchlevel__);
+#elif defined(_MSC_VER)
+static const char COMPILER_NAME[] = "MSVC";
+static const char COMPILER_VER[]  = STR(_MSC_VER) " (" STR(_MSC_FULL_VER) ")";
+#elif defined(__GNUC__)
+static const char COMPILER_NAME[] = "GCC";
+static const char COMPILER_VER[]  = STR(__GNUC__) "." STR(__GNUC_MINOR__) "." STR(__GNUC_PATCHLEVEL__);
+#endif
+
 
 #if defined(Q_OS_MAC)
 
 #include <sys/sysctl.h>
-static QString getCPUModel()
+static std::optional<QString> getSysctl(const char *name)
 {
-    char buffer[256];
+    char buffer[256] = "";
     size_t bufferlen = sizeof(buffer);
-    sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
-    return buffer;
+    if (sysctlbyname(name, &buffer, &bufferlen, NULL, 0) < 0) {
+        int err = errno;
+        qWarning().nospace() << "sysctlbyname(\"" << name << "\") failed: " << strerror(err);
+        return std::nullopt;
+    }
+    return std::make_optional<QString>(buffer);
 }
+
+static QString getCPUModel() { return getSysctl("machdep.cpu.brand_string").value_or(u"(unknown)"_s); }
 
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
@@ -286,12 +316,36 @@ void Network::sendStartup()
 
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
-        {"$screen_dpi", std::round(display->physicalDotsPerInch())},
-        {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
-        {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
-        {"cpu", getCPUModel()},
-        {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
-        {"datalake_active", mySettings->networkIsActive()},
+        // Build info
+        { "build_compiler",     COMPILER_NAME                                                         },
+        { "build_compiler_ver", COMPILER_VER                                                          },
+        { "build_abi",          QSysInfo::buildAbi()                                                  },
+        { "build_cpu_arch",     QSysInfo::buildCpuArchitecture()                                      },
+#ifdef __GLIBC__
+        { "build_glibc_ver",    QStringLiteral(STR(__GLIBC__) "." STR(__GLIBC_MINOR__))               },
+#endif
+        { "qt_version",         QLibraryInfo::version().toString()                                    },
+        { "qt_debug" ,          QLibraryInfo::isDebugBuild()                                          },
+        { "qt_shared",          QLibraryInfo::isSharedBuild()                                         },
+        // System info
+        { "runtime_cpu_arch",   QSysInfo::currentCpuArchitecture()                                    },
+#ifdef __GLIBC__
+        { "runtime_glibc_ver",  gnu_get_libc_version()                                                },
+#endif
+        { "sys_kernel_type",    QSysInfo::kernelType()                                                },
+        { "sys_kernel_ver",     QSysInfo::kernelVersion()                                             },
+        { "sys_product_type",   QSysInfo::productType()                                               },
+        { "sys_product_ver",    QSysInfo::productVersion()                                            },
+#ifdef Q_OS_MAC
+        { "sys_hw_model",       getSysctl("hw.model").value_or(u"(unknown)"_s)                        },
+#endif
+        { "$screen_dpi",        std::round(display->physicalDotsPerInch())                            },
+        { "display",            u"%1x%2"_s.arg(display->size().width()).arg(display->size().height()) },
+        { "ram",                LLM::globalInstance()->systemTotalRAMInGB()                           },
+        { "cpu",                getCPUModel()                                                         },
+        { "cpu_supports_avx2",  LLModel::Implementation::cpuSupportsAVX2()                            },
+        // Datalake status
+        { "datalake_active",    mySettings->networkIsActive()                                         },
     });
     sendIpify();
 
@@ -321,7 +375,6 @@ void Network::trackEvent(const QString &ev, const QVariantMap &props)
     if (!m_sendUsageStats)
         return;
 
-    Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
 
     properties.insert("token", MIXPANEL_TOKEN);

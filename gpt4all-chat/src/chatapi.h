@@ -1,7 +1,7 @@
 #ifndef CHATAPI_H
 #define CHATAPI_H
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QNetworkReply>
@@ -12,9 +12,10 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
 #include <functional>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class QNetworkAccessManager;
@@ -72,7 +73,7 @@ public:
                 bool allowContextShift,
                 PromptContext &ctx,
                 bool special,
-                std::string *fakeReply) override;
+                std::optional<std::string_view> fakeReply) override;
 
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
@@ -97,7 +98,7 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
-    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override
+    std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special) override
     {
         (void)ctx;
         (void)str;

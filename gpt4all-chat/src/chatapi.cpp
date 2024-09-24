@@ -1,6 +1,6 @@
 #include "chatapi.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -93,7 +93,7 @@ void ChatAPI::prompt(const std::string &prompt,
                      bool allowContextShift,
                      PromptContext &promptCtx,
                      bool special,
-                     std::string *fakeReply) {
+                     std::optional<std::string_view> fakeReply) {
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(allowContextShift);
@@ -121,7 +121,7 @@ void ChatAPI::prompt(const std::string &prompt,
     if (fakeReply) {
         promptCtx.n_past += 1;
         m_context.append(formattedPrompt);
-        m_context.append(QString::fromStdString(*fakeReply));
+        m_context.append(QString::fromUtf8(fakeReply->data(), fakeReply->size()));
         return;
     }
 

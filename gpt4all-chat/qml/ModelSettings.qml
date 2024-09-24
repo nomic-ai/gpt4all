@@ -456,7 +456,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: topPLabel
                 text: qsTr("Top-P")
-                helpText: qsTr("Nucleus Sampling factor. Lower -> more predicatable.")
+                helpText: qsTr("Nucleus Sampling factor. Lower -> more predictable.")
                 Layout.row: 2
                 Layout.column: 0
                 Layout.maximumWidth: 300 * theme.fontScale

@@ -18,9 +18,11 @@
 #include <QVector>
 #include <Qt>
 #include <QtGlobal>
-#include <QtQml>
+
+#include <utility>
 
 using namespace Qt::Literals::StringLiterals;
+
 
 struct ModelInfo {
     Q_GADGET
@@ -502,6 +504,8 @@ private:
     void parseModelsJsonFile(const QByteArray &jsonData, bool save);
     void parseDiscoveryJsonFile(const QByteArray &jsonData);
     QString uniqueModelName(const ModelInfo &model) const;
+    void updateOldRemoteModels(const QString &path);
+    void processModelDirectory(const QString &path);
 
 private:
     mutable QMutex m_mutex;
@@ -521,7 +525,7 @@ private:
 
 protected:
     explicit ModelList();
-    ~ModelList() { for (auto *model: m_models) { delete model; } }
+    ~ModelList() override { for (auto *model: std::as_const(m_models)) { delete model; } }
     friend class MyModelList;
 };
 

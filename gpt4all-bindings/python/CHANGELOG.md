@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Warn on Windows if the Microsoft Visual C++ runtime libraries are not found ([#2920](https://github.com/nomic-ai/gpt4all/pull/2920))
+
 ## [2.8.2] - 2024-08-14
 
 ### Fixed
@@ -56,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Restore leading space removal logic that was incorrectly removed in [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
   - CUDA: Cherry-pick llama.cpp DMMV cols requirement fix that caused a crash with long conversations since [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.2...HEAD
 [2.8.2]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.1...python-v2.8.2
 [2.8.1]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.0...python-v2.8.1
 [2.8.0]: https://github.com/nomic-ai/gpt4all/compare/python-v2.7.0...python-v2.8.0

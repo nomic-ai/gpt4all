@@ -3,7 +3,7 @@ function(sign_target_windows tgt)
         add_custom_command(TARGET ${tgt}
             POST_BUILD
             COMMAND AzureSignTool.exe sign
-                -du "https://gpt4all.io/index.html"
+                -du "https://www.nomic.ai/gpt4all"
                 -kvu https://gpt4all.vault.azure.net
                 -kvi "$Env{AZSignGUID}"
                 -kvs "$Env{AZSignPWD}"

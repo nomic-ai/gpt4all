@@ -3,7 +3,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QCoreApplication>
 #include <QDebug>

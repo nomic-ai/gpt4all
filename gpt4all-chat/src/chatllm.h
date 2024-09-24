@@ -4,7 +4,7 @@
 #include "database.h" // IWYU pragma: keep
 #include "modellist.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QElapsedTimer>
@@ -116,7 +116,7 @@ public:
     void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
     void setMarkedForDeletion(bool b) { m_markedForDeletion = b; }
 
-    QString response() const;
+    QString response(bool trim = true) const;
 
     ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &info);
@@ -198,7 +198,7 @@ Q_SIGNALS:
 protected:
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens);
+        int32_t repeat_penalty_tokens, std::optional<QString> fakeReply = {});
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleNamePrompt(int32_t token);
@@ -221,6 +221,7 @@ private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
     std::string m_response;
+    std::string m_trimmedResponse;
     std::string m_nameResponse;
     QString m_questionResponse;
     LLModelInfo m_llModelInfo;

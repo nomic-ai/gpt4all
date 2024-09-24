@@ -1,6 +1,6 @@
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include <gpt4all-backend/llmodel.h>
 
 #include <QDebug>
 #include <QDir>
