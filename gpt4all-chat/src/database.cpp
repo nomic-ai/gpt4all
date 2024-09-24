@@ -2171,6 +2171,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
         if (!sqlQuery.next())
             continue;
 
+        // Save the query that was used to produce results
         bm25q = bm25Query;
 
         do {
@@ -2203,11 +2204,17 @@ float Database::computeBM25Weight(const Database::BM25Query &bm25q)
         // qlength is the length of the phrases in the query by number of distinct words
         // ilength is the length of the natural language query by number of distinct words
         // rlength is the number of stop words removed from the natural language query to form the query
-        float queryLengthWeight = powf(bm25q.qlength, 2) / powf(float(bm25q.ilength - bm25q.rlength), 2);
+
+        // calculate the query length weight based on the ratio of query terms to meaningful terms.
+        // this formula adjusts the weight with the emperically determined insight that BM25's
+        // effectiveness decreases as query length increases.
+        float queryLengthWeight = 1 / powf(float(bm25q.ilength - bm25q.rlength), 2);
         queryLengthWeight = qBound(0.0f, queryLengthWeight, 1.0f);
-        bmWeight = queryLengthWeight;
-        bmWeight = qBound(0.0f, bmWeight, 1.0f);
-        bmWeight = (0.25f + bmWeight * (0.75f - 0.25f));
+
+        // the weighting is bound between 1/4 and 3/4 which was determined empirically to work well
+        // with the beir nfcorpus, scifact, fiqa and trec-covid datasets along with our embedding
+        // model
+        bmWeight = 0.25f * queryLengthWeight * 0.50f;
     }
 
 #if 0
@@ -2246,6 +2253,9 @@ QList<int> Database::reciprocalRankFusion(const std::vector<float> &query, const
         embeddingRanks[results[i]] = i + 1;
 
     const float bmWeight = bm25Results.isEmpty() ? 0 : computeBM25Weight(bm25q);
+
+    // From the paper: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods"
+    // doi: 10.1145/1571941.157211
     const int fusion_k = 60;
 
     std::stable_sort(
