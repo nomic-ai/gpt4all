@@ -86,14 +86,9 @@ get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
 message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(FMT_INSTALL OFF)
-set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(deps/fmt)
-set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-
+add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(CHAT_EXE_RESOURCES)
@@ -132,9 +127,6 @@ message(STATUS "Embedding model downloaded to ${LOCAL_EMBEDDING_MODEL_PATH}")
 if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
-
-set(QAPPLICATION_CLASS QGuiApplication)
-add_subdirectory(deps/SingleApplication)
 
 if (DEFINED GGML_METALLIB)
     set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
