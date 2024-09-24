@@ -1423,6 +1423,52 @@ void Database::scanQueue()
 
         item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
         updateGuiForCollectionItem(item);
+    } else if (info.isDocx()) {
+        if (!info.opened) {
+            info.doc = duckx::Document(info.file.canonicalFilePath().toStdString());
+            info.doc.open();
+            if (!info.doc.is_open()) {
+                handleDocumentError("ERROR: Could not load docx",
+                    document_id, document_path, q.lastError());
+                return updateFolderToIndex(folder_id, countForFolder);
+            }
+            info.paragraph = &info.doc.paragraphs();
+
+            if (!info.paragraph->has_next()) {
+                // drop empty document
+                return updateFolderToIndex(folder_id, countForFolder);
+            }
+            info.opened = true;
+        }
+
+        Q_ASSERT(info.paragraph->has_next());
+
+        QStringList textRuns;
+        qWarning() << "start";
+        for (auto &run = info.paragraph->runs(); run.has_next(); run.next()) {
+            printf("paragraph %p run %s\n", (void *)info.paragraph, reinterpret_cast<pugi::xml_node *>(&run)[1].name());
+            qWarning() << "found text:" << QString::fromStdString(run.get_text());
+            textRuns << QString::fromStdString(run.get_text());
+        }
+        QString text = textRuns.join("");
+
+        QTextStream stream(&text);
+        chunkStream(
+            stream, info.folder, document_id, embedding_model, info.file.fileName(),
+            /*title*/ QString(), /*author*/ QString(), /*subject*/ QString(), /*keywords*/ QString(), /*page*/ -1
+        );
+        CollectionItem item = guiCollectionItem(info.folder);
+        updateGuiForCollectionItem(item);
+
+        info.paragraph->next();
+        if (info.paragraph->has_next()) {
+            info.currentlyProcessing = true;
+            enqueueDocumentInternal(std::move(info), true /*prepend*/);
+            return updateFolderToIndex(folder_id, countForFolder + 1);
+        }
+
+        item.currentBytesToIndex -= info.file.size();
+        updateGuiForCollectionItem(item);
     } else {
         BinaryDetectingFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
@@ -1481,7 +1527,7 @@ void Database::scanQueue()
         if (info.currentPosition < bytes) {
             info.currentPosition = pos;
             info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
+            enqueueDocumentInternal(std::move(info), true /*prepend*/);
             return updateFolderToIndex(folder_id, countForFolder + 1);
         }
     }

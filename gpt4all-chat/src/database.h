@@ -3,6 +3,8 @@
 
 #include "embllm.h" // IWYU pragma: keep
 
+#include <duckx/duckx.hpp>
+
 #include <QDateTime>
 #include <QFileInfo>
 #include <QHash>
@@ -42,12 +44,20 @@ struct DocumentInfo
 {
     int folder;
     QFileInfo file;
-    int currentPage = 0;
-    size_t currentPosition = 0;
     bool currentlyProcessing = false;
-    bool isPdf() const {
-        return doc.suffix().compare(u"pdf"_s, Qt::CaseInsensitive) == 0;
-    }
+
+    union {
+        size_t currentPosition = 0; // TXT
+        int    currentPage;         // PDF
+        bool   opened;              // DOCX
+    };
+
+    // DOCX
+    duckx::Document   doc;
+    duckx::Paragraph *paragraph;
+
+    bool isPdf () const { return !file.suffix().compare("pdf"_L1,  Qt::CaseInsensitive); }
+    bool isDocx() const { return !file.suffix().compare("docx"_L1, Qt::CaseInsensitive); }
 };
 
 struct ResultInfo {

@@ -327,7 +327,7 @@ target_include_directories(chat PRIVATE deps/usearch/include
 target_link_libraries(chat
     PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx)
 
 
 # -- install --

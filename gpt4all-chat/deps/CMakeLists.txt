@@ -5,3 +5,6 @@ add_subdirectory(fmt)
 
 set(QAPPLICATION_CLASS QGuiApplication)
 add_subdirectory(SingleApplication)
+
+set(DUCKX_INSTALL OFF)
+add_subdirectory(DuckX)
