@@ -371,17 +371,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation type="unfinished"></translation>
@@ -414,6 +403,11 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1098,37 +1092,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="279"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="307"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="326"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="350"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2066,47 +2060,47 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation type="unfinished"></translation>
     </message>

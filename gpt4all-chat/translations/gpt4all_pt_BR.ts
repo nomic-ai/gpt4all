@@ -371,23 +371,6 @@
         <translation>Compartilhar feedback e conversas</translation>
     </message>
     <message>
-        <location filename="../src/qml/ApplicationSettings.qml" line="37"/>
-        <source>ERROR: Update system could not find the MaintenanceTool used&lt;br&gt;
-                   to check for updates!&lt;br&gt;&lt;br&gt;
-                   Did you install this application using the online installer? If so,&lt;br&gt;
-                   the MaintenanceTool executable should be located one directory&lt;br&gt;
-                   above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
-                   If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
-                   reinstall.</source>
-        <translation>ERRO: O sistema de atualização não encontrou a Ferramenta de Manutenção&lt;br&gt;
-                   necessária para verificar atualizações!&lt;br&gt;&lt;br&gt;
-                   Você instalou este aplicativo usando o instalador online? Se sim,&lt;br&gt;
-                   o executável da Ferramenta de Manutenção deve estar localizado um diretório&lt;br&gt;
-                   acima de onde este aplicativo está instalado.&lt;br&gt;&lt;br&gt;
-                   Se você não conseguir iniciá-lo manualmente, será necessário&lt;br&gt;
-                   reinstalar o aplicativo.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
         <translation>Mensagens de erro</translation>
@@ -421,6 +404,11 @@
         <location filename="../src/qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
         <translation>Modo Claro</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ApplicationSettings.qml" line="39"/>
+        <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
+        <translation>ERRO: O sistema de atualização não encontrou a Ferramenta de Manutenção necessária para verificar atualizações!&lt;br&gt;&lt;br&gt;Você instalou este aplicativo usando o instalador online? Se sim, o executável da Ferramenta de Manutenção deve estar localizado um diretório acima de onde este aplicativo está instalado.&lt;br&gt;&lt;br&gt;Se você não conseguir iniciá-lo manualmente, será necessário reinstalar o aplicativo.</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="114"/>
@@ -578,11 +566,7 @@
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="505"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Local Server</source>
-        <translation type="vanished">Ativar Servidor Local</translation>
+        <translation>Ativar servidor de API local</translation>
     </message>
     <message>
         <location filename="../src/qml/ApplicationSettings.qml" line="506"/>
@@ -889,10 +873,6 @@ modelo instalado para funcionar</translation>
         <translation>Você</translation>
     </message>
     <message>
-        <source>recalculating context ...</source>
-        <translation type="vanished">recalculando contexto...</translation>
-    </message>
-    <message>
         <location filename="../src/qml/ChatView.qml" line="878"/>
         <source>response stopped ...</source>
         <translation>resposta interrompida...</translation>
@@ -1115,37 +1095,37 @@ modelo instalado para funcionar</translation>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="279"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Modelo &quot;%1&quot; instalado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>ERRO: O nome do modelo ($MODEL_NAME) está vazio.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>ERRO: A chave da API ($API_KEY) está vazia.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>ERRO: A URL base ($BASE_URL) é inválida.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="307"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>ERRO: Conflito com o modelo &quot;%1 (%2)&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="326"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Modelo &quot;%1 (%2)&quot; instalado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="350"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Modelo &quot;%1&quot; removido.</translation>
     </message>
@@ -1380,10 +1360,6 @@ modelo instalado para funcionar</translation>
         <translation>＋ Adicionar Coleção</translation>
     </message>
     <message>
-        <source>ERROR: The LocalDocs database is not valid.</source>
-        <translation type="vanished">ERRO: O banco de dados do LocalDocs não é válido.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/LocalDocsView.qml" line="85"/>
         <source>&lt;h3&gt;ERROR: The LocalDocs database cannot be accessed or is not valid.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Note: You will need to restart after trying any of the following suggested fixes.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Make sure that the folder set as &lt;b&gt;Download Path&lt;/b&gt; exists on the file system.&lt;/li&gt;&lt;li&gt;Check ownership as well as read and write permissions of the &lt;b&gt;Download Path&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;If there is a &lt;b&gt;localdocs_v2.db&lt;/b&gt; file, check its ownership and read/write permissions, too.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;If the problem persists and there are any &apos;localdocs_v*.db&apos; files present, as a last resort you can&lt;br&gt;try backing them up and removing them. You will have to recreate your collections, however.</source>
         <translation>&lt;h3&gt;ERRO: Não foi possível acessar o banco de dados do LocalDocs ou ele não é válido.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Observação: Será necessário reiniciar o aplicativo após tentar qualquer uma das seguintes correções sugeridas.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Certifique-se de que a pasta definida como &lt;b&gt;Caminho de Download&lt;/b&gt; existe no sistema de arquivos.&lt;/li&gt;&lt;li&gt;Verifique a propriedade, bem como as permissões de leitura e gravação do &lt;b&gt;Caminho de Download&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Se houver um arquivo &lt;b&gt;localdocs_v2.db&lt;/b&gt;, verifique também sua propriedade e permissões de leitura/gravação.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;Se o problema persistir e houver algum arquivo &apos;localdocs_v*.db&apos; presente, como último recurso, você pode&lt;br&gt;tentar fazer backup deles e removê-los. No entanto, você terá que recriar suas coleções.</translation>
@@ -1561,12 +1537,12 @@ modelo instalado para funcionar</translation>
         <location filename="../src/modellist.cpp" line="1226"/>
         <location filename="../src/modellist.cpp" line="1277"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>não é possível abrir &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1238"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>não é possível criar &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1288"/>
@@ -2099,47 +2075,47 @@ Quando um modelo GPT4All responder a você e você tiver optado por participar, 
 OBS.: Ao ativar este recurso, você estará enviando seus dados para o Datalake de Código Aberto do GPT4All. Você não deve ter nenhuma expectativa de privacidade no chat quando este recurso estiver ativado. No entanto, você deve ter a expectativa de uma atribuição opcional, se desejar. Seus dados de chat estarão disponíveis para qualquer pessoa baixar e serão usados pela Nomic AI para melhorar os futuros modelos GPT4All. A Nomic AI manterá todas as informações de atribuição anexadas aos seus dados e você será creditado como colaborador em qualquer versão do modelo GPT4All que utilize seus dados!</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="63"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
         <translation>Termos de participação</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="64"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="71"/>
         <source>Describes what will happen when you opt-in</source>
         <translation>Descrição do que acontece ao participar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="72"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
         <translation>Forneça um nome para atribuição (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="74"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="81"/>
         <source>Attribution (optional)</source>
         <translation>Atribuição (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="75"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
         <translation>Fornecer atribuição</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="88"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="95"/>
         <source>Enable</source>
         <translation>Habilitar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="89"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
         <translation>Ativar participação</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="93"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="100"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/qml/NetworkDialog.qml" line="94"/>
+        <location filename="../src/qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
         <translation>Cancelar participação</translation>
     </message>
@@ -2179,13 +2155,6 @@ OBS.: Ao ativar este recurso, você estará enviando seus dados para o Datalake 
         <location filename="../src/qml/PopupDialog.qml" line="49"/>
         <source>Displayed when the popup is showing busy</source>
         <translation>Visível durante o processamento</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <source>Default</source>
-        <translation type="vanished">Padrão</translation>
     </message>
 </context>
 <context>
