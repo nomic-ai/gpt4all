@@ -1163,8 +1163,15 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
 
     QList<QString> chunkOutputs;
     while (!stream.atEnd() || !buffer.isEmpty()) {
-        if (!stream.atEnd())
-            buffer += stream.read(bufferSz - buffer.size());
+        if (!stream.atEnd()) {
+            // QTextStream does not return an error even if the underlying QFile::read returns -1
+            // so we must check the return of the stream read and if it is empty, but the stream is
+            // not at the end, then we know an error has occurred
+            const QString readStr = stream.read(bufferSz - buffer.size());
+            if (readStr.isEmpty() && !stream.atEnd())
+                return -1;
+            buffer += readStr;
+        }
 
         if (stream.status()) {
             Q_UNREACHABLE();
@@ -1173,12 +1180,6 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
         }
 
         QString chunk = textSplitter(buffer, m_chunkSize, false /*exceed*/);
-
-        // If the stream has an ASCII EOT (end of transmission), then we cannot read any more data
-        // even by stream.readAll() yet the stream will not be at an end. We detect this and just
-        // stop the loop with an error return
-        if (chunk.isEmpty() && !stream.atEnd())
-            return -1;
 
         // Drop whitespace-only chunks on the floor
         if (chunk.trimmed().isEmpty())
