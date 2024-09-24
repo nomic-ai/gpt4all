@@ -2116,7 +2116,7 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
 
     // Start by trying to match the entire input
     BM25Query e;
-    e.type = 0; // exact
+    e.isExact = true;
     e.input = oWords.join(" ");
     e.query = "\"" + oWords.join(" ") + "\"";
     e.qlength = oWords.size();
@@ -2142,7 +2142,6 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
         quotedWords << "\"" + w + "\"";
 
     BM25Query b;
-    b.type = 1; // broad search
     b.input = oWords.join(" ");
     b.query = "(" + quotedWords.join(" OR ") + ")";
     b.qlength = 1; // length of phrase
@@ -2198,7 +2197,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
 float Database::computeBM25Weight(const Database::BM25Query &bm25q)
 {
     float bmWeight = 0.0f;
-    if (bm25q.type == 0 /*exact*/) {
+    if (bm25q.isExact) {
         bmWeight = 0.9f; // the highest we give
     } else {
         // qlength is the length of the phrases in the query by number of distinct words

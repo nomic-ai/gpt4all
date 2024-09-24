@@ -212,7 +212,7 @@ private:
     struct BM25Query {
         QString input;
         QString query;
-        int type = 0;
+        bool isExact = false;
         int qlength = 0;
         int ilength = 0;
         int rlength = 0;
