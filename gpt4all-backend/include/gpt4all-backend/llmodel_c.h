@@ -148,18 +148,20 @@ uint64_t llmodel_get_state_size(llmodel_model model);
  * NOTE: This state data is specific to the type of model you have created.
  * @param model A pointer to the llmodel_model instance.
  * @param dest A pointer to the destination.
- * @return the number of bytes copied
+ * @param size The size of the destination buffer.
+ * @return the number of bytes copied, or zero on error.
  */
-uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest);
+uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest, uint64_t size);
 
 /**
  * Restores the internal state of the model using data from the specified address.
  * NOTE: This state data is specific to the type of model you have created.
  * @param model A pointer to the llmodel_model instance.
- * @param src A pointer to the src.
- * @return the number of bytes read
+ * @param src A pointer to the state data.
+ * @param size The size of the source data.
+ * @return The number of bytes read, or zero on error.
  */
-uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
+uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src, size_t size);
 
 /**
  * Generate a response using the model.

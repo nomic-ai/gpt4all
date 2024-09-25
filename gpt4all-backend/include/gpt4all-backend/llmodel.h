@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -149,9 +150,9 @@ public:
     virtual bool isEmbeddingModel(const std::string &modelPath) const { (void)modelPath; return false; }
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;
-    virtual size_t stateSize() const { return 0; }
-    virtual size_t saveState(uint8_t *dest) const { (void)dest; return 0; }
-    virtual size_t restoreState(const uint8_t *src) { (void)src; return 0; }
+    virtual size_t stateSize() const = 0;
+    virtual size_t saveState(std::span<uint8_t> dest) const = 0;
+    virtual size_t restoreState(std::span<const uint8_t> src) = 0;
 
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
@@ -215,7 +216,8 @@ protected:
     virtual std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special = false) = 0;
     virtual bool isSpecialToken(Token id) const = 0;
     virtual std::string tokenToString(Token id) const = 0;
-    virtual Token sampleToken(PromptContext &ctx) const = 0;
+    virtual void initSampler(PromptContext &ctx) = 0;
+    virtual Token sampleToken() const = 0;
     virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;
     virtual void shiftContext(PromptContext &promptCtx) = 0;
     virtual int32_t contextLength() const = 0;

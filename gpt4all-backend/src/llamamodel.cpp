@@ -2,6 +2,7 @@
 #include "llamamodel_impl.h"
 
 #include "llmodel.h"
+#include "utils.h"
 
 #include <ggml.h>
 #include <llama.h>
@@ -103,26 +104,34 @@ static bool llama_verbose()
     return var && *var;
 }
 
-static void llama_log_callback(enum ggml_log_level level, const char *text, void *userdata)
+static void llama_log_callback(ggml_log_level level, const char *text, void *userdata, bool warn)
 {
     (void)userdata;
-    if (llama_verbose() || level <= GGML_LOG_LEVEL_ERROR) {
-        fputs(text, stderr);
-    }
-}
 
-#ifdef GGML_USE_CUDA
-static void cuda_log_callback(enum ggml_log_level level, const char *text, void *userdata)
-{
-    (void)userdata;
-    if (llama_verbose() || level <= GGML_LOG_LEVEL_WARN) {
-        fputs(text, stderr);
+    static ggml_log_level lastlevel = GGML_LOG_LEVEL_NONE;
+    if (!llama_verbose()) {
+        auto efflevel = level == GGML_LOG_LEVEL_CONT ? lastlevel : level;
+        lastlevel = efflevel;
+        switch (efflevel) {
+            case GGML_LOG_LEVEL_CONT:
+                UNREACHABLE();
+                break;
+            case GGML_LOG_LEVEL_WARN:
+                if (warn) break;
+                [[fallthrough]];
+            case GGML_LOG_LEVEL_NONE: // not used?
+            case GGML_LOG_LEVEL_INFO:
+            case GGML_LOG_LEVEL_DEBUG:
+                return; // suppress
+            case GGML_LOG_LEVEL_ERROR:
+                ;
+        }
     }
+
+    fputs(text, stderr);
 }
-#endif
 
 struct gpt_params {
-    int32_t seed          = -1;   // RNG seed
     int32_t n_keep        = 0;    // number of tokens to keep from initial prompt
 
     // sampling parameters
@@ -136,44 +145,6 @@ struct gpt_params {
     bool use_mmap          = true;  // use mmap for faster loads
     bool use_mlock         = false; // use mlock to keep model in memory
 };
-
-static llama_token llama_sample_top_p_top_k(
-        llama_context *ctx,
-        const llama_token *last_n_tokens_data,
-        int last_n_tokens_size,
-        int top_k,
-        float top_p,
-        float min_p,
-        float temp,
-        float repeat_penalty) {
-    auto logits = llama_get_logits_ith(ctx, -1);
-    auto n_vocab = llama_n_vocab(llama_get_model(ctx));
-    // Populate initial list of all candidates
-    std::vector<llama_token_data> candidates;
-    candidates.reserve(n_vocab);
-    for (int token_id = 0; token_id < n_vocab; token_id++) {
-        candidates.emplace_back(llama_token_data{token_id, logits[token_id], 0.0f});
-    }
-    llama_token_data_array candidates_p = {candidates.data(), candidates.size(), false};
-    // Sample repeat penalty
-    llama_sample_repetition_penalties(nullptr, &candidates_p, last_n_tokens_data, last_n_tokens_size, repeat_penalty, 0.0f, 0.0f);
-
-    llama_token id;
-    if (temp == 0.0) {
-        // greedy sampling, no probs
-        id = llama_sample_token_greedy(ctx, &candidates_p);
-    } else {
-        // temperature sampling
-        llama_sample_top_k(ctx, &candidates_p, top_k, 1);
-        llama_sample_tail_free(ctx, &candidates_p, 1.0f, 1);
-        llama_sample_typical(ctx, &candidates_p, 1.0f, 1);
-        llama_sample_top_p(ctx, &candidates_p, top_p, 1);
-        llama_sample_min_p(ctx, &candidates_p, min_p, 1);
-        llama_sample_temp(ctx, &candidates_p, temp);
-        id = llama_sample_token(ctx, &candidates_p);
-    }
-    return id;
-}
 
 const char *get_arch_name(gguf_context *ctx_gguf)
 {
@@ -241,21 +212,26 @@ cleanup:
 }
 
 struct LLamaPrivate {
-    const std::string modelPath;
-    bool modelLoaded = false;
-    int device = -1;
-    std::string deviceName;
-    llama_model *model = nullptr;
-    llama_context *ctx = nullptr;
-    llama_model_params model_params;
-    llama_context_params ctx_params;
-    int64_t n_threads = 0;
-    std::vector<LLModel::Token> end_tokens;
-    const char *backend_name = nullptr;
+    bool                         modelLoaded  = false;
+    int                          device       = -1;
+    std::string                  deviceName;
+    int64_t                      n_threads    = 0;
+    std::vector<LLModel::Token>  end_tokens;
+    const char                  *backend_name = nullptr;
+
+    llama_model          *model        = nullptr;
+    llama_context        *ctx          = nullptr;
+    llama_model_params    model_params;
+    llama_context_params  ctx_params;
+    llama_sampler        *sampler_chain;
 };
 
 LLamaModel::LLamaModel()
-    : d_ptr(new LLamaPrivate) {}
+    : d_ptr(std::make_unique<LLamaPrivate>())
+{
+    auto sparams = llama_sampler_chain_default_params();
+    d_ptr->sampler_chain = llama_sampler_chain_init(sparams);
+}
 
 // default hparams (LLaMA 7B)
 struct llama_file_hparams {
@@ -444,10 +420,9 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         }
     }
 
-    d_ptr->ctx_params.n_ctx   = n_ctx;
-    d_ptr->ctx_params.seed    = params.seed;
-    d_ptr->ctx_params.type_k  = params.kv_type;
-    d_ptr->ctx_params.type_v  = params.kv_type;
+    d_ptr->ctx_params.n_ctx  = n_ctx;
+    d_ptr->ctx_params.type_k = params.kv_type;
+    d_ptr->ctx_params.type_v = params.kv_type;
 
     // The new batch API provides space for n_vocab*n_tokens logits. Tell llama.cpp early
     // that we want this many logits so the state serializes consistently.
@@ -513,6 +488,7 @@ LLamaModel::~LLamaModel()
         llama_free(d_ptr->ctx);
     }
     llama_free_model(d_ptr->model);
+    llama_sampler_free(d_ptr->sampler_chain);
 }
 
 bool LLamaModel::isModelLoaded() const
@@ -522,18 +498,17 @@ bool LLamaModel::isModelLoaded() const
 
 size_t LLamaModel::stateSize() const
 {
-    return llama_get_state_size(d_ptr->ctx);
+    return llama_state_get_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(uint8_t *dest) const
+size_t LLamaModel::saveState(std::span<uint8_t> dest) const
 {
-    return llama_copy_state_data(d_ptr->ctx, dest);
+    return llama_state_get_data(d_ptr->ctx, dest.data(), dest.size());
 }
 
-size_t LLamaModel::restoreState(const uint8_t *src)
+size_t LLamaModel::restoreState(std::span<const uint8_t> src)
 {
-    // const_cast is required, see: https://github.com/ggerganov/llama.cpp/pull/1540
-    return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
+    return llama_state_set_data(d_ptr->ctx, src.data(), src.size());
 }
 
 std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, std::string_view str, bool special)
@@ -573,13 +548,50 @@ std::string LLamaModel::tokenToString(Token id) const
     return std::string(result.data(), result.size());
 }
 
-LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
+void LLamaModel::initSampler(PromptContext &promptCtx)
 {
-    const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-    return llama_sample_top_p_top_k(d_ptr->ctx,
-        promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
-        n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.min_p, promptCtx.temp,
-        promptCtx.repeat_penalty);
+    auto *model = d_ptr->model;
+    auto *chain = d_ptr->sampler_chain;
+
+    // clear sampler chain
+    for (int i = llama_sampler_chain_n(chain) - 1; i >= 0; i--) {
+        auto *smpl = llama_sampler_chain_remove(chain, i);
+        llama_sampler_free(smpl);
+    }
+
+    // build new chain
+    llama_sampler_chain_add(chain,
+        llama_sampler_init_penalties(
+            llama_n_vocab(model),
+            llama_token_eos(model),
+            llama_token_nl(model),
+            promptCtx.repeat_last_n,
+            promptCtx.repeat_penalty,
+            // TODO(jared): consider making the below configurable
+            /*penalty_freq*/    0.0f,
+            /*penalty_present*/ 0.0f,
+            /*penalize_nl*/     true,
+            /*ignore_eos*/      false
+        )
+    );
+    if (promptCtx.temp == 0.0f) {
+        llama_sampler_chain_add(chain, llama_sampler_init_greedy());
+    } else {
+        struct llama_sampler *samplers[] = {
+            llama_sampler_init_top_k(promptCtx.top_k),
+            llama_sampler_init_top_p(promptCtx.top_p, 1),
+            llama_sampler_init_min_p(promptCtx.min_p, 1),
+            llama_sampler_init_temp(promptCtx.temp),
+            llama_sampler_init_dist(LLAMA_DEFAULT_SEED)
+        };
+        for (auto *smpl : samplers)
+            llama_sampler_chain_add(chain, smpl);
+    }
+}
+
+LLModel::Token LLamaModel::sampleToken() const
+{
+    return llama_sampler_sample(d_ptr->sampler_chain, d_ptr->ctx, -1);
 }
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
@@ -1227,9 +1239,9 @@ DLL_EXPORT bool is_arch_supported(const char *arch)
 
 DLL_EXPORT LLModel *construct()
 {
-    llama_log_set(llama_log_callback, nullptr);
+    llama_log_set([](auto l, auto t, auto u) { llama_log_callback(l, t, u, false); }, nullptr);
 #ifdef GGML_USE_CUDA
-    ggml_backend_cuda_log_set_callback(cuda_log_callback, nullptr);
+    ggml_backend_cuda_log_set_callback([](auto l, auto t, auto u) { llama_log_callback(l, t, u, true); }, nullptr);
 #endif
     return new LLamaModel;
 }
