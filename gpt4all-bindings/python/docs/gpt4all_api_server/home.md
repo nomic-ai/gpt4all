@@ -5,7 +5,7 @@ GPT4All provides a local API server that allows you to run LLMs over an HTTP API
 ## Key Features
 
 - **Local Execution**: Run models on your own hardware for privacy and offline use.
-- **LocalDocs Integration**: Run the API with relevant text snippets provided to your LLM from a [LocalDocs collections](../gpt4all_desktop/localdocs.md).
+- **LocalDocs Integration**: Run the API with relevant text snippets provided to your LLM from a [LocalDocs collection](../gpt4all_desktop/localdocs.md).
 - **OpenAI API Compatibility**: Use existing OpenAI-compatible clients and tools with your local models.
 
 ## Activating the API Server
