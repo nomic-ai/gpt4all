@@ -32,7 +32,7 @@ The server only accepts HTTP connections (not HTTPS) and only listens on localho
         "model": "Phi-3 Mini Instruct",
         "messages": [{"role":"user","content":"Who is Lionel Messi?"}],
         "max_tokens": 50,
-        "temperature": 0.28,
+        "temperature": 0.28
         }'
         ```
 
@@ -65,8 +65,22 @@ You can use LocalDocs with the API server:
 3. Select the server chat (it has a different background color).
 4. Activate LocalDocs collections in the right sidebar.
 
-Now, your API calls to your local LLM will auto-retrieve relevant snippets from your LocalDocs collection to provide those snippets to the LLM for its response. 
-
-The snippets can be accessed in the API response at `response.choices[0].references`. 
-
 (Note: LocalDocs can currently only be activated through the GPT4All UI, not via the API itself).
+
+Now, your API calls to your local LLM will have relevant references from your LocalDocs collection retrieved and placed in the input message for the LLM to respond to.
+
+The references retrieved for your API call can be accessed in the API response object at 
+
+`response["choices"][0]["references"]`
+
+The data included in the `references` are:
+
+- `text`: the actual text content from the snippet that was extracted from the reference document
+
+- `author`: the author of the reference document (if available)
+
+- `date`: the date of creation of the reference document (if available)
+
+- `page`: the page number the snippet is from (only available for PDF documents for now)
+
+- `title`: the title of the reference document (if available)
