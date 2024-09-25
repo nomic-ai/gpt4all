@@ -32,7 +32,7 @@ EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 # Detect Rosetta 2
 if platform.system() == "Darwin" and platform.processor() == "i386":
     if subprocess.run(
-        "sysctl -n sysctl.proc_translated".split(), check=True, capture_output=True, text=True,
+        "sysctl -n sysctl.proc_translated".split(), capture_output=True, text=True,
     ).stdout.strip() == "1":
         raise RuntimeError(textwrap.dedent("""\
             Running GPT4All under Rosetta is not supported due to CPU feature requirements.
