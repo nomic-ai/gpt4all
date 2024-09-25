@@ -17,7 +17,9 @@ GPT4All provides a local API server that allows you to run LLMs over an HTTP API
 
 ## Connecting to the API Server
 
-The base URL used for the API server is `http://localhost:4891/v1` (or `http://localhost:<PORT_NUM>/v1` if you are using a different port number). The server only accepts HTTP connections (not HTTPS) and only listens on localhost (127.0.0.1) (e.g. not to the IPv6 localhost address `::1`.)
+The base URL used for the API server is `http://localhost:4891/v1` (or `http://localhost:<PORT_NUM>/v1` if you are using a different port number). 
+
+The server only accepts HTTP connections (not HTTPS) and only listens on localhost (127.0.0.1) (e.g. not to the IPv6 localhost address `::1`.)
 
 ## Examples
 
@@ -28,10 +30,9 @@ The base URL used for the API server is `http://localhost:4891/v1` (or `http://l
         ```bash
         curl -X POST http://localhost:4891/v1/chat/completions -d '{
         "model": "Phi-3 Mini Instruct",
-        "messages": [{"role":"user","content":"Who is Michael Jordan?"}],
+        "messages": [{"role":"user","content":"Who is Lionel Messi?"}],
         "max_tokens": 50,
         "temperature": 0.28,
-        "top_p": 0.95,
         }'
         ```
 
@@ -40,7 +41,7 @@ The base URL used for the API server is `http://localhost:4891/v1` (or `http://l
         ```powershell
         Invoke-WebRequest -URI http://localhost:4891/v1/chat/completions -Method POST -ContentType application/json -Body '{
         "model": "Phi-3 Mini Instruct",
-        "messages": [{"role":"user","content":"Who is Michael Jordan?"}],
+        "messages": [{"role":"user","content":"Who is Lionel Messi?"}],
         "max_tokens": 50,
         "temperature": 0.28
         }'
@@ -64,5 +65,8 @@ You can use LocalDocs with the API server:
 3. Select the server chat (it has a different background color).
 4. Activate LocalDocs collections in the right sidebar.
 
-Note: LocalDocs cannot be activated or selected through the API itself.
+Now, your API calls to your local LLM will auto-retrieve relevant snippets from your LocalDocs collection to provide those snippets to the LLM for its response. 
 
+The snippets can be accessed in the API response at `response.choices[0].references`. 
+
+(Note: LocalDocs can currently only be activated through the GPT4All UI, not via the API itself).
