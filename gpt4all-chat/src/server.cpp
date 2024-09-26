@@ -193,11 +193,11 @@ protected:
         if (!value.isNull())
             this->temperature = float(value.toDouble());
 
-        value = reqValue("top_p", Number, /*min*/ 0, /*max*/ 1);
+        value = reqValue("top_p", Number, false, /*min*/ 0, /*max*/ 1);
         if (!value.isNull())
             this->top_p = float(value.toDouble());
 
-        value = reqValue("min_p", Number, /*min*/ 0, /*max*/ 1);
+        value = reqValue("min_p", Number, false, /*min*/ 0, /*max*/ 1);
         if (!value.isNull())
             this->min_p = float(value.toDouble());
 
