@@ -1179,7 +1179,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
             return -1;
         }
 
-        QString chunk = textSplitter(buffer, m_chunkSize, false /*exceed*/);
+        QString chunk = textSplitter(buffer, m_chunkSize, true /*exceed*/);
 
         // Drop whitespace-only chunks on the floor
         if (chunk.trimmed().isEmpty())
