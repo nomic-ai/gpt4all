@@ -1086,165 +1086,65 @@ void Database::handleDocumentError(const QString &errorMessage,
     qWarning() << errorMessage << document_id << document_path << error;
 }
 
-// Returns a single chunk from the text by splitting on ' ' and simplifying whitespace.
-static QString textSplitter(QString &text, size_t maxChars, bool exceed = false)
-{
-    // If our text is below the limit, then return it
-    if (text.size() <= maxChars) {
-        const QString chunk = text.simplified();
-        text.clear();
-        return chunk;
-    }
-
-    // Attempt to split by whitespace
-    QRegularExpression re("\\s+");
-    QRegularExpressionMatchIterator it = re.globalMatch(text);
-
-    // We have a possible split now accumulate as much as we can on this level
-    QString chunk;
-    size_t originalChunkSize = 0;
-    int lastPos = 0;
-    while (it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-        QString originalCandidate = text.mid(lastPos, match.capturedStart() - lastPos);
-        QString candidate = originalCandidate.simplified();
-        // If adding the candidate exceeds the limit, break
-        if (!exceed && chunk.size() + candidate.size() > maxChars)
-            break;
-
-        // Add the candidate to the chunk
-        chunk += candidate;
-        originalChunkSize += originalCandidate.size();
-        lastPos = match.capturedEnd();
-
-        // Check if we've exceeded
-        if (chunk.size() > maxChars)
-            break;
-
-        // Also add the match itself if it fits within the limit
-        originalCandidate = match.captured();
-        candidate = candidate.isEmpty() ? "" : " ";
-
-        if (!exceed && chunk.size() + candidate.size() > maxChars)
-            break;
-
-        chunk += candidate;
-        originalChunkSize += originalCandidate.size();
-
-        // Check if we've exceeded
-        if (chunk.size() > maxChars)
-            break;
-    }
-
-    // Make sure we don't end on a space
-    if (chunk.endsWith(" ")) {
-        chunk.removeLast();
-        --originalChunkSize;
-    }
-
-    text.remove(0, originalChunkSize);
-    return chunk;
-}
-
 size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
     const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
     int page, int maxChunks)
 {
+    int charCount = 0;
     // TODO: implement line_from/line_to
     constexpr int line_from = -1;
     constexpr int line_to = -1;
-
+    QList<QString> words;
     int chunks = 0;
     int addedWords = 0;
 
-    QString buffer;
-    size_t bufferSz = m_chunkSize * 2;
-    buffer.reserve(bufferSz);
-
-    QList<QString> chunkOutputs;
-    while (!stream.atEnd() || !buffer.isEmpty()) {
-        if (!stream.atEnd()) {
-            // QTextStream does not return an error even if the underlying QFile::read returns -1
-            // so we must check the return of the stream read and if it is empty, but the stream is
-            // not at the end, then we know an error has occurred
-            const QString readStr = stream.read(bufferSz - buffer.size());
-            if (readStr.isEmpty() && !stream.atEnd())
-                return -1;
-            buffer += readStr;
-        }
-
-        if (stream.status()) {
-            Q_UNREACHABLE();
-            qWarning() << "ERROR: Could not chunk stream" << stream.status();
+    for (;;) {
+        QString word;
+        stream >> word;
+        if (stream.status() && !stream.atEnd())
             return -1;
-        }
+        charCount += word.length();
+        if (!word.isEmpty())
+            words.append(word);
+        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
+            if (!words.isEmpty()) {
+                const QString chunk = words.join(" ");
+                QSqlQuery q(m_db);
+                int chunk_id = 0;
+                if (!addChunk(q,
+                    document_id,
+                    chunk,
+                    file,
+                    title,
+                    author,
+                    subject,
+                    keywords,
+                    page,
+                    line_from,
+                    line_to,
+                    words.size(),
+                    &chunk_id
+                )) {
+                    qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+                }
 
-        QString chunk = textSplitter(buffer, m_chunkSize, true /*exceed*/);
+                addedWords += words.size();
 
-        // Drop whitespace-only chunks on the floor
-        if (chunk.trimmed().isEmpty())
-            continue;
+                EmbeddingChunk toEmbed;
+                toEmbed.model = embedding_model;
+                toEmbed.folder_id = folder_id;
+                toEmbed.chunk_id = chunk_id;
+                toEmbed.chunk = chunk;
+                appendChunk(toEmbed);
+                ++chunks;
 
-        chunkOutputs << chunk;
+                words.clear();
+                charCount = 0;
+            }
 
-        // Count the words
-        int words = 0;
-        QTextStream wordsStream(&chunk);
-        for (;;) {
-            QString word;
-            wordsStream >> word;
-            if (!word.isEmpty())
-                ++words;
-            if (wordsStream.status())
+            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
                 break;
         }
-        addedWords += words;
-
-        QSqlQuery q(m_db);
-        int chunk_id = 0;
-        if (!addChunk(q,
-            document_id,
-            chunk,
-            file,
-            title,
-            author,
-            subject,
-            keywords,
-            page,
-            line_from,
-            line_to,
-            words,
-            &chunk_id
-        )) {
-            qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
-        }
-
-        EmbeddingChunk toEmbed;
-        toEmbed.model = embedding_model;
-        toEmbed.folder_id = folder_id;
-        toEmbed.chunk_id = chunk_id;
-        toEmbed.chunk = chunk;
-        appendChunk(toEmbed);
-        ++chunks;
-
-        if (maxChunks > 0 && chunks == maxChunks) {
-            bool success = stream.seek(stream.pos() - buffer.size());
-            Q_ASSERT(success);
-            if (!success)
-                qWarning() << "ERROR: Chunk stream seek error" << stream.status();
-            break;
-        }
-    }
-
-    if (!buffer.isEmpty()) {
-        // Rewind the stream by the size of the remaining buffer
-        qint64 rewindPos = stream.pos() - buffer.size();
-        bool success = stream.seek(rewindPos);
-        Q_ASSERT(success);
-        if (!success) {
-            qWarning() << "ERROR: Could not seek back to original position in stream" << stream.status();
-        }
-        stream >> buffer;
     }
 
     if (chunks) {
