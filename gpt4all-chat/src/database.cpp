@@ -160,18 +160,18 @@ static const QString INIT_DB_SQL[] = {
     )"_s,
 };
 
-static const QString INSERT_CHUNK_SQL[] = {
-    uR"(
-        insert into chunks(document_id, chunk_text,
-            file, title, author, subject, keywords, page, line_from, line_to, words)
-            values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            returning id;
-    )"_s, uR"(
+static const QString INSERT_CHUNK_SQL = uR"(
+    insert into chunks(document_id, chunk_text,
+        file, title, author, subject, keywords, page, line_from, line_to, words)
+        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        returning id;
+)"_s;
+
+static const QString INSERT_CHUNK_FTS_SQL = uR"(
         insert into chunks_fts(document_id, chunk_text,
             file, title, author, subject, keywords)
             values(?, ?, ?, ?, ?, ?, ?);
-    )"_s,
-};
+)"_s;
 
 static const QString DELETE_CHUNKS_SQL[] = {
     uR"(
@@ -232,7 +232,7 @@ static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, c
                      const QString &title, const QString &author, const QString &subject, const QString &keywords,
                      int page, int from, int to, int words, int *chunk_id)
 {
-    if (!q.prepare(INSERT_CHUNK_SQL[0]))
+    if (!q.prepare(INSERT_CHUNK_SQL))
         return false;
     q.addBindValue(document_id);
     q.addBindValue(chunk_text);
@@ -249,7 +249,7 @@ static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, c
         return false;
     *chunk_id = q.value(0).toInt();
 
-    if (!q.prepare(INSERT_CHUNK_SQL[1]))
+    if (!q.prepare(INSERT_CHUNK_FTS_SQL))
         return false;
     q.addBindValue(document_id);
     q.addBindValue(chunk_text);
@@ -2057,7 +2057,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
     sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
 
     QList<SearchResult> results;
-    for (auto bm25Query : std::as_const(bm25Queries)) {
+    for (auto &bm25Query : std::as_const(bm25Queries)) {
         sqlQuery.addBindValue(bm25Query.query);
 
         if (!sqlQuery.exec()) {
@@ -2065,19 +2065,18 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
             return {};
         }
 
-        if (!sqlQuery.next())
-            continue;
-
-        // Save the query that was used to produce results
-        bm25q = bm25Query;
-
-        do {
-            const int chunkId = sqlQuery.value(0).toInt();
-            const float score = sqlQuery.value(1).toFloat();
-            results.append({chunkId, score});
-        } while (sqlQuery.next());
-        break;
+        if (sqlQuery.next()) {
+            // Save the query that was used to produce results
+            bm25q = bm25Query;
+            break;
+        }
     }
+
+    do {
+        const int chunkId = sqlQuery.value(0).toInt();
+        const float score = sqlQuery.value(1).toFloat();
+        results.append({chunkId, score});
+    } while (sqlQuery.next());
 
     k = qMin(k, results.size());
     std::partial_sort(
