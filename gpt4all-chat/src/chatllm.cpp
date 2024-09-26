@@ -1314,8 +1314,16 @@ void ChatLLM::processRestoreStateFromText()
         auto &response = *it++;
         Q_ASSERT(response.first != "Prompt: ");
 
-        m_llModelInfo.model->prompt(prompt.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr,
-                                    /*allowContextShift*/ true, m_ctx, false, response.second.toUtf8().constData());
+        // FIXME(jared): this doesn't work well with the "regenerate" button since we are not incrementing
+        //               m_promptTokens or m_promptResponseTokens
+        m_llModelInfo.model->prompt(
+            prompt.second.toStdString(), promptTemplate.toStdString(),
+            promptFunc, /*responseFunc*/ [](auto &&...) { return true; },
+            /*allowContextShift*/ true,
+            m_ctx,
+            /*special*/ false,
+            response.second.toUtf8().constData()
+        );
     }
 
     if (!m_stopGenerating) {
