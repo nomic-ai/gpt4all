@@ -2113,7 +2113,7 @@ float Database::computeBM25Weight(const Database::BM25Query &bm25q)
         // the weighting is bound between 1/4 and 3/4 which was determined empirically to work well
         // with the beir nfcorpus, scifact, fiqa and trec-covid datasets along with our embedding
         // model
-        bmWeight = 0.25f * queryLengthWeight * 0.50f;
+        bmWeight = 0.25f + queryLengthWeight * 0.50f;
     }
 
 #if 0
