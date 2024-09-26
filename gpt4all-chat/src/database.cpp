@@ -2103,7 +2103,7 @@ float Database::computeBM25Weight(const Database::BM25Query &bm25q)
         // rlength is the number of stop words removed from the natural language query to form the query
 
         // calculate the query length weight based on the ratio of query terms to meaningful terms.
-        // this formula adjusts the weight with the emperically determined insight that BM25's
+        // this formula adjusts the weight with the empirically determined insight that BM25's
         // effectiveness decreases as query length increases.
         float queryLengthWeight = 1 / powf(float(bm25q.ilength - bm25q.rlength), 2);
         queryLengthWeight = qBound(0.0f, queryLengthWeight, 1.0f);
