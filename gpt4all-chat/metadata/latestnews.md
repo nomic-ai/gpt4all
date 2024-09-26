@@ -1,5 +1,7 @@
 ## Latest News
 
+GPT4All v3.3.1 from September 26th fixes a crash after loading a chat and an incorect local server parameter check in v3.3.0.
+
 GPT4All v3.3.0 was released on September 23rd. Changes include:
 
 * **UI Improvements**: The minimum window size now adapts to the font size. A few labels and links have been fixed. The Embeddings Device selection of "Auto"/"Application default" works again. The window icon is now set on Linux. The antenna icon now displays when the API server is listening.
