@@ -1921,8 +1921,8 @@ QList<int> Database::searchEmbeddingsHelper(const std::vector<float> &query, QSq
     batchChunkIds.reserve(BATCH_SIZE);
     batchEmbeddings.reserve(BATCH_SIZE * n_embd);
 
-    struct SearchResult { int chunkId; float dist; };
-    QList<SearchResult> results;
+    struct Result { int chunkId; us::distance_punned_t dist; };
+    QList<Result> results;
 
     // The q parameter is expected to be the result of a QSqlQuery returning (chunk_id, embedding) pairs
     while (q.at() != QSql::AfterLastRow) { // batches
@@ -1970,7 +1970,7 @@ QList<int> Database::searchEmbeddingsHelper(const std::vector<float> &query, QSq
     nNeighbors = qMin(nNeighbors, results.size());
     std::partial_sort(
         results.begin(), results.begin() + nNeighbors, results.end(),
-        [](const SearchResult &a, const SearchResult &b) { return a.dist < b.dist; }
+        [](const Result &a, const Result &b) { return a.dist < b.dist; }
     );
 
     QList<int> chunkIds;
@@ -2050,7 +2050,7 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
 
 QList<int> Database::searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k)
 {
-    struct SearchResult { int chunkId; float dist; };
+    struct SearchResult { int chunkId; float score; };
     QList<BM25Query> bm25Queries = queriesForFTS5(query);
 
     QSqlQuery sqlQuery(m_db);
@@ -2082,7 +2082,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
     k = qMin(k, results.size());
     std::partial_sort(
         results.begin(), results.begin() + k, results.end(),
-        [](const SearchResult &a, const SearchResult &b) { return a.dist < b.dist; }
+        [](const SearchResult &a, const SearchResult &b) { return a.score < b.score; }
     );
 
     QList<int> chunkIds;
