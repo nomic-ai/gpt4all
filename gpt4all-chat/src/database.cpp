@@ -117,7 +117,7 @@ static const QString INIT_DB_SQL[] = {
             content_rowid='id',
             tokenize='porter'
         );
-    )"_s,uR"(
+    )"_s, uR"(
         create table collections(
             id                  integer primary key,
             name                text unique not null,
@@ -815,7 +815,7 @@ static const QString GET_COLLECTION_EMBEDDINGS_SQL = uR"(
 static const QString GET_CHUNK_EMBEDDINGS_SQL = uR"(
     select e.chunk_id, e.embedding
     from embeddings e
-    where e.chunk_id in ('%1');
+    where e.chunk_id in (%1);
 )"_s;
 
 static const QString GET_CHUNK_FILE_SQL = uR"(
@@ -1924,6 +1924,7 @@ QList<int> Database::searchEmbeddingsHelper(const std::vector<float> &query, QSq
     struct SearchResult { int chunkId; float dist; };
     QList<SearchResult> results;
 
+    // The q parameter is expected to be the result of a QSqlQuery returning (chunk_id, embedding) pairs
     while (q.at() != QSql::AfterLastRow) { // batches
         batchChunkIds.clear();
         batchEmbeddings.clear();
@@ -1996,7 +1997,7 @@ QList<int> Database::scoreChunks(const std::vector<float> &query, const QList<in
     for (int id : chunks)
         chunkStrings << QString::number(id);
     QSqlQuery q(m_db);
-    if (!q.exec(GET_CHUNK_EMBEDDINGS_SQL.arg(chunkStrings.join("', '")))) {
+    if (!q.exec(GET_CHUNK_EMBEDDINGS_SQL.arg(chunkStrings.join(", ")))) {
         qWarning() << "Database ERROR: Failed to exec embeddings query:" << q.lastError();
         return {};
     }
@@ -2025,28 +2026,24 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
 
     // https://github.com/igorbrigadir/stopwords?tab=readme-ov-file
     // Lucene, Solr, Elastisearch
-    static const QList<QString> stopWords = {
+    static const QSet<QString> stopWords = {
         "a", "an", "and", "are", "as", "at", "be", "but", "by",
         "for", "if", "in", "into", "is", "it", "no", "not", "of",
         "on", "or", "such", "that", "the", "their", "then", "there",
         "these", "they", "this", "to", "was", "will", "with"
     };
 
-    QStringList rWords;
+    QStringList quotedWords;
     for (const QString &w : oWords)
         if (!stopWords.contains(w.toLower()))
-            rWords << w;
-
-    QStringList quotedWords;
-    for (const QString &w : rWords)
-        quotedWords << "\"" + w + "\"";
+            quotedWords << "\"" + w + "\"";
 
     BM25Query b;
     b.input = oWords.join(" ");
     b.query = "(" + quotedWords.join(" OR ") + ")";
     b.qlength = 1; // length of phrase
     b.ilength = oWords.size();
-    b.rlength = oWords.size() - rWords.size();
+    b.rlength = oWords.size() - quotedWords.size();
     queries << b;
     return queries;
 }
@@ -2056,10 +2053,11 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
     struct SearchResult { int chunkId; float dist; };
     QList<BM25Query> bm25Queries = queriesForFTS5(query);
 
+    QSqlQuery sqlQuery(m_db);
+    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
+
     QList<SearchResult> results;
-    for (auto bm25Query : bm25Queries) {
-        QSqlQuery sqlQuery(m_db);
-        sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
+    for (auto bm25Query : std::as_const(bm25Queries)) {
         sqlQuery.addBindValue(bm25Query.query);
 
         if (!sqlQuery.exec()) {

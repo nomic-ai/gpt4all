@@ -206,7 +206,7 @@ private:
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
-    QList<int> searchEmbeddingsHelper(const std::vector<float> &query, QSqlQuery &q, int nNeighbors);
+    static QList<int> searchEmbeddingsHelper(const std::vector<float> &query, QSqlQuery &q, int nNeighbors);
     QList<int> searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections,
         int nNeighbors);
     struct BM25Query {
