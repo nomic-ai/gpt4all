@@ -706,6 +706,9 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
 #endif
 
     // check for error
+    // FIXME (Adam) The error messages should not be treated as a model response or part of the
+    // normal conversation. They should be serialized along with the conversation, but the strings
+    // are separate and we should preserve info that these are error messages and not actual model responses.
     if (token < 0) {
         m_response.append(response);
         m_trimmedResponse = remove_leading_whitespace(m_response);
