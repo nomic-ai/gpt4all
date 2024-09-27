@@ -91,16 +91,16 @@ uint64_t llmodel_get_state_size(llmodel_model model)
     return wrapper->llModel->stateSize();
 }
 
-uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest)
+uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest, uint64_t size)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    return wrapper->llModel->saveState(dest);
+    return wrapper->llModel->saveState({dest, size_t(size)});
 }
 
-uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
+uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src, uint64_t size)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    return wrapper->llModel->restoreState(src);
+    return wrapper->llModel->restoreState({src, size_t(size)});
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,

@@ -1177,7 +1177,13 @@ void ChatLLM::saveState()
 #if defined(DEBUG)
     qDebug() << "saveState" << m_llmThread.objectName() << "size:" << m_state.size();
 #endif
-    m_llModelInfo.model->saveState(static_cast<uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    bool ok = m_llModelInfo.model->saveState({reinterpret_cast<uint8_t *>(m_state.data()), size_t(m_state.size())});
+    if (!ok) {
+        // FIXME(jared): how badly does this situation break GPT4All?
+        qWarning() << "ChatLLM failed to save LLModel state";
+        m_state.clear();
+        m_state.squeeze();
+    }
 }
 
 void ChatLLM::restoreState()
@@ -1186,7 +1192,7 @@ void ChatLLM::restoreState()
         return;
 
     if (m_llModelType == LLModelType::API_) {
-        QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
+        QDataStream stream(m_state);
         stream.setVersion(QDataStream::Qt_6_4);
         ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model.get());
         QList<QString> context;
@@ -1204,12 +1210,12 @@ void ChatLLM::restoreState()
     if (m_state.isEmpty())
         return;
 
-    if (m_llModelInfo.model->stateSize() == m_state.size()) {
-        m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    size_t bytesRead = m_llModelInfo.model->restoreState({reinterpret_cast<uint8_t *>(m_state.data()), size_t(m_state.size())});
+    if (bytesRead) {
         m_processedSystemPrompt = true;
         m_pristineLoadedState = true;
     } else {
-        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size();
+        qWarning() << "restoring state from text because of error reading state (mismatch or corrupt data)";
         m_restoreStateFromText = true;
     }
 

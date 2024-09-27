@@ -71,19 +71,19 @@ bool ChatAPI::isModelLoaded() const
 // All three of the state virtual functions are handled custom inside of chatllm save/restore
 size_t ChatAPI::stateSize() const
 {
-    return 0;
+    throw std::logic_error("not implemented");
 }
 
-size_t ChatAPI::saveState(uint8_t *dest) const
+size_t ChatAPI::saveState(std::span<uint8_t> dest) const
 {
     Q_UNUSED(dest);
-    return 0;
+    throw std::logic_error("not implemented");
 }
 
-size_t ChatAPI::restoreState(const uint8_t *src)
+size_t ChatAPI::restoreState(std::span<const uint8_t> src)
 {
     Q_UNUSED(src);
-    return 0;
+    throw std::logic_error("not implemented");
 }
 
 void ChatAPI::prompt(const std::string &prompt,

@@ -246,6 +246,8 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
         return;
     }
 
+    initSampler(promptCtx);
+
     std::string cachedResponse;
     std::vector<Token> cachedTokens;
     int n_predicted = 0;
@@ -253,7 +255,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     // Predict next tokens
     for (bool stop = false; !stop;) {
         // Sample next token
-        std::optional<Token> new_tok = sampleToken(promptCtx);
+        std::optional<Token> new_tok = sampleToken();
         std::string new_piece = tokenToString(new_tok.value());
         cachedTokens.push_back(new_tok.value());
         cachedResponse += new_piece;

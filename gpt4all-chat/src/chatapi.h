@@ -64,8 +64,8 @@ public:
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
     size_t stateSize() const override;
-    size_t saveState(uint8_t *dest) const override;
-    size_t restoreState(const uint8_t *src) override;
+    size_t saveState(std::span<uint8_t> dest) const override;
+    size_t restoreState(std::span<const uint8_t> src) override;
     void prompt(const std::string &prompt,
                 const std::string &promptTemplate,
                 std::function<bool(int32_t)> promptCallback,
@@ -118,11 +118,13 @@ protected:
         throw std::logic_error("not implemented");
     }
 
-    Token sampleToken(PromptContext &ctx) const override
+    void initSampler(PromptContext &ctx) override
     {
         (void)ctx;
         throw std::logic_error("not implemented");
     }
+
+    Token sampleToken() const override { throw std::logic_error("not implemented"); }
 
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override
     {
