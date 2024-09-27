@@ -706,6 +706,9 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
 #endif
 
     // check for error
+    // FIXME (Adam) The error messages should not be treated as a model response or part of the
+    // normal conversation. They should be serialized along with the conversation, but the strings
+    // are separate and we should preserve info that these are error messages and not actual model responses.
     if (token < 0) {
         m_response.append(response);
         m_trimmedResponse = remove_leading_whitespace(m_response);
@@ -1174,7 +1177,13 @@ void ChatLLM::saveState()
 #if defined(DEBUG)
     qDebug() << "saveState" << m_llmThread.objectName() << "size:" << m_state.size();
 #endif
-    m_llModelInfo.model->saveState(static_cast<uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    bool ok = m_llModelInfo.model->saveState({reinterpret_cast<uint8_t *>(m_state.data()), size_t(m_state.size())});
+    if (!ok) {
+        // FIXME(jared): how badly does this situation break GPT4All?
+        qWarning() << "ChatLLM failed to save LLModel state";
+        m_state.clear();
+        m_state.squeeze();
+    }
 }
 
 void ChatLLM::restoreState()
@@ -1183,7 +1192,7 @@ void ChatLLM::restoreState()
         return;
 
     if (m_llModelType == LLModelType::API_) {
-        QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
+        QDataStream stream(m_state);
         stream.setVersion(QDataStream::Qt_6_4);
         ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model.get());
         QList<QString> context;
@@ -1201,12 +1210,12 @@ void ChatLLM::restoreState()
     if (m_state.isEmpty())
         return;
 
-    if (m_llModelInfo.model->stateSize() == m_state.size()) {
-        m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    size_t bytesRead = m_llModelInfo.model->restoreState({reinterpret_cast<uint8_t *>(m_state.data()), size_t(m_state.size())});
+    if (bytesRead) {
         m_processedSystemPrompt = true;
         m_pristineLoadedState = true;
     } else {
-        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size();
+        qWarning() << "restoring state from text because of error reading state (mismatch or corrupt data)";
         m_restoreStateFromText = true;
     }
 
@@ -1314,8 +1323,16 @@ void ChatLLM::processRestoreStateFromText()
         auto &response = *it++;
         Q_ASSERT(response.first != "Prompt: ");
 
-        m_llModelInfo.model->prompt(prompt.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr,
-                                    /*allowContextShift*/ true, m_ctx, false, response.second.toUtf8().constData());
+        // FIXME(jared): this doesn't work well with the "regenerate" button since we are not incrementing
+        //               m_promptTokens or m_promptResponseTokens
+        m_llModelInfo.model->prompt(
+            prompt.second.toStdString(), promptTemplate.toStdString(),
+            promptFunc, /*responseFunc*/ [](auto &&...) { return true; },
+            /*allowContextShift*/ true,
+            m_ctx,
+            /*special*/ false,
+            response.second.toUtf8().constData()
+        );
     }
 
     if (!m_stopGenerating) {

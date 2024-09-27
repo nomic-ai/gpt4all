@@ -11,7 +11,6 @@
     | **Device** | Device that will run your models. Options are `Auto` (GPT4All chooses), `Metal` (Apple Silicon M1+), `CPU`, and `GPU` | `Auto` |
     | **Default Model** | Choose your preferred LLM to load by default on startup| Auto |
     | **Download Path** | Select a destination on your device to save downloaded models | Windows: `C:\Users\{username}\AppData\Local\nomic.ai\GPT4All`<br><br>Mac: `/Users/{username}/Library/Application Support/nomic.ai/GPT4All/`<br><br>Linux: `/home/{username}/.local/share/nomic.ai/GPT4All` |
-    
     | **Enable Datalake** | Opt-in to sharing interactions with GPT4All community (**anonymous** and **optional**) | Off |
 
 !!! note "Advanced Application Settings"

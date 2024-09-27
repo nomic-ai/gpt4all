@@ -36,7 +36,7 @@ class QTimer;
 // minimum supported version
 static const int LOCALDOCS_MIN_VER = 1;
 // current version
-static const int LOCALDOCS_VERSION = 2;
+static const int LOCALDOCS_VERSION = 3;
 
 struct DocumentInfo
 {
@@ -207,7 +207,24 @@ private:
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
-    QList<int> searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors);
+    static QList<int> searchEmbeddingsHelper(const std::vector<float> &query, QSqlQuery &q, int nNeighbors);
+    QList<int> searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections,
+        int nNeighbors);
+    struct BM25Query {
+        QString input;
+        QString query;
+        bool isExact = false;
+        int qlength = 0;
+        int ilength = 0;
+        int rlength = 0;
+    };
+    QList<Database::BM25Query> queriesForFTS5(const QString &input);
+    QList<int> searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k);
+    QList<int> scoreChunks(const std::vector<float> &query, const QList<int> &chunks);
+    float computeBM25Weight(const BM25Query &bm25q);
+    QList<int> reciprocalRankFusion(const std::vector<float> &query, const QList<int> &embeddingResults,
+        const QList<int> &bm25Results, const BM25Query &bm25q, int k);
+    QList<int> searchDatabase(const QString &query, const QList<QString> &collections, int k);
 
     void setStartUpdateTime(CollectionItem &item);
     void setLastUpdateTime(CollectionItem &item);

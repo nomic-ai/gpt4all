@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Warn on Windows if the Microsoft Visual C++ runtime libraries are not found ([#2920](https://github.com/nomic-ai/gpt4all/pull/2920))
 
+### Changed
+- Rebase llama.cpp on latest upstream as of September 26th ([#2998](https://github.com/nomic-ai/gpt4all/pull/2998))
+- Change the error message when a message is too long ([#3004](https://github.com/nomic-ai/gpt4all/pull/3004))
+
 ## [2.8.2] - 2024-08-14
 
 ### Fixed
