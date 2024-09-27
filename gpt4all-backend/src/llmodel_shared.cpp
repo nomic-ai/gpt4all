@@ -163,7 +163,7 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         // FIXME: (Adam) We should find a way to bubble these strings to the UI level to allow for
         // translation
-        responseCallback(-1, "The message you submitted was too long, please submit something shorter.");
+        responseCallback(-1, "Your message was too long and could not be processed. Please try again with something shorter.");
         std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
             " tokens and the context window is " << promptCtx.n_ctx << "!\n";
         return false;
