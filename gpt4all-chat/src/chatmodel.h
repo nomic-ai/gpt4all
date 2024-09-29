@@ -361,6 +361,14 @@ public:
                 stream << references.join("\n");
                 stream << referencesContext;
             }
+            if (version > 9) {
+                stream << c.promptAttachments.size();
+                for (const PromptAttachment &a : c.promptAttachments) {
+                    Q_ASSERT(!a.url.isEmpty());
+                    stream << a.url;
+                    stream << a.file;
+                }
+            }
         }
         return stream.status() == QDataStream::Ok;
     }
@@ -400,7 +408,7 @@ public:
                 }
                 c.sources = sources;
                 c.consolidatedSources = consolidateSources(sources);
-            }else if (version > 2) {
+            } else if (version > 2) {
                 QString references;
                 QList<QString> referencesContext;
                 stream >> references;
@@ -483,6 +491,18 @@ public:
                     c.sources = sources;
                     c.consolidatedSources = consolidateSources(sources);
                 }
+            }
+            if (version > 9) {
+                qsizetype count;
+                stream >> count;
+                QList<PromptAttachment> attachments;
+                for (int i = 0; i < count; ++i) {
+                    PromptAttachment a;
+                    stream >> a.url;
+                    stream >> a.file;
+                    attachments.append(a);
+                }
+                c.promptAttachments = attachments;
             }
             beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
             m_chatItems.append(c);
