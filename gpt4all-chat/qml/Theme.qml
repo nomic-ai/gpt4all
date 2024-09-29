@@ -180,11 +180,11 @@ QtObject {
     property color attachmentBackground: {
         switch (MySettings.chatTheme) {
             case MySettingsEnums.ChatTheme.LegacyDark:
-                return blue1000
+                return blue900
             case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
-                return gray200
+                return gray0
         }
     }
 

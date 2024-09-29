@@ -894,6 +894,7 @@ Rectangle {
                                     Layout.row: 1
                                     Layout.column: 1
                                     Layout.fillWidth: true
+                                    spacing: 20
                                     Flow {
                                         id: attachedUrlsFlow
                                         Layout.fillWidth: true
@@ -903,7 +904,7 @@ Rectangle {
                                             model: promptAttachments
 
                                             delegate: Rectangle {
-                                                width: attachmentFileIcon.width + attachmentFileText.width + 20
+                                                width: 350
                                                 height: 50
                                                 radius: 5
                                                 color: theme.attachmentBackground
@@ -943,7 +944,7 @@ Rectangle {
                                                         color: theme.textColor
                                                         horizontalAlignment: Text.AlignHLeft
                                                         verticalAlignment: Text.AlignVCenter
-                                                        font.pixelSize: theme.fontSizeSmall
+                                                        font.pixelSize: theme.fontSizeMedium
                                                         font.bold: true
                                                         wrapMode: Text.WrapAnywhere
                                                     }
@@ -1917,7 +1918,7 @@ Rectangle {
                     anchors.right: parent.right
                     rows: 2
                     columns: 3
-                    rowSpacing: 0
+                    rowSpacing: 10
                     columnSpacing: 0
                     Flow {
                         id: attachmentsFlow
@@ -1925,7 +1926,7 @@ Rectangle {
                         Layout.row: 0
                         Layout.column: 1
                         Layout.topMargin: 15
-                        Layout.leftMargin: 15
+                        Layout.leftMargin: 5
                         Layout.rightMargin: 15
                         spacing: 10
 
@@ -1933,7 +1934,7 @@ Rectangle {
                             model: attachmentModel
 
                             Rectangle {
-                                width: attachmentFileIcon2.width + attachmentFileText2.width + 40
+                                width: 350
                                 height: 50
                                 radius: 5
                                 color: theme.attachmentBackground
@@ -1973,7 +1974,7 @@ Rectangle {
                                         color: theme.textColor
                                         horizontalAlignment: Text.AlignHLeft
                                         verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: theme.fontSizeSmall
+                                        font.pixelSize: theme.fontSizeMedium
                                         font.bold: true
                                         wrapMode: Text.WrapAnywhere
                                     }
@@ -2001,6 +2002,7 @@ Rectangle {
                         Layout.row: 1
                         Layout.column: 0
                         Layout.leftMargin: 15
+                        Layout.rightMargin: 15
                         Layout.alignment: Qt.AlignCenter
                         backgroundColor: theme.conversationInputButtonBackground
                         backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
