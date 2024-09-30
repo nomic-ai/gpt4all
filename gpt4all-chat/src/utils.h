@@ -3,6 +3,11 @@
 #include <fmt/base.h>
 #include <fmt/format.h>
 
+#include <QString>
+#include <QVariant>
+
+#include <string>
+
 
 // fmtlib formatters for QString and QVariant
 
