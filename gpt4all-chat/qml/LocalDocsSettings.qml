@@ -70,7 +70,7 @@ MySettingsTab {
                     /* Blacklist common unsupported file extensions. We only support plain text and PDFs, and although we
                      * reject binary data, we don't want to waste time trying to index files that we don't support. */
                     exts = exts.filter(e => ![
-                        /* Microsoft documents  */ "rtf", "docx", "ppt", "pptx", "xls", "xlsx",
+                        /* Microsoft documents  */ "rtf", "ppt", "pptx", "xls", "xlsx",
                         /* OpenOffice           */ "odt", "ods", "odp", "odg",
                         /* photos               */ "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
                         /* audio                */ "mp3", "wma", "m4a", "wav", "flac",

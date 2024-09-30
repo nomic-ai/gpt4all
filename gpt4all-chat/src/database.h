@@ -3,14 +3,15 @@
 
 #include "embllm.h" // IWYU pragma: keep
 
+#include <QByteArray>
+#include <QChar>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QHash>
 #include <QLatin1String>
 #include <QList>
-#include <QMap>
 #include <QObject>
-#include <QQueue>
 #include <QSet>
 #include <QSqlDatabase>
 #include <QString>
@@ -18,13 +19,23 @@
 #include <QThread>
 #include <QUrl>
 #include <QVector>
+#include <QtGlobal>
 
+#include <atomic>
 #include <cstddef>
+#include <list>
+#include <map>
+#include <memory>
+#include <optional>
+#include <utility>
+#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 
+class Database;
+class DocumentReader;
 class QFileSystemWatcher;
-class QSqlError;
+class QSqlQuery;
 class QTextStream;
 class QTimer;
 
@@ -39,14 +50,16 @@ static const int LOCALDOCS_VERSION = 3;
 
 struct DocumentInfo
 {
-    int folder;
-    QFileInfo doc;
-    int currentPage = 0;
-    size_t currentPosition = 0;
-    bool currentlyProcessing = false;
-    bool isPdf() const {
-        return doc.suffix().compare(u"pdf"_s, Qt::CaseInsensitive) == 0;
-    }
+    using key_type = std::pair<int, QString>;
+
+    int       folder;
+    QFileInfo file;
+    bool      currentlyProcessing = false;
+
+    key_type key() const { return {folder, file.canonicalFilePath()}; } // for comparison
+
+    bool isPdf () const { return !file.suffix().compare("pdf"_L1,  Qt::CaseInsensitive); }
+    bool isDocx() const { return !file.suffix().compare("docx"_L1, Qt::CaseInsensitive); }
 };
 
 struct ResultInfo {
@@ -141,6 +154,36 @@ struct CollectionItem {
 };
 Q_DECLARE_METATYPE(CollectionItem)
 
+class ChunkStreamer {
+public:
+    enum class Status { DOC_COMPLETE, INTERRUPTED, ERROR, BINARY_SEEN };
+
+    explicit ChunkStreamer(Database *database);
+    ~ChunkStreamer();
+
+    void setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel, const QString &title,
+                     const QString &author, const QString &subject, const QString &keywords);
+
+    Status step();
+
+private:
+    Database                              *m_database;
+    std::optional<DocumentInfo::key_type>  m_docKey;
+    std::unique_ptr<DocumentReader>        m_reader; // may be invalid, always compare key first
+    int                                    m_documentId;
+    QString                                m_embeddingModel;
+    QString                                m_title;
+    QString                                m_author;
+    QString                                m_subject;
+    QString                                m_keywords;
+    bool                                   m_atStart;
+
+    // working state
+    QString                                m_chunk; // has a trailing space for convenience
+    int                                    m_nChunkWords = 0;
+    int                                    m_page = 0;
+};
+
 class Database : public QObject
 {
     Q_OBJECT
@@ -152,6 +195,7 @@ public:
 
 public Q_SLOTS:
     void start();
+    bool scanQueueInterrupted() const;
     void scanQueueBatch();
     void scanDocuments(int folder_id, const QString &folder_path);
     void forceIndexing(const QString &collection, const QString &embedding_model);
@@ -194,14 +238,12 @@ private:
     void appendChunk(const EmbeddingChunk &chunk);
     void sendChunkList();
     void updateFolderToIndex(int folder_id, size_t countForFolder, bool sendChunks = true);
-    void handleDocumentError(const QString &errorMessage,
-        int document_id, const QString &document_path, const QSqlError &error);
     size_t countOfDocuments(int folder_id) const;
     size_t countOfBytes(int folder_id) const;
     DocumentInfo dequeueDocument();
     void removeFolderFromDocumentQueue(int folder_id);
-    void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
-    void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
+    void enqueueDocumentInternal(DocumentInfo &&info, bool prepend = false);
+    void enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos);
     void scanQueue();
     bool cleanDB();
     void addFolderToWatch(const QString &path);
@@ -240,8 +282,9 @@ private:
     QSqlDatabase m_db;
     int m_chunkSize;
     QStringList m_scannedFileExtensions;
-    QTimer *m_scanTimer;
-    QMap<int, QQueue<DocumentInfo>> m_docsToScan;
+    QTimer *m_scanIntervalTimer;
+    QElapsedTimer m_scanDurationTimer;
+    std::map<int, std::list<DocumentInfo>> m_docsToScan;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
@@ -250,6 +293,9 @@ private:
     QVector<EmbeddingChunk> m_chunkList;
     QHash<int, CollectionItem> m_collectionMap; // used only for tracking indexing/embedding progress
     std::atomic<bool> m_databaseValid;
+    ChunkStreamer m_chunkStreamer;
+
+    friend class ChunkStreamer;
 };
 
 #endif // DATABASE_H

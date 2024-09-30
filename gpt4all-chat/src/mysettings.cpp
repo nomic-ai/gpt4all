@@ -55,7 +55,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
-    { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
+    { "localdocs/fileExtensions", QStringList { "docx", "pdf", "txt", "md", "rst" } },
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
     { "localdocs/embedDevice",    "Auto" },
