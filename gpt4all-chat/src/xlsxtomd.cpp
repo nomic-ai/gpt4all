@@ -18,6 +18,8 @@
 
 #include <memory>
 
+using namespace Qt::Literals::StringLiterals;
+
 
 static QString formatCellText(const QXlsx::Cell *cell)
 {
@@ -105,13 +107,13 @@ QString XLSXToMD::toMarkdown(const QString &xlsxFilePath)
 
     // Iterate through each worksheet by name
     for (const QString &sheetName : sheetNames) {
-        QXlsx::Worksheet *sheet = dynamic_cast<QXlsx::Worksheet*>(xlsx.sheet(sheetName));
+        QXlsx::Worksheet *sheet = dynamic_cast<QXlsx::Worksheet *>(xlsx.sheet(sheetName));
         if (!sheet) {
             qWarning() << "Failed to load sheet:" << sheetName;
             continue;
         }
 
-        markdown += QString("## %1\n\n").arg(sheetName);
+        markdown += u"## %1\n\n"_s.arg(sheetName);
 
         // Determine the used range
         QXlsx::CellRange range = sheet->dimension();
@@ -142,9 +144,8 @@ QString XLSXToMD::toMarkdown(const QString &xlsxFilePath)
 
         // Create Markdown separator row
         QStringList separators;
-        for (int i = 0; i < headers.size(); ++i) {
+        for (int i = 0; i < headers.size(); ++i)
             separators << "---";
-        }
         QString separatorRow = "|" + separators.join("|") + "|";
         markdown += separatorRow + "\n";
 
