@@ -151,7 +151,7 @@ Q_DECLARE_METATYPE(CollectionItem)
 
 class ChunkStreamer {
 public:
-    enum class Status { DOC_COMPLETE, INTERRUPTED, ERROR };
+    enum class Status { DOC_COMPLETE, INTERRUPTED, ERROR, BINARY_SEEN };
 
     explicit ChunkStreamer(Database *database);
 

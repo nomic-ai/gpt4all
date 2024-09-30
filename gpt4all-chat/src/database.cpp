@@ -1099,8 +1099,8 @@ public:
     const DocumentInfo           &doc     () const { return *m_info; }
     const std::optional<QString> &word    () const { return m_word; }
     const std::optional<QString> &nextWord()       { m_word = advance(); return m_word; }
-    virtual bool isError() const { return false; }
-    virtual int  page   () const { return -1; }
+    virtual std::optional<ChunkStreamer::Status> getError() const { return std::nullopt; }
+    virtual int page() const { return -1; }
 
     virtual ~DocumentReader() = default;
 
@@ -1245,7 +1245,6 @@ public:
     }
 
 protected:
-    // TODO(jared): implement binarySeen detection
     std::optional<QString> advance() override
     {
         while (!m_stream.atEnd()) {
@@ -1257,7 +1256,12 @@ protected:
         return std::nullopt;
     }
 
-    bool isError() const override { return m_file.error(); }
+    std::optional<ChunkStreamer::Status> getError() const override
+    {
+        if (!m_file.error())
+            return std::nullopt;
+        return m_file.binarySeen() ? ChunkStreamer::Status::BINARY_SEEN : ChunkStreamer::Status::ERROR;
+    }
 
     BinaryDetectingFile m_file;
     QTextStream m_stream;
@@ -1291,9 +1295,13 @@ void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const Q
         m_author         = author;
         m_subject        = subject;
         m_keywords       = keywords;
-        m_atStart        = true; // TODO: use this to clear the doc chunks instead of doing it separately
         m_chunk.clear();
         m_page = 0;
+
+        // make sure the document doesn't already have any chunks
+        QSqlQuery q(m_database->m_db);
+        if (!removeChunksByDocumentId(q, documentId))
+            handleDocumentError("ERROR: Cannot remove chunks of document", documentId, doc.file.canonicalPath(), q.lastError());
     }
 }
 
@@ -1309,8 +1317,8 @@ ChunkStreamer::Status ChunkStreamer::step()
     Status retval;
 
     for (;;) {
-        if (m_reader->isError())
-            return Status::ERROR;
+        if (auto error = m_reader->getError())
+            return *error;
         if (m_database->scanQueueInterrupted()) {
             retval = Status::INTERRUPTED;
             break;
@@ -1652,8 +1660,7 @@ void Database::scanQueue()
         if (info.isPdf()) {
             QPdfDocument doc;
             if (doc.load(document_path) != QPdfDocument::Error::None) {
-                // TODO(jared): SQL error irrelevant
-                handleDocumentError("ERROR: Could not load pdf", document_id, document_path, q.lastError());
+                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;;
                 return updateFolderToIndex(folder_id, countForFolder);
             }
             title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();
@@ -1663,156 +1670,42 @@ void Database::scanQueue()
             // TODO(jared): metadata for Word documents?
         }
 
-        m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+        try {
+            m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+        } catch (const std::runtime_error &e) {
+            qWarning() << "LocalDocs ERROR:" << e.what();
+            goto dequeue;
+        }
     }
 
-    // TODO(jared): increment byte and page statistics
-    // TODO(jared): catch exceptions
     switch (m_chunkStreamer.step()) {
     case ChunkStreamer::Status::INTERRUPTED:
         info.currentlyProcessing = true;
         enqueueDocumentInternal(std::move(info), /*prepend*/ true);
         return updateFolderToIndex(folder_id, countForFolder + 1);
+    case ChunkStreamer::Status::BINARY_SEEN:
+        /* When we see a binary file, we treat it like an empty file so we know not to
+         * scan it again. All existing chunks are removed, and in-progress embeddings
+         * are ignored when they complete. */
+        qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
+
+        // this will also ensure in-flight embeddings are ignored
+        if (!removeChunksByDocumentId(q, existing_id))
+            handleDocumentError("ERROR: Cannot remove chunks of document", existing_id, document_path, q.lastError());
+        updateCollectionStatistics();
+        break;
     case ChunkStreamer::Status::ERROR:
         qWarning() << "error reading" << document_path;
-        [[fallthrough]];
+        break;
     case ChunkStreamer::Status::DOC_COMPLETE:
-        return updateFolderToIndex(folder_id, countForFolder);
+        ;
     }
 
-#if 0
-    if (info.isPdf()) {
-        QPdfDocument doc;
-        if (QPdfDocument::Error::None != doc.load(info.file.canonicalFilePath())) {
-            handleDocumentError("ERROR: Could not load pdf",
-                document_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        const size_t bytes = info.file.size();
-        const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
-        const int pageIndex = info.currentPage;
-        const QPdfSelection selection = doc.getAllText(pageIndex);
-        QString text = selection.text();
-        QTextStream stream(&text);
-        chunkStream(stream, info.folder, document_id, embedding_model, info.file.fileName(),
-            pageIndex + 1
-        );
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesPerPage;
-        updateGuiForCollectionItem(item);
-        if (info.currentPage < doc.pageCount()) {
-            info.currentPage += 1;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(std::move(info), true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
-        }
-
-        item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
-        updateGuiForCollectionItem(item);
-    } else if (info.isDocx()) {
-        if (!info.opened) {
-            info.doc = duckx::Document(info.file.canonicalFilePath().toStdString());
-            info.doc.open();
-            if (!info.doc.is_open()) {
-                handleDocumentError("ERROR: Could not load docx",
-                    document_id, document_path, q.lastError());
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-            info.paragraph = &info.doc.paragraphs();
-
-            if (!info.paragraph->has_next()) {
-                // drop empty document
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-            info.opened = true;
-        }
-
-        Q_ASSERT(info.paragraph->has_next());
-
-        QStringList textRuns;
-        do {
-            for (auto &run = info.paragraph->runs(); run.has_next(); run.next())
-                textRuns << QString::fromStdString(run.get_text());
-            info.paragraph->next();
-        } while (info.paragraph->has_next() && !scanQueueInterrupted());
-
-        QString text = textRuns.join("");
-
-        QTextStream stream(&text);
-        chunkStream(stream, info.folder, info.file.fileName());
-        CollectionItem item = guiCollectionItem(info.folder);
-        updateGuiForCollectionItem(item);
-
-        if (info.paragraph->has_next()) {
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(std::move(info), true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
-        }
-
-        item.currentBytesToIndex -= info.file.size();
-        updateGuiForCollectionItem(item);
-    } else {
-        BinaryDetectingFile file(document_path);
-        if (!file.open(QIODevice::ReadOnly)) {
-            handleDocumentError("ERROR: Cannot open file for scanning",
-                                existing_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        Q_ASSERT(!file.isSequential()); // we need to seek
-
-        const size_t bytes = info.file.size();
-        QTextStream stream(&file);
-        const size_t byteIndex = info.currentPosition;
-        if (byteIndex) {
-            /* Read the Unicode BOM to detect the encoding. Without this, QTextStream will
-             * always interpret the text as UTF-8 when byteIndex is nonzero. */
-            stream.read(1);
-
-            if (!stream.seek(byteIndex)) {
-                handleDocumentError("ERROR: Cannot seek to pos for scanning",
-                                    existing_id, document_path, q.lastError());
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-        }
-        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.file.fileName(),
-           -1 /*page*/,
-            100 /*maxChunks*/);
-        if (pos < 0) {
-            if (!file.binarySeen()) {
-                handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
-                                    existing_id, document_path, q.lastError());
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-
-            /* When we see a binary file, we treat it like an empty file so we know not to
-             * scan it again. All existing chunks are removed, and in-progress embeddings
-             * are ignored when they complete. */
-
-            qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
-
-            // this will also ensure in-flight embeddings are ignored
-            if (!removeChunksByDocumentId(q, existing_id)) {
-                handleDocumentError("ERROR: Cannot remove chunks of document",
-                    existing_id, document_path, q.lastError());
-            }
-            updateCollectionStatistics();
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        file.close();
-        const size_t bytesChunked = pos - byteIndex;
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesChunked;
-        updateGuiForCollectionItem(item);
-        if (info.currentPosition < bytes) {
-            info.currentPosition = pos;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(std::move(info), true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
-        }
-    }
-
+dequeue:
+    auto item = guiCollectionItem(folder_id);
+    item.currentBytesToIndex -= info.file.size();
+    updateGuiForCollectionItem(item);
     return updateFolderToIndex(folder_id, countForFolder);
-#endif
 }
 
 void Database::scanDocuments(int folder_id, const QString &folder_path)
