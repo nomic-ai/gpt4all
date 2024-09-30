@@ -4,7 +4,7 @@
 #include <xlsxdocument.h>
 #include <xlsxworkbook.h>
 
-QString formatCellText(const QXlsx::Cell *cell)
+static QString formatCellText(const QXlsx::Cell *cell)
 {
     if (!cell) return QString();
 
@@ -43,7 +43,7 @@ QString formatCellText(const QXlsx::Cell *cell)
     return formattedText;
 }
 
-QString getCellValue(QXlsx::Worksheet *sheet, int row, int col)
+static QString getCellValue(QXlsx::Worksheet *sheet, int row, int col)
 {
     if (!sheet)
         return QString();
