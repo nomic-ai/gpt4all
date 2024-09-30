@@ -40,7 +40,7 @@ struct ChatItem
     Q_PROPERTY(int id MEMBER id)
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString value MEMBER value)
-    Q_PROPERTY(QString prompt MEMBER prompt)
+    Q_PROPERTY(QString prompt MEMBER prompt) // The raw prompt that is passed to the model including attachments
     Q_PROPERTY(QString newResponse MEMBER newResponse)
     Q_PROPERTY(bool currentResponse MEMBER currentResponse)
     Q_PROPERTY(bool stopped MEMBER stopped)

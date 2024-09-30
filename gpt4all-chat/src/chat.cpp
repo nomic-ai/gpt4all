@@ -127,16 +127,6 @@ void Chat::resetResponseState()
 
 void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
-    newPromptResponsePairInternal(prompt, attachedUrls);
-    emit resetResponseRequested();
-
-    this->prompt(prompt, attachedUrls);
-}
-
-void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
-{
-    resetResponseState();
-
     QStringList attachedContexts;
     for (const QUrl &url : attachedUrls) {
         Q_ASSERT(url.isLocalFile());
@@ -146,10 +136,20 @@ void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
         attachedContexts << XLSXToMD::toMarkdown(info.canonicalFilePath());
     }
 
+    QString rawPrompt = prompt;
     if (!attachedContexts.isEmpty())
-        emit promptRequested(m_collections, attachedContexts.join("\n\n") + "\n\n" + prompt);
-    else
-        emit promptRequested(m_collections, prompt);
+        rawPrompt = attachedContexts.join("\n\n") + "\n\n" + prompt;
+
+    newPromptResponsePairInternal(prompt, rawPrompt, attachedUrls);
+    emit resetResponseRequested();
+
+    this->prompt(rawPrompt);
+}
+
+void Chat::prompt(const QString &rawPrompt)
+{
+    resetResponseState();
+    emit promptRequested(m_collections, rawPrompt);
 }
 
 void Chat::regenerateResponse()
@@ -259,15 +259,18 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
 // the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
 void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
-    newPromptResponsePairInternal(prompt, attachedUrls);
+    const QString rawPrompt = prompt; // the raw prompt is the same in this case
+    newPromptResponsePairInternal(prompt, rawPrompt, attachedUrls);
 }
 
-void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<QUrl> &attachedUrls)
+void Chat::newPromptResponsePairInternal(const QString &prompt, const QString &rawPrompt, const QList<QUrl> &attachedUrls)
 {
+    // FIXME: (Adam) The whole thing needs to be rethought as we want to write a new feature that gives
+    // a raw view of all messages and the current naming here is beyond confusing and obscure
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt("Prompt: ", prompt, attachedUrls);
-    m_chatModel->appendResponse("Response: ", QString());
+    m_chatModel->appendResponse("Response: ", rawPrompt); // This is what is passed to the model
 }
 
 bool Chat::restoringFromText() const

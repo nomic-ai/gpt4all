@@ -77,7 +77,7 @@ public:
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
-    Q_INVOKABLE void prompt(const QString &prompt, const QList<QUrl> &attachedUrls = {});
+    Q_INVOKABLE void prompt(const QString &rawPrompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
 
@@ -174,7 +174,7 @@ private Q_SLOTS:
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
 private:
-    void newPromptResponsePairInternal(const QString &prompt, const QList<QUrl> &attachedUrls);
+    void newPromptResponsePairInternal(const QString &prompt, const QString &rawPrompt, const QList<QUrl> &attachedUrls);
 
 private:
     QString m_id;
