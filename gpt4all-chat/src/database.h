@@ -3,15 +3,14 @@
 
 #include "embllm.h" // IWYU pragma: keep
 
-#include <duckx/duckx.hpp>
-
+#include <QByteArray>
+#include <QChar>
 #include <QDateTime>
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QHash>
 #include <QLatin1String>
 #include <QList>
-#include <QMap>
 #include <QObject>
 #include <QSet>
 #include <QSqlDatabase>
@@ -20,17 +19,23 @@
 #include <QThread>
 #include <QUrl>
 #include <QVector>
+#include <QtGlobal>
 
+#include <atomic>
 #include <cstddef>
 #include <list>
 #include <map>
+#include <memory>
+#include <optional>
+#include <utility>
+#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 
 class Database;
 class DocumentReader;
 class QFileSystemWatcher;
-class QSqlError;
+class QSqlQuery;
 class QTextStream;
 class QTimer;
 
@@ -154,6 +159,7 @@ public:
     enum class Status { DOC_COMPLETE, INTERRUPTED, ERROR, BINARY_SEEN };
 
     explicit ChunkStreamer(Database *database);
+    ~ChunkStreamer();
 
     void setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel, const QString &title,
                      const QString &author, const QString &subject, const QString &keywords);
@@ -175,7 +181,7 @@ private:
     // working state
     QString                                m_chunk; // has a trailing space for convenience
     int                                    m_nChunkWords = 0;
-    int                                    m_page = 0; // TODO(jared): set this
+    int                                    m_page = 0;
 };
 
 class Database : public QObject

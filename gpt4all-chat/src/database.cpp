@@ -3,7 +3,7 @@
 #include "mysettings.h"
 #include "utils.h"
 
-#include <fmt/base.h>
+#include <duckx/duckx.hpp>
 #include <fmt/format.h>
 #include <usearch/index_plugins.hpp>
 
@@ -20,19 +20,16 @@
 #include <QSqlQuery>
 #include <QTextStream>
 #include <QTimer>
+#include <QMap>
 #include <QUtf8StringView>
 #include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
 #include <optional>
 #include <stdexcept>
-#include <utility>
-#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 namespace us = unum::usearch;
@@ -1280,6 +1277,8 @@ std::unique_ptr<DocumentReader> DocumentReader::fromDocument(const DocumentInfo 
 
 ChunkStreamer::ChunkStreamer(Database *database)
     : m_database(database) {}
+
+ChunkStreamer::~ChunkStreamer() = default;
 
 void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel,
                                 const QString &title, const QString &author, const QString &subject,

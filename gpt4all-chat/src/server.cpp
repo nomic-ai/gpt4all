@@ -5,7 +5,6 @@
 #include "mysettings.h"
 #include "utils.h"
 
-#include <fmt/base.h>
 #include <fmt/format.h>
 
 #include <QByteArray>
@@ -26,9 +25,9 @@
 #include <QVariant>
 #include <Qt>
 #include <QtCborCommon>
+#include <QtGlobal>
 #include <QtLogging>
 
-#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -38,7 +37,6 @@
 #include <unordered_map>
 #include <utility>
 
-namespace ranges = std::ranges;
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
 
