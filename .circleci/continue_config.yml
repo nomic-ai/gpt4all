@@ -298,7 +298,7 @@ jobs:
 
   build-offline-chat-installer-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -374,7 +374,7 @@ jobs:
 
   build-online-chat-installer-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -705,7 +705,7 @@ jobs:
 
   build-gpt4all-chat-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -920,7 +920,7 @@ jobs:
 
   build-py-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - restore_cache:
@@ -1118,7 +1118,7 @@ jobs:
 
   build-bindings-backend-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
