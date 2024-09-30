@@ -135,6 +135,7 @@ endif()
 
 set(QAPPLICATION_CLASS QGuiApplication)
 add_subdirectory(deps/SingleApplication)
+set(QT_VERSION_MAJOR 6)
 add_subdirectory(deps/QXlsx/QXlsx)
 
 if (DEFINED GGML_METALLIB)
