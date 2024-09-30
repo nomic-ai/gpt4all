@@ -39,7 +39,7 @@ static QString formatCellText(const QXlsx::Cell *cell)
     }
 
     if (cellText.isEmpty())
-        return QString();
+        return u" "_s;
 
     // Apply Markdown and HTML formatting based on font styles
     QString formattedText = cellText;
