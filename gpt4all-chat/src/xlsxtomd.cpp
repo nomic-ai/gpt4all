@@ -44,15 +44,14 @@ static QString formatCellText(const QXlsx::Cell *cell)
     // Apply Markdown and HTML formatting based on font styles
     QString formattedText = cellText;
 
-    if (format.fontBold() && format.fontItalic())
-        formattedText = "***" + formattedText + "***";
-    else if (format.fontBold())
-        formattedText = "**" + formattedText + "**";
-    else if (format.fontItalic())
-        formattedText = "*" + formattedText + "*";
-
+    if (format.fontUnderline())
+        formattedText = u"_%1_"_s.arg(formattedText);
+    if (format.fontBold())
+        formattedText = u"**%1**"_s.arg(formattedText);
+    if (format.fontItalic())
+        formattedText = u"*%1*"_s.arg(formattedText);
     if (format.fontStrikeOut())
-        formattedText = "~~" + formattedText + "~~";
+        formattedText = u"~~%1~~"_s.arg(formattedText);
 
     // Escape pipe characters to prevent Markdown table issues
     formattedText.replace("|", "\\|");
