@@ -1,13 +1,15 @@
 #include "database.h"
 
 #include "mysettings.h"
+#include "utils.h"
 
+#include <duckx/duckx.hpp>
+#include <fmt/format.h>
 #include <usearch/index_plugins.hpp>
 
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QIODevice>
@@ -18,16 +20,16 @@
 #include <QSqlQuery>
 #include <QTextStream>
 #include <QTimer>
+#include <QMap>
+#include <QUtf8StringView>
 #include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <algorithm>
 #include <cmath>
 #include <optional>
-#include <utility>
-#include <vector>
+#include <stdexcept>
 
 using namespace Qt::Literals::StringLiterals;
 namespace us = unum::usearch;
@@ -991,10 +993,11 @@ Database::Database(int chunkSize, QStringList extensions)
     : QObject(nullptr)
     , m_chunkSize(chunkSize)
     , m_scannedFileExtensions(std::move(extensions))
-    , m_scanTimer(new QTimer(this))
+    , m_scanIntervalTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
     , m_databaseValid(true)
+    , m_chunkStreamer(this)
 {
     m_db = QSqlDatabase::database(QSqlDatabase::defaultConnection, false);
     if (!m_db.isValid())
@@ -1080,87 +1083,345 @@ void Database::updateFolderToIndex(int folder_id, size_t countForFolder, bool se
     updateGuiForCollectionItem(item);
 }
 
-void Database::handleDocumentError(const QString &errorMessage,
-    int document_id, const QString &document_path, const QSqlError &error)
+static void handleDocumentError(const QString &errorMessage, int document_id, const QString &document_path,
+                                const QSqlError &error)
 {
     qWarning() << errorMessage << document_id << document_path << error;
 }
 
-size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
-    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
-    int page, int maxChunks)
+class DocumentReader {
+public:
+    static std::unique_ptr<DocumentReader> fromDocument(const DocumentInfo &info);
+
+    const DocumentInfo           &doc     () const { return *m_info; }
+    const std::optional<QString> &word    () const { return m_word; }
+    const std::optional<QString> &nextWord()       { m_word = advance(); return m_word; }
+    virtual std::optional<ChunkStreamer::Status> getError() const { return std::nullopt; }
+    virtual int page() const { return -1; }
+
+    virtual ~DocumentReader() = default;
+
+protected:
+    explicit DocumentReader(const DocumentInfo &info)
+        : m_info(&info) {}
+
+    void postInit() { m_word = advance(); }
+
+    virtual std::optional<QString> advance() = 0;
+
+    const DocumentInfo     *m_info;
+    std::optional<QString>  m_word;
+};
+
+namespace {
+
+class PdfDocumentReader final : public DocumentReader {
+public:
+    explicit PdfDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+    {
+        QString path = info.file.canonicalFilePath();
+        if (m_doc.load(path) != QPdfDocument::Error::None)
+            throw std::runtime_error(fmt::format("Failed to load PDF: {}", path));
+        postInit();
+    }
+
+    int page() const override { return m_currentPage; }
+
+private:
+    std::optional<QString> advance() override
+    {
+        QString word;
+        do {
+            while (!m_stream || m_stream->atEnd()) {
+                if (m_currentPage >= m_doc.pageCount())
+                    return std::nullopt;
+                m_pageText = m_doc.getAllText(m_currentPage++).text();
+                m_stream.emplace(&m_pageText);
+            }
+            *m_stream >> word;
+        } while (word.isEmpty());
+        return word;
+    }
+
+    QPdfDocument               m_doc;
+    int                        m_currentPage = 0;
+    QString                    m_pageText;
+    std::optional<QTextStream> m_stream;
+};
+
+class WordDocumentReader final : public DocumentReader {
+public:
+    explicit WordDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+        , m_doc(info.file.canonicalFilePath().toStdString())
+    {
+        m_doc.open();
+        if (!m_doc.is_open())
+            throw std::runtime_error(fmt::format("Failed to open DOCX: {}", info.file.canonicalFilePath()));
+
+        m_paragraph = &m_doc.paragraphs();
+        m_run       = &m_paragraph->runs();
+        postInit();
+    }
+
+protected:
+    std::optional<QString> advance() override
+    {
+        // find non-space char
+        qsizetype wordStart = 0;
+        while (m_buffer.isEmpty() || m_buffer[wordStart].isSpace()) {
+            if (m_buffer.isEmpty() && !fillBuffer())
+                return std::nullopt;
+            if (m_buffer[wordStart].isSpace() && ++wordStart >= m_buffer.size()) {
+                m_buffer.clear();
+                wordStart = 0;
+            }
+        }
+
+        // find space char
+        qsizetype wordEnd = wordStart + 1;
+        while (wordEnd >= m_buffer.size() || !m_buffer[wordEnd].isSpace()) {
+            if (wordEnd >= m_buffer.size() && !fillBuffer())
+                return std::nullopt;
+            if (!m_buffer[wordEnd].isSpace())
+                ++wordEnd;
+        }
+
+        auto size = wordEnd - wordStart;
+        QString word = std::move(m_buffer);
+        m_buffer = word.sliced(wordStart + size);
+        if (wordStart == 0)
+            word.resize(size);
+        else
+            word = word.sliced(wordStart, size);
+
+        return word;
+    }
+
+    bool fillBuffer()
+    {
+        for (;;) {
+            // get a run
+            while (!m_run->has_next()) {
+                // try next paragraph
+                if (!m_paragraph->has_next())
+                    return false;
+                m_paragraph->next();
+                m_buffer += u'\n';
+            }
+            auto &run = m_run->get_node();
+            const char *text = run.child("w:t").text().get();
+            if (!*text && run.child("w:tab"))
+                text = "\t";
+            m_run->next();
+            if (*text) {
+                m_buffer += QUtf8StringView(text);
+                return true;
+            }
+        }
+    }
+
+    duckx::Document   m_doc;
+    duckx::Paragraph *m_paragraph;
+    duckx::Run       *m_run;
+    QString           m_buffer;
+};
+
+class TxtDocumentReader final : public DocumentReader {
+public:
+    explicit TxtDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+        , m_file(info.file.canonicalFilePath())
+    {
+        if (!m_file.open(QIODevice::ReadOnly))
+            throw std::runtime_error(fmt::format("Failed to open text file: {}", m_file.fileName()));
+
+        m_stream.setDevice(&m_file);
+        postInit();
+    }
+
+protected:
+    std::optional<QString> advance() override
+    {
+        while (!m_stream.atEnd()) {
+            QString word;
+            m_stream >> word;
+            if (!word.isEmpty())
+                return word;
+        }
+        return std::nullopt;
+    }
+
+    std::optional<ChunkStreamer::Status> getError() const override
+    {
+        if (!m_file.error())
+            return std::nullopt;
+        return m_file.binarySeen() ? ChunkStreamer::Status::BINARY_SEEN : ChunkStreamer::Status::ERROR;
+    }
+
+    BinaryDetectingFile m_file;
+    QTextStream m_stream;
+};
+
+} // namespace
+
+std::unique_ptr<DocumentReader> DocumentReader::fromDocument(const DocumentInfo &doc)
 {
-    int charCount = 0;
+    if (doc.isPdf())
+        return std::make_unique<PdfDocumentReader>(doc);
+    if (doc.isDocx())
+        return std::make_unique<WordDocumentReader>(doc);
+    return std::make_unique<TxtDocumentReader>(doc);
+}
+
+ChunkStreamer::ChunkStreamer(Database *database)
+    : m_database(database) {}
+
+ChunkStreamer::~ChunkStreamer() = default;
+
+void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel,
+                                const QString &title, const QString &author, const QString &subject,
+                                const QString &keywords)
+{
+    auto docKey = doc.key();
+    if (!m_docKey || *m_docKey != docKey) {
+        m_docKey         = docKey;
+        m_reader         = DocumentReader::fromDocument(doc);
+        m_documentId     = documentId;
+        m_embeddingModel = embeddingModel;
+        m_title          = title;
+        m_author         = author;
+        m_subject        = subject;
+        m_keywords       = keywords;
+        m_chunk.clear();
+        m_page = 0;
+
+        // make sure the document doesn't already have any chunks
+        QSqlQuery q(m_database->m_db);
+        if (!removeChunksByDocumentId(q, documentId))
+            handleDocumentError("ERROR: Cannot remove chunks of document", documentId, doc.file.canonicalPath(), q.lastError());
+    }
+}
+
+ChunkStreamer::Status ChunkStreamer::step()
+{
     // TODO: implement line_from/line_to
     constexpr int line_from = -1;
     constexpr int line_to = -1;
-    QList<QString> words;
-    int chunks = 0;
-    int addedWords = 0;
+    const int folderId = m_reader->doc().folder;
+    const int maxChunkSize = m_database->m_chunkSize;
+    int nChunks = 0;
+    int nAddedWords = 0;
+    Status retval;
 
     for (;;) {
-        QString word;
-        stream >> word;
-        if (stream.status() && !stream.atEnd())
-            return -1;
-        charCount += word.length();
-        if (!word.isEmpty())
-            words.append(word);
-        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
-            if (!words.isEmpty()) {
-                const QString chunk = words.join(" ");
-                QSqlQuery q(m_db);
-                int chunk_id = 0;
+        if (auto error = m_reader->getError())
+            return *error;
+        if (m_database->scanQueueInterrupted()) {
+            retval = Status::INTERRUPTED;
+            break;
+        }
+
+        // get a word, if needed
+        std::optional<QString> word = QString(); // empty string to disable EOF logic
+        if (m_chunk.length() < maxChunkSize + 1) {
+            word = m_reader->word();
+            if (m_chunk.isEmpty())
+                m_page = m_reader->page(); // page number of first word
+
+            if (word) {
+                m_chunk += *word;
+                m_chunk += u' ';
+                m_reader->nextWord();
+                m_nChunkWords++;
+            }
+        }
+
+        if (!word || m_chunk.length() >= maxChunkSize + 1) { // +1 for leading space
+            if (!m_chunk.isEmpty()) {
+                int nThisChunkWords = 0;
+                auto chunk = m_chunk; // copy
+
+                // handle overlength chunks
+                if (m_chunk.length() > maxChunkSize + 1) {
+                    // find the final space
+                    qsizetype lastSpace = chunk.lastIndexOf(u' ', -2);
+
+                    if (lastSpace < 0) {
+                        // slice off the last word
+                        Q_ASSERT(m_nChunkWords >= 1);
+                        lastSpace = maxChunkSize;
+                        nThisChunkWords = m_nChunkWords - 1;
+                        m_nChunkWords = 1;
+                    } else {
+                        // slice the overlong word
+                        nThisChunkWords = m_nChunkWords;
+                        m_nChunkWords = 0;
+                    }
+                    // save the extra part
+                    m_chunk = chunk.sliced(lastSpace + 1);
+                    // slice
+                    chunk.truncate(lastSpace + 1);
+                    Q_ASSERT(chunk.length() <= maxChunkSize + 1);
+                } else {
+                    nThisChunkWords = m_nChunkWords;
+                    m_nChunkWords = 0;
+                }
+
+                QSqlQuery q(m_database->m_db);
+                int chunkId = 0;
                 if (!addChunk(q,
-                    document_id,
-                    chunk,
-                    file,
-                    title,
-                    author,
-                    subject,
-                    keywords,
-                    page,
+                    m_documentId,
+                    chunk.chopped(1), // strip trailing space
+                    m_reader->doc().file.canonicalFilePath(),
+                    m_title,
+                    m_author,
+                    m_subject,
+                    m_keywords,
+                    m_page,
                     line_from,
                     line_to,
-                    words.size(),
-                    &chunk_id
+                    nThisChunkWords,
+                    &chunkId
                 )) {
                     qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
                 }
 
-                addedWords += words.size();
+                nAddedWords += nThisChunkWords;
 
                 EmbeddingChunk toEmbed;
-                toEmbed.model = embedding_model;
-                toEmbed.folder_id = folder_id;
-                toEmbed.chunk_id = chunk_id;
+                toEmbed.model = m_embeddingModel;
+                toEmbed.folder_id = folderId;
+                toEmbed.chunk_id = chunkId;
                 toEmbed.chunk = chunk;
-                appendChunk(toEmbed);
-                ++chunks;
+                m_database->appendChunk(toEmbed);
+                ++nChunks;
 
-                words.clear();
-                charCount = 0;
+                m_chunk.clear();
             }
 
-            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
+            if (!word) {
+                retval = Status::DOC_COMPLETE;
                 break;
+            }
         }
     }
 
-    if (chunks) {
-        CollectionItem item = guiCollectionItem(folder_id);
+    if (nChunks) {
+        CollectionItem item = m_database->guiCollectionItem(folderId);
 
         // Set the start update if we haven't done so already
         if (item.startUpdate <= item.lastUpdate && item.currentEmbeddingsToIndex == 0)
-            setStartUpdateTime(item);
+            m_database->setStartUpdateTime(item);
 
-        item.currentEmbeddingsToIndex += chunks;
-        item.totalEmbeddingsToIndex += chunks;
-        item.totalWords += addedWords;
-        updateGuiForCollectionItem(item);
+        item.currentEmbeddingsToIndex += nChunks;
+        item.totalEmbeddingsToIndex += nChunks;
+        item.totalWords += nAddedWords;
+        m_database->updateGuiForCollectionItem(item);
     }
 
-    return stream.pos();
+    return retval;
 }
 
 void Database::appendChunk(const EmbeddingChunk &chunk)
@@ -1238,83 +1499,82 @@ void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const
 
 size_t Database::countOfDocuments(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    return m_docsToScan.value(folder_id).size();
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
+        return it->second.size();
+    return 0;
 }
 
 size_t Database::countOfBytes(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    size_t totalBytes = 0;
-    const QQueue<DocumentInfo> &docs = m_docsToScan.value(folder_id);
-    for (const DocumentInfo &f : docs)
-        totalBytes += f.doc.size();
-    return totalBytes;
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end()) {
+        size_t totalBytes = 0;
+        for (const DocumentInfo &f : it->second)
+            totalBytes += f.file.size();
+        return totalBytes;
+    }
+    return 0;
 }
 
 DocumentInfo Database::dequeueDocument()
 {
-    Q_ASSERT(!m_docsToScan.isEmpty());
-    const int firstKey = m_docsToScan.firstKey();
-    QQueue<DocumentInfo> &queue = m_docsToScan[firstKey];
-    Q_ASSERT(!queue.isEmpty());
-    DocumentInfo result = queue.dequeue();
-    if (queue.isEmpty())
-        m_docsToScan.remove(firstKey);
+    Q_ASSERT(!m_docsToScan.empty());
+    auto firstEntry = m_docsToScan.begin();
+    auto &[firstKey, queue] = *firstEntry;
+    Q_ASSERT(!queue.empty());
+    DocumentInfo result = std::move(queue.front());
+    queue.pop_front();
+    if (queue.empty())
+        m_docsToScan.erase(firstEntry);
     return result;
 }
 
 void Database::removeFolderFromDocumentQueue(int folder_id)
 {
-    if (!m_docsToScan.contains(folder_id))
-        return;
-    m_docsToScan.remove(folder_id);
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
+        m_docsToScan.erase(it);
 }
 
-void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
+void Database::enqueueDocumentInternal(DocumentInfo &&info, bool prepend)
 {
-    const int key = info.folder;
-    if (!m_docsToScan.contains(key))
-        m_docsToScan[key] = QQueue<DocumentInfo>();
-    if (prepend)
-        m_docsToScan[key].prepend(info);
-    else
-        m_docsToScan[key].enqueue(info);
+    auto &queue = m_docsToScan[info.folder];
+    queue.insert(prepend ? queue.begin() : queue.end(), std::move(info));
 }
 
-void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos)
+void Database::enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos)
 {
-    for (int i = 0; i < infos.size(); ++i)
-        enqueueDocumentInternal(infos[i]);
-    const size_t count = countOfDocuments(folder_id);
+    // enqueue all documents
+    auto &queue = m_docsToScan[folder_id];
+    queue.splice(queue.end(), std::move(infos));
 
     CollectionItem item = guiCollectionItem(folder_id);
-    item.currentDocsToIndex = count;
-    item.totalDocsToIndex = count;
+    item.currentDocsToIndex = queue.size();
+    item.totalDocsToIndex = queue.size();
     const size_t bytes = countOfBytes(folder_id);
     item.currentBytesToIndex = bytes;
     item.totalBytesToIndex = bytes;
     updateGuiForCollectionItem(item);
-    m_scanTimer->start();
+    m_scanIntervalTimer->start();
+}
+
+bool Database::scanQueueInterrupted() const
+{
+    return m_scanDurationTimer.elapsed() >= 100;
 }
 
 void Database::scanQueueBatch()
 {
-    QElapsedTimer timer;
-    timer.start();
+    m_scanDurationTimer.start();
 
     transaction();
 
     // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
+    while (!m_docsToScan.empty() && !scanQueueInterrupted())
         scanQueue();
 
     commit();
 
-    if (m_docsToScan.isEmpty())
-        m_scanTimer->stop();
+    if (m_docsToScan.empty())
+        m_scanIntervalTimer->stop();
 }
 
 void Database::scanQueue()
@@ -1324,15 +1584,15 @@ void Database::scanQueue()
     const int folder_id = info.folder;
 
     // Update info
-    info.doc.stat();
+    info.file.stat();
 
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
-    if (!info.doc.exists() || !info.doc.isReadable())
+    if (!info.file.exists() || !info.file.isReadable())
         return updateFolderToIndex(folder_id, countForFolder);
 
-    const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
-    const QString document_path = info.doc.canonicalFilePath();
+    const qint64 document_time = info.file.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
+    const QString document_path = info.file.canonicalFilePath();
     const bool currentlyProcessing = info.currentlyProcessing;
 
     // Check and see if we already have this document
@@ -1393,104 +1653,57 @@ void Database::scanQueue()
     }
 
     Q_ASSERT(document_id != -1);
-    if (info.isPdf()) {
-        QPdfDocument doc;
-        if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
-            handleDocumentError("ERROR: Could not load pdf",
-                document_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        const size_t bytes = info.doc.size();
-        const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
-        const int pageIndex = info.currentPage;
-#if defined(DEBUG)
-        qDebug() << "scanning page" << pageIndex << "of" << doc.pageCount() << document_path;
-#endif
-        const QPdfSelection selection = doc.getAllText(pageIndex);
-        QString text = selection.text();
-        QTextStream stream(&text);
-        chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
-            doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
-            pageIndex + 1
-        );
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesPerPage;
-        updateGuiForCollectionItem(item);
-        if (info.currentPage < doc.pageCount()) {
-            info.currentPage += 1;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
-        }
 
-        item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
-        updateGuiForCollectionItem(item);
-    } else {
-        BinaryDetectingFile file(document_path);
-        if (!file.open(QIODevice::ReadOnly)) {
-            handleDocumentError("ERROR: Cannot open file for scanning",
-                                existing_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        Q_ASSERT(!file.isSequential()); // we need to seek
-
-        const size_t bytes = info.doc.size();
-        QTextStream stream(&file);
-        const size_t byteIndex = info.currentPosition;
-        if (byteIndex) {
-            /* Read the Unicode BOM to detect the encoding. Without this, QTextStream will
-             * always interpret the text as UTF-8 when byteIndex is nonzero. */
-            stream.read(1);
-
-            if (!stream.seek(byteIndex)) {
-                handleDocumentError("ERROR: Cannot seek to pos for scanning",
-                                    existing_id, document_path, q.lastError());
+    {
+        QString title, author, subject, keywords;
+        if (info.isPdf()) {
+            QPdfDocument doc;
+            if (doc.load(document_path) != QPdfDocument::Error::None) {
+                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;;
                 return updateFolderToIndex(folder_id, countForFolder);
             }
+            title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();
+            author   = doc.metaData(QPdfDocument::MetaDataField::Author).toString();
+            subject  = doc.metaData(QPdfDocument::MetaDataField::Subject).toString();
+            keywords = doc.metaData(QPdfDocument::MetaDataField::Keywords).toString();
+            // TODO(jared): metadata for Word documents?
         }
-#if defined(DEBUG)
-        qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
-#endif
-        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
-            QString() /*title*/, QString() /*author*/, QString() /*subject*/, QString() /*keywords*/, -1 /*page*/,
-            100 /*maxChunks*/);
-        if (pos < 0) {
-            if (!file.binarySeen()) {
-                handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
-                                    existing_id, document_path, q.lastError());
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
 
-            /* When we see a binary file, we treat it like an empty file so we know not to
-             * scan it again. All existing chunks are removed, and in-progress embeddings
-             * are ignored when they complete. */
-
-            qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
-
-            // this will also ensure in-flight embeddings are ignored
-            if (!removeChunksByDocumentId(q, existing_id)) {
-                handleDocumentError("ERROR: Cannot remove chunks of document",
-                    existing_id, document_path, q.lastError());
-            }
-            updateCollectionStatistics();
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        file.close();
-        const size_t bytesChunked = pos - byteIndex;
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesChunked;
-        updateGuiForCollectionItem(item);
-        if (info.currentPosition < bytes) {
-            info.currentPosition = pos;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
+        try {
+            m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+        } catch (const std::runtime_error &e) {
+            qWarning() << "LocalDocs ERROR:" << e.what();
+            goto dequeue;
         }
     }
 
+    switch (m_chunkStreamer.step()) {
+    case ChunkStreamer::Status::INTERRUPTED:
+        info.currentlyProcessing = true;
+        enqueueDocumentInternal(std::move(info), /*prepend*/ true);
+        return updateFolderToIndex(folder_id, countForFolder + 1);
+    case ChunkStreamer::Status::BINARY_SEEN:
+        /* When we see a binary file, we treat it like an empty file so we know not to
+         * scan it again. All existing chunks are removed, and in-progress embeddings
+         * are ignored when they complete. */
+        qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
+
+        // this will also ensure in-flight embeddings are ignored
+        if (!removeChunksByDocumentId(q, existing_id))
+            handleDocumentError("ERROR: Cannot remove chunks of document", existing_id, document_path, q.lastError());
+        updateCollectionStatistics();
+        break;
+    case ChunkStreamer::Status::ERROR:
+        qWarning() << "error reading" << document_path;
+        break;
+    case ChunkStreamer::Status::DOC_COMPLETE:
+        ;
+    }
+
+dequeue:
+    auto item = guiCollectionItem(folder_id);
+    item.currentBytesToIndex -= info.file.size();
+    updateGuiForCollectionItem(item);
     return updateFolderToIndex(folder_id, countForFolder);
 }
 
@@ -1502,7 +1715,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 
     QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
                     QDirIterator::Subdirectories);
-    QVector<DocumentInfo> infos;
+    std::list<DocumentInfo> infos;
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo = it.fileInfo();
@@ -1514,17 +1727,14 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
         if (!m_scannedFileExtensions.contains(fileInfo.suffix(), Qt::CaseInsensitive))
             continue;
 
-        DocumentInfo info;
-        info.folder = folder_id;
-        info.doc = fileInfo;
-        infos.append(info);
+        infos.push_back({ folder_id, fileInfo });
     }
 
-    if (!infos.isEmpty()) {
+    if (!infos.empty()) {
         CollectionItem item = guiCollectionItem(folder_id);
         item.indexing = true;
         updateGuiForCollectionItem(item);
-        enqueueDocuments(folder_id, infos);
+        enqueueDocuments(folder_id, std::move(infos));
     } else {
         updateFolderToIndex(folder_id, 0, false);
     }
@@ -1535,7 +1745,7 @@ void Database::start()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
     connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
-    m_scanTimer->callOnTimeout(this, &Database::scanQueueBatch);
+    m_scanIntervalTimer->callOnTimeout(this, &Database::scanQueueBatch);
 
     const QString modelPath = MySettings::globalInstance()->modelPath();
     QList<CollectionItem> oldCollections;
