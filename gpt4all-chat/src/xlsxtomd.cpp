@@ -1,8 +1,23 @@
 #include "xlsxtomd.h"
 
+#include <xlsxabstractsheet.h>
+#include <xlsxcell.h>
 #include <xlsxcellrange.h>
 #include <xlsxdocument.h>
-#include <xlsxworkbook.h>
+#include <xlsxformat.h>
+#include <xlsxworksheet.h>
+
+#include <QDateTime>
+#include <QDebug>
+#include <QList>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <memory>
+
 
 static QString formatCellText(const QXlsx::Cell *cell)
 {
