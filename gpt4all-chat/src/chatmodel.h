@@ -161,8 +161,6 @@ public:
             const QString localFilePath = url.toLocalFile();
             const QFileInfo info(localFilePath);
             Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
-            Q_ASSERT(info.exists());
-            Q_ASSERT(info.isFile());
             PromptAttachment attached;
             attached.url = url;
             attached.file = info.fileName();
@@ -492,7 +490,7 @@ public:
                     c.consolidatedSources = consolidateSources(sources);
                 }
             }
-            if (version > 9) {
+            if (version >= 10) {
                 qsizetype count;
                 stream >> count;
                 QList<PromptAttachment> attachments;

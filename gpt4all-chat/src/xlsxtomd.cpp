@@ -4,7 +4,7 @@
 #include <xlsxdocument.h>
 #include <xlsxworkbook.h>
 
-QString formatCellText(const QXlsx::Cell* cell)
+QString formatCellText(const QXlsx::Cell *cell)
 {
     if (!cell) return QString();
 
@@ -43,7 +43,7 @@ QString formatCellText(const QXlsx::Cell* cell)
     return formattedText;
 }
 
-QString getCellValue(QXlsx::Worksheet* sheet, int row, int col) {
+QString getCellValue(QXlsx::Worksheet *sheet, int row, int col) {
     if (!sheet)
         return QString();
 
@@ -52,7 +52,7 @@ QString getCellValue(QXlsx::Worksheet* sheet, int row, int col) {
 
     // If the cell is part of a merged range and not directly available
     if (!cell) {
-        for (const QXlsx::CellRange& range : sheet->mergedCells()) {
+        for (const QXlsx::CellRange &range : sheet->mergedCells()) {
             if (row >= range.firstRow() && row <= range.lastRow() &&
                 col >= range.firstColumn() && col <= range.lastColumn()) {
                 cell = sheet->cellAt(range.firstRow(), range.firstColumn());
@@ -89,7 +89,7 @@ QString XLSXToMD::toMarkdown(const QString &xlsxFilePath)
 
     // Iterate through each worksheet by name
     for (const QString &sheetName : sheetNames) {
-        QXlsx::Worksheet* sheet = dynamic_cast<QXlsx::Worksheet*>(xlsx.sheet(sheetName));
+        QXlsx::Worksheet *sheet = dynamic_cast<QXlsx::Worksheet*>(xlsx.sheet(sheetName));
         if (!sheet) {
             qWarning() << "Failed to load sheet:" << sheetName;
             continue;

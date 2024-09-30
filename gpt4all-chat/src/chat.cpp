@@ -138,8 +138,6 @@ void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
         const QString localFilePath = url.toLocalFile();
         const QFileInfo info(localFilePath);
         Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
-        Q_ASSERT(info.exists());
-        Q_ASSERT(info.isFile());
         attachedContexts << XLSXToMD::toMarkdown(info.canonicalFilePath());
     }
 

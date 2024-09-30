@@ -1,9 +1,7 @@
 #ifndef XLSXTOMD_H
 #define XLSXTOMD_H
 
-#include <QObject>
-#include <QString>
-#include <QtGlobal>
+class QString;
 
 class XLSXToMD
 {
