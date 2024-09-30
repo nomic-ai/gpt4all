@@ -1494,7 +1494,7 @@ Rectangle {
                                                     var chat = window.currentChat
                                                     var followup = modelData
                                                     chat.stopGenerating()
-                                                    chat.prompt(followup)
+                                                    chat.newPromptResponsePair(followup)
                                                 }
                                             }
                                             Item {
@@ -2055,7 +2055,7 @@ Rectangle {
                                     return
 
                                 currentChat.stopGenerating()
-                                currentChat.prompt(textInput.text, attachmentModel.getAttachmentUrls())
+                                currentChat.newPromptResponsePair(textInput.text, attachmentModel.getAttachmentUrls())
                                 attachmentModel.clear();
                                 textInput.text = ""
                             }

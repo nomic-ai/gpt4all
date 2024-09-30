@@ -125,11 +125,16 @@ void Chat::resetResponseState()
     emit responseStateChanged();
 }
 
-void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
+void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
     newPromptResponsePairInternal(prompt, attachedUrls);
     emit resetResponseRequested();
 
+    this->prompt(prompt, attachedUrls);
+}
+
+void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
+{
     resetResponseState();
 
     QStringList attachedContexts;
