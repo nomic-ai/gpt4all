@@ -1727,7 +1727,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
         if (!m_scannedFileExtensions.contains(fileInfo.suffix(), Qt::CaseInsensitive))
             continue;
 
-        infos.emplace_back(folder_id, fileInfo);
+        infos.push_back({ folder_id, fileInfo });
     }
 
     if (!infos.empty()) {
