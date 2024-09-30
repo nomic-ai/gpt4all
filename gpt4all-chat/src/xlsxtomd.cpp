@@ -127,29 +127,14 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
             continue;
         }
 
-        // Assume the first row is the header
-        int headerRow = firstRow;
-
-        // Collect headers
-        QStringList headers;
-        for (int col = firstCol; col <= lastCol; ++col) {
-            QString header = getCellValue(sheet, headerRow, col);
-            headers << header;
-        }
-
-        // Create Markdown header row
-        QString headerRowMarkdown = "|" + headers.join("|") + "|";
-        markdown += headerRowMarkdown + "\n";
-
-        // Create Markdown separator row
+        // Separator row (no header)
         QStringList separators;
-        for (int i = 0; i < headers.size(); ++i)
-            separators << "---";
-        QString separatorRow = "|" + separators.join("|") + "|";
-        markdown += separatorRow + "\n";
+        for (int col = firstCol; col <= lastCol; ++col)
+            separators << u"---"_s;
+        markdown += u"|%1|\n"_s.arg(separators.join(u'|'));
 
-        // Iterate through data rows (starting from the row after header)
-        for (int row = headerRow + 1; row <= lastRow; ++row) {
+        // Iterate through data rows
+        for (int row = 0; row <= lastRow; ++row) {
             QStringList rowData;
             for (int col = firstCol; col <= lastCol; ++col) {
                 QString cellText = getCellValue(sheet, row, col);
