@@ -43,7 +43,8 @@ QString formatCellText(const QXlsx::Cell *cell)
     return formattedText;
 }
 
-QString getCellValue(QXlsx::Worksheet *sheet, int row, int col) {
+QString getCellValue(QXlsx::Worksheet *sheet, int row, int col)
+{
     if (!sheet)
         return QString();
 
