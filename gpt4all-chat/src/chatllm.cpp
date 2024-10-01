@@ -1234,47 +1234,45 @@ void ChatLLM::processSystemPrompt()
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
-    if (QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
-        m_processedSystemPrompt = true;
-        return;
-    }
 
     // Start with a whole new context
     m_stopGenerating = false;
     m_ctx = LLModel::PromptContext();
 
-    auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
+    if (!QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
+        auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
 
-    const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
-    const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
-    const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
-    const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
-    const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
-    const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
-    const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
-    const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
-    int n_threads = MySettings::globalInstance()->threadCount();
-    m_ctx.n_predict = n_predict;
-    m_ctx.top_k = top_k;
-    m_ctx.top_p = top_p;
-    m_ctx.min_p = min_p;
-    m_ctx.temp = temp;
-    m_ctx.n_batch = n_batch;
-    m_ctx.repeat_penalty = repeat_penalty;
-    m_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llModelInfo.model->setThreadCount(n_threads);
+        const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
+        const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
+        const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+        const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
+        const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
+        const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
+        const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
+        const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
+        int n_threads = MySettings::globalInstance()->threadCount();
+        m_ctx.n_predict = n_predict;
+        m_ctx.top_k = top_k;
+        m_ctx.top_p = top_p;
+        m_ctx.min_p = min_p;
+        m_ctx.temp = temp;
+        m_ctx.n_batch = n_batch;
+        m_ctx.repeat_penalty = repeat_penalty;
+        m_ctx.repeat_last_n = repeat_penalty_tokens;
+        m_llModelInfo.model->setThreadCount(n_threads);
 #if defined(DEBUG)
-    printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
-    fflush(stdout);
+        printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
+        fflush(stdout);
 #endif
-    auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
-    // use "%1%2" and not "%1" to avoid implicit whitespace
-    m_llModelInfo.model->prompt(systemPrompt, "%1%2", promptFunc, nullptr, /*allowContextShift*/ true, m_ctx, true);
-    m_ctx.n_predict = old_n_predict;
+        auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
+        // use "%1%2" and not "%1" to avoid implicit whitespace
+        m_llModelInfo.model->prompt(systemPrompt, "%1%2", promptFunc, nullptr, /*allowContextShift*/ true, m_ctx, true);
+        m_ctx.n_predict = old_n_predict;
 #if defined(DEBUG)
-    printf("\n");
-    fflush(stdout);
+        printf("\n");
+        fflush(stdout);
 #endif
+    }
 
     m_processedSystemPrompt = m_stopGenerating == false;
     m_pristineLoadedState = false;
