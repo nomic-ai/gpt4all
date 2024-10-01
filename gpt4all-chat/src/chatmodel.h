@@ -46,19 +46,7 @@ public:
 Q_DECLARE_METATYPE(ChatItem)
 
 class ChatModel;
-class ChatModelIterator
-{
-public:
-    ChatItem &operator*() const;
-    ChatModelIterator &operator++();
-    ChatModelIterator operator++(int);
-    bool operator<(const ChatModelIterator &other) const;
-
-private:
-    ChatModelIterator(QList<ChatItem>::iterator it);
-    friend class ChatModel;
-    typename QList<ChatItem>::iterator m_it;
-};
+using ChatModelIterator = QList<ChatItem>::const_iterator;
 
 class ChatModel : public QAbstractListModel
 {
@@ -324,8 +312,8 @@ public:
 
     int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
-    ChatModelIterator begin() { return ChatModelIterator(m_chatItems.begin()); }
-    ChatModelIterator end() { return ChatModelIterator(m_chatItems.end()); }
+    ChatModelIterator begin() const { return m_chatItems.begin(); }
+    ChatModelIterator end() const { return m_chatItems.end(); }
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 
@@ -539,7 +527,6 @@ Q_SIGNALS:
     void valueChanged(int index, const QString &value);
 
 private:
-    friend class ChatModelIterator;
     mutable QMutex m_mutex;
     QList<ChatItem> m_chatItems;
 };
