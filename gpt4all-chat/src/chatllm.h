@@ -12,6 +12,7 @@
 #include <QList>
 #include <QObject>
 #include <QPair>
+#include <QPointer>
 #include <QString>
 #include <QThread>
 #include <QVariantMap>
@@ -37,6 +38,7 @@ enum LLModelType {
 };
 
 class ChatLLM;
+class ChatModel;
 
 struct LLModelInfo {
     std::unique_ptr<LLModel> model;
@@ -151,7 +153,6 @@ public:
 
     bool serialize(QDataStream &stream, int version, bool serializeKV);
     bool deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV);
-    void setStateFromText(const QVector<QPair<QString, QString>> &stateFromText) { m_stateFromText = stateFromText; }
 
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt);
@@ -244,7 +245,7 @@ private:
     // - an unload was queued during LLModel::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet
     bool m_pristineLoadedState = false;
-    QVector<QPair<QString, QString>> m_stateFromText;
+    QPointer<ChatModel> m_chatModel;
 };
 
 #endif // CHATLLM_H

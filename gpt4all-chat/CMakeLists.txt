@@ -141,7 +141,7 @@ qt_add_executable(chat
     src/chatapi.cpp               src/chatapi.h
     src/chatlistmodel.cpp         src/chatlistmodel.h
     src/chatllm.cpp               src/chatllm.h
-    src/chatmodel.h
+    src/chatmodel.cpp             src/chatmodel.h
     src/chatviewtextprocessor.cpp src/chatviewtextprocessor.h
     src/database.cpp              src/database.h
     src/download.cpp              src/download.h

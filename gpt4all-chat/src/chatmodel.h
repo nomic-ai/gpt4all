@@ -45,6 +45,22 @@ public:
 };
 Q_DECLARE_METATYPE(ChatItem)
 
+class ChatModel;
+class ChatModelIterator
+{
+public:
+    ChatItem &operator*() const;
+    ChatModelIterator &operator++();
+    ChatModelIterator operator++(int);
+    bool operator<(const ChatModelIterator& other) const;
+
+private:
+    ChatModelIterator(ChatModel* model, int index);
+    friend class ChatModel;
+    ChatModel* m_model;
+    int m_index;
+};
+
 class ChatModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -306,6 +322,11 @@ public:
 
     int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
+    ChatModelIterator begin() { return ChatModelIterator(this, 0); }
+    ChatModelIterator end() { return ChatModelIterator(this, m_chatItems.size()); }
+    void lock() { m_mutex.lock(); }
+    void unlock() { m_mutex.unlock(); }
+
     bool serialize(QDataStream &stream, int version) const
     {
         QMutexLocker locker(&m_mutex);
@@ -510,19 +531,12 @@ public:
         return stream.status() == QDataStream::Ok;
     }
 
-    QVector<QPair<QString, QString>> text() const
-    {
-        QVector<QPair<QString, QString>> result;
-        for (const auto &c : m_chatItems)
-            result << qMakePair(c.name, c.value);
-        return result;
-    }
-
 Q_SIGNALS:
     void countChanged();
     void valueChanged(int index, const QString &value);
 
 private:
+    friend class ChatModelIterator;
     mutable QMutex m_mutex;
     QList<ChatItem> m_chatItems;
 };
