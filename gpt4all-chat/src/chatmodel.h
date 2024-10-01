@@ -147,9 +147,10 @@ public:
         const int count = m_chatItems.count();
         m_mutex.unlock();
         beginInsertRows(QModelIndex(), count, count);
-        m_mutex.lock();
-        m_chatItems.append(item);
-        m_mutex.unlock();
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
