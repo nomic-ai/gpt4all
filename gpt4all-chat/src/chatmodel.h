@@ -57,7 +57,6 @@ public:
 private:
     ChatModelIterator(QList<ChatItem>::iterator it);
     friend class ChatModel;
-    ChatModel *m_model;
     typename QList<ChatItem>::iterator m_it;
 };
 
