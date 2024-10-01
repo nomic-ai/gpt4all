@@ -236,7 +236,6 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     restoreState();
     emit modelLoadingPercentageChanged(1.0f);
     emit trySwitchContextOfLoadedModelCompleted(0);
-    processSystemPrompt();
 }
 
 bool ChatLLM::loadModel(const ModelInfo &modelInfo)
@@ -302,8 +301,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             Q_ASSERT(!m_modelInfo.filename().isEmpty());
             if (m_modelInfo.filename().isEmpty())
                 emit modelLoadingError(u"Modelinfo is left null for %1"_s.arg(modelInfo.filename()));
-            else
-                processSystemPrompt();
             return true;
         } else {
             // Release the memory since we have to switch to a different model.
@@ -381,7 +378,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
     if (m_llModelInfo.model) {
         setModelInfo(modelInfo);
-        processSystemPrompt();
     }
     return bool(m_llModelInfo.model);
 }
@@ -1227,10 +1223,10 @@ void ChatLLM::restoreState()
     }
 }
 
-void ChatLLM::processSystemPrompt()
+void ChatLLM::processSystemPrompt(bool force)
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText)
+    if (!isModelLoaded() || (!force && (m_processedSystemPrompt || m_restoreStateFromText)))
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
@@ -1286,11 +1282,14 @@ void ChatLLM::processRestoreStateFromText()
     if (!isModelLoaded() || !m_restoreStateFromText || m_isServer)
         return;
 
+    // FIXME: (Adam) Shouldn't we be recreating the chat with the system prompt and the settings that
+    // we had at the time the conversation was created?
+    processSystemPrompt(true /*force*/); // This will start from a clean context
+
     m_restoringFromText = true;
     emit restoringFromTextChanged();
 
     m_stopGenerating = false;
-    m_ctx = LLModel::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
 

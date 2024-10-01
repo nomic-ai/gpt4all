@@ -78,7 +78,6 @@ void Chat::connectLLM()
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
-    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
 }
@@ -102,11 +101,6 @@ void Chat::reset()
     // is to allow switching models but throwing up a dialog warning users if we switch between types
     // of models that a long recalculation will ensue.
     m_chatModel->clear();
-}
-
-void Chat::processSystemPrompt()
-{
-    emit processSystemPromptRequested();
 }
 
 void Chat::resetResponseState()

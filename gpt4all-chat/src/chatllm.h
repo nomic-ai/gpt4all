@@ -168,7 +168,6 @@ public Q_SLOTS:
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
     void handleDeviceChanged();
-    void processSystemPrompt();
     void processRestoreStateFromText();
 
 Q_SIGNALS:
@@ -219,6 +218,7 @@ protected:
 
 private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+    void processSystemPrompt(bool force = false);
 
     std::string m_response;
     std::string m_trimmedResponse;

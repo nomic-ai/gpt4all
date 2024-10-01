@@ -1659,7 +1659,6 @@ Rectangle {
                         onClicked: {
                             Network.trackChatEvent("reset_context", { "length": chatModel.count })
                             currentChat.reset();
-                            currentChat.processSystemPrompt();
                         }
                         ToolTip.visible: resetContextButton.hovered
                         ToolTip.text: qsTr("Erase and reset chat session")

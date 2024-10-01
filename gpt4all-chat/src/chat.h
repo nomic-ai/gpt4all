@@ -72,7 +72,6 @@ public:
     bool isNewChat() const { return m_name == tr("New Chat") && !m_chatModel->count(); }
 
     Q_INVOKABLE void reset();
-    Q_INVOKABLE void processSystemPrompt();
     bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
@@ -141,7 +140,6 @@ Q_SIGNALS:
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
-    void processSystemPromptRequested();
     void modelChangeRequested(const ModelInfo &modelInfo);
     void modelInfoChanged();
     void restoringFromTextChanged();
