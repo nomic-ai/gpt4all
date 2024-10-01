@@ -1700,17 +1700,15 @@ Rectangle {
                             var promptElement = chatModel.get(promptIndex)
                             var responseIndex = chatModel.count - 1
                             var responseElement = chatModel.get(responseIndex)
+                            if (promptElement.name !== "Prompt: " || responseElement.name !== "Response: ")
+                                return
                             currentChat.regenerateResponse()
-                            if (responseElement.name === "Response: ") {
-                                chatModel.updateCurrentResponse(responseIndex, true)
-                                chatModel.updateStopped(responseIndex, false)
-                                chatModel.updateThumbsUpState(responseIndex, false)
-                                chatModel.updateThumbsDownState(responseIndex, false)
-                                chatModel.updateNewResponse(responseIndex, "")
-                            }
-                            if (promptElement.name === "Prompt: ") {
-                                currentChat.prompt(promptElement.value)
-                            }
+                            chatModel.updateCurrentResponse(responseIndex, true)
+                            chatModel.updateStopped(responseIndex, false)
+                            chatModel.updateThumbsUpState(responseIndex, false)
+                            chatModel.updateThumbsDownState(responseIndex, false)
+                            chatModel.updateNewResponse(responseIndex, "")
+                            currentChat.prompt(promptElement.value)
                         }
                         ToolTip.visible: regenerateButton.hovered
                         ToolTip.text: qsTr("Redo last chat response")
