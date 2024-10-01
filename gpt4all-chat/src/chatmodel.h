@@ -45,7 +45,6 @@ public:
 };
 Q_DECLARE_METATYPE(ChatItem)
 
-class ChatModel;
 using ChatModelIterator = QList<ChatItem>::const_iterator;
 
 class ChatModel : public QAbstractListModel
