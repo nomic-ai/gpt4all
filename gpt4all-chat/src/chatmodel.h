@@ -55,10 +55,10 @@ public:
     bool operator<(const ChatModelIterator &other) const;
 
 private:
-    ChatModelIterator(ChatModel *model, int index);
+    ChatModelIterator(ChatModel *model, QList<ChatItem>::iterator it);
     friend class ChatModel;
     ChatModel *m_model;
-    int m_index;
+    typename QList<ChatItem>::iterator m_it;
 };
 
 class ChatModel : public QAbstractListModel
@@ -165,9 +165,10 @@ public:
         item.name = name;
         item.currentResponse = true;
         beginInsertRows(QModelIndex(), count, count);
-        m_mutex.lock();
-        m_chatItems.append(item);
-        m_mutex.unlock();
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
@@ -180,9 +181,10 @@ public:
         }
 
         beginResetModel();
-        m_mutex.lock();
-        m_chatItems.clear();
-        m_mutex.unlock();
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.clear();
+        }
         endResetModel();
         emit countChanged();
     }
@@ -323,8 +325,8 @@ public:
 
     int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
-    ChatModelIterator begin() { return ChatModelIterator(this, 0); }
-    ChatModelIterator end() { return ChatModelIterator(this, m_chatItems.size()); }
+    ChatModelIterator begin() { return ChatModelIterator(this, m_chatItems.begin()); }
+    ChatModelIterator end() { return ChatModelIterator(this, m_chatItems.end()); }
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 
@@ -523,9 +525,10 @@ public:
             const int count = m_chatItems.size();
             m_mutex.unlock();
             beginInsertRows(QModelIndex(), count, count);
-            m_mutex.lock();
-            m_chatItems.append(c);
-            m_mutex.unlock();
+            {
+                QMutexLocker locker(&m_mutex);
+                m_chatItems.append(c);
+            }
             endInsertRows();
         }
         emit countChanged();
