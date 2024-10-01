@@ -11,12 +11,10 @@
 #include <QFileInfo>
 #include <QList>
 #include <QObject>
-#include <QPair>
 #include <QPointer>
 #include <QString>
 #include <QThread>
 #include <QVariantMap>
-#include <QVector>
 #include <QtGlobal>
 
 #include <atomic>

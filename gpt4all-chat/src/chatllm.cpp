@@ -2,6 +2,7 @@
 
 #include "chat.h"
 #include "chatapi.h"
+#include "chatmodel.h"
 #include "localdocs.h"
 #include "mysettings.h"
 #include "network.h"
@@ -13,10 +14,14 @@
 #include <QIODevice>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
+#include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QRegularExpression>
 #include <QSet>
 #include <QStringList>
+#include <QUrl>
 #include <QWaitCondition>
 #include <Qt>
 #include <QtLogging>

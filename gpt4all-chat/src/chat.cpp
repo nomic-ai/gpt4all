@@ -6,15 +6,13 @@
 #include "server.h"
 
 #include <QDataStream>
-#include <QDateTime>
 #include <QDebug>
 #include <QLatin1String>
 #include <QMap>
 #include <QString>
 #include <QStringList>
-#include <QTextStream>
+#include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <utility>

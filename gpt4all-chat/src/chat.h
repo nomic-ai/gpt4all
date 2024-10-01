@@ -7,6 +7,7 @@
 #include "localdocsmodel.h" // IWYU pragma: keep
 #include "modellist.h"
 
+#include <QDateTime>
 #include <QList>
 #include <QObject>
 #include <QQmlEngine>
