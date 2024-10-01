@@ -271,7 +271,7 @@ void Chat::newPromptResponsePairInternal(const QString &prompt, const QString &r
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     // the prompt is passed as the prompt item's value and the response item's prompt
     m_chatModel->appendPrompt("Prompt: ", prompt, attachedUrls);
-    m_chatModel->appendResponse("Response: ", rawPrompt); // This is what is passed to the model
+    m_chatModel->appendResponse("Response: ", rawPrompt); // rawPrompt is used for the "regenerate" button
 }
 
 bool Chat::restoringFromText() const
