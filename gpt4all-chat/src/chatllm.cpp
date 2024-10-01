@@ -1230,7 +1230,7 @@ void ChatLLM::restoreState()
 void ChatLLM::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText)
+    if (!isModelLoaded() || m_processedSystemPrompt)
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
@@ -1284,11 +1284,12 @@ void ChatLLM::processRestoreStateFromText()
     if (!isModelLoaded() || !m_restoreStateFromText || m_isServer)
         return;
 
+    processSystemPrompt();
+
     m_restoringFromText = true;
     emit restoringFromTextChanged();
 
     m_stopGenerating = false;
-    m_ctx = LLModel::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
 
