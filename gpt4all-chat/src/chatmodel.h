@@ -55,7 +55,7 @@ public:
     bool operator<(const ChatModelIterator &other) const;
 
 private:
-    ChatModelIterator(ChatModel *model, QList<ChatItem>::iterator it);
+    ChatModelIterator(QList<ChatItem>::iterator it);
     friend class ChatModel;
     ChatModel *m_model;
     typename QList<ChatItem>::iterator m_it;
@@ -325,8 +325,8 @@ public:
 
     int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
-    ChatModelIterator begin() { return ChatModelIterator(this, m_chatItems.begin()); }
-    ChatModelIterator end() { return ChatModelIterator(this, m_chatItems.end()); }
+    ChatModelIterator begin() { return ChatModelIterator(m_chatItems.begin()); }
+    ChatModelIterator end() { return ChatModelIterator(m_chatItems.end()); }
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 

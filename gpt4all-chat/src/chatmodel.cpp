@@ -1,13 +1,12 @@
 #include "chatmodel.h"
 
-ChatModelIterator::ChatModelIterator(ChatModel* model, QList<ChatItem>::iterator it)
-    : m_model(model), m_it(it)
+ChatModelIterator::ChatModelIterator(QList<ChatItem>::iterator it)
+    : m_it(it)
 {
 }
 
 ChatItem &ChatModelIterator::operator*() const
 {
-    Q_ASSERT(m_model);
     return *m_it;
 }
 
