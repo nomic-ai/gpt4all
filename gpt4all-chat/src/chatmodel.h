@@ -45,6 +45,8 @@ public:
 };
 Q_DECLARE_METATYPE(ChatItem)
 
+using ChatModelIterator = QList<ChatItem>::const_iterator;
+
 class ChatModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -68,12 +70,14 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
+        QMutexLocker locker(&m_mutex);
         Q_UNUSED(parent)
         return m_chatItems.size();
     }
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
+        QMutexLocker locker(&m_mutex);
         if (!index.isValid() || index.row() < 0 || index.row() >= m_chatItems.size())
             return QVariant();
 
@@ -125,75 +129,112 @@ public:
         ChatItem item;
         item.name = name;
         item.value = value;
-        beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-        m_chatItems.append(item);
+        m_mutex.lock();
+        const int count = m_chatItems.count();
+        m_mutex.unlock();
+        beginInsertRows(QModelIndex(), count, count);
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
 
     void appendResponse(const QString &name)
     {
+        m_mutex.lock();
+        const int count = m_chatItems.count();
+        m_mutex.unlock();
         ChatItem item;
-        item.id = m_chatItems.count(); // This is only relevant for responses
+        item.id = count; // This is only relevant for responses
         item.name = name;
         item.currentResponse = true;
-        beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-        m_chatItems.append(item);
+        beginInsertRows(QModelIndex(), count, count);
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
 
     Q_INVOKABLE void clear()
     {
-        if (m_chatItems.isEmpty()) return;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_chatItems.isEmpty()) return;
+        }
 
         beginResetModel();
-        m_chatItems.clear();
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.clear();
+        }
         endResetModel();
         emit countChanged();
     }
 
     Q_INVOKABLE ChatItem get(int index)
     {
+        QMutexLocker locker(&m_mutex);
         if (index < 0 || index >= m_chatItems.size()) return ChatItem();
         return m_chatItems.at(index);
     }
 
     Q_INVOKABLE void updateCurrentResponse(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.currentResponse != b) {
-            item.currentResponse = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {CurrentResponseRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.currentResponse != b) {
+                item.currentResponse = b;
+                changed = true;
+            }
         }
+
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {CurrentResponseRole});
     }
 
     Q_INVOKABLE void updateStopped(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.stopped != b) {
-            item.stopped = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {StoppedRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.stopped != b) {
+                item.stopped = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {StoppedRole});
     }
 
     Q_INVOKABLE void updateValue(int index, const QString &value)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.value != value) {
-            item.value = value;
+            ChatItem &item = m_chatItems[index];
+            if (item.value != value) {
+                item.value = value;
+                changed = true;
+            }
+        }
+        if (changed) {
             emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ValueRole});
             emit valueChanged(index, value);
         }
     }
 
-    QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
+    static QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
         QMap<QString, ResultInfo> groupedData;
         for (const ResultInfo &info : sources) {
             if (groupedData.contains(info.file)) {
@@ -208,53 +249,77 @@ public:
 
     Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        item.sources = sources;
-        item.consolidatedSources = consolidateSources(sources);
+            ChatItem &item = m_chatItems[index];
+            item.sources = sources;
+            item.consolidatedSources = consolidateSources(sources);
+        }
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
     }
 
     Q_INVOKABLE void updateThumbsUpState(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.thumbsUpState != b) {
-            item.thumbsUpState = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsUpStateRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.thumbsUpState != b) {
+                item.thumbsUpState = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsUpStateRole});
     }
 
     Q_INVOKABLE void updateThumbsDownState(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.thumbsDownState != b) {
-            item.thumbsDownState = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsDownStateRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.thumbsDownState != b) {
+                item.thumbsDownState = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsDownStateRole});
     }
 
     Q_INVOKABLE void updateNewResponse(int index, const QString &newResponse)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.newResponse != newResponse) {
-            item.newResponse = newResponse;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.newResponse != newResponse) {
+                item.newResponse = newResponse;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
     }
 
-    int count() const { return m_chatItems.size(); }
+    int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
+
+    ChatModelIterator begin() const { return m_chatItems.begin(); }
+    ChatModelIterator end() const { return m_chatItems.end(); }
+    void lock() { m_mutex.lock(); }
+    void unlock() { m_mutex.unlock(); }
 
     bool serialize(QDataStream &stream, int version) const
     {
-        stream << count();
+        QMutexLocker locker(&m_mutex);
+        stream << int(m_chatItems.size());
         for (const auto &c : m_chatItems) {
             stream << c.id;
             stream << c.name;
@@ -442,20 +507,18 @@ public:
                     c.consolidatedSources = consolidateSources(sources);
                 }
             }
-            beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-            m_chatItems.append(c);
+            m_mutex.lock();
+            const int count = m_chatItems.size();
+            m_mutex.unlock();
+            beginInsertRows(QModelIndex(), count, count);
+            {
+                QMutexLocker locker(&m_mutex);
+                m_chatItems.append(c);
+            }
             endInsertRows();
         }
         emit countChanged();
         return stream.status() == QDataStream::Ok;
-    }
-
-    QVector<QPair<QString, QString>> text() const
-    {
-        QVector<QPair<QString, QString>> result;
-        for (const auto &c : m_chatItems)
-            result << qMakePair(c.name, c.value);
-        return result;
     }
 
 Q_SIGNALS:
@@ -463,7 +526,7 @@ Q_SIGNALS:
     void valueChanged(int index, const QString &value);
 
 private:
-
+    mutable QMutex m_mutex;
     QList<ChatItem> m_chatItems;
 };
 
