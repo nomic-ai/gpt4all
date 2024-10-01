@@ -52,12 +52,12 @@ public:
     ChatItem &operator*() const;
     ChatModelIterator &operator++();
     ChatModelIterator operator++(int);
-    bool operator<(const ChatModelIterator& other) const;
+    bool operator<(const ChatModelIterator &other) const;
 
 private:
-    ChatModelIterator(ChatModel* model, int index);
+    ChatModelIterator(ChatModel *model, int index);
     friend class ChatModel;
-    ChatModel* m_model;
+    ChatModel *m_model;
     int m_index;
 };
 
