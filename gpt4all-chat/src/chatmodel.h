@@ -22,7 +22,6 @@ struct ChatItem
     Q_PROPERTY(int id MEMBER id)
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString value MEMBER value)
-    Q_PROPERTY(QString prompt MEMBER prompt)
     Q_PROPERTY(QString newResponse MEMBER newResponse)
     Q_PROPERTY(bool currentResponse MEMBER currentResponse)
     Q_PROPERTY(bool stopped MEMBER stopped)
@@ -36,7 +35,6 @@ public:
     int id = 0;
     QString name;
     QString value;
-    QString prompt;
     QString newResponse;
     QList<ResultInfo> sources;
     QList<ResultInfo> consolidatedSources;
@@ -59,7 +57,6 @@ public:
         IdRole = Qt::UserRole + 1,
         NameRole,
         ValueRole,
-        PromptRole,
         NewResponseRole,
         CurrentResponseRole,
         StoppedRole,
@@ -88,8 +85,6 @@ public:
                 return item.name;
             case ValueRole:
                 return item.value;
-            case PromptRole:
-                return item.prompt;
             case NewResponseRole:
                 return item.newResponse;
             case CurrentResponseRole:
@@ -115,7 +110,6 @@ public:
         roles[IdRole] = "id";
         roles[NameRole] = "name";
         roles[ValueRole] = "value";
-        roles[PromptRole] = "prompt";
         roles[NewResponseRole] = "newResponse";
         roles[CurrentResponseRole] = "currentResponse";
         roles[StoppedRole] = "stopped";
@@ -142,7 +136,6 @@ public:
         ChatItem item;
         item.id = m_chatItems.count(); // This is only relevant for responses
         item.name = name;
-        item.prompt = prompt;
         item.currentResponse = true;
         beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
         m_chatItems.append(item);
@@ -266,7 +259,6 @@ public:
             stream << c.id;
             stream << c.name;
             stream << c.value;
-            stream << c.prompt;
             stream << c.newResponse;
             stream << c.currentResponse;
             stream << c.stopped;
@@ -336,7 +328,11 @@ public:
             stream >> c.id;
             stream >> c.name;
             stream >> c.value;
-            stream >> c.prompt;
+            if (version < 10) {
+                // This is deprecated and no longer used
+                QString prompt;
+                stream >> prompt;
+            }
             stream >> c.newResponse;
             stream >> c.currentResponse;
             stream >> c.stopped;

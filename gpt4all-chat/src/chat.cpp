@@ -240,7 +240,7 @@ void Chat::newPromptResponsePair(const QString &prompt)
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     // the prompt is passed as the prompt item's value and the response item's prompt
     m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ", prompt);
+    m_chatModel->appendResponse("Response: ", QString());
     emit resetResponseRequested();
 }
 
@@ -251,7 +251,7 @@ void Chat::serverNewPromptResponsePair(const QString &prompt)
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     // the prompt is passed as the prompt item's value and the response item's prompt
     m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ", prompt);
+    m_chatModel->appendResponse("Response: ", QString());
 }
 
 bool Chat::restoringFromText() const
