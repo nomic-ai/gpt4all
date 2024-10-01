@@ -1744,19 +1744,21 @@ Rectangle {
                         imageHeight: 20
                         visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
                         onClicked: {
-                            var index = Math.max(0, chatModel.count - 1);
-                            var listElement = chatModel.get(index);
+                            if (chatModel.count < 2)
+                                return
+                            var promptIndex = chatModel.count - 2
+                            var promptElement = chatModel.get(promptIndex)
+                            var responseIndex = chatModel.count - 1
+                            var responseElement = chatModel.get(responseIndex)
+                            if (promptElement.name !== "Prompt: " || responseElement.name !== "Response: ")
+                                return
                             currentChat.regenerateResponse()
-                            if (chatModel.count) {
-                                if (listElement.name === "Response: ") {
-                                    chatModel.updateCurrentResponse(index, true);
-                                    chatModel.updateStopped(index, false);
-                                    chatModel.updateThumbsUpState(index, false);
-                                    chatModel.updateThumbsDownState(index, false);
-                                    chatModel.updateNewResponse(index, "");
-                                    currentChat.prompt(listElement.prompt)
-                                }
-                            }
+                            chatModel.updateCurrentResponse(responseIndex, true)
+                            chatModel.updateStopped(responseIndex, false)
+                            chatModel.updateThumbsUpState(responseIndex, false)
+                            chatModel.updateThumbsDownState(responseIndex, false)
+                            chatModel.updateNewResponse(responseIndex, "")
+                            currentChat.prompt(promptElement.value)
                         }
                         ToolTip.visible: regenerateButton.hovered
                         ToolTip.text: qsTr("Redo last chat response")

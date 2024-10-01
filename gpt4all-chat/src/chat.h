@@ -7,6 +7,7 @@
 #include "localdocsmodel.h" // IWYU pragma: keep
 #include "modellist.h"
 
+#include <QDateTime>
 #include <QList>
 #include <QObject>
 #include <QQmlEngine>
@@ -77,7 +78,7 @@ public:
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
-    Q_INVOKABLE void prompt(const QString &rawPrompt);
+    Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
 
@@ -124,7 +125,7 @@ public:
     QList<QString> generatedQuestions() const { return m_generatedQuestions; }
 
 public Q_SLOTS:
-    void serverNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = QList<QUrl>());
+    void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});
 
 Q_SIGNALS:
     void idChanged(const QString &id);
@@ -174,7 +175,7 @@ private Q_SLOTS:
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
 private:
-    void newPromptResponsePairInternal(const QString &prompt, const QString &rawPrompt, const QList<QUrl> &attachedUrls);
+    void newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments);
 
 private:
     QString m_id;

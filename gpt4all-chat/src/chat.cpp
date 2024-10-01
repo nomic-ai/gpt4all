@@ -6,16 +6,15 @@
 #include "server.h"
 #include "xlsxtomd.h"
 
+#include <QBuffer>
 #include <QDataStream>
-#include <QDateTime>
 #include <QDebug>
 #include <QLatin1String>
 #include <QMap>
 #include <QString>
 #include <QStringList>
-#include <QTextStream>
+#include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <utility>
@@ -128,28 +127,43 @@ void Chat::resetResponseState()
 void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
     QStringList attachedContexts;
+    QList<PromptAttachment> attachments;
     for (const QUrl &url : attachedUrls) {
         Q_ASSERT(url.isLocalFile());
         const QString localFilePath = url.toLocalFile();
         const QFileInfo info(localFilePath);
         Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
-        attachedContexts << XLSXToMD::toMarkdown(info.canonicalFilePath());
+
+        PromptAttachment attached;
+        attached.url = url;
+
+        QFile file(localFilePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            attached.content = file.readAll();
+            file.close();
+        } else {
+            qWarning() << "ERROR: Failed to open the attachment:" << localFilePath;
+            continue;
+        }
+
+        attachments << attached;
+        attachedContexts << attached.processedContent();
     }
 
-    QString rawPrompt = prompt;
+    QString promptPlusAttached = prompt;
     if (!attachedContexts.isEmpty())
-        rawPrompt = attachedContexts.join("\n\n") + "\n\n" + prompt;
+        promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt;
 
-    newPromptResponsePairInternal(prompt, rawPrompt, attachedUrls);
+    newPromptResponsePairInternal(prompt, attachments);
     emit resetResponseRequested();
 
-    this->prompt(rawPrompt);
+    this->prompt(promptPlusAttached);
 }
 
-void Chat::prompt(const QString &rawPrompt)
+void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
-    emit promptRequested(m_collections, rawPrompt);
+    emit promptRequested(m_collections, prompt);
 }
 
 void Chat::regenerateResponse()
@@ -257,21 +271,17 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
 }
 
 // the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
-void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
+void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments)
 {
-    const QString rawPrompt = prompt; // the raw prompt is the same in this case
-    newPromptResponsePairInternal(prompt, rawPrompt, attachedUrls);
+    newPromptResponsePairInternal(prompt, attachments);
 }
 
-void Chat::newPromptResponsePairInternal(const QString &prompt, const QString &rawPrompt, const QList<QUrl> &attachedUrls)
+void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments)
 {
-    // FIXME: (Adam) The whole thing needs to be rethought as we want to write a new feature that gives
-    // a raw view of all messages and the current naming here is beyond confusing and obscure
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    // the prompt is passed as the prompt item's value and the response item's prompt
-    m_chatModel->appendPrompt("Prompt: ", prompt, attachedUrls);
-    m_chatModel->appendResponse("Response: ", rawPrompt); // rawPrompt is used for the "regenerate" button
+    m_chatModel->appendPrompt("Prompt: ", prompt, attachments);
+    m_chatModel->appendResponse("Response: ");
 }
 
 bool Chat::restoringFromText() const
@@ -462,8 +472,6 @@ bool Chat::deserialize(QDataStream &stream, int version)
         return false;
     if (!m_chatModel->deserialize(stream, version))
         return false;
-
-    m_llmodel->setStateFromText(m_chatModel->text());
 
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;

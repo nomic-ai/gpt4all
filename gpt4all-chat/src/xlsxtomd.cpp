@@ -87,12 +87,12 @@ static QString getCellValue(QXlsx::Worksheet *sheet, int row, int col)
     return QString();
 }
 
-QString XLSXToMD::toMarkdown(const QString &xlsxFilePath)
+QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
 {
     // Load the Excel document
-    QXlsx::Document xlsx(xlsxFilePath);
+    QXlsx::Document xlsx(xlsxDevice);
     if (!xlsx.load()) {
-        qCritical() << "Failed to load the Excel file:" << xlsxFilePath;
+        qCritical() << "Failed to load the Excel from device";
         return QString();
     }
 

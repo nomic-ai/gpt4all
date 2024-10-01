@@ -2,6 +2,7 @@
 
 #include "chat.h"
 #include "chatapi.h"
+#include "chatmodel.h"
 #include "localdocs.h"
 #include "mysettings.h"
 #include "network.h"
@@ -13,10 +14,14 @@
 #include <QIODevice>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
+#include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QRegularExpression>
 #include <QSet>
 #include <QStringList>
+#include <QUrl>
 #include <QWaitCondition>
 #include <Qt>
 #include <QtLogging>
@@ -113,6 +118,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_reloadingToChangeVariant(false)
     , m_processedSystemPrompt(false)
     , m_restoreStateFromText(false)
+    , m_chatModel(parent->chatModel())
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
@@ -1230,51 +1236,49 @@ void ChatLLM::restoreState()
 void ChatLLM::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText)
+    if (!isModelLoaded() || m_processedSystemPrompt)
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
-    if (QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
-        m_processedSystemPrompt = true;
-        return;
-    }
 
     // Start with a whole new context
     m_stopGenerating = false;
     m_ctx = LLModel::PromptContext();
 
-    auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
+    if (!QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
+        auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
 
-    const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
-    const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
-    const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
-    const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
-    const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
-    const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
-    const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
-    const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
-    int n_threads = MySettings::globalInstance()->threadCount();
-    m_ctx.n_predict = n_predict;
-    m_ctx.top_k = top_k;
-    m_ctx.top_p = top_p;
-    m_ctx.min_p = min_p;
-    m_ctx.temp = temp;
-    m_ctx.n_batch = n_batch;
-    m_ctx.repeat_penalty = repeat_penalty;
-    m_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llModelInfo.model->setThreadCount(n_threads);
+        const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
+        const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
+        const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+        const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
+        const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
+        const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
+        const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
+        const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
+        int n_threads = MySettings::globalInstance()->threadCount();
+        m_ctx.n_predict = n_predict;
+        m_ctx.top_k = top_k;
+        m_ctx.top_p = top_p;
+        m_ctx.min_p = min_p;
+        m_ctx.temp = temp;
+        m_ctx.n_batch = n_batch;
+        m_ctx.repeat_penalty = repeat_penalty;
+        m_ctx.repeat_last_n = repeat_penalty_tokens;
+        m_llModelInfo.model->setThreadCount(n_threads);
 #if defined(DEBUG)
-    printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
-    fflush(stdout);
+        printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
+        fflush(stdout);
 #endif
-    auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
-    // use "%1%2" and not "%1" to avoid implicit whitespace
-    m_llModelInfo.model->prompt(systemPrompt, "%1%2", promptFunc, nullptr, /*allowContextShift*/ true, m_ctx, true);
-    m_ctx.n_predict = old_n_predict;
+        auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
+        // use "%1%2" and not "%1" to avoid implicit whitespace
+        m_llModelInfo.model->prompt(systemPrompt, "%1%2", promptFunc, nullptr, /*allowContextShift*/ true, m_ctx, true);
+        m_ctx.n_predict = old_n_predict;
 #if defined(DEBUG)
-    printf("\n");
-    fflush(stdout);
+        printf("\n");
+        fflush(stdout);
 #endif
+    }
 
     m_processedSystemPrompt = m_stopGenerating == false;
     m_pristineLoadedState = false;
@@ -1286,11 +1290,12 @@ void ChatLLM::processRestoreStateFromText()
     if (!isModelLoaded() || !m_restoreStateFromText || m_isServer)
         return;
 
+    processSystemPrompt();
+
     m_restoringFromText = true;
     emit restoringFromTextChanged();
 
     m_stopGenerating = false;
-    m_ctx = LLModel::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
 
@@ -1314,31 +1319,41 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx.repeat_last_n = repeat_penalty_tokens;
     m_llModelInfo.model->setThreadCount(n_threads);
 
-    auto it = m_stateFromText.begin();
-    while (it < m_stateFromText.end()) {
+    Q_ASSERT(m_chatModel);
+    m_chatModel->lock();
+    auto it = m_chatModel->begin();
+    while (it < m_chatModel->end()) {
         auto &prompt = *it++;
-        Q_ASSERT(prompt.first == "Prompt: ");
-        Q_ASSERT(it < m_stateFromText.end());
+        Q_ASSERT(prompt.name == "Prompt: ");
+        Q_ASSERT(it < m_chatModel->end());
+
+        QStringList attachedContexts;
+        QList<PromptAttachment> attachments = prompt.promptAttachments;
+        for (auto attached: attachments)
+            attachedContexts << attached.processedContent();
+
+        QString promptPlusAttached = prompt.value;
+        if (!attachedContexts.isEmpty())
+            promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt.value;
 
         auto &response = *it++;
-        Q_ASSERT(response.first != "Prompt: ");
+        Q_ASSERT(response.name == "Response: ");
 
         // FIXME(jared): this doesn't work well with the "regenerate" button since we are not incrementing
         //               m_promptTokens or m_promptResponseTokens
         m_llModelInfo.model->prompt(
-            prompt.second.toStdString(), promptTemplate.toStdString(),
+            promptPlusAttached.toStdString(), promptTemplate.toStdString(),
             promptFunc, /*responseFunc*/ [](auto &&...) { return true; },
             /*allowContextShift*/ true,
             m_ctx,
             /*special*/ false,
-            response.second.toUtf8().constData()
+            response.value.toUtf8().constData()
         );
     }
+    m_chatModel->unlock();
 
-    if (!m_stopGenerating) {
+    if (!m_stopGenerating)
         m_restoreStateFromText = false;
-        m_stateFromText.clear();
-    }
 
     m_restoringFromText = false;
     emit restoringFromTextChanged();
