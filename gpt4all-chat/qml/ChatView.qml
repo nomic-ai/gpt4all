@@ -1694,22 +1694,22 @@ Rectangle {
                         imageHeight: 20
                         visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
                         onClicked: {
-                            var promptIndex = Math.max(0, chatModel.count - 2);
-                            var promptElement = chatModel.get(promptIndex);
-                            var responseIndex = Math.max(0, chatModel.count - 1);
-                            var responseElement = chatModel.get(responseIndex);
+                            if (chatModel.count < 2)
+                                return
+                            var promptIndex = chatModel.count - 2
+                            var promptElement = chatModel.get(promptIndex)
+                            var responseIndex = chatModel.count - 1
+                            var responseElement = chatModel.get(responseIndex)
                             currentChat.regenerateResponse()
-                            if (chatModel.count) {
-                                if (responseElement.name === "Response: ") {
-                                    chatModel.updateCurrentResponse(responseIndex, true);
-                                    chatModel.updateStopped(responseIndex, false);
-                                    chatModel.updateThumbsUpState(responseIndex, false);
-                                    chatModel.updateThumbsDownState(responseIndex, false);
-                                    chatModel.updateNewResponse(responseIndex, "");
-                                }
-                                if (promptElement.name === "Prompt: ") {
-                                    currentChat.prompt(promptElement.value)
-                                }
+                            if (responseElement.name === "Response: ") {
+                                chatModel.updateCurrentResponse(responseIndex, true)
+                                chatModel.updateStopped(responseIndex, false)
+                                chatModel.updateThumbsUpState(responseIndex, false)
+                                chatModel.updateThumbsDownState(responseIndex, false)
+                                chatModel.updateNewResponse(responseIndex, "")
+                            }
+                            if (promptElement.name === "Prompt: ") {
+                                currentChat.prompt(promptElement.value)
                             }
                         }
                         ToolTip.visible: regenerateButton.hovered

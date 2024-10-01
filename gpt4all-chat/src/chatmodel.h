@@ -131,7 +131,7 @@ public:
         emit countChanged();
     }
 
-    void appendResponse(const QString &name, const QString &prompt)
+    void appendResponse(const QString &name)
     {
         ChatItem item;
         item.id = m_chatItems.count(); // This is only relevant for responses
