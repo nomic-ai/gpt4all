@@ -21,12 +21,12 @@ sudo pacman -S --needed cmake gcc ninja qt6-5compat qt6-base qt6-declarative qt6
 
 On Ubuntu 23.04, this looks like:
 ```
-sudo apt install cmake g++ libgl-dev libqt6core5compat6 ninja-build qml6-module-qt5compat-graphicaleffects qt6-base-dev qt6-declarative-dev qt6-httpserver-dev qt6-svg-dev qtcreator
+sudo apt install cmake g++ libgl-dev libqt6core5compat6 ninja-build qml6-module-qt5compat-graphicaleffects qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev qt6-svg-dev qtcreator
 ```
 
 On Fedora 39, this looks like:
 ```
-sudo dnf install cmake gcc-c++ ninja-build qt-creator qt5-qtgraphicaleffects qt6-qt5compat qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qthttpserver-devel qt6-qtsvg-devel
+sudo dnf install cmake gcc-c++ ninja-build qt-creator qt5-qtgraphicaleffects qt6-qt5compat qt6-qtbase-private-devel qt6-qtdeclarative-devel qt6-qthttpserver-devel qt6-qtsvg-devel
 ```
 
 ## Download Qt

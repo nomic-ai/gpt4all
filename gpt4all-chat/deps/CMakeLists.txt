@@ -8,3 +8,6 @@ add_subdirectory(SingleApplication)
 
 set(DUCKX_INSTALL OFF)
 add_subdirectory(DuckX)
+
+set(QT_VERSION_MAJOR 6)
+add_subdirectory(QXlsx/QXlsx)

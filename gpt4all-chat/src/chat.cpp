@@ -5,6 +5,7 @@
 #include "network.h"
 #include "server.h"
 
+#include <QBuffer>
 #include <QDataStream>
 #include <QDebug>
 #include <QLatin1String>
@@ -122,6 +123,42 @@ void Chat::resetResponseState()
     emit responseStateChanged();
 }
 
+void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
+{
+    QStringList attachedContexts;
+    QList<PromptAttachment> attachments;
+    for (const QUrl &url : attachedUrls) {
+        Q_ASSERT(url.isLocalFile());
+        const QString localFilePath = url.toLocalFile();
+        const QFileInfo info(localFilePath);
+        Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
+
+        PromptAttachment attached;
+        attached.url = url;
+
+        QFile file(localFilePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            attached.content = file.readAll();
+            file.close();
+        } else {
+            qWarning() << "ERROR: Failed to open the attachment:" << localFilePath;
+            continue;
+        }
+
+        attachments << attached;
+        attachedContexts << attached.processedContent();
+    }
+
+    QString promptPlusAttached = prompt;
+    if (!attachedContexts.isEmpty())
+        promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt;
+
+    newPromptResponsePairInternal(prompt, attachments);
+    emit resetResponseRequested();
+
+    this->prompt(promptPlusAttached);
+}
+
 void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
@@ -232,23 +269,17 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     emit modelChangeRequested(modelInfo);
 }
 
-void Chat::newPromptResponsePair(const QString &prompt)
+// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
+void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments)
 {
-    resetResponseState();
-    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    // the prompt is passed as the prompt item's value and the response item's prompt
-    m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ");
-    emit resetResponseRequested();
+    newPromptResponsePairInternal(prompt, attachments);
 }
 
-// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
-void Chat::serverNewPromptResponsePair(const QString &prompt)
+void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments)
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    // the prompt is passed as the prompt item's value and the response item's prompt
-    m_chatModel->appendPrompt("Prompt: ", prompt);
+    m_chatModel->appendPrompt("Prompt: ", prompt, attachments);
     m_chatModel->appendResponse("Response: ");
 }
 

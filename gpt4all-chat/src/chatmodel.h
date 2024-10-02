@@ -2,8 +2,10 @@
 #define CHATMODEL_H
 
 #include "database.h"
+#include "xlsxtomd.h"
 
 #include <QAbstractListModel>
+#include <QBuffer>
 #include <QByteArray>
 #include <QDataStream>
 #include <QHash>
@@ -15,6 +17,40 @@
 #include <QVector>
 #include <Qt>
 #include <QtGlobal>
+
+struct PromptAttachment {
+    Q_GADGET
+    Q_PROPERTY(QUrl url MEMBER url)
+    Q_PROPERTY(QByteArray content MEMBER content)
+    Q_PROPERTY(QString file READ file)
+    Q_PROPERTY(QString processedContent READ processedContent)
+
+public:
+    QUrl url;
+    QByteArray content;
+
+    QString file() const
+    {
+        if (!url.isLocalFile())
+            return QString();
+        const QString localFilePath = url.toLocalFile();
+        const QFileInfo info(localFilePath);
+        return info.fileName();
+    }
+
+    QString processedContent() const
+    {
+        QBuffer buffer;
+        buffer.setData(content);
+        buffer.open(QIODevice::ReadOnly);
+        const QString md = XLSXToMD::toMarkdown(&buffer);
+        buffer.close();
+        return md;
+    }
+
+    bool operator==(const PromptAttachment &other) const { return url == other.url; }
+};
+Q_DECLARE_METATYPE(PromptAttachment)
 
 struct ChatItem
 {
@@ -29,8 +65,22 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
+    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments);
+    Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments);
 
 public:
+    QString promptPlusAttachments() const
+    {
+        QStringList attachedContexts;
+        for (auto attached : promptAttachments)
+            attachedContexts << attached.processedContent();
+
+        QString promptPlus = value;
+        if (!attachedContexts.isEmpty())
+            promptPlus = attachedContexts.join("\n\n") + "\n\n" + value;
+        return promptPlus;
+    }
+
     // TODO: Maybe we should include the model name here as well as timestamp?
     int id = 0;
     QString name;
@@ -38,6 +88,7 @@ public:
     QString newResponse;
     QList<ResultInfo> sources;
     QList<ResultInfo> consolidatedSources;
+    QList<PromptAttachment> promptAttachments;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -65,7 +116,8 @@ public:
         ThumbsUpStateRole,
         ThumbsDownStateRole,
         SourcesRole,
-        ConsolidatedSourcesRole
+        ConsolidatedSourcesRole,
+        PromptAttachmentsRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -103,6 +155,8 @@ public:
                 return QVariant::fromValue(item.sources);
             case ConsolidatedSourcesRole:
                 return QVariant::fromValue(item.consolidatedSources);
+            case PromptAttachmentsRole:
+                return QVariant::fromValue(item.promptAttachments);
         }
 
         return QVariant();
@@ -121,14 +175,17 @@ public:
         roles[ThumbsDownStateRole] = "thumbsDownState";
         roles[SourcesRole] = "sources";
         roles[ConsolidatedSourcesRole] = "consolidatedSources";
+        roles[PromptAttachmentsRole] = "promptAttachments";
         return roles;
     }
 
-    void appendPrompt(const QString &name, const QString &value)
+    void appendPrompt(const QString &name, const QString &value, const QList<PromptAttachment> &attachments)
     {
         ChatItem item;
         item.name = name;
         item.value = value;
+        item.promptAttachments << attachments;
+
         m_mutex.lock();
         const int count = m_chatItems.count();
         m_mutex.unlock();
@@ -380,6 +437,14 @@ public:
                 stream << references.join("\n");
                 stream << referencesContext;
             }
+            if (version >= 10) {
+                stream << c.promptAttachments.size();
+                for (const PromptAttachment &a : c.promptAttachments) {
+                    Q_ASSERT(!a.url.isEmpty());
+                    stream << a.url;
+                    stream << a.content;
+                }
+            }
         }
         return stream.status() == QDataStream::Ok;
     }
@@ -423,7 +488,7 @@ public:
                 }
                 c.sources = sources;
                 c.consolidatedSources = consolidateSources(sources);
-            }else if (version > 2) {
+            } else if (version > 2) {
                 QString references;
                 QList<QString> referencesContext;
                 stream >> references;
@@ -506,6 +571,18 @@ public:
                     c.sources = sources;
                     c.consolidatedSources = consolidateSources(sources);
                 }
+            }
+            if (version >= 10) {
+                qsizetype count;
+                stream >> count;
+                QList<PromptAttachment> attachments;
+                for (int i = 0; i < count; ++i) {
+                    PromptAttachment a;
+                    stream >> a.url;
+                    stream >> a.content;
+                    attachments.append(a);
+                }
+                c.promptAttachments = attachments;
             }
             m_mutex.lock();
             const int count = m_chatItems.size();

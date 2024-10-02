@@ -154,6 +154,7 @@ qt_add_executable(chat
     src/mysettings.cpp            src/mysettings.h
     src/network.cpp               src/network.h
     src/server.cpp                src/server.h
+    src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
 )
 
@@ -190,6 +191,8 @@ qt_add_qml_module(chat
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
+      qml/MyFileDialog.qml
+      qml/MyFolderDialog.qml
       qml/MyFancyLink.qml
       qml/MyMenu.qml
       qml/MyMenuItem.qml
@@ -222,9 +225,11 @@ qt_add_qml_module(chat
       icons/edit.svg
       icons/eject.svg
       icons/email.svg
+      icons/file-doc.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
+      icons/file-xls.svg
       icons/file.svg
       icons/github.svg
       icons/globe.svg
@@ -242,7 +247,9 @@ qt_add_qml_module(chat
       icons/network.svg
       icons/nomic_logo.svg
       icons/notes.svg
+      icons/paperclip.svg
       icons/plus.svg
+      icons/plus_circle.svg
       icons/recycle.svg
       icons/regenerate.svg
       icons/search.svg
@@ -255,6 +262,7 @@ qt_add_qml_module(chat
       icons/trash.svg
       icons/twitter.svg
       icons/up_down.svg
+      icons/webpage.svg
       icons/you.svg
 )
 
@@ -327,7 +335,7 @@ target_include_directories(chat PRIVATE deps/usearch/include
 target_link_libraries(chat
     PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
 
 
 # -- install --
