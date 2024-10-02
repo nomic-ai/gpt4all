@@ -193,7 +193,7 @@ void ChatsRestoreThread::run()
             // Read the version
             qint32 version;
             in >> version;
-            if (version < 1) {
+            if (version < 1 || version > CHAT_FORMAT_VERSION) {
                 qWarning() << "ERROR: Chat file has non supported version:" << file.fileName();
                 continue;
             }
