@@ -1758,7 +1758,7 @@ Rectangle {
                             chatModel.updateThumbsUpState(responseIndex, false)
                             chatModel.updateThumbsDownState(responseIndex, false)
                             chatModel.updateNewResponse(responseIndex, "")
-                            currentChat.prompt(promptElement.value)
+                            currentChat.prompt(promptElement.promptPlusAttachments)
                         }
                         ToolTip.visible: regenerateButton.hovered
                         ToolTip.text: qsTr("Redo last chat response")
