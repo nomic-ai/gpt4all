@@ -25,7 +25,7 @@ static QString formatCellText(const QXlsx::Cell *cell)
 {
     if (!cell) return QString();
 
-    QVariant value = cell->value();
+    QVariant value = cell->readValue();
     QXlsx::Format format = cell->format();
     QString cellText;
 
