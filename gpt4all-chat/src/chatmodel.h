@@ -424,7 +424,7 @@ public:
                 stream << references.join("\n");
                 stream << referencesContext;
             }
-            if (version > 9) {
+            if (version >= 10) {
                 stream << c.promptAttachments.size();
                 for (const PromptAttachment &a : c.promptAttachments) {
                     Q_ASSERT(!a.url.isEmpty());

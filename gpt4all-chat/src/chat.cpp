@@ -4,7 +4,6 @@
 #include "mysettings.h"
 #include "network.h"
 #include "server.h"
-#include "xlsxtomd.h"
 
 #include <QBuffer>
 #include <QDataStream>
