@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Add bm25 hybrid search to localdocs ([#2969](https://github.com/nomic-ai/gpt4all/pull/2969))
 - LocalDocs support for .docx files ([#2986](https://github.com/nomic-ai/gpt4all/pull/2986))
-- Add support for attaching excel spreadsheet to chat ([#3007](https://github.com/nomic-ai/gpt4all/pull/3007))
+- Add support for attaching Excel spreadsheet to chat ([#3007](https://github.com/nomic-ai/gpt4all/pull/3007))
 
 ### Changed
 - Rebase llama.cpp on latest upstream as of September 26th ([#2998](https://github.com/nomic-ai/gpt4all/pull/2998))
