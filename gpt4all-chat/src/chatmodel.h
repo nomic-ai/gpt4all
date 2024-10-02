@@ -66,8 +66,21 @@ struct ChatItem
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
     Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments);
+    Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments);
 
 public:
+    QString promptPlusAttachments() const
+    {
+        QStringList attachedContexts;
+        for (auto attached : promptAttachments)
+            attachedContexts << attached.processedContent();
+
+        QString promptPlus = value;
+        if (!attachedContexts.isEmpty())
+            promptPlus = attachedContexts.join("\n\n") + "\n\n" + value;
+        return promptPlus;
+    }
+
     // TODO: Maybe we should include the model name here as well as timestamp?
     int id = 0;
     QString name;

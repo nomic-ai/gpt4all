@@ -1327,22 +1327,13 @@ void ChatLLM::processRestoreStateFromText()
         Q_ASSERT(prompt.name == "Prompt: ");
         Q_ASSERT(it < m_chatModel->end());
 
-        QStringList attachedContexts;
-        QList<PromptAttachment> attachments = prompt.promptAttachments;
-        for (auto attached: attachments)
-            attachedContexts << attached.processedContent();
-
-        QString promptPlusAttached = prompt.value;
-        if (!attachedContexts.isEmpty())
-            promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt.value;
-
         auto &response = *it++;
         Q_ASSERT(response.name == "Response: ");
 
         // FIXME(jared): this doesn't work well with the "regenerate" button since we are not incrementing
         //               m_promptTokens or m_promptResponseTokens
         m_llModelInfo.model->prompt(
-            promptPlusAttached.toStdString(), promptTemplate.toStdString(),
+            prompt.promptPlusAttachments().toStdString(), promptTemplate.toStdString(),
             promptFunc, /*responseFunc*/ [](auto &&...) { return true; },
             /*allowContextShift*/ true,
             m_ctx,
