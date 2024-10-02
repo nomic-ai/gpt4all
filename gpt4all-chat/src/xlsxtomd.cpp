@@ -10,8 +10,10 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QList>
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
+#include <QStringView>
 #include <QVariant>
 #include <QtGlobal>
 #include <QtLogging>
@@ -33,30 +35,32 @@ static QString formatCellText(const QXlsx::Cell *cell)
     if (format.isDateTimeFormat()) {
         // Handle DateTime
         QDateTime dateTime = value.toDateTime();
-        cellText = dateTime.isValid() ? dateTime.toString("yyyy-MM-dd") : value.toString();
+        cellText = dateTime.isValid() ? dateTime.toString(QStringView(u"yyyy-MM-dd")) : value.toString();
     } else {
         cellText = value.toString();
     }
 
     if (cellText.isEmpty())
-        return u" "_s;
+        return QString();
 
-    // Apply Markdown and HTML formatting based on font styles
-    QString formattedText = cellText;
+    // Escape special characters
+    static QRegularExpression special(uR"([\`*_{}[]()#+-.!])"_s);
+    cellText.replace(special, uR"(\\1)"_s);
+    cellText.replace(u'&', "&amp;"_L1);
+    cellText.replace(u'<', "&lt;"_L1);
+    cellText.replace(u'>', "&gt;"_L1);
 
+    // Apply Markdown formatting based on font styles
     if (format.fontUnderline())
-        formattedText = u"_%1_"_s.arg(formattedText);
+        cellText = u"_%1_"_s.arg(cellText);
     if (format.fontBold())
-        formattedText = u"**%1**"_s.arg(formattedText);
+        cellText = u"**%1**"_s.arg(cellText);
     if (format.fontItalic())
-        formattedText = u"*%1*"_s.arg(formattedText);
+        cellText = u"*%1*"_s.arg(cellText);
     if (format.fontStrikeOut())
-        formattedText = u"~~%1~~"_s.arg(formattedText);
+        cellText = u"~~%1~~"_s.arg(cellText);
 
-    // Escape pipe characters to prevent Markdown table issues
-    formattedText.replace("|", "\\|");
-
-    return formattedText;
+    return cellText;
 }
 
 static QString getCellValue(QXlsx::Worksheet *sheet, int row, int col)
@@ -123,29 +127,35 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
 
         if (firstRow > lastRow || firstCol > lastCol) {
             qWarning() << "Sheet" << sheetName << "is empty.";
-            markdown += "*No data available.*\n\n";
+            markdown += QStringView(u"*No data available.*\n\n");
             continue;
         }
 
-        // Separator row (no header)
+        auto appendRow = [&markdown](auto &list) { markdown += u"|%1|\n"_s.arg(list.join(u'|')); };
+
+        // Empty header
+        static QString header(u' ');
+        static QString separator(u"---"_s);
+        QStringList headers;
         QStringList separators;
-        for (int col = firstCol; col <= lastCol; ++col)
-            separators << u"---"_s;
-        markdown += u"|%1|\n"_s.arg(separators.join(u'|'));
+        for (int col = firstCol; col <= lastCol; ++col) {
+            headers << header;
+            separators << separator;
+        }
+        appendRow(headers);
+        appendRow(separators);
 
         // Iterate through data rows
         for (int row = 0; row <= lastRow; ++row) {
             QStringList rowData;
             for (int col = firstCol; col <= lastCol; ++col) {
                 QString cellText = getCellValue(sheet, row, col);
-                rowData << cellText;
+                rowData << (cellText.isEmpty() ? u" "_s : cellText);
             }
-
-            QString dataRow = "|" + rowData.join("|") + "|";
-            markdown += dataRow + "\n";
+            appendRow(rowData);
         }
 
-        markdown += "\n"; // Add an empty line between sheets
+        markdown += u'\n'; // Add an empty line between sheets
     }
     return markdown;
 }
