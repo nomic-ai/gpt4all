@@ -67,6 +67,7 @@ public:
     {
         m_userName = name;
         emit nameChanged();
+        m_needsSave = true;
     }
     ChatModel *chatModel() { return m_chatModel; }
 
@@ -123,6 +124,8 @@ public:
     int trySwitchContextInProgress() const { return m_trySwitchContextInProgress; }
 
     QList<QString> generatedQuestions() const { return m_generatedQuestions; }
+
+    bool needsSave() const { return m_needsSave; }
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});
@@ -203,6 +206,10 @@ private:
     bool m_firstResponse = true;
     int m_trySwitchContextInProgress = 0;
     bool m_isCurrentlyLoading = false;
+    // True if we need to serialize the chat to disk, because of one of two reasons:
+    // - The chat was freshly created during this launch.
+    // - The chat was interacted with after loading it from disk.
+    bool m_needsSave = true;
 };
 
 #endif // CHAT_H

@@ -99,7 +99,12 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
     QElapsedTimer timer;
     timer.start();
     const QString savePath = MySettings::globalInstance()->modelPath();
+    qsizetype nSavedChats = 0;
     for (Chat *chat : chats) {
+        if (!chat->needsSave())
+            continue;
+        ++nSavedChats;
+
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QString filePath = savePath + "/" + fileName;
         QFile originalFile(filePath);
@@ -129,7 +134,7 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
     }
 
     qint64 elapsedTime = timer.elapsed();
-    qDebug() << "serializing chats took:" << elapsedTime << "ms";
+    qDebug() << "serializing chats took" << elapsedTime << "ms, saved" << nSavedChats << "/" << chats.size() << "chats";
     emit saveChatsFinished();
 }
 
