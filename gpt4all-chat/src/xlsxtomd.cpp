@@ -25,14 +25,14 @@ static QString formatCellText(const QXlsx::Cell *cell)
 {
     if (!cell) return QString();
 
-    QVariant value = cell->readValue();
+    QVariant value = cell->value();
     QXlsx::Format format = cell->format();
     QString cellText;
 
     // Determine the cell type based on format
-    if (format.isDateTimeFormat()) {
+    if (cell->isDateTime()) {
         // Handle DateTime
-        QDateTime dateTime = value.toDateTime();
+        QDateTime dateTime = cell->dateTime().toDateTime();
         cellText = dateTime.isValid() ? dateTime.toString("yyyy-MM-dd") : value.toString();
     } else {
         cellText = value.toString();
