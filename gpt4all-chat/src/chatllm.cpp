@@ -1095,7 +1095,12 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     if (version > 1) {
         int llModelType;
         stream >> llModelType;
-        m_llModelType = version >= 6 ? LLModelTypeV1(llModelType) : llModelTypeV0toV1(LLModelTypeV0(llModelType));
+        m_llModelType = (version >= 6 ? parseLLModelTypeV1 : parseLLModelTypeV0)(llModelType);
+        if (m_llModelType == LLModelTypeV1::NONE) {
+            qWarning().nospace() << "error loading chat id " << m_chat->id() << ": unrecognized model type: "
+                                 << llModelType;
+            return false;
+        }
 
         /* note: prior to chat version 10, API models and chats with models removed in v2.5.0 only wrote this because of
          * UB in Release builds */
