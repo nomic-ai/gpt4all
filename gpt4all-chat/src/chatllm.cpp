@@ -42,8 +42,9 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
-#define GPTJ_INTERNAL_STATE_VERSION  0 // GPT-J is gone but old chats still use this
-#define LLAMA_INTERNAL_STATE_VERSION 0
+static constexpr int GPTJ_INTERNAL_STATE_VERSION = 0; // GPT-J is gone but old chats still use this
+static constexpr int LLAMA_INTERNAL_STATE_VERSION = 0;
+static constexpr int API_INTERNAL_STATE_VERSION   = 0;
 
 class LLModelStore {
 public:
@@ -1048,9 +1049,10 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     if (version > 1) {
         stream << m_llModelType;
         switch (m_llModelType) {
-        case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
-        case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        default: Q_UNREACHABLE();
+            case GPTJ_:  stream << GPTJ_INTERNAL_STATE_VERSION;  break;
+            case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+            case API_:   stream << API_INTERNAL_STATE_VERSION;   break;
+            default:     Q_UNREACHABLE();
         }
     }
     stream << response();
@@ -1088,6 +1090,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     if (version > 1) {
         int internalStateVersion;
         stream >> m_llModelType;
+        // note: prior to chat version 10, API models only wrote this because of UB in Release builds
         stream >> internalStateVersion; // for future use
     }
     QString response;
