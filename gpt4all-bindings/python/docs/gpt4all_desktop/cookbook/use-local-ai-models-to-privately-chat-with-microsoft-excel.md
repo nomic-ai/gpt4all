@@ -56,4 +56,21 @@ Microsoft Excel allows you to create, manage, and analyze data in spreadsheet fo
 
 ## How It Works
 
-GPT4All parses and attaches your excel spreadsheet to the conversation in a format understandable to the model. The model can summarize, generate reports, and glean insights from your spreadsheets all within your conversation.
+GPT4All parses your attached excel spreadsheet into Markdown, a format understandable to LLMs, and adds the markdown text to the context for your LLM chat. 
+
+For example, the above spreadsheet titled `Income-Statement.xlsx` would be formatted the following way:
+
+```markdown
+## Income Statement
+
+|Walt Disney Co.|||||||
+|---|---|---|---|---|---|---|
+|Consolidated Income Statement|||||||
+|||||||||
+|US$ in millions|||||||
+|12 months ended:|2023-09-30 00:00:00|2022-10-01 00:00:00|2021-10-02 00:00:00|2020-10-03 00:00:00|2019-09-28 00:00:00|2018-09-29 00:00:00|
+|Services|79562|74200|61768|59265|60542|50869|
+...
+...
+...
+```
