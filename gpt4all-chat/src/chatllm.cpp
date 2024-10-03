@@ -42,7 +42,6 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
-static constexpr int GPTJ_INTERNAL_STATE_VERSION = 0; // GPT-J is gone but old chats still use this
 static constexpr int LLAMA_INTERNAL_STATE_VERSION = 0;
 static constexpr int API_INTERNAL_STATE_VERSION   = 0;
 
@@ -356,7 +355,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     requestUrl = modelInfo.url();
                 }
             }
-            m_llModelType = LLModelType::API_;
+            m_llModelType = LLModelTypeV1::API;
             ChatAPI *model = new ChatAPI();
             model->setModelName(modelName);
             model->setRequestURL(requestUrl);
@@ -572,7 +571,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     }
 
     switch (m_llModelInfo.model->implementation().modelType()[0]) {
-    case 'L': m_llModelType = LLModelType::LLAMA_; break;
+    case 'L': m_llModelType = LLModelTypeV1::LLAMA; break;
     default:
         {
             m_llModelInfo.resetModel(this);
@@ -625,7 +624,7 @@ void ChatLLM::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
     // of n_past is of the number of prompt/response pairs, rather than for total tokens.
-    if (m_llModelType == LLModelType::API_)
+    if (m_llModelType == LLModelTypeV1::API)
         m_ctx.n_past -= 1;
     else
         m_ctx.n_past -= m_promptResponseTokens;
@@ -1049,10 +1048,9 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     if (version > 1) {
         stream << m_llModelType;
         switch (m_llModelType) {
-            case GPTJ_:  stream << GPTJ_INTERNAL_STATE_VERSION;  break;
-            case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-            case API_:   stream << API_INTERNAL_STATE_VERSION;   break;
-            default:     Q_UNREACHABLE();
+            case LLModelTypeV1::LLAMA: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+            case LLModelTypeV1::API:   stream << API_INTERNAL_STATE_VERSION;   break;
+            default:                   stream << 0; // models removed in v2.5.0
         }
     }
     stream << response();
@@ -1088,10 +1086,14 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
 bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV)
 {
     if (version > 1) {
-        int internalStateVersion;
-        stream >> m_llModelType;
-        // note: prior to chat version 10, API models only wrote this because of UB in Release builds
-        stream >> internalStateVersion; // for future use
+        int llModelType;
+        stream >> llModelType;
+        m_llModelType = version >= 6 ? LLModelTypeV1(llModelType) : llModelTypeV0toV1(LLModelTypeV0(llModelType));
+
+        /* note: prior to chat version 10, API models and chats with models removed in v2.5.0 only wrote this because of
+         * UB in Release builds */
+        int internalStateVersion; // for future use
+        stream >> internalStateVersion;
     }
     QString response;
     stream >> response;
@@ -1172,7 +1174,7 @@ void ChatLLM::saveState()
     if (!isModelLoaded() || m_pristineLoadedState)
         return;
 
-    if (m_llModelType == LLModelType::API_) {
+    if (m_llModelType == LLModelTypeV1::API) {
         m_state.clear();
         QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
         stream.setVersion(QDataStream::Qt_6_4);
@@ -1200,7 +1202,7 @@ void ChatLLM::restoreState()
     if (!isModelLoaded())
         return;
 
-    if (m_llModelType == LLModelType::API_) {
+    if (m_llModelType == LLModelTypeV1::API) {
         QDataStream stream(m_state);
         stream.setVersion(QDataStream::Qt_6_4);
         ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model.get());
