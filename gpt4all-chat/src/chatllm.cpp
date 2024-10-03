@@ -1046,7 +1046,7 @@ bool ChatLLM::handleRestoreStateFromTextPrompt(int32_t token)
 // we want to also serialize n_ctx, and read it at load time.
 bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
 {
-    if (version > 1) {
+    if (version >= 2) {
         if (m_llModelType == LLModelTypeV1::NONE) {
             qWarning() << "ChatLLM ERROR: attempted to serialize a null model for chat id" << m_chat->id()
                        << "name" << m_chat->name();
@@ -1071,7 +1071,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         return stream.status() == QDataStream::Ok;
     }
 
-    if (version <= 3) {
+    if (version < 4) {
         int responseLogits = 0;
         stream << responseLogits;
     }
@@ -1092,7 +1092,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
 
 bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV)
 {
-    if (version > 1) {
+    if (version >= 2) {
         int llModelType;
         stream >> llModelType;
         m_llModelType = (version >= 6 ? parseLLModelTypeV1 : parseLLModelTypeV0)(llModelType);
@@ -1131,7 +1131,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
         return stream.status() == QDataStream::Ok;
     }
 
-    if (version <= 3) {
+    if (version < 4) {
         int responseLogits;
         stream >> responseLogits;
     }
@@ -1161,7 +1161,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
         stream.skipRawData(tokensSize * sizeof(int));
     }
 
-    if (version > 0) {
+    if (version >= 1) {
         QByteArray compressed;
         stream >> compressed;
         if (!discardKV)

@@ -198,7 +198,7 @@ void ChatsRestoreThread::run()
                 continue;
             }
 
-            if (version <= 1)
+            if (version < 2)
                 in.setVersion(QDataStream::Qt_6_2);
 
             FileInfo info;
@@ -239,7 +239,7 @@ void ChatsRestoreThread::run()
                 continue;
             }
 
-            if (version <= 1)
+            if (version < 2)
                 in.setVersion(QDataStream::Qt_6_2);
         }
 

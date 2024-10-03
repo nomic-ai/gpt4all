@@ -416,15 +416,15 @@ bool Chat::serialize(QDataStream &stream, int version) const
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    if (version > 4)
+    if (version >= 5)
         stream << m_modelInfo.id();
     else
         stream << m_modelInfo.filename();
-    if (version > 2)
+    if (version >= 3)
         stream << m_collections;
 
     const bool serializeKV = MySettings::globalInstance()->saveChatsContext();
-    if (version > 5)
+    if (version >= 6)
         stream << serializeKV;
     if (!m_llmodel->serialize(stream, version, serializeKV))
         return false;
@@ -445,7 +445,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
 
     QString modelId;
     stream >> modelId;
-    if (version > 4) {
+    if (version >= 5) {
         if (ModelList::globalInstance()->contains(modelId))
             m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
     } else {
@@ -457,13 +457,13 @@ bool Chat::deserialize(QDataStream &stream, int version)
 
     bool discardKV = m_modelInfo.id().isEmpty();
 
-    if (version > 2) {
+    if (version >= 3) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
 
     bool deserializeKV = true;
-    if (version > 5)
+    if (version >= 6)
         stream >> deserializeKV;
 
     m_llmodel->setModelInfo(m_modelInfo);
