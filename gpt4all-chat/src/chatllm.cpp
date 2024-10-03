@@ -105,6 +105,7 @@ void LLModelInfo::resetModel(ChatLLM *cllm, LLModel *model) {
 
 ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
+    , m_chat(parent)
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
     , m_restoringFromText(false)
@@ -1046,6 +1047,12 @@ bool ChatLLM::handleRestoreStateFromTextPrompt(int32_t token)
 bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
 {
     if (version > 1) {
+        if (m_llModelType == LLModelTypeV1::NONE) {
+            qWarning() << "ChatLLM ERROR: attempted to serialize a null model for chat id" << m_chat->id()
+                       << "name" << m_chat->name();
+            return false;
+        }
+
         stream << m_llModelType;
         switch (m_llModelType) {
             case LLModelTypeV1::LLAMA: stream << LLAMA_INTERNAL_STATE_VERSION; break;

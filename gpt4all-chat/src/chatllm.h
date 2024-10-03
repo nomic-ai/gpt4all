@@ -48,6 +48,7 @@ enum class LLModelTypeV1 { // since chat version 6 (v2.5.0)
     FALCON    = 5,
     MPT       = 6,
     STARCODER = 7,
+    NONE      = -1, // no state
 };
 
 static LLModelTypeV1 llModelTypeV0toV1(LLModelTypeV0 v0)
@@ -249,12 +250,13 @@ protected:
 private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
+    const Chat *m_chat;
     std::string m_response;
     std::string m_trimmedResponse;
     std::string m_nameResponse;
     QString m_questionResponse;
     LLModelInfo m_llModelInfo;
-    LLModelTypeV1 m_llModelType;
+    LLModelTypeV1 m_llModelType = LLModelTypeV1::NONE;
     ModelInfo m_modelInfo;
     TokenTimer *m_timer;
     QByteArray m_state;
