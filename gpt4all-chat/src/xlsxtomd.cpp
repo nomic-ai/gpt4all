@@ -44,8 +44,16 @@ static QString formatCellText(const QXlsx::Cell *cell)
         return QString();
 
     // Escape special characters
-    static QRegularExpression special(uR"([\\`*_{}[\]()#+-.!])"_s);
-    cellText.replace(special, uR"(\\\1)"_s);
+    static QRegularExpression special(
+        QStringLiteral(
+            R"(()([\\`*_[\]<>()!|])|)"    // special characters
+            R"(^(\s*)(#+(?:\s|$))|)"      // headings
+            R"(^(\s*[0-9])(\.(?:\s|$))|)" // ordered lists ("1. a")
+            R"(^(\s*)([+-](?:\s|$)))"     // unordered lists ("- a")
+        ),
+        QRegularExpression::MultilineOption
+    );
+    cellText.replace(special, uR"(\1\\2)"_s);
     cellText.replace(u'&', "&amp;"_L1);
     cellText.replace(u'<', "&lt;"_L1);
     cellText.replace(u'>', "&gt;"_L1);
