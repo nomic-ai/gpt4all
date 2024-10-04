@@ -281,7 +281,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignCenter
                 text: qsTr("Subscribe to Newsletter")
                 imageSource: "qrc:/gpt4all/icons/email.svg"
-                onClicked: { Qt.openUrlExternally("https://nomic.ai/gpt4all") }
+                onClicked: { Qt.openUrlExternally("https://nomic.ai/gpt4all/#newsletter-form") }
             }
         }
     }
