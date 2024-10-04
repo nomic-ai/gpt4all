@@ -542,7 +542,7 @@ const QList<ModelInfo> ModelList::selectableModelList() const
     // FIXME: This needs to be kept in sync with m_selectableModels so should probably be merged
     QMutexLocker locker(&m_mutex);
     QList<ModelInfo> infos;
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->installed && !info->isEmbeddingModel)
             infos.append(*info);
     return infos;
@@ -560,7 +560,7 @@ ModelInfo ModelList::defaultModelInfo() const
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
 
     ModelInfo *defaultModel = nullptr;
-    for (ModelInfo *info : m_models) {
+    for (auto *info : std::as_const(m_models)) {
         if (!info->installed)
             continue;
         defaultModel = info;
@@ -589,7 +589,7 @@ bool ModelList::contains(const QString &id) const
 bool ModelList::containsByFilename(const QString &filename) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return true;
     return false;
@@ -804,7 +804,7 @@ QVariant ModelList::data(const QString &id, int role) const
 QVariant ModelList::dataByFilename(const QString &filename, int role) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return dataInternal(info, role);
     return QVariant();
@@ -1035,7 +1035,7 @@ void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int,
     QVector<QString> modelsById;
     {
         QMutexLocker locker(&m_mutex);
-        for (ModelInfo *info : m_models)
+        for (auto *info : std::as_const(m_models))
             if (info->filename() == filename)
                 modelsById.append(info->id());
     }
@@ -1045,7 +1045,7 @@ void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int,
         return;
     }
 
-    for (const QString &id : modelsById)
+    for (auto &id : std::as_const(modelsById))
         updateData(id, data);
 }
 
@@ -1060,7 +1060,7 @@ ModelInfo ModelList::modelInfo(const QString &id) const
 ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return *info;
     return ModelInfo();
@@ -1069,10 +1069,9 @@ ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
 bool ModelList::isUniqueName(const QString &name) const
 {
     QMutexLocker locker(&m_mutex);
-    for (const ModelInfo *info : m_models) {
-        if(info->name() == name)
+    for (auto *info : std::as_const(m_models))
+        if (info->name() == name)
             return false;
-    }
     return true;
 }
 
@@ -1169,8 +1168,8 @@ QString ModelList::uniqueModelName(const ModelInfo &model) const
     int maxSuffixNumber = 0;
     bool baseNameExists = false;
 
-    for (const ModelInfo *info : m_models) {
-        if(info->name() == baseName)
+    for (auto *info : std::as_const(m_models)) {
+        if (info->name() == baseName)
             baseNameExists = true;
 
         QRegularExpressionMatch match = re.match(info->name());
@@ -1291,7 +1290,7 @@ void ModelList::processModelDirectory(const QString &path)
         QVector<QString> modelsById;
         {
             QMutexLocker locker(&m_mutex);
-            for (ModelInfo *info : m_models)
+            for (auto *info : std::as_const(m_models))
                 if (info->filename() == filename)
                     modelsById.append(info->id());
         }
@@ -1302,7 +1301,7 @@ void ModelList::processModelDirectory(const QString &path)
             modelsById.append(filename);
         }
 
-        for (const QString &id : modelsById) {
+        for (auto &id : std::as_const(modelsById)) {
             QVector<QPair<int, QVariant>> data {
                 { InstalledRole, true },
                 { FilenameRole, filename },
@@ -1469,7 +1468,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     QJsonArray jsonArray = document.array();
     const QString currentVersion = QCoreApplication::applicationVersion();
 
-    for (const QJsonValue &value : jsonArray) {
+    for (auto &value : std::as_const(jsonArray)) {
         QJsonObject obj = value.toObject();
 
         QString modelName = obj["name"].toString();
@@ -1749,7 +1748,7 @@ void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
     QStringList groups = settings.childGroups();
-    for (const QString &g: groups) {
+    for (auto &g : std::as_const(groups)) {
         if (!g.startsWith("model-"))
             continue;
 
@@ -1916,11 +1915,11 @@ void ModelList::clearDiscoveredModels()
     QList<ModelInfo> infos;
     {
         QMutexLocker locker(&m_mutex);
-        for (ModelInfo *info : m_models)
+        for (auto *info : std::as_const(m_models))
             if (info->isDiscovered() && !info->installed)
                 infos.append(*info);
     }
-    for (ModelInfo &info : infos)
+    for (auto &info : std::as_const(infos))
         removeInternal(info);
     emit layoutChanged();
 }
@@ -2047,7 +2046,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
 
     QJsonArray jsonArray = document.array();
 
-    for (const QJsonValue &value : jsonArray) {
+    for (auto &value : std::as_const(jsonArray)) {
         QJsonObject obj = value.toObject();
         QJsonDocument jsonDocument(obj);
         QByteArray jsonData = jsonDocument.toJson();
@@ -2055,7 +2054,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         QString repo_id = obj["id"].toString();
         QJsonArray siblingsArray = obj["siblings"].toArray();
         QList<QPair<QuantType, QString>> filteredAndSortedFilenames;
-        for (const QJsonValue &sibling : siblingsArray) {
+        for (auto &sibling : std::as_const(siblingsArray)) {
 
             QJsonObject s = sibling.toObject();
             QString filename = s["rfilename"].toString();
