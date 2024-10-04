@@ -16,4 +16,4 @@
 	url = https://github.com/nomic-ai/DuckX.git
 [submodule "gpt4all-chat/deps/QXlsx"]
 	path = gpt4all-chat/deps/QXlsx
-	url = https://github.com/QtExcel/QXlsx.git
+	url = https://github.com/nomic-ai/QXlsx.git
