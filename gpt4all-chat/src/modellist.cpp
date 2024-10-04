@@ -1041,21 +1041,21 @@ void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int,
     if (data.isEmpty())
         return; // no-op
 
-    QVector<QString> modelsById;
     {
         QMutexLocker locker(&m_mutex);
+        QStringList modelsById;
         for (auto *info : std::as_const(m_models))
             if (info->filename() == filename)
                 modelsById.append(info->id());
-    }
 
-    if (modelsById.isEmpty()) {
-        qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
-        return;
-    }
+        if (modelsById.isEmpty()) {
+            qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
+            return;
+        }
 
-    for (auto &id : std::as_const(modelsById))
-        updateData(id, data);
+        for (auto &id : std::as_const(modelsById))
+            updateDataInternal(id, data, locker, /*relock*/ &id != &modelsById.constLast());
+    }
 }
 
 ModelInfo ModelList::modelInfo(const QString &id) const
@@ -1118,53 +1118,84 @@ QString ModelList::clone(const ModelInfo &model)
     return id;
 }
 
-void ModelList::removeClone(const ModelInfo &model)
+void ModelList::uninstall(const ModelInfo &model)
 {
     Q_ASSERT(QThread::currentThread() == thread());
-    Q_ASSERT(model.isClone());
-    if (!model.isClone())
-        return;
 
-    removeInternal(model);
-    emit layoutChanged();
+    {
+        QMutexLocker lock(&m_mutex);
+
+        if (!model.isClone()) {
+            QStringList modelsById;
+            auto filename = model.filename();
+            for (const auto *info : std::as_const(m_models))
+                if (info->filename() == filename && info->isClone())
+                    modelsById << info->id();
+
+            for (const auto &id : std::as_const(modelsById))
+                removeInternal(id, lock);
+        }
+
+        auto id = model.id();
+        if (model.isClone() || model.isDiscovered() || model.isCompatibleApi
+            || model.description() == "" /*sideloaded*/
+        ) {
+            // model can be completely removed from list
+            removeInternal(id, lock, /*relock*/ false);
+            emit selectableModelListChanged();
+        } else {
+            // Model came from models.json and needs to be reset instead of removed
+            QVector<QPair<int, QVariant>> data {
+                { ModelList::InstalledRole,     false     },
+                { ModelList::BytesReceivedRole, 0         },
+                { ModelList::BytesTotalRole,    0         },
+                { ModelList::TimestampRole,     0         },
+                { ModelList::SpeedRole,         QString() },
+                { ModelList::DownloadErrorRole, QString() },
+            };
+            updateDataInternal(id, data, lock, /*relock*/ false);
+
+            // erase settings
+            MySettings::globalInstance()->eraseModel(id);
+        }
+    }
 }
 
-void ModelList::removeInstalled(const ModelInfo &model)
+void ModelList::removeInternal(const QString &id, QMutexLocker<QMutex> &lock, bool relock)
 {
     Q_ASSERT(QThread::currentThread() == thread());
-    Q_ASSERT(model.installed);
-    Q_ASSERT(!model.isClone());
-    Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
-    removeInternal(model);
-    emit layoutChanged();
-}
+    Q_ASSERT(lock.isLocked());
 
-void ModelList::removeInternal(const ModelInfo &model)
-{
-    Q_ASSERT(QThread::currentThread() == thread());
-    const bool hasModel = contains(model.id());
+    bool hasModel = m_modelMap.contains(id);
     Q_ASSERT(hasModel);
     if (!hasModel) {
-        qWarning() << "ERROR: model list does not contain" << model.id();
+        qWarning() << "ERROR: model list does not contain" << id;
         return;
     }
 
-    int indexOfModel = 0;
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_modelMap.value(model.id());
-        indexOfModel = m_models.indexOf(info);
-    }
-    beginRemoveRows(QModelIndex(), indexOfModel, indexOfModel);
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_models.takeAt(indexOfModel);
-        m_modelMap.remove(info->id());
-        delete info;
-    }
+    auto mapIt = std::as_const(m_modelMap).find(id);
+    qsizetype listIdx = m_models.indexOf(*mapIt);
+
+    lock.unlock();
+    beginRemoveRows({}, listIdx, listIdx);
+    lock.relock();
+
+    // remove entry
+    auto *info = *mapIt;
+    Q_ASSERT(std::as_const(m_modelMap).find(id) == mapIt);
+    Q_ASSERT(m_models.indexOf(info) == listIdx);
+    m_modelMap.erase(mapIt);
+    m_models.remove(listIdx);
+    delete info;
+
+    lock.unlock();
     endRemoveRows();
-    emit selectableModelListChanged();
-    MySettings::globalInstance()->eraseModel(model.id());
+
+    // erase settings
+    MySettings::globalInstance()->eraseModel(id);
+
+    if (relock)
+        lock.relock();
 }
 
 QString ModelList::uniqueModelName(const ModelInfo &model) const
@@ -1927,15 +1958,14 @@ void ModelList::setDiscoverSort(DiscoverSort sort)
 void ModelList::clearDiscoveredModels()
 {
     // NOTE: This could be made much more efficient
-    QList<ModelInfo> infos;
-    {
-        QMutexLocker locker(&m_mutex);
-        for (auto *info : std::as_const(m_models))
-            if (info->isDiscovered() && !info->installed)
-                infos.append(*info);
-    }
-    for (auto &info : std::as_const(infos))
-        removeInternal(info);
+    QMutexLocker locker(&m_mutex);
+    QStringList ids;
+    for (auto *info : std::as_const(m_models))
+        if (info->isDiscovered() && !info->installed)
+            ids << info->id();
+
+    for (auto &id : std::as_const(ids))
+        removeInternal(id, locker, /*relock*/ &id != &ids.constLast());
 }
 
 float ModelList::discoverProgress() const

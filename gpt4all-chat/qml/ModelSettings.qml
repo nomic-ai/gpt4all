@@ -92,7 +92,7 @@ MySettingsTab {
                 enabled: root.currentModelInfo.isClone
                 text: qsTr("Remove")
                 onClicked: {
-                    ModelList.removeClone(root.currentModelInfo);
+                    ModelList.uninstall(root.currentModelInfo);
                     comboBox.currentIndex = 0;
                 }
             }

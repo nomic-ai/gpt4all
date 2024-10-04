@@ -330,36 +330,27 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
 
 void Download::removeModel(const QString &modelFile)
 {
-    const QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
-    QFile incompleteFile(ModelList::globalInstance()->incompleteDownloadPath(modelFile));
-    if (incompleteFile.exists()) {
+    auto *modelList = ModelList::globalInstance();
+    auto *mySettings = MySettings::globalInstance();
+
+    QFile incompleteFile(modelList->incompleteDownloadPath(modelFile));
+    if (incompleteFile.exists())
         incompleteFile.remove();
-    }
 
     bool shouldRemoveInstalled = false;
-    QFile file(filePath);
+
+    QFile file(mySettings->modelPath() + modelFile);
+    const ModelInfo info = modelList->modelInfoByFilename(modelFile);
+
+    Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile}, {"exists", file.exists()} });
+
     if (file.exists()) {
-        const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-        MySettings::globalInstance()->eraseModel(info.id());
-        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.isCompatibleApi || info.description() == "" /*indicates sideloaded*/);
-        if (shouldRemoveInstalled)
-            ModelList::globalInstance()->removeInstalled(info);
-        Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
-        file.remove();
-        emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
+        modelList->uninstall(info);
+        if (!info.isClone())
+            file.remove();
     }
 
-    if (!shouldRemoveInstalled) {
-        QVector<QPair<int, QVariant>> data {
-            { ModelList::InstalledRole, false },
-            { ModelList::BytesReceivedRole, 0 },
-            { ModelList::BytesTotalRole, 0 },
-            { ModelList::TimestampRole, 0 },
-            { ModelList::SpeedRole, QString() },
-            { ModelList::DownloadErrorRole, QString() },
-        };
-        ModelList::globalInstance()->updateDataByFilename(modelFile, data);
-    }
+    emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
 }
 
 void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
