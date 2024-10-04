@@ -939,6 +939,7 @@ Rectangle {
 
                                                     Text {
                                                         id: attachmentFileText
+                                                        width: 295
                                                         height: 40
                                                         text: modelData.file
                                                         color: theme.textColor
@@ -947,6 +948,7 @@ Rectangle {
                                                         font.pixelSize: theme.fontSizeMedium
                                                         font.bold: true
                                                         wrapMode: Text.WrapAnywhere
+                                                        elide: Qt.ElideRight
                                                     }
                                                 }
                                             }
@@ -1971,6 +1973,7 @@ Rectangle {
 
                                     Text {
                                         id: attachmentFileText2
+                                        width: 265
                                         height: 40
                                         text: model.file
                                         color: theme.textColor
@@ -1979,6 +1982,7 @@ Rectangle {
                                         font.pixelSize: theme.fontSizeMedium
                                         font.bold: true
                                         wrapMode: Text.WrapAnywhere
+                                        elide: Qt.ElideRight
                                     }
                                 }
 
