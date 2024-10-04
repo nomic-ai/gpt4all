@@ -71,15 +71,15 @@ static LLModelTypeV1 parseLLModelTypeV1(int type)
 static LLModelTypeV1 parseLLModelTypeV0(int v0)
 {
     switch (LLModelTypeV0(v0)) {
-        case LLModelTypeV0::MPT:       return LLModelTypeV1::MPT;
-        case LLModelTypeV0::GPTJ:      return LLModelTypeV1::GPTJ;
-        case LLModelTypeV0::LLAMA:     return LLModelTypeV1::LLAMA;
-        case LLModelTypeV0::CHATGPT:   return LLModelTypeV1::API;
-        case LLModelTypeV0::REPLIT:    return LLModelTypeV1::REPLIT;
-        case LLModelTypeV0::FALCON:    return LLModelTypeV1::FALCON;
-        // case LLModelTypeV0::BERT: -- not used
-        case LLModelTypeV0::STARCODER: return LLModelTypeV1::STARCODER;
-        default:                       return LLModelTypeV1::NONE;
+    case LLModelTypeV0::MPT:       return LLModelTypeV1::MPT;
+    case LLModelTypeV0::GPTJ:      return LLModelTypeV1::GPTJ;
+    case LLModelTypeV0::LLAMA:     return LLModelTypeV1::LLAMA;
+    case LLModelTypeV0::CHATGPT:   return LLModelTypeV1::API;
+    case LLModelTypeV0::REPLIT:    return LLModelTypeV1::REPLIT;
+    case LLModelTypeV0::FALCON:    return LLModelTypeV1::FALCON;
+    // case LLModelTypeV0::BERT: -- not used
+    case LLModelTypeV0::STARCODER: return LLModelTypeV1::STARCODER;
+    default:                       return LLModelTypeV1::NONE;
     }
 }
 
