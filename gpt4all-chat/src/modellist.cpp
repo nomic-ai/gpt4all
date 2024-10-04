@@ -1008,24 +1008,22 @@ void ModelList::updateDataInternal(const QString &id, const QVector<QPair<int, Q
         info->checkedEmbeddingModel = true;
     }
 
-    if (shouldSort) {
-        auto s = m_discoverSort;
-        auto d = m_discoverSortDirection;
-        std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-            return ModelList::lessThan(lhs, rhs, s, d);
-        });
-    }
-
     lock.unlock();
+
+    if (shouldSort)
+        resortModel();
+
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
     emit selectableModelListChanged();
+
     if (relock)
         lock.relock();
 }
 
 void ModelList::resortModel()
 {
-    emit layoutAboutToBeChanged();
+    const QList<QPersistentModelIndex> parents { QModelIndex() };
+    emit layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
     {
         QMutexLocker locker(&m_mutex);
         auto s = m_discoverSort;
@@ -1034,7 +1032,7 @@ void ModelList::resortModel()
             return ModelList::lessThan(lhs, rhs, s, d);
         });
     }
-    emit layoutChanged();
+    emit layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
 }
 
 void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int, QVariant>> data)
@@ -1938,7 +1936,6 @@ void ModelList::clearDiscoveredModels()
     }
     for (auto &info : std::as_const(infos))
         removeInternal(info);
-    emit layoutChanged();
 }
 
 float ModelList::discoverProgress() const
@@ -2187,7 +2184,6 @@ void ModelList::handleDiscoveryItemFinished()
     emit discoverProgressChanged();
 
     if (discoverProgress() >= 1.0) {
-        emit layoutChanged();
         m_discoverInProgress = false;
         emit discoverInProgressChanged();
     }
