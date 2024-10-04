@@ -23,6 +23,8 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+template <typename> class QMutexLocker;
+
 
 struct ModelInfo {
     Q_GADGET
@@ -495,6 +497,10 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
+    // call with lock held
+    void updateDataInternal(const QString &id, const QVector<QPair<int, QVariant>> &data, QMutexLocker<QMutex> &lock,
+                            bool relock = true);
+
     void removeInternal(const ModelInfo &model);
     void clearDiscoveredModels();
     bool modelExists(const QString &fileName) const;

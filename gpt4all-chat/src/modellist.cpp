@@ -821,197 +821,206 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>> &data)
 {
+    QMutexLocker lock(&m_mutex);
+    updateDataInternal(id, data, lock, /*relock*/ false);
+}
+
+void ModelList::updateDataInternal(const QString &id, const QVector<QPair<int, QVariant>> &data,
+                                   QMutexLocker<QMutex> &lock, bool relock)
+{
     Q_ASSERT(QThread::currentThread() == thread());
-    int index;
-    {
-        QMutexLocker locker(&m_mutex);
-        if (!m_modelMap.contains(id)) {
-            qWarning() << "ERROR: cannot update as model map does not contain" << id;
-            return;
-        }
+    Q_ASSERT(lock.isLocked());
 
-        ModelInfo *info = m_modelMap.value(id);
-        index = m_models.indexOf(info);
-        if (index == -1) {
-            qWarning() << "ERROR: cannot update as model list does not contain" << id;
-            return;
-        }
+    if (!m_modelMap.contains(id)) {
+        qWarning() << "ERROR: cannot update as model map does not contain" << id;
+        return;
+    }
 
-        // We only sort when one of the fields used by the sorting algorithm actually changes that
-        // is implicated or used by the sorting algorithm
-        bool shouldSort = false;
+    ModelInfo *info = m_modelMap.value(id);
+    int index = m_models.indexOf(info);
+    if (index == -1) {
+        qWarning() << "ERROR: cannot update as model list does not contain" << id;
+        return;
+    }
 
-        for (const auto &d : data) {
-            const int role = d.first;
-            const QVariant value = d.second;
-            switch (role) {
-            case IdRole:
-                {
-                    if (info->id() != value.toString()) {
-                        info->setId(value.toString());
-                        shouldSort = true;
-                    }
-                    break;
+    // We only sort when one of the fields used by the sorting algorithm actually changes that
+    // is implicated or used by the sorting algorithm
+    bool shouldSort = false;
+
+    for (const auto &d : data) {
+        const int role = d.first;
+        const QVariant value = d.second;
+        switch (role) {
+        case IdRole:
+            {
+                if (info->id() != value.toString()) {
+                    info->setId(value.toString());
+                    shouldSort = true;
                 }
-            case NameRole:
-                info->setName(value.toString()); break;
-            case FilenameRole:
-                info->setFilename(value.toString()); break;
-            case DirpathRole:
-                info->dirpath = value.toString(); break;
-            case FilesizeRole:
-                info->filesize = value.toString(); break;
-            case HashRole:
-                info->hash = value.toByteArray(); break;
-            case HashAlgorithmRole:
-                info->hashAlgorithm = static_cast<ModelInfo::HashAlgorithm>(value.toInt()); break;
-            case CalcHashRole:
-                info->calcHash = value.toBool(); break;
-            case InstalledRole:
-                info->installed = value.toBool(); break;
-            case DefaultRole:
-                info->isDefault = value.toBool(); break;
-            case OnlineRole:
-                info->isOnline = value.toBool(); break;
-            case CompatibleApiRole:
-                info->isCompatibleApi = value.toBool(); break;
-            case DescriptionRole:
-                info->setDescription(value.toString()); break;
-            case RequiresVersionRole:
-                info->requiresVersion = value.toString(); break;
-            case VersionRemovedRole:
-                info->versionRemoved = value.toString(); break;
-            case UrlRole:
-                info->setUrl(value.toString()); break;
-            case BytesReceivedRole:
-                info->bytesReceived = value.toLongLong(); break;
-            case BytesTotalRole:
-                info->bytesTotal = value.toLongLong(); break;
-            case TimestampRole:
-                info->timestamp = value.toLongLong(); break;
-            case SpeedRole:
-                info->speed = value.toString(); break;
-            case DownloadingRole:
-                info->isDownloading = value.toBool(); break;
-            case IncompleteRole:
-                info->isIncomplete = value.toBool(); break;
-            case DownloadErrorRole:
-                info->downloadError = value.toString(); break;
-            case OrderRole:
-                {
-                    if (info->order != value.toString()) {
-                        info->order = value.toString();
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case NameRole:
+            info->setName(value.toString()); break;
+        case FilenameRole:
+            info->setFilename(value.toString()); break;
+        case DirpathRole:
+            info->dirpath = value.toString(); break;
+        case FilesizeRole:
+            info->filesize = value.toString(); break;
+        case HashRole:
+            info->hash = value.toByteArray(); break;
+        case HashAlgorithmRole:
+            info->hashAlgorithm = static_cast<ModelInfo::HashAlgorithm>(value.toInt()); break;
+        case CalcHashRole:
+            info->calcHash = value.toBool(); break;
+        case InstalledRole:
+            info->installed = value.toBool(); break;
+        case DefaultRole:
+            info->isDefault = value.toBool(); break;
+        case OnlineRole:
+            info->isOnline = value.toBool(); break;
+        case CompatibleApiRole:
+            info->isCompatibleApi = value.toBool(); break;
+        case DescriptionRole:
+            info->setDescription(value.toString()); break;
+        case RequiresVersionRole:
+            info->requiresVersion = value.toString(); break;
+        case VersionRemovedRole:
+            info->versionRemoved = value.toString(); break;
+        case UrlRole:
+            info->setUrl(value.toString()); break;
+        case BytesReceivedRole:
+            info->bytesReceived = value.toLongLong(); break;
+        case BytesTotalRole:
+            info->bytesTotal = value.toLongLong(); break;
+        case TimestampRole:
+            info->timestamp = value.toLongLong(); break;
+        case SpeedRole:
+            info->speed = value.toString(); break;
+        case DownloadingRole:
+            info->isDownloading = value.toBool(); break;
+        case IncompleteRole:
+            info->isIncomplete = value.toBool(); break;
+        case DownloadErrorRole:
+            info->downloadError = value.toString(); break;
+        case OrderRole:
+            {
+                if (info->order != value.toString()) {
+                    info->order = value.toString();
+                    shouldSort = true;
                 }
-            case RamrequiredRole:
-                info->ramrequired = value.toInt(); break;
-            case ParametersRole:
-                info->parameters = value.toString(); break;
-            case QuantRole:
-                info->setQuant(value.toString()); break;
-            case TypeRole:
-                info->setType(value.toString()); break;
-            case IsCloneRole:
-                {
-                    if (info->isClone() != value.toBool()) {
-                        info->setIsClone(value.toBool());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case RamrequiredRole:
+            info->ramrequired = value.toInt(); break;
+        case ParametersRole:
+            info->parameters = value.toString(); break;
+        case QuantRole:
+            info->setQuant(value.toString()); break;
+        case TypeRole:
+            info->setType(value.toString()); break;
+        case IsCloneRole:
+            {
+                if (info->isClone() != value.toBool()) {
+                    info->setIsClone(value.toBool());
+                    shouldSort = true;
                 }
-            case IsDiscoveredRole:
-                {
-                    if (info->isDiscovered() != value.toBool()) {
-                        info->setIsDiscovered(value.toBool());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case IsDiscoveredRole:
+            {
+                if (info->isDiscovered() != value.toBool()) {
+                    info->setIsDiscovered(value.toBool());
+                    shouldSort = true;
                 }
-            case IsEmbeddingModelRole:
-                info->isEmbeddingModel = value.toBool(); break;
-            case TemperatureRole:
-                info->setTemperature(value.toDouble()); break;
-            case TopPRole:
-                info->setTopP(value.toDouble()); break;
-            case MinPRole:
-                info->setMinP(value.toDouble()); break;
-            case TopKRole:
-                info->setTopK(value.toInt()); break;
-            case MaxLengthRole:
-                info->setMaxLength(value.toInt()); break;
-            case PromptBatchSizeRole:
-                info->setPromptBatchSize(value.toInt()); break;
-            case ContextLengthRole:
-                info->setContextLength(value.toInt()); break;
-            case GpuLayersRole:
-                info->setGpuLayers(value.toInt()); break;
-            case RepeatPenaltyRole:
-                info->setRepeatPenalty(value.toDouble()); break;
-            case RepeatPenaltyTokensRole:
-                info->setRepeatPenaltyTokens(value.toInt()); break;
-            case PromptTemplateRole:
-                info->setPromptTemplate(value.toString()); break;
-            case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
-            case ChatNamePromptRole:
-                info->setChatNamePrompt(value.toString()); break;
-            case SuggestedFollowUpPromptRole:
-                info->setSuggestedFollowUpPrompt(value.toString()); break;
-            case LikesRole:
-                {
-                    if (info->likes() != value.toInt()) {
-                        info->setLikes(value.toInt());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case IsEmbeddingModelRole:
+            info->isEmbeddingModel = value.toBool(); break;
+        case TemperatureRole:
+            info->setTemperature(value.toDouble()); break;
+        case TopPRole:
+            info->setTopP(value.toDouble()); break;
+        case MinPRole:
+            info->setMinP(value.toDouble()); break;
+        case TopKRole:
+            info->setTopK(value.toInt()); break;
+        case MaxLengthRole:
+            info->setMaxLength(value.toInt()); break;
+        case PromptBatchSizeRole:
+            info->setPromptBatchSize(value.toInt()); break;
+        case ContextLengthRole:
+            info->setContextLength(value.toInt()); break;
+        case GpuLayersRole:
+            info->setGpuLayers(value.toInt()); break;
+        case RepeatPenaltyRole:
+            info->setRepeatPenalty(value.toDouble()); break;
+        case RepeatPenaltyTokensRole:
+            info->setRepeatPenaltyTokens(value.toInt()); break;
+        case PromptTemplateRole:
+            info->setPromptTemplate(value.toString()); break;
+        case SystemPromptRole:
+            info->setSystemPrompt(value.toString()); break;
+        case ChatNamePromptRole:
+            info->setChatNamePrompt(value.toString()); break;
+        case SuggestedFollowUpPromptRole:
+            info->setSuggestedFollowUpPrompt(value.toString()); break;
+        case LikesRole:
+            {
+                if (info->likes() != value.toInt()) {
+                    info->setLikes(value.toInt());
+                    shouldSort = true;
                 }
-            case DownloadsRole:
-                {
-                    if (info->downloads() != value.toInt()) {
-                        info->setDownloads(value.toInt());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case DownloadsRole:
+            {
+                if (info->downloads() != value.toInt()) {
+                    info->setDownloads(value.toInt());
+                    shouldSort = true;
                 }
-            case RecencyRole:
-                {
-                    if (info->recency() != value.toDateTime()) {
-                        info->setRecency(value.toDateTime());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case RecencyRole:
+            {
+                if (info->recency() != value.toDateTime()) {
+                    info->setRecency(value.toDateTime());
+                    shouldSort = true;
                 }
+                break;
             }
         }
-
-        // Extra guarantee that these always remains in sync with filesystem
-        QString modelPath = info->dirpath + info->filename();
-        const QFileInfo fileInfo(modelPath);
-        info->installed = fileInfo.exists();
-        const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
-        info->isIncomplete = incompleteInfo.exists();
-
-        // check installed, discovered/sideloaded models only (including clones)
-        if (!info->checkedEmbeddingModel && !info->isEmbeddingModel && info->installed
-            && (info->isDiscovered() || info->description().isEmpty()))
-        {
-            // read GGUF and decide based on model architecture
-            info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
-            info->checkedEmbeddingModel = true;
-        }
-
-        if (shouldSort) {
-            auto s = m_discoverSort;
-            auto d = m_discoverSortDirection;
-            std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-                return ModelList::lessThan(lhs, rhs, s, d);
-            });
-        }
     }
+
+    // Extra guarantee that these always remains in sync with filesystem
+    QString modelPath = info->dirpath + info->filename();
+    const QFileInfo fileInfo(modelPath);
+    info->installed = fileInfo.exists();
+    const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
+    info->isIncomplete = incompleteInfo.exists();
+
+    // check installed, discovered/sideloaded models only (including clones)
+    if (!info->checkedEmbeddingModel && !info->isEmbeddingModel && info->installed
+        && (info->isDiscovered() || info->description().isEmpty()))
+    {
+        // read GGUF and decide based on model architecture
+        info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
+        info->checkedEmbeddingModel = true;
+    }
+
+    if (shouldSort) {
+        auto s = m_discoverSort;
+        auto d = m_discoverSortDirection;
+        std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
+            return ModelList::lessThan(lhs, rhs, s, d);
+        });
+    }
+
+    lock.unlock();
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
     emit selectableModelListChanged();
+    if (relock)
+        lock.relock();
 }
 
 void ModelList::resortModel()
