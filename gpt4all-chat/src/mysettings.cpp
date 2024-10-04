@@ -186,7 +186,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelTemperature(info, info.m_temperature);
     setModelTopP(info, info.m_topP);
     setModelMinP(info, info.m_minP);
-    setModelTopK(info, info.m_topK);;
+    setModelTopK(info, info.m_topK);
     setModelMaxLength(info, info.m_maxLength);
     setModelPromptBatchSize(info, info.m_promptBatchSize);
     setModelContextLength(info, info.m_contextLength);
