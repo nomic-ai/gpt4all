@@ -32,9 +32,9 @@ static QString formatCellText(const QXlsx::Cell *cell)
     QString cellText;
 
     // Determine the cell type based on format
-    if (format.isDateTimeFormat()) {
+    if (cell->isDateTime()) {
         // Handle DateTime
-        QDateTime dateTime = value.toDateTime();
+        QDateTime dateTime = cell->dateTime().toDateTime();
         cellText = dateTime.isValid() ? dateTime.toString(QStringView(u"yyyy-MM-dd")) : value.toString();
     } else {
         cellText = value.toString();
