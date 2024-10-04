@@ -135,7 +135,7 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
 
         // Empty header
         static QString header(u' ');
-        static QString separator(u"---"_s);
+        static QString separator(u'-');
         QStringList headers;
         QStringList separators;
         for (int col = firstCol; col <= lastCol; ++col) {
