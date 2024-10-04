@@ -113,7 +113,7 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
             continue;
         }
 
-        markdown += u"## %1\n\n"_s.arg(sheetName);
+        markdown += u"### %1\n\n"_s.arg(sheetName);
 
         // Determine the used range
         QXlsx::CellRange range = sheet->dimension();
