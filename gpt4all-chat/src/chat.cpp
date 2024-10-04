@@ -101,6 +101,7 @@ void Chat::reset()
     // is to allow switching models but throwing up a dialog warning users if we switch between types
     // of models that a long recalculation will ensue.
     m_chatModel->clear();
+    m_needsSave = true;
 }
 
 void Chat::processSystemPrompt()
@@ -163,6 +164,7 @@ void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
     emit promptRequested(m_collections, prompt);
+    m_needsSave = true;
 }
 
 void Chat::regenerateResponse()
@@ -170,6 +172,7 @@ void Chat::regenerateResponse()
     const int index = m_chatModel->count() - 1;
     m_chatModel->updateSources(index, QList<ResultInfo>());
     emit regenerateResponseRequested();
+    m_needsSave = true;
 }
 
 void Chat::stopGenerating()
@@ -224,7 +227,7 @@ void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
 void Chat::promptProcessing()
 {
     m_responseState = !databaseResults().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
-     emit responseStateChanged();
+    emit responseStateChanged();
 }
 
 void Chat::generatingQuestions()
@@ -261,10 +264,12 @@ ModelInfo Chat::modelInfo() const
 
 void Chat::setModelInfo(const ModelInfo &modelInfo)
 {
-    if (m_modelInfo == modelInfo && isModelLoaded())
+    if (m_modelInfo != modelInfo) {
+        m_modelInfo = modelInfo;
+        m_needsSave = true;
+    } else if (isModelLoaded())
         return;
 
-    m_modelInfo = modelInfo;
     emit modelInfoChanged();
     emit modelChangeRequested(modelInfo);
 }
@@ -343,12 +348,14 @@ void Chat::generatedNameChanged(const QString &name)
     int wordCount = qMin(7, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
+    m_needsSave = true;
 }
 
 void Chat::generatedQuestionFinished(const QString &question)
 {
     m_generatedQuestions << question;
     emit generatedQuestionsChanged();
+    m_needsSave = true;
 }
 
 void Chat::handleRestoringFromText()
@@ -393,6 +400,7 @@ void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
     m_databaseResults = results;
     const int index = m_chatModel->count() - 1;
     m_chatModel->updateSources(index, m_databaseResults);
+    m_needsSave = true;
 }
 
 void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
@@ -402,6 +410,7 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
 
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
+    m_needsSave = true;
 }
 
 void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value)
@@ -416,15 +425,15 @@ bool Chat::serialize(QDataStream &stream, int version) const
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    if (version > 4)
+    if (version >= 5)
         stream << m_modelInfo.id();
     else
         stream << m_modelInfo.filename();
-    if (version > 2)
+    if (version >= 3)
         stream << m_collections;
 
     const bool serializeKV = MySettings::globalInstance()->saveChatsContext();
-    if (version > 5)
+    if (version >= 6)
         stream << serializeKV;
     if (!m_llmodel->serialize(stream, version, serializeKV))
         return false;
@@ -445,7 +454,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
 
     QString modelId;
     stream >> modelId;
-    if (version > 4) {
+    if (version >= 5) {
         if (ModelList::globalInstance()->contains(modelId))
             m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
     } else {
@@ -457,13 +466,13 @@ bool Chat::deserialize(QDataStream &stream, int version)
 
     bool discardKV = m_modelInfo.id().isEmpty();
 
-    if (version > 2) {
+    if (version >= 3) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
 
     bool deserializeKV = true;
-    if (version > 5)
+    if (version >= 6)
         stream >> deserializeKV;
 
     m_llmodel->setModelInfo(m_modelInfo);
@@ -473,7 +482,11 @@ bool Chat::deserialize(QDataStream &stream, int version)
         return false;
 
     emit chatModelChanged();
-    return stream.status() == QDataStream::Ok;
+    if (stream.status() != QDataStream::Ok)
+        return false;
+
+    m_needsSave = false;
+    return true;
 }
 
 QList<QString> Chat::collectionList() const
@@ -493,6 +506,7 @@ void Chat::addCollection(const QString &collection)
 
     m_collections.append(collection);
     emit collectionListChanged(m_collections);
+    m_needsSave = true;
 }
 
 void Chat::removeCollection(const QString &collection)
@@ -502,4 +516,5 @@ void Chat::removeCollection(const QString &collection)
 
     m_collections.removeAll(collection);
     emit collectionListChanged(m_collections);
+    m_needsSave = true;
 }

@@ -28,12 +28,60 @@ using namespace Qt::Literals::StringLiterals;
 class QDataStream;
 
 // NOTE: values serialized to disk, do not change or reuse
-enum LLModelType {
-    GPTJ_  = 0, // no longer used
-    LLAMA_ = 1,
-    API_   = 2,
-    BERT_  = 3, // no longer used
+enum class LLModelTypeV0 { // chat versions 2-5
+    MPT       = 0,
+    GPTJ      = 1,
+    LLAMA     = 2,
+    CHATGPT   = 3,
+    REPLIT    = 4,
+    FALCON    = 5,
+    BERT      = 6, // not used
+    STARCODER = 7,
 };
+enum class LLModelTypeV1 { // since chat version 6 (v2.5.0)
+    GPTJ      = 0, // not for new chats
+    LLAMA     = 1,
+    API       = 2,
+    BERT      = 3, // not used
+    // none of the below are used in new chats
+    REPLIT    = 4,
+    FALCON    = 5,
+    MPT       = 6,
+    STARCODER = 7,
+    NONE      = -1, // no state
+};
+
+static LLModelTypeV1 parseLLModelTypeV1(int type)
+{
+    switch (LLModelTypeV1(type)) {
+    case LLModelTypeV1::GPTJ:
+    case LLModelTypeV1::LLAMA:
+    case LLModelTypeV1::API:
+    // case LLModelTypeV1::BERT: -- not used
+    case LLModelTypeV1::REPLIT:
+    case LLModelTypeV1::FALCON:
+    case LLModelTypeV1::MPT:
+    case LLModelTypeV1::STARCODER:
+        return LLModelTypeV1(type);
+    default:
+        return LLModelTypeV1::NONE;
+    }
+}
+
+static LLModelTypeV1 parseLLModelTypeV0(int v0)
+{
+    switch (LLModelTypeV0(v0)) {
+    case LLModelTypeV0::MPT:       return LLModelTypeV1::MPT;
+    case LLModelTypeV0::GPTJ:      return LLModelTypeV1::GPTJ;
+    case LLModelTypeV0::LLAMA:     return LLModelTypeV1::LLAMA;
+    case LLModelTypeV0::CHATGPT:   return LLModelTypeV1::API;
+    case LLModelTypeV0::REPLIT:    return LLModelTypeV1::REPLIT;
+    case LLModelTypeV0::FALCON:    return LLModelTypeV1::FALCON;
+    // case LLModelTypeV0::BERT: -- not used
+    case LLModelTypeV0::STARCODER: return LLModelTypeV1::STARCODER;
+    default:                       return LLModelTypeV1::NONE;
+    }
+}
 
 class ChatLLM;
 class ChatModel;
@@ -219,12 +267,13 @@ protected:
 private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
+    const Chat *m_chat;
     std::string m_response;
     std::string m_trimmedResponse;
     std::string m_nameResponse;
     QString m_questionResponse;
     LLModelInfo m_llModelInfo;
-    LLModelType m_llModelType;
+    LLModelTypeV1 m_llModelType = LLModelTypeV1::NONE;
     ModelInfo m_modelInfo;
     TokenTimer *m_timer;
     QByteArray m_state;

@@ -386,7 +386,7 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
-            if (version > 7) {
+            if (version >= 8) {
                 stream << c.sources.size();
                 for (const ResultInfo &info : c.sources) {
                     Q_ASSERT(!info.file.isEmpty());
@@ -401,7 +401,7 @@ public:
                     stream << info.from;
                     stream << info.to;
                 }
-            } else if (version > 2) {
+            } else if (version >= 3) {
                 QList<QString> references;
                 QList<QString> referencesContext;
                 int validReferenceNumber = 1;
@@ -468,7 +468,7 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
-            if (version > 7) {
+            if (version >= 8) {
                 qsizetype count;
                 stream >> count;
                 QList<ResultInfo> sources;
@@ -488,7 +488,7 @@ public:
                 }
                 c.sources = sources;
                 c.consolidatedSources = consolidateSources(sources);
-            } else if (version > 2) {
+            } else if (version >= 3) {
                 QString references;
                 QList<QString> referencesContext;
                 stream >> references;
