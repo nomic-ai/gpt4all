@@ -45,7 +45,7 @@ static QString formatCellText(const QXlsx::Cell *cell)
 
     // Escape special characters
     static QRegularExpression special(uR"([\\`*_{}[\]()#+-.!])"_s);
-    cellText.replace(special, uR"(\\1)"_s);
+    cellText.replace(special, uR"(\\\1)"_s);
     cellText.replace(u'&', "&amp;"_L1);
     cellText.replace(u'<', "&lt;"_L1);
     cellText.replace(u'>', "&gt;"_L1);
