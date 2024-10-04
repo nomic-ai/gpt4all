@@ -56,7 +56,7 @@ Microsoft Excel allows you to create, manage, and analyze data in spreadsheet fo
 
 ## How It Works
 
-GPT4All parses your attached excel spreadsheet into Markdown, a format understandable to LLMs, and adds the markdown text to the context for your LLM chat. 
+GPT4All parses your attached excel spreadsheet into Markdown, a format understandable to LLMs, and adds the markdown text to the context for your LLM chat. You can view the code that converts `.xslx` to Markdown [here](https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/src/xlsxtomd.cpp) in the GPT4All github repo.
 
 For example, the above spreadsheet titled `Income-Statement.xlsx` would be formatted the following way:
 
@@ -74,3 +74,7 @@ For example, the above spreadsheet titled `Income-Statement.xlsx` would be forma
 ...
 ...
 ```
+
+## Limitations
+
+It is important to double-check the claims LLMs make about the spreadsheets you provide. LLMs can make mistakes about the data they are presented, particularly for the LLMs with smaller parameter counts (~8B) that fit within the memory of consumer hardware.
