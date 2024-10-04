@@ -154,7 +154,7 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice)
         appendRow(separators);
 
         // Iterate through data rows
-        for (int row = 0; row <= lastRow; ++row) {
+        for (int row = firstRow; row <= lastRow; ++row) {
             QStringList rowData;
             for (int col = firstCol; col <= lastCol; ++col) {
                 QString cellText = getCellValue(sheet, row, col);
