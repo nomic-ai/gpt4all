@@ -1010,10 +1010,10 @@ void ModelList::updateDataInternal(const QString &id, const QVector<QPair<int, Q
 
     lock.unlock();
 
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
     if (shouldSort)
         resortModel();
 
-    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
     emit selectableModelListChanged();
 
     if (relock)
