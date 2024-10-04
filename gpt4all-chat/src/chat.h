@@ -208,7 +208,7 @@ private:
     bool m_isCurrentlyLoading = false;
     // True if we need to serialize the chat to disk, because of one of two reasons:
     // - The chat was freshly created during this launch.
-    // - The chat was interacted with after loading it from disk.
+    // - The chat was changed after loading it from disk.
     bool m_needsSave = true;
 };
 

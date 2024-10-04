@@ -1103,7 +1103,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
         }
 
         /* note: prior to chat version 10, API models and chats with models removed in v2.5.0 only wrote this because of
-         * UB in Release builds */
+         * undefined behavior in Release builds */
         int internalStateVersion; // for future use
         stream >> internalStateVersion;
     }
