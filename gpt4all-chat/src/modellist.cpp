@@ -632,6 +632,7 @@ bool ModelList::lessThan(const ModelInfo* a, const ModelInfo* b, DiscoverSort s,
 
 void ModelList::addModel(const QString &id)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const bool hasModel = contains(id);
     Q_ASSERT(!hasModel);
     if (hasModel) {
@@ -820,6 +821,7 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>> &data)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     int index;
     {
         QMutexLocker locker(&m_mutex);
@@ -1028,6 +1030,7 @@ void ModelList::resortModel()
 
 void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int, QVariant>> data)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     if (data.isEmpty())
         return; // no-op
 
@@ -1076,6 +1079,7 @@ bool ModelList::isUniqueName(const QString &name) const
 
 QString ModelList::clone(const ModelInfo &model)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
@@ -1109,6 +1113,7 @@ QString ModelList::clone(const ModelInfo &model)
 
 void ModelList::removeClone(const ModelInfo &model)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     Q_ASSERT(model.isClone());
     if (!model.isClone())
         return;
@@ -1119,6 +1124,7 @@ void ModelList::removeClone(const ModelInfo &model)
 
 void ModelList::removeInstalled(const ModelInfo &model)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     Q_ASSERT(model.installed);
     Q_ASSERT(!model.isClone());
     Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
@@ -1128,6 +1134,7 @@ void ModelList::removeInstalled(const ModelInfo &model)
 
 void ModelList::removeInternal(const ModelInfo &model)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const bool hasModel = contains(model.id());
     Q_ASSERT(hasModel);
     if (!hasModel) {
@@ -1325,6 +1332,7 @@ void ModelList::processModelDirectory(const QString &path)
 
 void ModelList::updateModelsFromDirectory()
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = MySettings::globalInstance()->modelPath();
 
@@ -1727,6 +1735,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
 void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, true },
         { ModelList::IsDiscoveredRole, true },
@@ -1937,6 +1946,7 @@ bool ModelList::discoverInProgress() const
 
 void ModelList::discoverSearch(const QString &search)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     Q_ASSERT(!m_discoverInProgress);
 
     clearDiscoveredModels();
