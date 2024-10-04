@@ -1157,7 +1157,7 @@ void ModelList::removeInternal(const ModelInfo &model)
     }
     endRemoveRows();
     emit selectableModelListChanged();
-    MySettings::globalInstance()->eraseModel(model);
+    MySettings::globalInstance()->eraseModel(model.id());
 }
 
 QString ModelList::uniqueModelName(const ModelInfo &model) const

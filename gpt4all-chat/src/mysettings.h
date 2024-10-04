@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QStringView>
 #include <QTranslator>
 #include <QVector>
 
@@ -83,7 +84,7 @@ public:
     Q_INVOKABLE void restoreLocalDocsDefaults();
 
     // Model/Character settings
-    void eraseModel(const ModelInfo &info);
+    void eraseModel(QStringView id);
     QString modelName(const ModelInfo &info) const;
     Q_INVOKABLE void setModelName(const ModelInfo &info, const QString &name, bool force = false);
     QString modelFilename(const ModelInfo &info) const;

@@ -226,9 +226,9 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
 }
 
-void MySettings::eraseModel(const ModelInfo &info)
+void MySettings::eraseModel(QStringView id)
 {
-    m_settings.remove(u"model-%1"_s.arg(info.id()));
+    m_settings.remove(u"model-%1"_s.arg(id));
 }
 
 QString MySettings::modelName(const ModelInfo &info) const

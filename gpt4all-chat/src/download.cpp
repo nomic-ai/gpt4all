@@ -340,7 +340,7 @@ void Download::removeModel(const QString &modelFile)
     QFile file(filePath);
     if (file.exists()) {
         const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-        MySettings::globalInstance()->eraseModel(info);
+        MySettings::globalInstance()->eraseModel(info.id());
         shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.isCompatibleApi || info.description() == "" /*indicates sideloaded*/);
         if (shouldRemoveInstalled)
             ModelList::globalInstance()->removeInstalled(info);
