@@ -45,7 +45,7 @@ public:
         buffer.open(QIODevice::ReadOnly);
         const QString md = XLSXToMD::toMarkdown(&buffer);
         buffer.close();
-        return md;
+        return u"## Attached: %1\n\n%2"_s.arg(file(), md);
     }
 
     bool operator==(const PromptAttachment &other) const { return url == other.url; }
