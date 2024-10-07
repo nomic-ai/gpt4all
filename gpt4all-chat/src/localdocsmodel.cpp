@@ -20,7 +20,6 @@ LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
     connect(this, &LocalDocsCollectionsModel::rowsInserted, this, &LocalDocsCollectionsModel::countChanged);
     connect(this, &LocalDocsCollectionsModel::rowsRemoved, this, &LocalDocsCollectionsModel::countChanged);
     connect(this, &LocalDocsCollectionsModel::modelReset, this, &LocalDocsCollectionsModel::countChanged);
-    connect(this, &LocalDocsCollectionsModel::layoutChanged, this, &LocalDocsCollectionsModel::countChanged);
 }
 
 bool LocalDocsCollectionsModel::filterAcceptsRow(int sourceRow,
@@ -67,7 +66,6 @@ LocalDocsModel::LocalDocsModel(QObject *parent)
     connect(this, &LocalDocsModel::rowsInserted, this, &LocalDocsModel::countChanged);
     connect(this, &LocalDocsModel::rowsRemoved, this, &LocalDocsModel::countChanged);
     connect(this, &LocalDocsModel::modelReset, this, &LocalDocsModel::countChanged);
-    connect(this, &LocalDocsModel::layoutChanged, this, &LocalDocsModel::countChanged);
 }
 
 int LocalDocsModel::rowCount(const QModelIndex &parent) const

@@ -21,6 +21,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMutexLocker>
 #include <QNetworkRequest>
 #include <QObject>
 #include <QRegularExpression>
@@ -398,7 +399,6 @@ InstalledModels::InstalledModels(QObject *parent, bool selectable)
     connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
-    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
 }
 
 bool InstalledModels::filterAcceptsRow(int sourceRow,
@@ -423,7 +423,6 @@ DownloadableModels::DownloadableModels(QObject *parent)
     connect(this, &DownloadableModels::rowsInserted, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::rowsRemoved, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::modelReset, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::layoutChanged, this, &DownloadableModels::countChanged);
 }
 
 bool DownloadableModels::filterAcceptsRow(int sourceRow,
@@ -502,7 +501,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
@@ -542,7 +541,7 @@ const QList<ModelInfo> ModelList::selectableModelList() const
     // FIXME: This needs to be kept in sync with m_selectableModels so should probably be merged
     QMutexLocker locker(&m_mutex);
     QList<ModelInfo> infos;
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->installed && !info->isEmbeddingModel)
             infos.append(*info);
     return infos;
@@ -560,7 +559,7 @@ ModelInfo ModelList::defaultModelInfo() const
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
 
     ModelInfo *defaultModel = nullptr;
-    for (ModelInfo *info : m_models) {
+    for (auto *info : std::as_const(m_models)) {
         if (!info->installed)
             continue;
         defaultModel = info;
@@ -589,7 +588,7 @@ bool ModelList::contains(const QString &id) const
 bool ModelList::containsByFilename(const QString &filename) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return true;
     return false;
@@ -633,6 +632,7 @@ bool ModelList::lessThan(const ModelInfo* a, const ModelInfo* b, DiscoverSort s,
 
 void ModelList::addModel(const QString &id)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const bool hasModel = contains(id);
     Q_ASSERT(!hasModel);
     if (hasModel) {
@@ -804,7 +804,7 @@ QVariant ModelList::data(const QString &id, int role) const
 QVariant ModelList::dataByFilename(const QString &filename, int role) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return dataInternal(info, role);
     return QVariant();
@@ -821,207 +821,209 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>> &data)
 {
-    int index;
-    {
-        QMutexLocker locker(&m_mutex);
-        if (!m_modelMap.contains(id)) {
-            qWarning() << "ERROR: cannot update as model map does not contain" << id;
-            return;
-        }
+    QMutexLocker lock(&m_mutex);
+    updateDataInternal(id, data, lock, /*relock*/ false);
+}
 
-        ModelInfo *info = m_modelMap.value(id);
-        index = m_models.indexOf(info);
-        if (index == -1) {
-            qWarning() << "ERROR: cannot update as model list does not contain" << id;
-            return;
-        }
+void ModelList::updateDataInternal(const QString &id, const QVector<QPair<int, QVariant>> &data,
+                                   QMutexLocker<QMutex> &lock, bool relock)
+{
+    Q_ASSERT(QThread::currentThread() == thread());
+    Q_ASSERT(lock.isLocked());
 
-        // We only sort when one of the fields used by the sorting algorithm actually changes that
-        // is implicated or used by the sorting algorithm
-        bool shouldSort = false;
+    if (!m_modelMap.contains(id)) {
+        qWarning() << "ERROR: cannot update as model map does not contain" << id;
+        return;
+    }
 
-        for (const auto &d : data) {
-            const int role = d.first;
-            const QVariant value = d.second;
-            switch (role) {
-            case IdRole:
-                {
-                    if (info->id() != value.toString()) {
-                        info->setId(value.toString());
-                        shouldSort = true;
-                    }
-                    break;
+    ModelInfo *info = m_modelMap.value(id);
+    int index = m_models.indexOf(info);
+    if (index == -1) {
+        qWarning() << "ERROR: cannot update as model list does not contain" << id;
+        return;
+    }
+
+    // We only sort when one of the fields used by the sorting algorithm actually changes that
+    // is implicated or used by the sorting algorithm
+    bool shouldSort = false;
+
+    for (const auto &d : data) {
+        const int role = d.first;
+        const QVariant value = d.second;
+        switch (role) {
+        case IdRole:
+            {
+                if (info->id() != value.toString()) {
+                    info->setId(value.toString());
+                    shouldSort = true;
                 }
-            case NameRole:
-                info->setName(value.toString()); break;
-            case FilenameRole:
-                info->setFilename(value.toString()); break;
-            case DirpathRole:
-                info->dirpath = value.toString(); break;
-            case FilesizeRole:
-                info->filesize = value.toString(); break;
-            case HashRole:
-                info->hash = value.toByteArray(); break;
-            case HashAlgorithmRole:
-                info->hashAlgorithm = static_cast<ModelInfo::HashAlgorithm>(value.toInt()); break;
-            case CalcHashRole:
-                info->calcHash = value.toBool(); break;
-            case InstalledRole:
-                info->installed = value.toBool(); break;
-            case DefaultRole:
-                info->isDefault = value.toBool(); break;
-            case OnlineRole:
-                info->isOnline = value.toBool(); break;
-            case CompatibleApiRole:
-                info->isCompatibleApi = value.toBool(); break;
-            case DescriptionRole:
-                info->setDescription(value.toString()); break;
-            case RequiresVersionRole:
-                info->requiresVersion = value.toString(); break;
-            case VersionRemovedRole:
-                info->versionRemoved = value.toString(); break;
-            case UrlRole:
-                info->setUrl(value.toString()); break;
-            case BytesReceivedRole:
-                info->bytesReceived = value.toLongLong(); break;
-            case BytesTotalRole:
-                info->bytesTotal = value.toLongLong(); break;
-            case TimestampRole:
-                info->timestamp = value.toLongLong(); break;
-            case SpeedRole:
-                info->speed = value.toString(); break;
-            case DownloadingRole:
-                info->isDownloading = value.toBool(); break;
-            case IncompleteRole:
-                info->isIncomplete = value.toBool(); break;
-            case DownloadErrorRole:
-                info->downloadError = value.toString(); break;
-            case OrderRole:
-                {
-                    if (info->order != value.toString()) {
-                        info->order = value.toString();
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case NameRole:
+            info->setName(value.toString()); break;
+        case FilenameRole:
+            info->setFilename(value.toString()); break;
+        case DirpathRole:
+            info->dirpath = value.toString(); break;
+        case FilesizeRole:
+            info->filesize = value.toString(); break;
+        case HashRole:
+            info->hash = value.toByteArray(); break;
+        case HashAlgorithmRole:
+            info->hashAlgorithm = static_cast<ModelInfo::HashAlgorithm>(value.toInt()); break;
+        case CalcHashRole:
+            info->calcHash = value.toBool(); break;
+        case InstalledRole:
+            info->installed = value.toBool(); break;
+        case DefaultRole:
+            info->isDefault = value.toBool(); break;
+        case OnlineRole:
+            info->isOnline = value.toBool(); break;
+        case CompatibleApiRole:
+            info->isCompatibleApi = value.toBool(); break;
+        case DescriptionRole:
+            info->setDescription(value.toString()); break;
+        case RequiresVersionRole:
+            info->requiresVersion = value.toString(); break;
+        case VersionRemovedRole:
+            info->versionRemoved = value.toString(); break;
+        case UrlRole:
+            info->setUrl(value.toString()); break;
+        case BytesReceivedRole:
+            info->bytesReceived = value.toLongLong(); break;
+        case BytesTotalRole:
+            info->bytesTotal = value.toLongLong(); break;
+        case TimestampRole:
+            info->timestamp = value.toLongLong(); break;
+        case SpeedRole:
+            info->speed = value.toString(); break;
+        case DownloadingRole:
+            info->isDownloading = value.toBool(); break;
+        case IncompleteRole:
+            info->isIncomplete = value.toBool(); break;
+        case DownloadErrorRole:
+            info->downloadError = value.toString(); break;
+        case OrderRole:
+            {
+                if (info->order != value.toString()) {
+                    info->order = value.toString();
+                    shouldSort = true;
                 }
-            case RamrequiredRole:
-                info->ramrequired = value.toInt(); break;
-            case ParametersRole:
-                info->parameters = value.toString(); break;
-            case QuantRole:
-                info->setQuant(value.toString()); break;
-            case TypeRole:
-                info->setType(value.toString()); break;
-            case IsCloneRole:
-                {
-                    if (info->isClone() != value.toBool()) {
-                        info->setIsClone(value.toBool());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case RamrequiredRole:
+            info->ramrequired = value.toInt(); break;
+        case ParametersRole:
+            info->parameters = value.toString(); break;
+        case QuantRole:
+            info->setQuant(value.toString()); break;
+        case TypeRole:
+            info->setType(value.toString()); break;
+        case IsCloneRole:
+            {
+                if (info->isClone() != value.toBool()) {
+                    info->setIsClone(value.toBool());
+                    shouldSort = true;
                 }
-            case IsDiscoveredRole:
-                {
-                    if (info->isDiscovered() != value.toBool()) {
-                        info->setIsDiscovered(value.toBool());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case IsDiscoveredRole:
+            {
+                if (info->isDiscovered() != value.toBool()) {
+                    info->setIsDiscovered(value.toBool());
+                    shouldSort = true;
                 }
-            case IsEmbeddingModelRole:
-                info->isEmbeddingModel = value.toBool(); break;
-            case TemperatureRole:
-                info->setTemperature(value.toDouble()); break;
-            case TopPRole:
-                info->setTopP(value.toDouble()); break;
-            case MinPRole:
-                info->setMinP(value.toDouble()); break;
-            case TopKRole:
-                info->setTopK(value.toInt()); break;
-            case MaxLengthRole:
-                info->setMaxLength(value.toInt()); break;
-            case PromptBatchSizeRole:
-                info->setPromptBatchSize(value.toInt()); break;
-            case ContextLengthRole:
-                info->setContextLength(value.toInt()); break;
-            case GpuLayersRole:
-                info->setGpuLayers(value.toInt()); break;
-            case RepeatPenaltyRole:
-                info->setRepeatPenalty(value.toDouble()); break;
-            case RepeatPenaltyTokensRole:
-                info->setRepeatPenaltyTokens(value.toInt()); break;
-            case PromptTemplateRole:
-                info->setPromptTemplate(value.toString()); break;
-            case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
-            case ChatNamePromptRole:
-                info->setChatNamePrompt(value.toString()); break;
-            case SuggestedFollowUpPromptRole:
-                info->setSuggestedFollowUpPrompt(value.toString()); break;
-            case LikesRole:
-                {
-                    if (info->likes() != value.toInt()) {
-                        info->setLikes(value.toInt());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case IsEmbeddingModelRole:
+            info->isEmbeddingModel = value.toBool(); break;
+        case TemperatureRole:
+            info->setTemperature(value.toDouble()); break;
+        case TopPRole:
+            info->setTopP(value.toDouble()); break;
+        case MinPRole:
+            info->setMinP(value.toDouble()); break;
+        case TopKRole:
+            info->setTopK(value.toInt()); break;
+        case MaxLengthRole:
+            info->setMaxLength(value.toInt()); break;
+        case PromptBatchSizeRole:
+            info->setPromptBatchSize(value.toInt()); break;
+        case ContextLengthRole:
+            info->setContextLength(value.toInt()); break;
+        case GpuLayersRole:
+            info->setGpuLayers(value.toInt()); break;
+        case RepeatPenaltyRole:
+            info->setRepeatPenalty(value.toDouble()); break;
+        case RepeatPenaltyTokensRole:
+            info->setRepeatPenaltyTokens(value.toInt()); break;
+        case PromptTemplateRole:
+            info->setPromptTemplate(value.toString()); break;
+        case SystemPromptRole:
+            info->setSystemPrompt(value.toString()); break;
+        case ChatNamePromptRole:
+            info->setChatNamePrompt(value.toString()); break;
+        case SuggestedFollowUpPromptRole:
+            info->setSuggestedFollowUpPrompt(value.toString()); break;
+        case LikesRole:
+            {
+                if (info->likes() != value.toInt()) {
+                    info->setLikes(value.toInt());
+                    shouldSort = true;
                 }
-            case DownloadsRole:
-                {
-                    if (info->downloads() != value.toInt()) {
-                        info->setDownloads(value.toInt());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case DownloadsRole:
+            {
+                if (info->downloads() != value.toInt()) {
+                    info->setDownloads(value.toInt());
+                    shouldSort = true;
                 }
-            case RecencyRole:
-                {
-                    if (info->recency() != value.toDateTime()) {
-                        info->setRecency(value.toDateTime());
-                        shouldSort = true;
-                    }
-                    break;
+                break;
+            }
+        case RecencyRole:
+            {
+                if (info->recency() != value.toDateTime()) {
+                    info->setRecency(value.toDateTime());
+                    shouldSort = true;
                 }
+                break;
             }
         }
-
-        // Extra guarantee that these always remains in sync with filesystem
-        QString modelPath = info->dirpath + info->filename();
-        const QFileInfo fileInfo(modelPath);
-        info->installed = fileInfo.exists();
-        const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
-        info->isIncomplete = incompleteInfo.exists();
-
-        // check installed, discovered/sideloaded models only (including clones)
-        if (!info->checkedEmbeddingModel && !info->isEmbeddingModel && info->installed
-            && (info->isDiscovered() || info->description().isEmpty()))
-        {
-            // read GGUF and decide based on model architecture
-            info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
-            info->checkedEmbeddingModel = true;
-        }
-
-        if (shouldSort) {
-            auto s = m_discoverSort;
-            auto d = m_discoverSortDirection;
-            std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-                return ModelList::lessThan(lhs, rhs, s, d);
-            });
-        }
     }
-    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
 
-    // FIXME(jared): for some reason these don't update correctly when the source model changes, so we explicitly invalidate them
-    m_selectableModels->invalidate();
-    m_installedModels->invalidate();
-    m_downloadableModels->invalidate();
+    // Extra guarantee that these always remains in sync with filesystem
+    QString modelPath = info->dirpath + info->filename();
+    const QFileInfo fileInfo(modelPath);
+    info->installed = fileInfo.exists();
+    const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
+    info->isIncomplete = incompleteInfo.exists();
+
+    // check installed, discovered/sideloaded models only (including clones)
+    if (!info->checkedEmbeddingModel && !info->isEmbeddingModel && info->installed
+        && (info->isDiscovered() || info->description().isEmpty()))
+    {
+        // read GGUF and decide based on model architecture
+        info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
+        info->checkedEmbeddingModel = true;
+    }
+
+    lock.unlock();
+
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
+    if (shouldSort)
+        resortModel();
 
     emit selectableModelListChanged();
+
+    if (relock)
+        lock.relock();
 }
 
 void ModelList::resortModel()
 {
-    emit layoutAboutToBeChanged();
+    const QList<QPersistentModelIndex> parents { QModelIndex() };
+    emit layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
     {
         QMutexLocker locker(&m_mutex);
         auto s = m_discoverSort;
@@ -1030,29 +1032,30 @@ void ModelList::resortModel()
             return ModelList::lessThan(lhs, rhs, s, d);
         });
     }
-    emit layoutChanged();
+    emit layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
 }
 
 void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int, QVariant>> data)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     if (data.isEmpty())
         return; // no-op
 
-    QVector<QString> modelsById;
     {
         QMutexLocker locker(&m_mutex);
-        for (ModelInfo *info : m_models)
+        QStringList modelsById;
+        for (auto *info : std::as_const(m_models))
             if (info->filename() == filename)
                 modelsById.append(info->id());
-    }
 
-    if (modelsById.isEmpty()) {
-        qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
-        return;
-    }
+        if (modelsById.isEmpty()) {
+            qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
+            return;
+        }
 
-    for (const QString &id : modelsById)
-        updateData(id, data);
+        for (auto &id : std::as_const(modelsById))
+            updateDataInternal(id, data, locker, /*relock*/ &id != &modelsById.constLast());
+    }
 }
 
 ModelInfo ModelList::modelInfo(const QString &id) const
@@ -1066,7 +1069,7 @@ ModelInfo ModelList::modelInfo(const QString &id) const
 ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
 {
     QMutexLocker locker(&m_mutex);
-    for (ModelInfo *info : m_models)
+    for (auto *info : std::as_const(m_models))
         if (info->filename() == filename)
             return *info;
     return ModelInfo();
@@ -1075,15 +1078,15 @@ ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
 bool ModelList::isUniqueName(const QString &name) const
 {
     QMutexLocker locker(&m_mutex);
-    for (const ModelInfo *info : m_models) {
-        if(info->name() == name)
+    for (auto *info : std::as_const(m_models))
+        if (info->name() == name)
             return false;
-    }
     return true;
 }
 
 QString ModelList::clone(const ModelInfo &model)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
@@ -1115,50 +1118,84 @@ QString ModelList::clone(const ModelInfo &model)
     return id;
 }
 
-void ModelList::removeClone(const ModelInfo &model)
+void ModelList::uninstall(const ModelInfo &model)
 {
-    Q_ASSERT(model.isClone());
-    if (!model.isClone())
-        return;
+    Q_ASSERT(QThread::currentThread() == thread());
 
-    removeInternal(model);
-    emit layoutChanged();
+    {
+        QMutexLocker lock(&m_mutex);
+
+        if (!model.isClone()) {
+            QStringList modelsById;
+            auto filename = model.filename();
+            for (const auto *info : std::as_const(m_models))
+                if (info->filename() == filename && info->isClone())
+                    modelsById << info->id();
+
+            for (const auto &id : std::as_const(modelsById))
+                removeInternal(id, lock);
+        }
+
+        auto id = model.id();
+        if (model.isClone() || model.isDiscovered() || model.isCompatibleApi
+            || model.description() == "" /*sideloaded*/
+        ) {
+            // model can be completely removed from list
+            removeInternal(id, lock, /*relock*/ false);
+            emit selectableModelListChanged();
+        } else {
+            // Model came from models.json and needs to be reset instead of removed
+            QVector<QPair<int, QVariant>> data {
+                { ModelList::InstalledRole,     false     },
+                { ModelList::BytesReceivedRole, 0         },
+                { ModelList::BytesTotalRole,    0         },
+                { ModelList::TimestampRole,     0         },
+                { ModelList::SpeedRole,         QString() },
+                { ModelList::DownloadErrorRole, QString() },
+            };
+            updateDataInternal(id, data, lock, /*relock*/ false);
+
+            // erase settings
+            MySettings::globalInstance()->eraseModel(id);
+        }
+    }
 }
 
-void ModelList::removeInstalled(const ModelInfo &model)
+void ModelList::removeInternal(const QString &id, QMutexLocker<QMutex> &lock, bool relock)
 {
-    Q_ASSERT(model.installed);
-    Q_ASSERT(!model.isClone());
-    Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
-    removeInternal(model);
-    emit layoutChanged();
-}
+    Q_ASSERT(QThread::currentThread() == thread());
+    Q_ASSERT(lock.isLocked());
 
-void ModelList::removeInternal(const ModelInfo &model)
-{
-    const bool hasModel = contains(model.id());
+    bool hasModel = m_modelMap.contains(id);
     Q_ASSERT(hasModel);
     if (!hasModel) {
-        qWarning() << "ERROR: model list does not contain" << model.id();
+        qWarning() << "ERROR: model list does not contain" << id;
         return;
     }
 
-    int indexOfModel = 0;
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_modelMap.value(model.id());
-        indexOfModel = m_models.indexOf(info);
-    }
-    beginRemoveRows(QModelIndex(), indexOfModel, indexOfModel);
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_models.takeAt(indexOfModel);
-        m_modelMap.remove(info->id());
-        delete info;
-    }
+    auto mapIt = std::as_const(m_modelMap).find(id);
+    qsizetype listIdx = m_models.indexOf(*mapIt);
+
+    lock.unlock();
+    beginRemoveRows({}, listIdx, listIdx);
+    lock.relock();
+
+    // remove entry
+    auto *info = *mapIt;
+    Q_ASSERT(std::as_const(m_modelMap).find(id) == mapIt);
+    Q_ASSERT(m_models.indexOf(info) == listIdx);
+    m_modelMap.erase(mapIt);
+    m_models.remove(listIdx);
+    delete info;
+
+    lock.unlock();
     endRemoveRows();
-    emit selectableModelListChanged();
-    MySettings::globalInstance()->eraseModel(model);
+
+    // erase settings
+    MySettings::globalInstance()->eraseModel(id);
+
+    if (relock)
+        lock.relock();
 }
 
 QString ModelList::uniqueModelName(const ModelInfo &model) const
@@ -1175,8 +1212,8 @@ QString ModelList::uniqueModelName(const ModelInfo &model) const
     int maxSuffixNumber = 0;
     bool baseNameExists = false;
 
-    for (const ModelInfo *info : m_models) {
-        if(info->name() == baseName)
+    for (auto *info : std::as_const(m_models)) {
+        if (info->name() == baseName)
             baseNameExists = true;
 
         QRegularExpressionMatch match = re.match(info->name());
@@ -1297,7 +1334,7 @@ void ModelList::processModelDirectory(const QString &path)
         QVector<QString> modelsById;
         {
             QMutexLocker locker(&m_mutex);
-            for (ModelInfo *info : m_models)
+            for (auto *info : std::as_const(m_models))
                 if (info->filename() == filename)
                     modelsById.append(info->id());
         }
@@ -1308,7 +1345,7 @@ void ModelList::processModelDirectory(const QString &path)
             modelsById.append(filename);
         }
 
-        for (const QString &id : modelsById) {
+        for (auto &id : std::as_const(modelsById)) {
             QVector<QPair<int, QVariant>> data {
                 { InstalledRole, true },
                 { FilenameRole, filename },
@@ -1333,6 +1370,7 @@ void ModelList::processModelDirectory(const QString &path)
 
 void ModelList::updateModelsFromDirectory()
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = MySettings::globalInstance()->modelPath();
 
@@ -1475,7 +1513,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     QJsonArray jsonArray = document.array();
     const QString currentVersion = QCoreApplication::applicationVersion();
 
-    for (const QJsonValue &value : jsonArray) {
+    for (auto &value : std::as_const(jsonArray)) {
         QJsonObject obj = value.toObject();
 
         QString modelName = obj["name"].toString();
@@ -1735,6 +1773,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
 void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, true },
         { ModelList::IsDiscoveredRole, true },
@@ -1755,7 +1794,7 @@ void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
     QStringList groups = settings.childGroups();
-    for (const QString &g: groups) {
+    for (auto &g : std::as_const(groups)) {
         if (!g.startsWith("model-"))
             continue;
 
@@ -1919,16 +1958,14 @@ void ModelList::setDiscoverSort(DiscoverSort sort)
 void ModelList::clearDiscoveredModels()
 {
     // NOTE: This could be made much more efficient
-    QList<ModelInfo> infos;
-    {
-        QMutexLocker locker(&m_mutex);
-        for (ModelInfo *info : m_models)
-            if (info->isDiscovered() && !info->installed)
-                infos.append(*info);
-    }
-    for (ModelInfo &info : infos)
-        removeInternal(info);
-    emit layoutChanged();
+    QMutexLocker locker(&m_mutex);
+    QStringList ids;
+    for (auto *info : std::as_const(m_models))
+        if (info->isDiscovered() && !info->installed)
+            ids << info->id();
+
+    for (auto &id : std::as_const(ids))
+        removeInternal(id, locker, /*relock*/ &id != &ids.constLast());
 }
 
 float ModelList::discoverProgress() const
@@ -1945,6 +1982,7 @@ bool ModelList::discoverInProgress() const
 
 void ModelList::discoverSearch(const QString &search)
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     Q_ASSERT(!m_discoverInProgress);
 
     clearDiscoveredModels();
@@ -2053,7 +2091,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
 
     QJsonArray jsonArray = document.array();
 
-    for (const QJsonValue &value : jsonArray) {
+    for (auto &value : std::as_const(jsonArray)) {
         QJsonObject obj = value.toObject();
         QJsonDocument jsonDocument(obj);
         QByteArray jsonData = jsonDocument.toJson();
@@ -2061,7 +2099,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         QString repo_id = obj["id"].toString();
         QJsonArray siblingsArray = obj["siblings"].toArray();
         QList<QPair<QuantType, QString>> filteredAndSortedFilenames;
-        for (const QJsonValue &sibling : siblingsArray) {
+        for (auto &sibling : std::as_const(siblingsArray)) {
 
             QJsonObject s = sibling.toObject();
             QString filename = s["rfilename"].toString();
@@ -2100,7 +2138,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
     emit discoverProgressChanged();
     if (!m_discoverNumberOfResults) {
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 }
 
@@ -2176,9 +2214,8 @@ void ModelList::handleDiscoveryItemFinished()
     emit discoverProgressChanged();
 
     if (discoverProgress() >= 1.0) {
-        emit layoutChanged();
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 
     reply->deleteLater();

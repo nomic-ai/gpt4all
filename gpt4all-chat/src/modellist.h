@@ -23,6 +23,8 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+template <typename> class QMutexLocker;
+
 
 struct ModelInfo {
     Q_GADGET
@@ -419,8 +421,8 @@ public:
     Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename) const;
     Q_INVOKABLE bool isUniqueName(const QString &name) const;
     Q_INVOKABLE QString clone(const ModelInfo &model);
-    Q_INVOKABLE void removeClone(const ModelInfo &model);
-    Q_INVOKABLE void removeInstalled(const ModelInfo &model);
+    // delist a model and erase its settings, or mark it as not installed if built-in
+    void uninstall(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
 
     void addModel(const QString &id);
@@ -495,7 +497,13 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
-    void removeInternal(const ModelInfo &model);
+    // call with lock held
+    void updateDataInternal(const QString &id, const QVector<QPair<int, QVariant>> &data, QMutexLocker<QMutex> &lock,
+                            bool relock = true);
+
+    // call with lock held
+    void removeInternal(const QString &id, QMutexLocker<QMutex> &lock, bool relock = true);
+
     void clearDiscoveredModels();
     bool modelExists(const QString &fileName) const;
     int indexForModel(ModelInfo *model);

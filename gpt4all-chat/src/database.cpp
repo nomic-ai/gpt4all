@@ -1659,7 +1659,7 @@ void Database::scanQueue()
         if (info.isPdf()) {
             QPdfDocument doc;
             if (doc.load(document_path) != QPdfDocument::Error::None) {
-                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;;
+                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;
                 return updateFolderToIndex(folder_id, countForFolder);
             }
             title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();

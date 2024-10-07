@@ -186,7 +186,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelTemperature(info, info.m_temperature);
     setModelTopP(info, info.m_topP);
     setModelMinP(info, info.m_minP);
-    setModelTopK(info, info.m_topK);;
+    setModelTopK(info, info.m_topK);
     setModelMaxLength(info, info.m_maxLength);
     setModelPromptBatchSize(info, info.m_promptBatchSize);
     setModelContextLength(info, info.m_contextLength);
@@ -226,9 +226,9 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
 }
 
-void MySettings::eraseModel(const ModelInfo &info)
+void MySettings::eraseModel(QStringView id)
 {
-    m_settings.remove(u"model-%1"_s.arg(info.id()));
+    m_settings.remove(u"model-%1"_s.arg(id));
 }
 
 QString MySettings::modelName(const ModelInfo &info) const
