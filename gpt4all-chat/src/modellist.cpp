@@ -502,7 +502,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
@@ -2100,7 +2100,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
     emit discoverProgressChanged();
     if (!m_discoverNumberOfResults) {
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 }
 
@@ -2178,7 +2178,7 @@ void ModelList::handleDiscoveryItemFinished()
     if (discoverProgress() >= 1.0) {
         emit layoutChanged();
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 
     reply->deleteLater();
