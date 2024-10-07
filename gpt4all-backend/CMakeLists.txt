@@ -97,8 +97,6 @@ if (LLMODEL_ROCM)
     list(APPEND BUILD_VARIANTS rocm rocm-avxonly)
 endif()
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 # Go through each build variant
 foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Determine flags
