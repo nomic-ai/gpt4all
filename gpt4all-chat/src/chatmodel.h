@@ -65,8 +65,8 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
-    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments);
-    Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments);
+    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments)
+    Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments)
 
 public:
     QString promptPlusAttachments() const

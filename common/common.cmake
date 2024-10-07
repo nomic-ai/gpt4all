@@ -8,6 +8,7 @@ function(gpt4all_add_warning_options target)
         -Wextra
         # extra options
         -Wcast-align
+        -Wextra-semi
         -Wformat=2
         -Wmissing-include-dirs
         -Wnull-dereference
