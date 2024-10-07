@@ -40,7 +40,6 @@ function(gpt4all_add_warning_options target)
             -Wunreachable-code-return
             -Werror=pointer-integer-compare
             -Wno-reorder-ctor
-            -Wno-unused-lambda-capture
             -Wno-unused-private-field
         )
     endif()
