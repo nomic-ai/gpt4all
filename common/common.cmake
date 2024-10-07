@@ -22,7 +22,6 @@ function(gpt4all_add_warning_options target)
         # disabled warnings
         -Wno-sign-compare
         -Wno-unused-parameter
-        -Wno-missing-braces
         -Wno-unused-function
         -Wno-unused-variable
     )

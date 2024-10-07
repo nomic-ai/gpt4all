@@ -296,10 +296,12 @@ static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStr
     while (q.next()) {
         QString collection = q.value(0).toString();
         IncompleteChunk ic {
-            /*embedding_model =*/ q.value(1).toString(),
-            /*chunk_id        =*/ q.value(2).toInt(),
-            /*folder_id       =*/ q.value(3).toInt(),
-            /*text            =*/ q.value(4).toString(),
+            /*EmbeddingKey*/ {
+                .embedding_model = q.value(1).toString(),
+                .chunk_id        = q.value(2).toInt(),
+            },
+            /*folder_id =*/ q.value(3).toInt(),
+            /*text      =*/ q.value(4).toString(),
         };
         chunks[ic] << collection;
     }
