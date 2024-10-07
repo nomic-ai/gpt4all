@@ -221,9 +221,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         visible: !isDownloading && (installed || isIncomplete)
                                         Accessible.description: qsTr("Remove model from filesystem")
-                                        onClicked: {
-                                            Download.removeModel(filename);
-                                        }
+                                        onClicked: Download.removeModel(id)
                                     }
 
                                     MySettingsButton {

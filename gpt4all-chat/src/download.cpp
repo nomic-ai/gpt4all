@@ -328,27 +328,28 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
 }
 
-void Download::removeModel(const QString &modelFile)
+// FIXME(jared): With the current implementation, it is not possible to remove a duplicate
+//               model file (same filename, different subdirectory) from within GPT4All
+//               without restarting it.
+void Download::removeModel(const QString &id)
 {
     auto *modelList = ModelList::globalInstance();
-    auto *mySettings = MySettings::globalInstance();
 
-    QFile incompleteFile(modelList->incompleteDownloadPath(modelFile));
-    if (incompleteFile.exists())
-        incompleteFile.remove();
+    auto info = modelList->modelInfo(id);
+    if (info.id().isEmpty())
+        return;
 
-    bool shouldRemoveInstalled = false;
+    Network::globalInstance()->trackEvent("remove_model", { {"model", info.filename()} });
 
-    QFile file(mySettings->modelPath() + modelFile);
-    const ModelInfo info = modelList->modelInfoByFilename(modelFile);
+    // remove incomplete download
+    QFile(modelList->incompleteDownloadPath(info.filename())).remove();
 
-    Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile}, {"exists", file.exists()} });
+    // remove file, if this is a real model
+    if (!info.isClone())
+        QFile(info.path()).remove();
 
-    if (file.exists()) {
-        modelList->uninstall(info);
-        if (!info.isClone())
-            file.remove();
-    }
+    // remove model list entry
+    modelList->uninstall(info);
 
     emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
 }
