@@ -31,6 +31,7 @@ struct ModelInfo {
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString filename READ filename WRITE setFilename)
+    Q_PROPERTY(QString path READ path)
     Q_PROPERTY(QString dirpath MEMBER dirpath)
     Q_PROPERTY(QString filesize MEMBER filesize)
     Q_PROPERTY(QByteArray hash MEMBER hash)
@@ -94,6 +95,9 @@ public:
     QString filename() const;
     void setFilename(const QString &name);
 
+    // FIXME(jared): This is the one true path of the model. Never use anything else.
+    QString path() const { return dirpath + filename(); }
+
     QString description() const;
     void setDescription(const QString &d);
 
@@ -121,6 +125,7 @@ public:
     QDateTime recency() const;
     void setRecency(const QDateTime &r);
 
+    // FIXME(jared): a class with getters should not also have public mutable fields
     QString dirpath;
     QString filesize;
     QByteArray hash;

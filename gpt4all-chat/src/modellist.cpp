@@ -258,7 +258,7 @@ int ModelInfo::maxContextLength() const
 {
     if (!installed || isOnline) return -1;
     if (m_maxContextLength != -1) return m_maxContextLength;
-    auto path = (dirpath + filename()).toStdString();
+    auto path = this->path().toStdString();
     int n_ctx = LLModel::Implementation::maxContextLength(path);
     if (n_ctx < 0) {
         n_ctx = 4096; // fallback value
@@ -282,7 +282,7 @@ int ModelInfo::maxGpuLayers() const
 {
     if (!installed || isOnline) return -1;
     if (m_maxGpuLayers != -1) return m_maxGpuLayers;
-    auto path = (dirpath + filename()).toStdString();
+    auto path = this->path().toStdString();
     int layers = LLModel::Implementation::layerCount(path);
     if (layers < 0) {
         layers = 100; // fallback value
@@ -993,7 +993,7 @@ void ModelList::updateDataInternal(const QString &id, const QVector<QPair<int, Q
     }
 
     // Extra guarantee that these always remains in sync with filesystem
-    QString modelPath = info->dirpath + info->filename();
+    QString modelPath = info->path();
     const QFileInfo fileInfo(modelPath);
     info->installed = fileInfo.exists();
     const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
