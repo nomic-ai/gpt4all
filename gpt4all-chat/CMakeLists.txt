@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
+include(../common/common.cmake)
+
 set(APP_VERSION_MAJOR 3)
 set(APP_VERSION_MINOR 4)
 set(APP_VERSION_PATCH 0)
@@ -157,6 +159,7 @@ qt_add_executable(chat
     src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
 )
+gpt4all_add_warning_options(chat)
 
 qt_add_qml_module(chat
     URI gpt4all
