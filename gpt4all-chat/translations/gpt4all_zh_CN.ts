@@ -956,12 +956,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2020"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>新增媒體</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2021"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>將媒體加入提示中</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2155"/>
@@ -976,12 +976,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2198"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>附</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2200"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>單一文件</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1831"/>
@@ -2058,7 +2058,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>請選擇一個文件</translation>
     </message>
 </context>
 <context>
@@ -2066,7 +2066,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>請選擇目錄</translation>
     </message>
 </context>
 <context>
