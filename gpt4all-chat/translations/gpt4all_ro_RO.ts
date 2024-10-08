@@ -976,12 +976,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2020"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaugă media (un fişier)</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2021"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaugă media (un fişier) la prompt</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2155"/>
@@ -996,12 +996,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2198"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>Ataşează</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2200"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>Un singur fişier</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1831"/>
@@ -2100,7 +2100,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selectează un fişier</translation>
     </message>
 </context>
 <context>
@@ -2108,7 +2108,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Selectează un director (folder)</translation>
     </message>
 </context>
 <context>
