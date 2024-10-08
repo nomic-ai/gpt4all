@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Fix models.json cache location ([#3052](https://github.com/nomic-ai/gpt4all/pull/3052))
+
 ## [3.4.0] - 2024-10-08
 
 ### Added
