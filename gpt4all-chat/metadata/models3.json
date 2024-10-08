@@ -1,6 +1,22 @@
 [
   {
     "order": "a",
+    "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
+    "name": "Llama 3 8B Instruct",
+    "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "filesize": "4661724384",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "8 billion",
+    "quant": "q4_0",
+    "type": "LLaMA3",
+    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3/license/\">Meta Llama 3 Community License</a></li></ul>",
+    "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2<|eot_id|>",
+    "systemPrompt": ""
+  },
+  {
+    "order": "b",
     "md5sum": "27b44e8ae1817525164ddf4f8dae8af4",
     "name": "Llama 3.2 3B Instruct",
     "filename": "Llama-3.2-3B-Instruct-Q4_0.gguf",
@@ -16,7 +32,7 @@
     "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
   },
   {
-    "order": "b",
+    "order": "c",
     "md5sum": "48ff0243978606fdba19d899b77802fc",
     "name": "Llama 3.2 1B Instruct",
     "filename": "Llama-3.2-1B-Instruct-Q4_0.gguf",
@@ -30,22 +46,6 @@
     "url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
     "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
-  },
-  {
-    "order": "c",
-    "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
-    "name": "Llama 3 8B Instruct",
-    "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
-    "filesize": "4661724384",
-    "requires": "2.7.1",
-    "ramrequired": "8",
-    "parameters": "8 billion",
-    "quant": "q4_0",
-    "type": "LLaMA3",
-    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3/license/\">Meta Llama 3 Community License</a></li></ul>",
-    "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
-    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2<|eot_id|>",
-    "systemPrompt": ""
   },
   {
     "order": "d",
