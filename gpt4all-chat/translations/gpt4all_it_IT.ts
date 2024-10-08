@@ -407,7 +407,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="39"/>
         <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: il sistema di aggiornamento non è riuscito a trovare MaintenanceTool utilizzato per verificare la presenza di aggiornamenti!&lt;br/&gt;&lt;br/&gt;Hai installato questa applicazione tramite l&apos;installer online? In tal caso, l&apos;eseguibile MaintenanceTool dovrebbe trovarsi una directory sopra quella in cui risiede questa applicazione sul tuo file system.&lt;br/&gt;&lt;br/&gt;Se non riesci ad avviarlo manualmente, temo che dovrai reinstallarlo.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="114"/>
@@ -1345,7 +1345,7 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Valori troppo grandi possono causare errori di Localdocs, risposte estremamente lente o l&apos;impossibilità di rispondere. In parole povere, {N caratteri x N frammenti} vengono aggiunti alla finestra di contesto del modello. Maggiori informazioni &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;qui&lt;/a&gt;.</translation>
+        <translation>Valori troppo grandi possono causare errori di LocalDocs, risposte estremamente lente o l&apos;impossibilità di rispondere. In parole povere, {N caratteri x N frammenti} vengono aggiunti alla finestra di contesto del modello. Maggiori informazioni &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;qui&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="266"/>
@@ -1365,7 +1365,7 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="293"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Il numero massimo di frammenti di documento recuperati, che presentano le migliori corrispondenze, da includere nel contesto del prompt. Numeri più alti aumentano la probabilità di ricevere risposte basate sui fatti, ma comportano anche una generazione più lenta.</translation>
+        <translation>Il numero massimo di frammenti di documento recuperati che presentano le migliori corrispondenze, da includere nel contesto del prompt. Numeri più alti aumentano la probabilità di ricevere risposte basate sui fatti, ma comportano anche una generazione più lenta.</translation>
     </message>
 </context>
 <context>
@@ -1443,7 +1443,7 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="271"/>
         <source>READY</source>
-        <translation>PRONTO</translation>
+        <translation>PRONTA</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="273"/>
@@ -1728,7 +1728,7 @@ NOTA: una temperatura più elevata offre risultati più creativi ma meno prevedi
         <location filename="../qml/ModelSettings.qml" line="469"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>Solo i token più probabili, fino a un totale di probabilità di top_p, possono essere scelti.
+        <translation>Solo i token più probabili, fino a un totale di probabilità di Top-P, possono essere scelti.
 NOTA: impedisce la scelta di token altamente improbabili.</translation>
     </message>
     <message>
