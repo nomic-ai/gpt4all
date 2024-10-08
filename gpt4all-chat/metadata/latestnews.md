@@ -1,11 +1,11 @@
 ## Latest News
 
-GPT4All v3.3.1 from September 26th fixes a crash after loading a chat and an incorrect local server parameter check in v3.3.0.
+GPT4All v3.4.0 was released on October 8th. Changes include:
 
-GPT4All v3.3.0 was released on September 23rd. Changes include:
-
-* **UI Improvements**: The minimum window size now adapts to the font size. A few labels and links have been fixed. The Embeddings Device selection of "Auto"/"Application default" works again. The window icon is now set on Linux. The antenna icon now displays when the API server is listening.
-* **Single Instance**: Only one instance of GPT4All can be opened at a time. This is now enforced.
-* **Greedy Sampling**: Set temperature to zero to enable greedy sampling.
-* **API Server Changes**: The built-in API server now responds correctly to both legacy completions, and chats with message history. Also, it now uses the system prompt configured in the UI.
-* **Translation Improvements**: The Italian, Romanian, and Traditional Chinese translations have been updated.
+* **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.
+* **LocalDocs Accuracy:** The LocalDocs algorithm has been enhanced to find more accurate references for some queries.
+* **Word Document Support:** LocalDocs now supports Microsoft Word (.docx) documents natively.
+  * **IMPORTANT NOTE:** If .docx files are not found, make sure Settings > LocalDocs > Allowed File Extensions includes "docx".
+* **Forgetful Model Fixes:** Issues with the "Redo last chat response" button, and with continuing chats from previous sessions, have been fixed.
+* **Chat Saving Improvements:** On exit, GPT4All will no longer save chats that are not new or modified. As a bonus, downgrading without losing access to all chats will be possible in the future, should the need arise.
+* **UI Fixes:** The model list no longer scrolls to the top when you start downloading a model.
