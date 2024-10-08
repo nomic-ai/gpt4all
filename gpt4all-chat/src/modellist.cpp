@@ -1000,10 +1000,10 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
         }
     }
 
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
+
     if (shouldSort)
         resortModel();
-
-    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
 
     // FIXME(jared): for some reason these don't update correctly when the source model changes, so we explicitly invalidate them
     m_selectableModels->invalidate();
