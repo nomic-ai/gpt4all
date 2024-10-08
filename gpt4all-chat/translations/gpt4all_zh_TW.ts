@@ -19,10 +19,6 @@
         <translation>新增一個含有純文字檔案、PDF 與 Markdown 文件的資料夾。可在設定上增加文件副檔名。</translation>
     </message>
     <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">請選擇一個資料夾</translation>
-    </message>
-    <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
         <source>Name</source>
         <translation>名稱</translation>
@@ -980,12 +976,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2020"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>附加媒體文件</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2021"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>附加媒體文件到提示詞</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2155"/>
@@ -1000,12 +996,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="2198"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>附加</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2200"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>單一文件</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1831"/>
@@ -2051,7 +2047,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>請選擇一個文件</translation>
     </message>
 </context>
 <context>
@@ -2059,14 +2055,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished">請選擇一個資料夾</translation>
-    </message>
-</context>
-<context>
-    <name>MySettingsStack</name>
-    <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">請選擇一個資料夾</translation>
+        <translation>請選擇一個資料夾</translation>
     </message>
 </context>
 <context>
