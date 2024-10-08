@@ -3,7 +3,6 @@ from __future__ import annotations
 import ctypes
 import os
 import platform
-import re
 import subprocess
 import sys
 import textwrap
@@ -28,10 +27,13 @@ if TYPE_CHECKING:
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
+cuda_found: bool = False
+
 
 # TODO(jared): use operator.call after we drop python 3.10 support
 def _operator_call(obj, /, *args, **kwargs):
     return obj(*args, **kwargs)
+
 
 # Detect Rosetta 2
 @_operator_call
@@ -43,6 +45,7 @@ def check_rosetta() -> None:
                 Running GPT4All under Rosetta is not supported due to CPU feature requirements.
                 Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
             """).strip())
+
 
 # Check for C++ runtime libraries
 if platform.system() == "Windows":
@@ -57,8 +60,6 @@ if platform.system() == "Windows":
             https://aka.ms/vs/17/release/vc_redist.x64.exe
         """), file=sys.stderr)
 
-
-cuda_found: bool = False
 
 @_operator_call
 def find_cuda() -> None:
@@ -75,7 +76,6 @@ def find_cuda() -> None:
         # preload the CUDA libs so the backend can find them
         ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
         ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
-
 
     # Find CUDA libraries from the official packages
     if platform.system() in ("Linux", "Windows"):
@@ -131,6 +131,7 @@ class LLModelPromptContext(ctypes.Structure):
         ("context_erase", ctypes.c_float),
     ]
 
+
 class LLModelGPUDevice(ctypes.Structure):
     _fields_ = [
         ("backend", ctypes.c_char_p),
@@ -140,6 +141,7 @@ class LLModelGPUDevice(ctypes.Structure):
         ("name", ctypes.c_char_p),
         ("vendor", ctypes.c_char_p),
     ]
+
 
 # Define C function signatures using ctypes
 llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
@@ -550,7 +552,6 @@ class LLModel:
             ctypes.c_char_p(),
         )
 
-
     def prompt_model_streaming(
         self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
@@ -599,16 +600,16 @@ class LLModel:
             decoded = []
 
             for byte in response:
-                
+
                 bits = "{:08b}".format(byte)
                 (high_ones, _, _) = bits.partition('0')
 
-                if len(high_ones) == 1: 
+                if len(high_ones) == 1:
                     # continuation byte
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes -= 1
 
-                else: 
+                else:
                     # beginning of a byte sequence
                     if len(self.buffer) > 0:
                         decoded.append(self.buffer.decode(errors='replace'))
@@ -618,18 +619,18 @@ class LLModel:
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes = max(0, len(high_ones) - 1)
 
-                if self.buff_expecting_cont_bytes <= 0: 
+                if self.buff_expecting_cont_bytes <= 0:
                     # received the whole sequence or an out of place continuation byte
                     decoded.append(self.buffer.decode(errors='replace'))
 
                     self.buffer.clear()
                     self.buff_expecting_cont_bytes = 0
-                    
+
             if len(decoded) == 0 and self.buff_expecting_cont_bytes > 0:
                 # wait for more continuation bytes
                 return True
-            
-            return callback(token_id, ''.join(decoded))     
+
+            return callback(token_id, ''.join(decoded))
 
         return _raw_callback
 
