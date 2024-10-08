@@ -955,12 +955,12 @@ modelo instalado para funcionar</translation>
     <message>
         <location filename="../qml/ChatView.qml" line="2020"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>Adicionar mídia</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2021"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>Adiciona mídia ao prompt</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2155"/>
@@ -975,12 +975,12 @@ modelo instalado para funcionar</translation>
     <message>
         <location filename="../qml/ChatView.qml" line="2198"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>Anexar</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2200"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo Único</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1831"/>
@@ -2057,7 +2057,7 @@ Obs.: Só entrará em vigor após recarregar o modelo.</translation>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Por favor escolha um arquivo</translation>
     </message>
 </context>
 <context>
@@ -2065,7 +2065,7 @@ Obs.: Só entrará em vigor após recarregar o modelo.</translation>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished">Escolha um diretório</translation>
+        <translation>Escolha um diretório</translation>
     </message>
 </context>
 <context>

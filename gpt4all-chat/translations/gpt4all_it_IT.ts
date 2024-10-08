@@ -962,12 +962,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/ChatView.qml" line="2020"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>Aggiungi contenuti multimediali</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2021"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>Aggiunge contenuti multimediali al prompt</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2155"/>
@@ -982,12 +982,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/ChatView.qml" line="2198"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>Allegare</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="2200"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>File singolo</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1831"/>
@@ -2064,7 +2064,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Scegli un file</translation>
     </message>
 </context>
 <context>
@@ -2072,7 +2072,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished">Scegli una cartella</translation>
+        <translation>Scegli una cartella</translation>
     </message>
 </context>
 <context>
