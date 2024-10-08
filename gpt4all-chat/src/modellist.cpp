@@ -398,7 +398,6 @@ InstalledModels::InstalledModels(QObject *parent, bool selectable)
     connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
-    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
 }
 
 bool InstalledModels::filterAcceptsRow(int sourceRow,
@@ -423,7 +422,6 @@ DownloadableModels::DownloadableModels(QObject *parent)
     connect(this, &DownloadableModels::rowsInserted, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::rowsRemoved, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::modelReset, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::layoutChanged, this, &DownloadableModels::countChanged);
 }
 
 bool DownloadableModels::filterAcceptsRow(int sourceRow,
