@@ -398,7 +398,6 @@ InstalledModels::InstalledModels(QObject *parent, bool selectable)
     connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
-    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
 }
 
 bool InstalledModels::filterAcceptsRow(int sourceRow,
@@ -423,7 +422,6 @@ DownloadableModels::DownloadableModels(QObject *parent)
     connect(this, &DownloadableModels::rowsInserted, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::rowsRemoved, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::modelReset, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::layoutChanged, this, &DownloadableModels::countChanged);
 }
 
 bool DownloadableModels::filterAcceptsRow(int sourceRow,
@@ -821,7 +819,11 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>> &data)
 {
+    // We only sort when one of the fields used by the sorting algorithm actually changes that
+    // is implicated or used by the sorting algorithm
+    bool shouldSort = false;
     int index;
+
     {
         QMutexLocker locker(&m_mutex);
         if (!m_modelMap.contains(id)) {
@@ -835,10 +837,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             qWarning() << "ERROR: cannot update as model list does not contain" << id;
             return;
         }
-
-        // We only sort when one of the fields used by the sorting algorithm actually changes that
-        // is implicated or used by the sorting algorithm
-        bool shouldSort = false;
 
         for (const auto &d : data) {
             const int role = d.first;
@@ -1000,21 +998,12 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
             info->checkedEmbeddingModel = true;
         }
-
-        if (shouldSort) {
-            auto s = m_discoverSort;
-            auto d = m_discoverSortDirection;
-            std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-                return ModelList::lessThan(lhs, rhs, s, d);
-            });
-        }
     }
+
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
 
-    // FIXME(jared): for some reason these don't update correctly when the source model changes, so we explicitly invalidate them
-    m_selectableModels->invalidate();
-    m_installedModels->invalidate();
-    m_downloadableModels->invalidate();
+    if (shouldSort)
+        resortModel();
 
     emit selectableModelListChanged();
 }
@@ -1122,7 +1111,6 @@ void ModelList::removeClone(const ModelInfo &model)
         return;
 
     removeInternal(model);
-    emit layoutChanged();
 }
 
 void ModelList::removeInstalled(const ModelInfo &model)
@@ -1131,7 +1119,6 @@ void ModelList::removeInstalled(const ModelInfo &model)
     Q_ASSERT(!model.isClone());
     Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
     removeInternal(model);
-    emit layoutChanged();
 }
 
 void ModelList::removeInternal(const ModelInfo &model)
@@ -1928,7 +1915,6 @@ void ModelList::clearDiscoveredModels()
     }
     for (ModelInfo &info : infos)
         removeInternal(info);
-    emit layoutChanged();
 }
 
 float ModelList::discoverProgress() const
@@ -2176,7 +2162,6 @@ void ModelList::handleDiscoveryItemFinished()
     emit discoverProgressChanged();
 
     if (discoverProgress() >= 1.0) {
-        emit layoutChanged();
         m_discoverInProgress = false;
         emit discoverInProgressChanged();;
     }
