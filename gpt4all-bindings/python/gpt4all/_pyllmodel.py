@@ -29,15 +29,20 @@ if TYPE_CHECKING:
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
+# TODO(jared): use operator.call after we drop python 3.10 support
+def _operator_call(obj, /, *args, **kwargs):
+    return obj(*args, **kwargs)
+
 # Detect Rosetta 2
-if platform.system() == "Darwin" and platform.processor() == "i386":
-    if subprocess.run(
-        "sysctl -n sysctl.proc_translated".split(), check=True, capture_output=True, text=True,
-    ).stdout.strip() == "1":
-        raise RuntimeError(textwrap.dedent("""\
-            Running GPT4All under Rosetta is not supported due to CPU feature requirements.
-            Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
-        """).strip())
+@_operator_call
+def check_rosetta() -> None:
+    if platform.system() == "Darwin" and platform.processor() == "i386":
+        p = subprocess.run("sysctl -n sysctl.proc_translated".split(), capture_output=True, text=True)
+        if p.returncode == 0 and p.stdout.strip() == "1":
+            raise RuntimeError(textwrap.dedent("""\
+                Running GPT4All under Rosetta is not supported due to CPU feature requirements.
+                Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
+            """).strip())
 
 # Check for C++ runtime libraries
 if platform.system() == "Windows":
