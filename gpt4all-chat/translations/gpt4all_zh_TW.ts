@@ -1663,7 +1663,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="352"/>
         <source>Context Length</source>
-        <translation>語境長度（Context Length）</translation>
+        <translation>語境長度</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="353"/>
@@ -1675,14 +1675,14 @@ model to get started</source>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation>資訊遺失前最大的提示詞/回覆符元組合。
+        <translation>資訊遺失前最大的提示詞/回覆符元組合。（Context Length）
 若語境比模型訓練時所使用的語境還要長，將會生成較差的結果。
 注意：重新載入模型後才會生效。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="412"/>
         <source>Temperature</source>
-        <translation>語境溫度（Temperature）</translation>
+        <translation>語境溫度</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="413"/>
@@ -1693,13 +1693,13 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelSettings.qml" line="424"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation>語境溫度會提高選擇不容易出現的符元機率。
+        <translation>語境溫度會提高選擇不容易出現的符元機率。（Temperature）
 注意：較高的語境溫度會生成更多創意，但輸出的可預測性會相對較差。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="458"/>
         <source>Top-P</source>
-        <translation>核心採樣（Top-P）</translation>
+        <translation>核心採樣</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="459"/>
@@ -1710,13 +1710,13 @@ NOTE: Higher temperature gives more creative but less predictable outputs.</sour
         <location filename="../qml/ModelSettings.qml" line="469"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>只選擇總機率約為核心採樣，最有可能性的符元。
+        <translation>只選擇總機率約為核心採樣，最有可能性的符元。（Top-P）
 注意：用於避免選擇不容易出現的符元。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="503"/>
         <source>Min-P</source>
-        <translation>最小符元機率（Min-P）</translation>
+        <translation>最小符元機率</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="504"/>
@@ -1726,12 +1726,12 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="514"/>
         <source>Sets the minimum relative probability for a token to be considered.</source>
-        <translation>設定要考慮的符元的最小相對機率。</translation>
+        <translation>設定要考慮的符元的最小相對機率。（Min-P）</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="550"/>
         <source>Top-K</source>
-        <translation>高頻率採樣機率（Top-K）</translation>
+        <translation>高頻率採樣機率</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="551"/>
@@ -1741,12 +1741,12 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="562"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation>只選擇前 K 個最有可能性的符元。</translation>
+        <translation>只選擇前 K 個最有可能性的符元。（Top-K）</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="597"/>
         <source>Max Length</source>
-        <translation>最大長度（Max Length）</translation>
+        <translation>最大長度</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="598"/>
@@ -1756,7 +1756,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="643"/>
         <source>Prompt Batch Size</source>
-        <translation>提示詞批次大小（Prompt Batch Size）</translation>
+        <translation>提示詞批次大小</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="644"/>
@@ -1767,13 +1767,13 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <location filename="../qml/ModelSettings.qml" line="655"/>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation>一次處理的提示詞符元數量。
+        <translation>一次處理的提示詞符元數量。（Prompt Batch Size）
 注意：較高的值可以加快讀取提示詞的速度，但會使用比較多的記憶體。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="690"/>
         <source>Repeat Penalty</source>
-        <translation>重複處罰（Repeat Penalty）</translation>
+        <translation>重複處罰</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="691"/>
@@ -1783,7 +1783,7 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="735"/>
         <source>Repeat Penalty Tokens</source>
-        <translation>重複懲罰符元（Repeat Penalty Tokens）</translation>
+        <translation>重複懲罰符元</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="736"/>
@@ -1793,7 +1793,7 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="781"/>
         <source>GPU Layers</source>
-        <translation>圖形處理器負載層（GPU Layers）</translation>
+        <translation>圖形處理器（GPU）負載層</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="782"/>
