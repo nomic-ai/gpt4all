@@ -5,6 +5,7 @@
 #include <xlsxcellrange.h>
 #include <xlsxdocument.h>
 #include <xlsxformat.h>
+#include <xlsxrichstring.h>
 #include <xlsxworksheet.h>
 
 #include <QDateTime>
@@ -23,12 +24,9 @@ using namespace Qt::Literals::StringLiterals;
 
 static QString escapeMarkdown(const QString &text)
 {
-    QString escaped = text;
-    static QRegularExpression specialChars(
-        QStringLiteral(R"([\\`*_{}[\]()#+\-.!])")
-    );
-    escaped.replace(specialChars, uR"(\\\0)"_s);
-    return escaped;
+    // Include the '|' character to prevent breaking table formatting
+    static const QRegularExpression specialChars(R"([\\`*_{}[\]()#+\-.!|])");
+    return text.replace(specialChars, uR"(\\\0)"_s);
 }
 
 static QString applyMarkdownFormatting(const QString &text, const QXlsx::Format &format)
@@ -61,38 +59,50 @@ static QString formatCellText(const QXlsx::Cell *cell)
 {
     if (!cell) return QString();
 
-    QVariant value = cell->value();
-    QXlsx::Format format = cell->format();
     QString cellText;
 
-    // Handle different data types
-    if (cell->isDateTime()) {
-        // Handle DateTime
-        QDateTime dateTime = cell->dateTime().toDateTime();
-        cellText = dateTime.isValid() ? dateTime.toString(u"yyyy-MM-dd") : value.toString();
-    } else if (value.type() == QVariant::Int || value.type() == QVariant::Double || value.type() == QVariant::LongLong) {
-        cellText = value.toString();
-    } else if (value.type() == QVariant::String) {
-        cellText = value.toString();
+    if (cell->isRichString()) {
+        // Handle rich text cells
+        QXlsx::RichString richString = cell->value().value<QXlsx::RichString>();
+        for (const auto &fragment : richString.fragments()) {
+            QString fragmentText = fragment.text();
+            fragmentText = escapeMarkdown(fragmentText);
+            fragmentText = applyMarkdownFormatting(fragmentText, fragment.format());
+            cellText += fragmentText;
+        }
     } else {
-        // Handle non-standard cell types
-        cellText = value.isValid() ? value.toString() : QString();
+        QVariant value = cell->value();
+        QXlsx::Format format = cell->format();
+
+        // Handle different data types
+        if (cell->isDateTime()) {
+            // Handle DateTime
+            QDateTime dateTime = cell->dateTime().toDateTime();
+            cellText = dateTime.isValid() ? dateTime.toString(u"yyyy-MM-dd") : value.toString();
+        } else if (value.type() == QVariant::Int || value.type() == QVariant::Double || value.type() == QVariant::LongLong) {
+            cellText = value.toString();
+        } else if (value.type() == QVariant::String) {
+            cellText = value.toString();
+        } else {
+            // Handle non-standard cell types
+            cellText = value.isValid() ? value.toString() : QString();
+        }
+
+        if (cellText.isEmpty())
+            return QString();
+
+        // Handle hyperlinks
+        if (cell->hyperlink().isValid()) {
+            QString url = cell->hyperlink().target;
+            cellText = u"[%1](%2)"_s.arg(cellText, url);
+        }
+
+        // Escape special Markdown characters
+        cellText = escapeMarkdown(cellText);
+
+        // Apply Markdown formatting based on font styles
+        cellText = applyMarkdownFormatting(cellText, format);
     }
-
-    if (cellText.isEmpty())
-        return QString();
-
-    // Handle hyperlinks
-    if (cell->hyperlink().isValid()) {
-        QString url = cell->hyperlink().target;
-        cellText = u"[%1](%2)"_s.arg(cellText, url);
-    }
-
-    // Escape special Markdown characters
-    cellText = escapeMarkdown(cellText);
-
-    // Apply Markdown formatting based on font styles
-    cellText = applyMarkdownFormatting(cellText, format);
 
     return cellText;
 }
@@ -101,7 +111,7 @@ static QMap<QString, const QXlsx::Cell *> buildMergedCellsMapping(QXlsx::Workshe
 {
     QMap<QString, const QXlsx::Cell *> mergedCellsMapping;
 
-    for (const QXlsx::CellRange &range : sheet->mergedCells()) {
+    for (const auto &range : sheet->mergedCells()) {
         const QXlsx::Cell *topLeftCell = sheet->cellAt(range.firstRow(), range.firstColumn());
         if (!topLeftCell) continue;
         for (int row = range.firstRow(); row <= range.lastRow(); ++row) {
@@ -196,7 +206,7 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice, bool skipEmptySheets)
     }
 
     // Iterate through each worksheet by name
-    for (const QString &sheetName : sheetNames) {
+    for (const auto &sheetName : sheetNames) {
         QXlsx::Worksheet *sheet = dynamic_cast<QXlsx::Worksheet *>(xlsx.sheet(sheetName));
         if (!sheet) {
             qWarning() << "Failed to load sheet:" << sheetName;
