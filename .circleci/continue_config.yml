@@ -298,7 +298,7 @@ jobs:
 
   build-offline-chat-installer-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -321,7 +321,7 @@ jobs:
               libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
               libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 patchelf
+              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
               python3 vulkan-sdk
             )
             sudo apt-get update
@@ -374,7 +374,7 @@ jobs:
 
   build-online-chat-installer-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -397,7 +397,7 @@ jobs:
               libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
               libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 patchelf
+              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
               python3 vulkan-sdk
             )
             sudo apt-get update
@@ -705,7 +705,7 @@ jobs:
 
   build-gpt4all-chat-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -728,7 +728,7 @@ jobs:
               libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
               libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
               libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-x11-0 libxkbcommon0 libxrender1 python3
+              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 python3
               vulkan-sdk
             )
             sudo apt-get update
@@ -741,6 +741,7 @@ jobs:
             ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
             export PATH=$PATH:/usr/local/cuda/bin
@@ -797,6 +798,7 @@ jobs:
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
             Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
@@ -850,6 +852,7 @@ jobs:
             hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
@@ -917,7 +920,7 @@ jobs:
 
   build-py-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - restore_cache:
@@ -942,6 +945,7 @@ jobs:
             pip install setuptools wheel cmake
       - run:
           name: Build C library
+          no_output_timeout: 30m
           command: |
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
@@ -991,6 +995,7 @@ jobs:
             pip install setuptools wheel cmake
       - run:
           name: Build C library
+          no_output_timeout: 30m
           command: |
             git submodule update --init  # don't use --recursive because macOS doesn't use Kompute
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
@@ -1055,6 +1060,7 @@ jobs:
           command: pip install setuptools wheel cmake
       - run:
           name: Build C library
+          no_output_timeout: 30m
           command: |
             $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
             Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
@@ -1112,7 +1118,7 @@ jobs:
 
   build-bindings-backend-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -1138,6 +1144,7 @@ jobs:
             sudo apt-get install -y "${packages[@]}"
       - run:
           name: Build Libraries
+          no_output_timeout: 30m
           command: |
             export PATH=$PATH:/usr/local/cuda/bin
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
@@ -1186,6 +1193,7 @@ jobs:
             brew install ccache cmake
       - run:
           name: Build Libraries
+          no_output_timeout: 30m
           command: |
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
             cd gpt4all-backend
@@ -1246,6 +1254,7 @@ jobs:
             choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Build Libraries
+          no_output_timeout: 30m
           command: |
             $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
             Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"

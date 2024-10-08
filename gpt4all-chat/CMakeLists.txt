@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
 set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 3)
+set(APP_VERSION_MINOR 4)
 set(APP_VERSION_PATCH 0)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
-set(APP_VERSION "${APP_VERSION_BASE}")
+set(APP_VERSION "${APP_VERSION_BASE}-dev0")
 
 project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
@@ -86,14 +86,9 @@ get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
 message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(FMT_INSTALL OFF)
-set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(deps/fmt)
-set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-
+add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(CHAT_EXE_RESOURCES)
@@ -133,9 +128,6 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
-set(QAPPLICATION_CLASS QGuiApplication)
-add_subdirectory(deps/SingleApplication)
-
 if (DEFINED GGML_METALLIB)
     set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
 endif()
@@ -162,6 +154,7 @@ qt_add_executable(chat
     src/mysettings.cpp            src/mysettings.h
     src/network.cpp               src/network.h
     src/server.cpp                src/server.h
+    src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
 )
 
@@ -198,6 +191,8 @@ qt_add_qml_module(chat
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
+      qml/MyFileDialog.qml
+      qml/MyFolderDialog.qml
       qml/MyFancyLink.qml
       qml/MyMenu.qml
       qml/MyMenuItem.qml
@@ -230,9 +225,11 @@ qt_add_qml_module(chat
       icons/edit.svg
       icons/eject.svg
       icons/email.svg
+      icons/file-doc.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
+      icons/file-xls.svg
       icons/file.svg
       icons/github.svg
       icons/globe.svg
@@ -250,7 +247,9 @@ qt_add_qml_module(chat
       icons/network.svg
       icons/nomic_logo.svg
       icons/notes.svg
+      icons/paperclip.svg
       icons/plus.svg
+      icons/plus_circle.svg
       icons/recycle.svg
       icons/regenerate.svg
       icons/search.svg
@@ -263,6 +262,7 @@ qt_add_qml_module(chat
       icons/trash.svg
       icons/twitter.svg
       icons/up_down.svg
+      icons/webpage.svg
       icons/you.svg
 )
 
@@ -335,7 +335,7 @@ target_include_directories(chat PRIVATE deps/usearch/include
 target_link_libraries(chat
     PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
 
 
 # -- install --

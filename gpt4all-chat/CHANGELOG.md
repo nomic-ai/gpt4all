@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Add bm25 hybrid search to localdocs ([#2969](https://github.com/nomic-ai/gpt4all/pull/2969))
+- LocalDocs support for .docx files ([#2986](https://github.com/nomic-ai/gpt4all/pull/2986))
+- Add support for attaching Excel spreadsheet to chat ([#3007](https://github.com/nomic-ai/gpt4all/pull/3007), [#3028](https://github.com/nomic-ai/gpt4all/pull/3028))
+
+### Changed
+- Rebase llama.cpp on latest upstream as of September 26th ([#2998](https://github.com/nomic-ai/gpt4all/pull/2998))
+- Change the error message when a message is too long ([#3004](https://github.com/nomic-ai/gpt4all/pull/3004))
+- Simplify chatmodel to get rid of unnecessary field and bump chat version ([#3016](https://github.com/nomic-ai/gpt4all/pull/3016))
+- Allow ChatLLM to have direct access to ChatModel for restoring state from text ([#3018](https://github.com/nomic-ai/gpt4all/pull/3018))
+- Improvements to XLSX conversion and UI fix ([#3022](https://github.com/nomic-ai/gpt4all/pull/3022))
+
+### Fixed
+- Fix a crash when attempting to continue a chat loaded from disk ([#2995](https://github.com/nomic-ai/gpt4all/pull/2995))
+- Fix the local server rejecting min\_p/top\_p less than 1 ([#2996](https://github.com/nomic-ai/gpt4all/pull/2996))
+- Fix "regenerate" always forgetting the most recent message ([#3011](https://github.com/nomic-ai/gpt4all/pull/3011))
+- Fix loaded chats forgetting context when there is a system prompt ([#3015](https://github.com/nomic-ai/gpt4all/pull/3015))
+- Make it possible to downgrade and keep some chats, and avoid crash for some model types ([#3030](https://github.com/nomic-ai/gpt4all/pull/3030))
+
+## [3.3.1] - 2024-09-27 ([v3.3.y](https://github.com/nomic-ai/gpt4all/tree/v3.3.y))
+
+### Fixed
+- Fix a crash when attempting to continue a chat loaded from disk ([#2995](https://github.com/nomic-ai/gpt4all/pull/2995))
+- Fix the local server rejecting min\_p/top\_p less than 1 ([#2996](https://github.com/nomic-ai/gpt4all/pull/2996))
+
 ## [3.3.0] - 2024-09-20
 
 ### Added
@@ -119,6 +146,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...HEAD
+[3.3.1]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...v3.3.0
 [3.2.1]: https://github.com/nomic-ai/gpt4all/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...v3.2.0

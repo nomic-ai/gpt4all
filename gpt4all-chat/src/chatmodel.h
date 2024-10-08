@@ -2,8 +2,10 @@
 #define CHATMODEL_H
 
 #include "database.h"
+#include "xlsxtomd.h"
 
 #include <QAbstractListModel>
+#include <QBuffer>
 #include <QByteArray>
 #include <QDataStream>
 #include <QHash>
@@ -16,13 +18,46 @@
 #include <Qt>
 #include <QtGlobal>
 
+struct PromptAttachment {
+    Q_GADGET
+    Q_PROPERTY(QUrl url MEMBER url)
+    Q_PROPERTY(QByteArray content MEMBER content)
+    Q_PROPERTY(QString file READ file)
+    Q_PROPERTY(QString processedContent READ processedContent)
+
+public:
+    QUrl url;
+    QByteArray content;
+
+    QString file() const
+    {
+        if (!url.isLocalFile())
+            return QString();
+        const QString localFilePath = url.toLocalFile();
+        const QFileInfo info(localFilePath);
+        return info.fileName();
+    }
+
+    QString processedContent() const
+    {
+        QBuffer buffer;
+        buffer.setData(content);
+        buffer.open(QIODevice::ReadOnly);
+        const QString md = XLSXToMD::toMarkdown(&buffer);
+        buffer.close();
+        return u"## Attached: %1\n\n%2"_s.arg(file(), md);
+    }
+
+    bool operator==(const PromptAttachment &other) const { return url == other.url; }
+};
+Q_DECLARE_METATYPE(PromptAttachment)
+
 struct ChatItem
 {
     Q_GADGET
     Q_PROPERTY(int id MEMBER id)
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString value MEMBER value)
-    Q_PROPERTY(QString prompt MEMBER prompt)
     Q_PROPERTY(QString newResponse MEMBER newResponse)
     Q_PROPERTY(bool currentResponse MEMBER currentResponse)
     Q_PROPERTY(bool stopped MEMBER stopped)
@@ -30,22 +65,38 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
+    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments);
+    Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments);
 
 public:
+    QString promptPlusAttachments() const
+    {
+        QStringList attachedContexts;
+        for (auto attached : promptAttachments)
+            attachedContexts << attached.processedContent();
+
+        QString promptPlus = value;
+        if (!attachedContexts.isEmpty())
+            promptPlus = attachedContexts.join("\n\n") + "\n\n" + value;
+        return promptPlus;
+    }
+
     // TODO: Maybe we should include the model name here as well as timestamp?
     int id = 0;
     QString name;
     QString value;
-    QString prompt;
     QString newResponse;
     QList<ResultInfo> sources;
     QList<ResultInfo> consolidatedSources;
+    QList<PromptAttachment> promptAttachments;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
     bool thumbsDownState = false;
 };
 Q_DECLARE_METATYPE(ChatItem)
+
+using ChatModelIterator = QList<ChatItem>::const_iterator;
 
 class ChatModel : public QAbstractListModel
 {
@@ -59,24 +110,26 @@ public:
         IdRole = Qt::UserRole + 1,
         NameRole,
         ValueRole,
-        PromptRole,
         NewResponseRole,
         CurrentResponseRole,
         StoppedRole,
         ThumbsUpStateRole,
         ThumbsDownStateRole,
         SourcesRole,
-        ConsolidatedSourcesRole
+        ConsolidatedSourcesRole,
+        PromptAttachmentsRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
+        QMutexLocker locker(&m_mutex);
         Q_UNUSED(parent)
         return m_chatItems.size();
     }
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
+        QMutexLocker locker(&m_mutex);
         if (!index.isValid() || index.row() < 0 || index.row() >= m_chatItems.size())
             return QVariant();
 
@@ -88,8 +141,6 @@ public:
                 return item.name;
             case ValueRole:
                 return item.value;
-            case PromptRole:
-                return item.prompt;
             case NewResponseRole:
                 return item.newResponse;
             case CurrentResponseRole:
@@ -104,6 +155,8 @@ public:
                 return QVariant::fromValue(item.sources);
             case ConsolidatedSourcesRole:
                 return QVariant::fromValue(item.consolidatedSources);
+            case PromptAttachmentsRole:
+                return QVariant::fromValue(item.promptAttachments);
         }
 
         return QVariant();
@@ -115,7 +168,6 @@ public:
         roles[IdRole] = "id";
         roles[NameRole] = "name";
         roles[ValueRole] = "value";
-        roles[PromptRole] = "prompt";
         roles[NewResponseRole] = "newResponse";
         roles[CurrentResponseRole] = "currentResponse";
         roles[StoppedRole] = "stopped";
@@ -123,84 +175,123 @@ public:
         roles[ThumbsDownStateRole] = "thumbsDownState";
         roles[SourcesRole] = "sources";
         roles[ConsolidatedSourcesRole] = "consolidatedSources";
+        roles[PromptAttachmentsRole] = "promptAttachments";
         return roles;
     }
 
-    void appendPrompt(const QString &name, const QString &value)
+    void appendPrompt(const QString &name, const QString &value, const QList<PromptAttachment> &attachments)
     {
         ChatItem item;
         item.name = name;
         item.value = value;
-        beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-        m_chatItems.append(item);
+        item.promptAttachments << attachments;
+
+        m_mutex.lock();
+        const int count = m_chatItems.count();
+        m_mutex.unlock();
+        beginInsertRows(QModelIndex(), count, count);
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
 
-    void appendResponse(const QString &name, const QString &prompt)
+    void appendResponse(const QString &name)
     {
+        m_mutex.lock();
+        const int count = m_chatItems.count();
+        m_mutex.unlock();
         ChatItem item;
-        item.id = m_chatItems.count(); // This is only relevant for responses
+        item.id = count; // This is only relevant for responses
         item.name = name;
-        item.prompt = prompt;
         item.currentResponse = true;
-        beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-        m_chatItems.append(item);
+        beginInsertRows(QModelIndex(), count, count);
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.append(item);
+        }
         endInsertRows();
         emit countChanged();
     }
 
     Q_INVOKABLE void clear()
     {
-        if (m_chatItems.isEmpty()) return;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_chatItems.isEmpty()) return;
+        }
 
         beginResetModel();
-        m_chatItems.clear();
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.clear();
+        }
         endResetModel();
         emit countChanged();
     }
 
     Q_INVOKABLE ChatItem get(int index)
     {
+        QMutexLocker locker(&m_mutex);
         if (index < 0 || index >= m_chatItems.size()) return ChatItem();
         return m_chatItems.at(index);
     }
 
     Q_INVOKABLE void updateCurrentResponse(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.currentResponse != b) {
-            item.currentResponse = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {CurrentResponseRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.currentResponse != b) {
+                item.currentResponse = b;
+                changed = true;
+            }
         }
+
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {CurrentResponseRole});
     }
 
     Q_INVOKABLE void updateStopped(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.stopped != b) {
-            item.stopped = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {StoppedRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.stopped != b) {
+                item.stopped = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {StoppedRole});
     }
 
     Q_INVOKABLE void updateValue(int index, const QString &value)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.value != value) {
-            item.value = value;
+            ChatItem &item = m_chatItems[index];
+            if (item.value != value) {
+                item.value = value;
+                changed = true;
+            }
+        }
+        if (changed) {
             emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ValueRole});
             emit valueChanged(index, value);
         }
     }
 
-    QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
+    static QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
         QMap<QString, ResultInfo> groupedData;
         for (const ResultInfo &info : sources) {
             if (groupedData.contains(info.file)) {
@@ -215,64 +306,87 @@ public:
 
     Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        item.sources = sources;
-        item.consolidatedSources = consolidateSources(sources);
+            ChatItem &item = m_chatItems[index];
+            item.sources = sources;
+            item.consolidatedSources = consolidateSources(sources);
+        }
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
     }
 
     Q_INVOKABLE void updateThumbsUpState(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.thumbsUpState != b) {
-            item.thumbsUpState = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsUpStateRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.thumbsUpState != b) {
+                item.thumbsUpState = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsUpStateRole});
     }
 
     Q_INVOKABLE void updateThumbsDownState(int index, bool b)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.thumbsDownState != b) {
-            item.thumbsDownState = b;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsDownStateRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.thumbsDownState != b) {
+                item.thumbsDownState = b;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ThumbsDownStateRole});
     }
 
     Q_INVOKABLE void updateNewResponse(int index, const QString &newResponse)
     {
-        if (index < 0 || index >= m_chatItems.size()) return;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size()) return;
 
-        ChatItem &item = m_chatItems[index];
-        if (item.newResponse != newResponse) {
-            item.newResponse = newResponse;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
+            ChatItem &item = m_chatItems[index];
+            if (item.newResponse != newResponse) {
+                item.newResponse = newResponse;
+                changed = true;
+            }
         }
+        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
     }
 
-    int count() const { return m_chatItems.size(); }
+    int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
+
+    ChatModelIterator begin() const { return m_chatItems.begin(); }
+    ChatModelIterator end() const { return m_chatItems.end(); }
+    void lock() { m_mutex.lock(); }
+    void unlock() { m_mutex.unlock(); }
 
     bool serialize(QDataStream &stream, int version) const
     {
-        stream << count();
+        QMutexLocker locker(&m_mutex);
+        stream << int(m_chatItems.size());
         for (const auto &c : m_chatItems) {
             stream << c.id;
             stream << c.name;
             stream << c.value;
-            stream << c.prompt;
             stream << c.newResponse;
             stream << c.currentResponse;
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
-            if (version > 7) {
+            if (version >= 8) {
                 stream << c.sources.size();
                 for (const ResultInfo &info : c.sources) {
                     Q_ASSERT(!info.file.isEmpty());
@@ -287,7 +401,7 @@ public:
                     stream << info.from;
                     stream << info.to;
                 }
-            } else if (version > 2) {
+            } else if (version >= 3) {
                 QList<QString> references;
                 QList<QString> referencesContext;
                 int validReferenceNumber = 1;
@@ -323,6 +437,14 @@ public:
                 stream << references.join("\n");
                 stream << referencesContext;
             }
+            if (version >= 10) {
+                stream << c.promptAttachments.size();
+                for (const PromptAttachment &a : c.promptAttachments) {
+                    Q_ASSERT(!a.url.isEmpty());
+                    stream << a.url;
+                    stream << a.content;
+                }
+            }
         }
         return stream.status() == QDataStream::Ok;
     }
@@ -336,13 +458,17 @@ public:
             stream >> c.id;
             stream >> c.name;
             stream >> c.value;
-            stream >> c.prompt;
+            if (version < 10) {
+                // This is deprecated and no longer used
+                QString prompt;
+                stream >> prompt;
+            }
             stream >> c.newResponse;
             stream >> c.currentResponse;
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
-            if (version > 7) {
+            if (version >= 8) {
                 qsizetype count;
                 stream >> count;
                 QList<ResultInfo> sources;
@@ -362,7 +488,7 @@ public:
                 }
                 c.sources = sources;
                 c.consolidatedSources = consolidateSources(sources);
-            }else if (version > 2) {
+            } else if (version >= 3) {
                 QString references;
                 QList<QString> referencesContext;
                 stream >> references;
@@ -446,20 +572,30 @@ public:
                     c.consolidatedSources = consolidateSources(sources);
                 }
             }
-            beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
-            m_chatItems.append(c);
+            if (version >= 10) {
+                qsizetype count;
+                stream >> count;
+                QList<PromptAttachment> attachments;
+                for (int i = 0; i < count; ++i) {
+                    PromptAttachment a;
+                    stream >> a.url;
+                    stream >> a.content;
+                    attachments.append(a);
+                }
+                c.promptAttachments = attachments;
+            }
+            m_mutex.lock();
+            const int count = m_chatItems.size();
+            m_mutex.unlock();
+            beginInsertRows(QModelIndex(), count, count);
+            {
+                QMutexLocker locker(&m_mutex);
+                m_chatItems.append(c);
+            }
             endInsertRows();
         }
         emit countChanged();
         return stream.status() == QDataStream::Ok;
-    }
-
-    QVector<QPair<QString, QString>> text() const
-    {
-        QVector<QPair<QString, QString>> result;
-        for (const auto &c : m_chatItems)
-            result << qMakePair(c.name, c.value);
-        return result;
     }
 
 Q_SIGNALS:
@@ -467,7 +603,7 @@ Q_SIGNALS:
     void valueChanged(int index, const QString &value);
 
 private:
-
+    mutable QMutex m_mutex;
     QList<ChatItem> m_chatItems;
 };
 

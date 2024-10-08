@@ -208,5 +208,10 @@
     "version": "3.3.0",
     "notes": "* **UI Improvements**: The minimum window size now adapts to the font size. A few labels and links have been fixed. The Embeddings Device selection of \"Auto\"/\"Application default\" works again. The window icon is now set on Linux. The antenna icon now displays when the API server is listening.\n* **Single Instance**: Only one instance of GPT4All can be opened at a time. This is now enforced.\n* **Greedy Sampling**: Set temperature to zero to enable greedy sampling.\n* **API Server Changes**: The built-in API server now responds correctly to both legacy completions, and chats with message history. Also, it now uses the system prompt configured in the UI.\n* **Translation Improvements**: The Italian, Romanian, and Traditional Chinese translations have been updated.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* 3Simplex (`@3Simplex`)\n* Riccardo Giovanetti (`@Harvester62`)\n* Victor Emanuel (`@SINAPSA-IC`)\n* Dominik (`@cosmic-snow`)\n* Shiranui (`@supersonictw`)"
+  },
+  {
+    "version": "3.3.1",
+    "notes": "* Fixed a crash when attempting to continue a chat loaded from disk\n* Fixed the local server rejecting min\\_p/top\\_p less than 1\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)"
   }
 ]

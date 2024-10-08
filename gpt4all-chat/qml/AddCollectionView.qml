@@ -89,15 +89,8 @@ Rectangle {
             property alias collection: collection.text
             property alias folder_path: folderEdit.text
 
-            FolderDialog {
+            MyFolderDialog {
                 id: folderDialog
-                title: qsTr("Please choose a directory")
-            }
-
-            function openFolderDialog(currentFolder, onAccepted) {
-                folderDialog.currentFolder = currentFolder;
-                folderDialog.accepted.connect(function() { onAccepted(folderDialog.selectedFolder); });
-                folderDialog.open();
             }
 
             Label {
@@ -170,7 +163,7 @@ Rectangle {
                     id: browseButton
                     text: qsTr("Browse")
                     onClicked: {
-                        root.openFolderDialog(StandardPaths.writableLocation(StandardPaths.HomeLocation), function(selectedFolder) {
+                        folderDialog.openFolderDialog(StandardPaths.writableLocation(StandardPaths.HomeLocation), function(selectedFolder) {
                             root.folder_path = selectedFolder
                         })
                     }
