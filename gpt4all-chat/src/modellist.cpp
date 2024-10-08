@@ -1005,11 +1005,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
     if (shouldSort)
         resortModel();
 
-    // FIXME(jared): for some reason these don't update correctly when the source model changes, so we explicitly invalidate them
-    m_selectableModels->invalidate();
-    m_installedModels->invalidate();
-    m_downloadableModels->invalidate();
-
     emit selectableModelListChanged();
 }
 
