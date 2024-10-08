@@ -9,13 +9,10 @@
 
 #include <QDateTime>
 #include <QDebug>
-#include <QFile>
-#include <QList>
+#include <QMap>
 #include <QRegularExpression>
 #include <QString>
 #include <QStringList>
-#include <QStringView>
-#include <QTextStream>
 #include <QVariant>
 #include <QtGlobal>
 #include <QtLogging>
@@ -259,55 +256,4 @@ QString XLSXToMD::toMarkdown(QIODevice *xlsxDevice, bool skipEmptySheets)
     }
 
     return markdown;
-}
-
-// Example usage of the modified function
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-
-    if (argc < 2) {
-        qCritical() << "Usage:" << argv[0] << "<input.xlsx> [output.md]";
-        return -1;
-    }
-
-    QString inputFileName = argv[1];
-    QString outputFileName = (argc > 2) ? argv[2] : inputFileName.section('.', 0, -2) + ".md";
-
-    // Validate input file
-    if (!inputFileName.endsWith(u".xlsx"_s, Qt::CaseInsensitive) && !inputFileName.endsWith(u".xlsm"_s, Qt::CaseInsensitive)) {
-        qCritical() << "Input file must be an Excel file with .xlsx or .xlsm extension.";
-        return -1;
-    }
-
-    QFile xlsxFile(inputFileName);
-    if (!xlsxFile.open(QIODevice::ReadOnly)) {
-        qCritical() << "Failed to open input file:" << inputFileName;
-        return -1;
-    }
-
-    XLSXToMD converter;
-    QString markdownContent = converter.toMarkdown(&xlsxFile, true); // skipEmptySheets = true
-    xlsxFile.close();
-
-    if (markdownContent.isEmpty()) {
-        qCritical() << "No markdown content generated.";
-        return -1;
-    }
-
-    // Write output with UTF-8 encoding
-    QFile mdFile(outputFileName);
-    if (!mdFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qCritical() << "Failed to open output file:" << outputFileName;
-        return -1;
-    }
-
-    QTextStream outStream(&mdFile);
-    outStream.setCodec("UTF-8");
-    outStream << markdownContent;
-    mdFile.close();
-
-    qInfo() << "Conversion complete. Check" << outputFileName;
-
-    return 0;
 }
