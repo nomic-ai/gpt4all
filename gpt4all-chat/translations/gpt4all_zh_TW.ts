@@ -545,7 +545,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="459"/>
         <source>CPU Threads</source>
-        <translation>中央處理器（CPU）線程</translation>
+        <translation>中央處理器線程</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="460"/>
@@ -1793,7 +1793,7 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="781"/>
         <source>GPU Layers</source>
-        <translation>圖形處理器（GPU）負載層</translation>
+        <translation>圖形處理器負載層</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="782"/>
