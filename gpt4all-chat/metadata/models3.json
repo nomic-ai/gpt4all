@@ -1,6 +1,38 @@
 [
   {
     "order": "a",
+    "md5sum": "27b44e8ae1817525164ddf4f8dae8af4",
+    "name": "Llama 3.2 3B Instruct",
+    "filename": "Llama-3.2-3B-Instruct-Q4_0.gguf",
+    "filesize": "1921909280",
+    "requires": "3.4.0",
+    "ramrequired": "4",
+    "parameters": "3 billion",
+    "quant": "q4_0",
+    "type": "LLaMA3",
+    "description": "<ul><li>Fast responses</li><li>Instruct model</li><li>Multilingual dialogue use</li><li>Agentic system capable</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_2/license/\">Meta Llama 3.2 Community License</a></li></ul>",
+    "url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_0.gguf",
+    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+  },
+  {
+    "order": "b",
+    "md5sum": "48ff0243978606fdba19d899b77802fc",
+    "name": "Llama 3.2 1B Instruct",
+    "filename": "Llama-3.2-1B-Instruct-Q4_0.gguf",
+    "filesize": "773025920",
+    "requires": "3.4.0",
+    "ramrequired": "2",
+    "parameters": "1 billion",
+    "quant": "q4_0",
+    "type": "LLaMA3",
+    "description": "<ul><li>Fast responses</li><li>Instruct model</li><li>Multilingual dialogue use</li><li>Agentic system capable</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_2/license/\">Meta Llama 3.2 Community License</a></li></ul>",
+    "url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf",
+    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+  },
+  {
+    "order": "c",
     "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
     "name": "Llama 3 8B Instruct",
     "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
@@ -16,7 +48,7 @@
     "systemPrompt": ""
   },
   {
-    "order": "b",
+    "order": "d",
     "md5sum": "a5f6b4eabd3992da4d7fb7f020f921eb",
     "name": "Nous Hermes 2 Mistral DPO",
     "filename": "Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
@@ -32,7 +64,7 @@
     "systemPrompt": ""
   },
   {
-    "order": "c",
+    "order": "e",
     "md5sum": "97463be739b50525df56d33b26b00852",
     "name": "Mistral Instruct",
     "filename": "mistral-7b-instruct-v0.1.Q4_0.gguf",
@@ -48,7 +80,7 @@
     "promptTemplate": "[INST] %1 [/INST]"
   },
   {
-    "order": "d",
+    "order": "f",
     "md5sum": "8a9c75bcd8a66b7693f158ec96924eeb",
     "name": "Llama 3.1 8B Instruct 128k",
     "filename": "Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
@@ -64,7 +96,7 @@
     "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
   },
   {
-    "order": "e",
+    "order": "g",
     "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
     "name": "Mistral OpenOrca",
     "filename": "mistral-7b-openorca.gguf2.Q4_0.gguf",
@@ -80,7 +112,7 @@
     "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI.\n<|im_end|>\n"
   },
   {
-    "order": "f",
+    "order": "h",
     "md5sum": "c4c78adf744d6a20f05c8751e3961b84",
     "name": "GPT4All Falcon",
     "filename": "gpt4all-falcon-newbpe-q4_0.gguf",
@@ -96,7 +128,7 @@
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
-    "order": "g",
+    "order": "i",
     "md5sum": "00c8593ba57f5240f59662367b3ed4a5",
     "name": "Orca 2 (Medium)",
     "filename": "orca-2-7b.Q4_0.gguf",
@@ -111,7 +143,7 @@
     "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf"
   },
   {
-    "order": "h",
+    "order": "j",
     "md5sum": "3c0d63c4689b9af7baa82469a6f51a19",
     "name": "Orca 2 (Full)",
     "filename": "orca-2-13b.Q4_0.gguf",
@@ -126,7 +158,7 @@
     "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf"
   },
   {
-    "order": "i",
+    "order": "k",
     "md5sum": "5aff90007499bce5c64b1c0760c0b186",
     "name": "Wizard v1.2",
     "filename": "wizardlm-13b-v1.2.Q4_0.gguf",
@@ -141,7 +173,7 @@
     "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
   },
   {
-    "order": "j",
+    "order": "l",
     "md5sum": "31b47b4e8c1816b62684ac3ca373f9e1",
     "name": "Ghost 7B v0.9.1",
     "filename": "ghost-7b-v0.9.1-Q4_0.gguf",
@@ -157,7 +189,7 @@
     "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
   },
   {
-    "order": "k",
+    "order": "m",
     "md5sum": "3d12810391d04d1153b692626c0c6e16",
     "name": "Hermes",
     "filename": "nous-hermes-llama2-13b.Q4_0.gguf",
@@ -173,7 +205,7 @@
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
-    "order": "l",
+    "order": "n",
     "md5sum": "40388eb2f8d16bb5d08c96fdfaac6b2c",
     "name": "Snoozy",
     "filename": "gpt4all-13b-snoozy-q4_0.gguf",
@@ -188,7 +220,7 @@
     "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf"
   },
   {
-    "order": "m",
+    "order": "o",
     "md5sum": "15dcb4d7ea6de322756449c11a0b7545",
     "name": "MPT Chat",
     "filename": "mpt-7b-chat-newbpe-q4_0.gguf",
@@ -205,7 +237,7 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
   },
   {
-    "order": "n",
+    "order": "p",
     "md5sum": "ab5d8e8a2f79365ea803c1f1d0aa749d",
     "name": "MPT Chat",
     "filename": "mpt-7b-chat.gguf4.Q4_0.gguf",
@@ -221,7 +253,7 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
   },
   {
-    "order": "o",
+    "order": "q",
     "md5sum": "f8347badde9bfc2efbe89124d78ddaf5",
     "name": "Phi-3 Mini Instruct",
     "filename": "Phi-3-mini-4k-instruct.Q4_0.gguf",
@@ -237,7 +269,7 @@
     "systemPrompt": ""
   },
   {
-    "order": "p",
+    "order": "r",
     "md5sum": "0e769317b90ac30d6e09486d61fefa26",
     "name": "Mini Orca (Small)",
     "filename": "orca-mini-3b-gguf2-q4_0.gguf",
@@ -253,7 +285,7 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "q",
+    "order": "s",
     "md5sum": "c232f17e09bca4b7ee0b5b1f4107c01e",
     "disableGUI": "true",
     "name": "Replit",
@@ -270,7 +302,7 @@
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf"
   },
   {
-    "order": "r",
+    "order": "t",
     "md5sum": "70841751ccd95526d3dcfa829e11cd4c",
     "disableGUI": "true",
     "name": "Starcoder",
@@ -287,7 +319,7 @@
     "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf"
   },
   {
-    "order": "s",
+    "order": "u",
     "md5sum": "e973dd26f0ffa6e46783feaea8f08c83",
     "disableGUI": "true",
     "name": "Rift coder",
@@ -304,7 +336,7 @@
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
   },
   {
-    "order": "t",
+    "order": "v",
     "md5sum": "e479e6f38b59afc51a470d1953a6bfc7",
     "disableGUI": "true",
     "name": "SBert",
@@ -322,7 +354,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
   },
   {
-    "order": "u",
+    "order": "w",
     "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
     "name": "SBert",
     "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
@@ -338,7 +370,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
   {
-    "order": "v",
+    "order": "x",
     "md5sum": "919de4dd6f25351bcb0223790db1932d",
     "name": "EM German Mistral",
     "filename": "em_german_mistral_v01.Q4_0.gguf",
@@ -354,7 +386,7 @@
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
   },
   {
-    "order": "w",
+    "order": "y",
     "md5sum": "60ea031126f82db8ddbbfecc668315d2",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1",
@@ -371,7 +403,7 @@
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
   },
   {
-    "order": "x",
+    "order": "z",
     "md5sum": "a5401e7f7e46ed9fcaed5b60a281d547",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1.5",
@@ -388,7 +420,7 @@
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
   },
   {
-    "order": "z",
+    "order": "zzz",
     "md5sum": "a8c5a783105f87a481543d4ed7d7586d",
     "name": "Qwen2-1.5B-Instruct",
     "filename": "qwen2-1_5b-instruct-q4_0.gguf",
