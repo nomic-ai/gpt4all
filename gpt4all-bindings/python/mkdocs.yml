@@ -15,6 +15,7 @@ nav:
     - 'LocalDocs' : 'gpt4all_desktop/localdocs.md'
     - 'Settings' : 'gpt4all_desktop/settings.md'
     - 'Cookbook':
+      - 'Local AI Chat with Microsoft Excel': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-microsoft-excel.md'
       - 'Local AI Chat with your Google Drive': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-google-drive.md'
       - 'Local AI Chat with your Obsidian Vault': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-Obsidian.md'
       - 'Local AI Chat with your OneDrive': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-One-Drive.md'

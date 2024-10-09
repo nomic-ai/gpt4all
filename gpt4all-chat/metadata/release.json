@@ -213,5 +213,10 @@
     "version": "3.3.1",
     "notes": "* Fixed a crash when attempting to continue a chat loaded from disk\n* Fixed the local server rejecting min\\_p/top\\_p less than 1\n",
     "contributors": "* Jared Van Bortel (Nomic AI)"
+  },
+  {
+    "version": "3.4.0",
+    "notes": "* **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.\n* **LocalDocs Accuracy:** The LocalDocs algorithm has been enhanced to find more accurate references for some queries.\n* **Word Document Support:** LocalDocs now supports Microsoft Word (.docx) documents natively.\n  * **IMPORTANT NOTE:** If .docx files are not found, make sure Settings > LocalDocs > Allowed File Extensions includes \"docx\".\n* **Forgetful Model Fixes:** Issues with the \"Redo last chat response\" button, and with continuing chats from previous sessions, have been fixed.\n* **Chat Saving Improvements:** On exit, GPT4All will no longer save chats that are not new or modified. As a bonus, downgrading without losing access to all chats will be possible in the future, should the need arise.\n* **UI Fixes:** The model list no longer scrolls to the top when you start downloading a model.\n* **New Models:** LLama 3.2 Instruct 3B and 1B models now available in model list.",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* Ikko Eltociear Ashimine (`@eltociear`)\n* Victor Emanuel (`@SINAPSA-IC`)\n* Shiranui (`@supersonictw`)"
   }
 ]
