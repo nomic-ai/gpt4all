@@ -285,7 +285,7 @@ static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count)
     return true;
 }
 
-static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids)
 {
     QString chunk_ids_str = QString::number(chunk_ids[0]);
     for (size_t i = 1; i < chunk_ids.size(); ++i)
@@ -2322,7 +2322,7 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
     return queries;
 }
 
-QList<int> Database::searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k)
+QList<int> Database::searchBM25(const QString &query, BM25Query &bm25q, int k)
 {
     struct SearchResult { int chunkId; float score; };
     QList<BM25Query> bm25Queries = queriesForFTS5(query);
@@ -2467,7 +2467,7 @@ QList<int> Database::searchDatabase(const QString &query, const QList<QString> &
 
     const QList<int> embeddingResults = searchEmbeddings(queryEmbd, collections, k);
     BM25Query bm25q;
-    const QList<int> bm25Results = searchBM25(query, collections, bm25q, k);
+    const QList<int> bm25Results = searchBM25(query, bm25q, k);
     return reciprocalRankFusion(queryEmbd, embeddingResults, bm25Results, bm25q, k);
 }
 
@@ -2483,7 +2483,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
 
     QSqlQuery q(m_db);
-    if (!selectChunk(q, searchResults, retrievalSize)) {
+    if (!selectChunk(q, searchResults)) {
         qDebug() << "ERROR: selecting chunks:" << q.lastError();
         return;
     }

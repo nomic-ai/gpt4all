@@ -267,7 +267,7 @@ private:
         int rlength = 0;
     };
     QList<Database::BM25Query> queriesForFTS5(const QString &input);
-    QList<int> searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k);
+    QList<int> searchBM25(const QString &query, BM25Query &bm25q, int k);
     QList<int> scoreChunks(const std::vector<float> &query, const QList<int> &chunks);
     float computeBM25Weight(const BM25Query &bm25q);
     QList<int> reciprocalRankFusion(const std::vector<float> &query, const QList<int> &embeddingResults,
