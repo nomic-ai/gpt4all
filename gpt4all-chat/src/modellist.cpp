@@ -504,7 +504,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
@@ -520,12 +520,12 @@ QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
     QCryptographicHash sha256(QCryptographicHash::Sha256);
     sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
     return sha256.result().toHex();
-};
+}
 
 QString ModelList::compatibleModelFilename(QUrl baseUrl, QString modelName) {
     QString hash(compatibleModelNameHash(baseUrl, modelName));
     return QString(u"gpt4all-%1-capi.rmodel"_s).arg(hash);
-};
+}
 
 bool ModelList::eventFilter(QObject *obj, QEvent *ev)
 {
@@ -2103,7 +2103,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
     emit discoverProgressChanged();
     if (!m_discoverNumberOfResults) {
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 }
 
@@ -2180,7 +2180,7 @@ void ModelList::handleDiscoveryItemFinished()
 
     if (discoverProgress() >= 1.0) {
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 
     reply->deleteLater();

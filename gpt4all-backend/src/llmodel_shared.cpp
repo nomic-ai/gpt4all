@@ -260,7 +260,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
         cachedTokens.push_back(new_tok.value());
         cachedResponse += new_piece;
 
-        auto accept = [this, &promptCtx, &cachedTokens, &new_tok, allowContextShift]() -> bool {
+        auto accept = [this, &promptCtx, &new_tok, allowContextShift]() -> bool {
             // Shift context if out of space
             if (promptCtx.n_past >= promptCtx.n_ctx) {
                 (void)allowContextShift;

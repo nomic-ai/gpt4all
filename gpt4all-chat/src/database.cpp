@@ -296,10 +296,12 @@ static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStr
     while (q.next()) {
         QString collection = q.value(0).toString();
         IncompleteChunk ic {
-            /*embedding_model =*/ q.value(1).toString(),
-            /*chunk_id        =*/ q.value(2).toInt(),
-            /*folder_id       =*/ q.value(3).toInt(),
-            /*text            =*/ q.value(4).toString(),
+            /*EmbeddingKey*/ {
+                .embedding_model = q.value(1).toString(),
+                .chunk_id        = q.value(2).toInt(),
+            },
+            /*folder_id =*/ q.value(3).toInt(),
+            /*text      =*/ q.value(4).toString(),
         };
         chunks[ic] << collection;
     }
@@ -1659,7 +1661,7 @@ void Database::scanQueue()
         if (info.isPdf()) {
             QPdfDocument doc;
             if (doc.load(document_path) != QPdfDocument::Error::None) {
-                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;;
+                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;
                 return updateFolderToIndex(folder_id, countForFolder);
             }
             title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();

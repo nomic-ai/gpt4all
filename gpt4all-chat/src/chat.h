@@ -33,7 +33,7 @@ class Chat : public QObject
     Q_PROPERTY(ResponseState responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
-    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
+    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged)
     Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)

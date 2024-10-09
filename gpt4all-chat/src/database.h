@@ -176,7 +176,6 @@ private:
     QString                                m_author;
     QString                                m_subject;
     QString                                m_keywords;
-    bool                                   m_atStart;
 
     // working state
     QString                                m_chunk; // has a trailing space for convenience

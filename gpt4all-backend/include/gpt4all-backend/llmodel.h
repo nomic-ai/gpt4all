@@ -146,7 +146,7 @@ public:
     virtual bool supportsEmbedding() const = 0;
     virtual bool supportsCompletion() const = 0;
     virtual bool loadModel(const std::string &modelPath, int n_ctx, int ngl) = 0;
-    virtual bool isModelBlacklisted(const std::string &modelPath) const { (void)modelPath; return false; };
+    virtual bool isModelBlacklisted(const std::string &modelPath) const { (void)modelPath; return false; }
     virtual bool isEmbeddingModel(const std::string &modelPath) const { (void)modelPath; return false; }
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;

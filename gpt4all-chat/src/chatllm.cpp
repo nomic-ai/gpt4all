@@ -585,7 +585,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
 
     modelLoadProps.insert("$duration", modelLoadTimer.elapsed() / 1000.);
     return true;
-};
+}
 
 bool ChatLLM::isModelLoaded() const
 {
