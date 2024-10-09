@@ -302,10 +302,6 @@ static const QString INSERT_COLLECTION_SQL = uR"(
         returning id;
     )"_s;
 
-static const QString DELETE_COLLECTION_SQL = uR"(
-    delete from collections where name = ? and folder_id = ?;
-    )"_s;
-
 static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
     select f.id, f.path
     from collections c
@@ -364,15 +360,6 @@ static bool addCollection(QSqlQuery &q, const QString &collection_name, const QD
     item.collection = collection_name;
     item.embeddingModel = embedding_model;
     return true;
-}
-
-static bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
-{
-    if (!q.prepare(DELETE_COLLECTION_SQL))
-        return false;
-    q.addBindValue(collection_name);
-    q.addBindValue(folder_id);
-    return q.exec();
 }
 
 static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders)
@@ -507,10 +494,6 @@ static const QString GET_FOLDER_EMBEDDING_MODEL_SQL = uR"(
     where ci.folder_id = ?;
     )"_s;
 
-static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
-    select path from folders;
-    )"_s;
-
 static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
     uR"(
         delete from embeddings
@@ -582,17 +565,6 @@ static bool sqlGetFolderEmbeddingModel(QSqlQuery &q, int id, QString &embedding_
     // FIXME(jared): there may be more than one if a folder is shared between collections
     Q_ASSERT(q.size() < 2);
     embedding_model = q.value(0).toString();
-    return true;
-}
-
-static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
-{
-    if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
-        return false;
-    if (!q.exec())
-        return false;
-    while (q.next())
-        folder_paths->append(q.value(0).toString());
     return true;
 }
 

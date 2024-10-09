@@ -21,7 +21,6 @@ function(gpt4all_add_warning_options target)
         # disabled warnings
         -Wno-sign-compare
         -Wno-unused-parameter
-        -Wno-unused-function
     )
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options("${target}" PRIVATE
