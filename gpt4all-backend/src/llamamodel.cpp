@@ -511,7 +511,7 @@ size_t LLamaModel::restoreState(std::span<const uint8_t> src)
     return llama_state_set_data(d_ptr->ctx, src.data(), src.size());
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, std::string_view str, bool special)
+std::vector<LLModel::Token> LLamaModel::tokenize(std::string_view str, bool special)
 {
     bool atStart = m_tokenize_last_token == -1;
     bool insertSpace = atStart || isSpecialToken(m_tokenize_last_token);
