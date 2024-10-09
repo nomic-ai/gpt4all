@@ -147,7 +147,7 @@ public:
         if (m_serverChat)
             return;
 
-        m_serverChat = new Chat(true /*isServer*/, this);
+        m_serverChat = new Chat(Chat::server_tag, this);
         beginInsertRows(QModelIndex(), m_chats.size(), m_chats.size());
         m_chats.append(m_serverChat);
         endInsertRows();
