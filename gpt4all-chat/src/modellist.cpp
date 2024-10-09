@@ -27,6 +27,7 @@
 #include <QSettings>
 #include <QSslConfiguration>
 #include <QSslSocket>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QTextStream>
 #include <QTimer>
@@ -36,12 +37,15 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
 
 //#define USE_LOCAL_MODELSJSON
+
+#define MODELS_JSON_VERSION "3"
 
 static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmodel"_s };
 
@@ -1331,15 +1335,32 @@ void ModelList::updateModelsFromDirectory()
     }
 }
 
-#define MODELS_VERSION 3
+static QString modelsJsonFilename()
+{
+    return QStringLiteral("models" MODELS_JSON_VERSION ".json");
+}
+
+static std::optional<QFile> modelsJsonCacheFile()
+{
+    constexpr auto loc = QStandardPaths::CacheLocation;
+    QString modelsJsonFname = modelsJsonFilename();
+    if (auto path = QStandardPaths::locate(loc, modelsJsonFname); !path.isEmpty())
+        return std::make_optional<QFile>(path);
+    if (auto path = QStandardPaths::writableLocation(loc); !path.isEmpty())
+        return std::make_optional<QFile>(path);
+    return std::nullopt;
+}
 
 void ModelList::updateModelsFromJson()
 {
+    QString modelsJsonFname = modelsJsonFilename();
+
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
+
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -1358,18 +1379,15 @@ void ModelList::updateModelsFromJson()
         qWarning() << "WARNING: Could not download models.json synchronously";
         updateModelsFromJsonAsync();
 
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
-        QFile file(modelsConfig);
-        if (!file.open(QIODeviceBase::ReadOnly)) {
-            qWarning() << "ERROR: Couldn't read models config file: " << modelsConfig;
-        } else {
-            QByteArray jsonData = file.readAll();
-            file.close();
+        auto cacheFile = modelsJsonCacheFile();
+        if (!cacheFile) {
+            // no known location
+        } else if (cacheFile->open(QIODeviceBase::ReadOnly)) {
+            QByteArray jsonData = cacheFile->readAll();
+            cacheFile->close();
             parseModelsJsonFile(jsonData, false);
-        }
+        } else if (cacheFile->exists())
+            qWarning() << "ERROR: Couldn't read models.json cache file: " << cacheFile->fileName();
     }
     delete jsonReply;
 }
@@ -1378,12 +1396,14 @@ void ModelList::updateModelsFromJsonAsync()
 {
     m_asyncModelRequestOngoing = true;
     emit asyncModelRequestOngoingChanged();
+    QString modelsJsonFname = modelsJsonFilename();
 
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
+
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -1446,17 +1466,14 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     }
 
     if (save) {
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
-        QFile file(modelsConfig);
-        if (!file.open(QIODeviceBase::WriteOnly)) {
-            qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;
-        } else {
-            file.write(jsonData);
-            file.close();
-        }
+        auto cacheFile = modelsJsonCacheFile();
+        if (!cacheFile) {
+            // no known location
+        } else if (QFileInfo(*cacheFile).dir().mkpath(u"."_s) && cacheFile->open(QIODeviceBase::WriteOnly)) {
+            cacheFile->write(jsonData);
+            cacheFile->close();
+        } else
+            qWarning() << "ERROR: Couldn't write models config file: " << cacheFile->fileName();
     }
 
     QJsonArray jsonArray = document.array();
