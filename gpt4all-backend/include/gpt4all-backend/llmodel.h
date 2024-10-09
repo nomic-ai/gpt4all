@@ -213,7 +213,7 @@ public:
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special = false) = 0;
+    virtual std::vector<Token> tokenize(std::string_view str, bool special = false) = 0;
     virtual bool isSpecialToken(Token id) const = 0;
     virtual std::string tokenToString(Token id) const = 0;
     virtual void initSampler(PromptContext &ctx) = 0;
