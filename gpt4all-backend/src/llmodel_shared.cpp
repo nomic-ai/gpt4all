@@ -175,7 +175,7 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     size_t i = 0;
     while (i < embd_inp.size()) {
         size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
-        std::vector<Token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
+        std::span<const Token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
 
         // Check if the context has run out...
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
@@ -191,9 +191,9 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
 
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t) {
-            promptCtx.tokens.push_back(batch.at(t));
+            Token tok = batch[t];
+            promptCtx.tokens.push_back(tok);
             promptCtx.n_past += 1;
-            Token tok = batch.at(t);
             bool res = isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
             if (!res)
                 return false;
@@ -264,7 +264,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 
             // Accept the token
             Token tok = std::exchange(new_tok, std::nullopt).value();
-            if (!evalTokens(promptCtx, { tok })) {
+            if (!evalTokens(promptCtx, { &tok, 1 })) {
                 // TODO(jared): raise an exception
                 std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
                 return false;

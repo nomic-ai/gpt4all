@@ -59,7 +59,7 @@ protected:
     std::string tokenToString(Token id) const override;
     void initSampler(PromptContext &ctx) override;
     Token sampleToken() const override;
-    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
+    bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const override;
     void shiftContext(PromptContext &promptCtx) override;
     int32_t contextLength() const override;
     const std::vector<Token> &endTokens() const override;

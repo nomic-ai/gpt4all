@@ -127,7 +127,7 @@ protected:
 
     Token sampleToken() const override { throw std::logic_error("not implemented"); }
 
-    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override
+    bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const override
     {
         (void)ctx;
         (void)tokens;

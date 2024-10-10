@@ -594,7 +594,7 @@ LLModel::Token LLamaModel::sampleToken() const
     return llama_sampler_sample(d_ptr->sampler_chain, d_ptr->ctx, -1);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
+bool LLamaModel::evalTokens(PromptContext &ctx, std::span<const Token> tokens) const
 {
     llama_kv_cache_seq_rm(d_ptr->ctx, 0, ctx.n_past, -1);
 
