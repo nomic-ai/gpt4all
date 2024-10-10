@@ -58,11 +58,6 @@ Download::Download()
     m_startTime = QDateTime::currentDateTime();
 }
 
-static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
-{
-    return lhs.version == rhs.version;
-}
-
 std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
     static QRegularExpression versionRegex(R"(^(\d+(?:\.\d+){0,2})(-.+)?$)");

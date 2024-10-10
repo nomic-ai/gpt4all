@@ -179,6 +179,8 @@ void ChatLLM::handleForceMetalChanged(bool forceMetal)
         reloadModel();
         m_reloadingToChangeVariant = false;
     }
+#else
+    Q_UNUSED(forceMetal);
 #endif
 }
 

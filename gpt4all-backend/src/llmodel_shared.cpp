@@ -90,40 +90,32 @@ void LLModel::prompt(const std::string &prompt,
         }
     }
 
-    auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
-
     // tokenize the user prompt
     std::vector<Token> embd_inp;
     if (placeholders.empty()) {
         // this is unusual, but well-defined
         std::cerr << __func__ << ": prompt template has no placeholder\n";
-        embd_inp = tokenize(promptCtx, promptTemplate, true);
+        embd_inp = tokenize(promptTemplate, true);
     } else {
         // template: beginning of user prompt
         const auto &phUser = placeholders[0];
         std::string userPrefix(phUser.prefix());
-        if (!userPrefix.empty()) {
-            embd_inp = tokenize(promptCtx, userPrefix, true);
-            promptCtx.n_past += embd_inp.size();
-        }
+        if (!userPrefix.empty())
+            embd_inp = tokenize(userPrefix, true);
 
         // user input (shouldn't have special token processing)
-        auto tokens = tokenize(promptCtx, prompt, special);
+        auto tokens = tokenize(prompt, special);
         embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-        promptCtx.n_past += tokens.size();
 
         // template: end of user prompt + start of assistant prompt
         size_t start = phUser.position() + phUser.length();
         size_t end = placeholders.size() >= 2 ? placeholders[1].position() : promptTemplate.length();
         auto userToAsst = promptTemplate.substr(start, end - start);
         if (!userToAsst.empty()) {
-            tokens = tokenize(promptCtx, userToAsst, true);
+            tokens = tokenize(userToAsst, true);
             embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-            promptCtx.n_past += tokens.size();
         }
     }
-
-    promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
 
     // decode the user prompt
     if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
@@ -133,7 +125,7 @@ void LLModel::prompt(const std::string &prompt,
     if (!fakeReply) {
         generateResponse(responseCallback, allowContextShift, promptCtx);
     } else {
-        embd_inp = tokenize(promptCtx, *fakeReply, false);
+        embd_inp = tokenize(*fakeReply, false);
         if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp, true))
             return; // error
     }
@@ -148,7 +140,7 @@ void LLModel::prompt(const std::string &prompt,
         asstSuffix = "\n\n"; // default to a blank link, good for e.g. Alpaca
     }
     if (!asstSuffix.empty()) {
-        embd_inp = tokenize(promptCtx, asstSuffix, true);
+        embd_inp = tokenize(asstSuffix, true);
         decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp);
     }
 }

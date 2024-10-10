@@ -738,7 +738,7 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     case Java:
         rules = javaHighlightingRules(); break;
     case Go:
-        rules = javaHighlightingRules(); break;
+        rules = goHighlightingRules(); break;
     case Json:
         rules = jsonHighlightingRules(); break;
     case Latex:
@@ -967,8 +967,6 @@ void ChatViewTextProcessor::handleCodeBlocks()
         cursor.setPosition(matchesCode[index].capturedEnd(), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
 
-        int startPos = cursor.position();
-
         QTextFrameFormat frameFormat = frameFormatBase;
         QString capturedText = matchesCode[index].captured(1);
         QString codeLanguage;
@@ -1004,7 +1002,7 @@ void ChatViewTextProcessor::handleCodeBlocks()
         QTextFrame *mainFrame = cursor.currentFrame();
         cursor.setCharFormat(textFormat);
 
-        QTextFrame *frame = cursor.insertFrame(frameFormat);
+        cursor.insertFrame(frameFormat);
         QTextTable *table = cursor.insertTable(codeLanguage.isEmpty() ? 1 : 2, 1, tableFormat);
 
         if (!codeLanguage.isEmpty()) {
@@ -1016,7 +1014,6 @@ void ChatViewTextProcessor::handleCodeBlocks()
             headerCursor.insertText(codeLanguage);
             QTextTableCell copy = headerTable->cellAt(0, 1);
             QTextCursor copyCursor = copy.firstCursorPosition();
-            int startPos = copyCursor.position();
             CodeCopy newCopy;
             newCopy.text = lines.join("\n");
             newCopy.startPos = copyCursor.position();
