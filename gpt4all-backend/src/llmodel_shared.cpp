@@ -90,8 +90,6 @@ void LLModel::prompt(const std::string &prompt,
         }
     }
 
-    auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
-
     // tokenize the user prompt
     std::vector<Token> embd_inp;
     if (placeholders.empty()) {
@@ -102,15 +100,12 @@ void LLModel::prompt(const std::string &prompt,
         // template: beginning of user prompt
         const auto &phUser = placeholders[0];
         std::string userPrefix(phUser.prefix());
-        if (!userPrefix.empty()) {
+        if (!userPrefix.empty())
             embd_inp = tokenize(userPrefix, true);
-            promptCtx.n_past += embd_inp.size();
-        }
 
         // user input (shouldn't have special token processing)
         auto tokens = tokenize(prompt, special);
         embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-        promptCtx.n_past += tokens.size();
 
         // template: end of user prompt + start of assistant prompt
         size_t start = phUser.position() + phUser.length();
@@ -119,11 +114,8 @@ void LLModel::prompt(const std::string &prompt,
         if (!userToAsst.empty()) {
             tokens = tokenize(userToAsst, true);
             embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-            promptCtx.n_past += tokens.size();
         }
     }
-
-    promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
 
     // decode the user prompt
     if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
