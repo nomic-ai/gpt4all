@@ -666,17 +666,29 @@ void LLamaModel::setTokenizeInputPosition(int32_t pos)
     m_tokenize_last_token = pos ? d_ptr->inputTokens.at(size_t(pos) - 1) : -1; // not serialized
 }
 
-void LLamaModel::setModelInputPosition(int32_t pos)
+auto LLamaModel::computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
+    -> std::vector<Token>::const_iterator
 {
-    assert(pos >= 0);
-    if (size_t(pos) > d_ptr->inputTokens.size()) {
+    assert(ctx.n_past >= 0);
+    auto pos = size_t(ctx.n_past);
+    if (pos > d_ptr->inputTokens.size()) {
         std::ostringstream ss;
         ss << "n_past=" << pos << " is past end of token cache length=" << d_ptr->inputTokens.size();
         throw std::out_of_range(ss.str());
     }
 
-    if (size_t(pos) < d_ptr->inputTokens.size())
-        d_ptr->inputTokens.resize(size_t(pos));
+    // find common prefix
+    auto cacheIt = d_ptr->inputTokens.begin();
+    auto inputIt = input.begin();
+    while (cacheIt < d_ptr->inputTokens.end() && inputIt < input.end() && *cacheIt == *inputIt) {
+        ++cacheIt; ++inputIt; ++pos;
+    }
+    // truncate token cache to end at n_past
+    if (pos < d_ptr->inputTokens.size())
+        d_ptr->inputTokens.resize(pos);
+    // tell the caller to ignore the tokens between [begin, inputIt)
+    ctx.n_past = int32_t(pos);
+    return inputIt;
 }
 
 void LLamaModel::appendInputToken(PromptContext &ctx, Token tok)

@@ -87,7 +87,6 @@ void LLModel::prompt(const std::string &prompt,
     }
 
     setTokenizeInputPosition(promptCtx.n_past);
-    setModelInputPosition(promptCtx.n_past);
 
     // tokenize the user prompt
     std::vector<Token> embd_inp;
@@ -169,8 +168,13 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         return false;
     }
 
+    // Find the greatest n_past where the beginning of embd_inp matches the end of the token cache, starting at the
+    // requested n_past.
+    // This is used to skip unnecessary work when the prompt shares a common prefix with the previous result.
+    auto embd_inp_start = computeModelInputPosition(promptCtx, embd_inp);
+    size_t i = embd_inp_start - embd_inp.begin();
+
     // process the prompt in batches
-    size_t i = 0;
     while (i < embd_inp.size()) {
         size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
         std::span<const Token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
@@ -367,7 +371,6 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 #endif
 
     promptCtx.n_past -= cachedTokens.size();
-    setModelInputPosition(promptCtx.n_past);
 }
 
 void LLModel::embed(

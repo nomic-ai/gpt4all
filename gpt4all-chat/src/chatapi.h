@@ -150,8 +150,9 @@ protected:
     { Q_UNUSED(pos); throwNotImplemented(); }
 
     [[noreturn]]
-    void setModelInputPosition(int32_t pos) override
-    { Q_UNUSED(pos); throwNotImplemented(); }
+    auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
+        -> std::vector<Token>::const_iterator override
+    { Q_UNUSED(ctx); Q_UNUSED(input); throwNotImplemented(); }
 
     [[noreturn]]
     void appendInputToken(PromptContext &ctx, Token tok) override

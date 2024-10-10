@@ -60,7 +60,8 @@ protected:
     void shiftContext(PromptContext &promptCtx) override;
     int32_t inputLength() const override;
     void setTokenizeInputPosition(int32_t pos) override;
-    void setModelInputPosition(int32_t pos) override;
+    auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
+        -> std::vector<Token>::const_iterator override;
     void appendInputToken(PromptContext &ctx, Token tok) override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;
