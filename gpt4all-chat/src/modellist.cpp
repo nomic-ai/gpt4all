@@ -1347,7 +1347,7 @@ static std::optional<QFile> modelsJsonCacheFile()
     if (auto path = QStandardPaths::locate(loc, modelsJsonFname); !path.isEmpty())
         return std::make_optional<QFile>(path);
     if (auto path = QStandardPaths::writableLocation(loc); !path.isEmpty())
-        return std::make_optional<QFile>(path);
+        return std::make_optional<QFile>(u"%1/%2"_s.arg(path, modelsJsonFname));
     return std::nullopt;
 }
 
