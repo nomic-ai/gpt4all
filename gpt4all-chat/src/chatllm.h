@@ -9,7 +9,7 @@
 #include <QByteArray>
 #include <QElapsedTimer>
 #include <QFileInfo>
-#include <QList>
+#include <QList>      // IWYU pragma: keep
 #include <QObject>
 #include <QPointer>
 #include <QString>

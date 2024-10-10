@@ -14,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <span>
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;

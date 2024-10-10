@@ -3,7 +3,7 @@
 
 #include <gpt4all-backend/llmodel.h>
 
-#include <QByteArray>
+#include <QByteArray> // IWYU pragma: keep
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
@@ -13,6 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
