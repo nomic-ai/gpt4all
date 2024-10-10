@@ -96,6 +96,10 @@ public:
 
     bool callResponse(int32_t token, const std::string &string);
 
+    [[noreturn]]
+    int32_t contextLength() const override
+    { throwNotImplemented(); }
+
 Q_SIGNALS:
     void request(const QString &apiKey,
                  LLModel::PromptContext *ctx,
@@ -138,8 +142,20 @@ protected:
     { Q_UNUSED(promptCtx); throwNotImplemented(); }
 
     [[noreturn]]
-    int32_t contextLength() const override
+    int32_t inputLength() const override
     { throwNotImplemented(); }
+
+    [[noreturn]]
+    void setTokenizeInputPosition(int32_t pos) override
+    { Q_UNUSED(pos); throwNotImplemented(); }
+
+    [[noreturn]]
+    void setModelInputPosition(int32_t pos) override
+    { Q_UNUSED(pos); throwNotImplemented(); }
+
+    [[noreturn]]
+    void appendInputToken(PromptContext &ctx, Token tok) override
+    { Q_UNUSED(ctx); Q_UNUSED(tok); throwNotImplemented(); }
 
     [[noreturn]]
     const std::vector<Token> &endTokens() const override
@@ -147,6 +163,10 @@ protected:
 
     [[noreturn]]
     bool shouldAddBOS() const override
+    { throwNotImplemented(); }
+
+    [[noreturn]]
+    std::span<const Token> inputTokens() const override
     { throwNotImplemented(); }
 
 private:

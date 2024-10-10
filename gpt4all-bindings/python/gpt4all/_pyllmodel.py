@@ -116,10 +116,7 @@ llmodel = load_llmodel_library()
 
 class LLModelPromptContext(ctypes.Structure):
     _fields_ = [
-        ("tokens", ctypes.POINTER(ctypes.c_int32)),
-        ("tokens_size", ctypes.c_size_t),
         ("n_past", ctypes.c_int32),
-        ("n_ctx", ctypes.c_int32),
         ("n_predict", ctypes.c_int32),
         ("top_k", ctypes.c_int32),
         ("top_p", ctypes.c_float),
@@ -395,7 +392,6 @@ class LLModel:
             context = LLModelPromptContext(
                 tokens_size=0,
                 n_past=0,
-                n_ctx=0,
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,

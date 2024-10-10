@@ -11,10 +11,15 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <vector>
 #include <span>
+
+namespace ranges = std::ranges;
+
+static_assert(sizeof(token_t) == sizeof(LLModel::Token));
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;
@@ -86,22 +91,40 @@ bool llmodel_isModelLoaded(llmodel_model model)
     return wrapper->llModel->isModelLoaded();
 }
 
-uint64_t llmodel_get_state_size(llmodel_model model)
+uint64_t llmodel_state_get_size(llmodel_model model)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
     return wrapper->llModel->stateSize();
 }
 
-uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest, uint64_t size)
+uint64_t llmodel_state_get_data(llmodel_model model, uint8_t *state_out, uint64_t state_size,
+                                token_t **input_tokens_out, uint64_t *n_input_tokens)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    return wrapper->llModel->saveState({dest, size_t(size)});
+    std::vector<LLModel::Token> inputTokens;
+    auto bytesWritten = wrapper->llModel->saveState({state_out, size_t(state_size)}, inputTokens);
+    if (bytesWritten) {
+        auto *buf = new LLModel::Token[inputTokens.size()];
+        ranges::copy(inputTokens, buf);
+        *input_tokens_out = buf;
+        *n_input_tokens = uint64_t(inputTokens.size());
+    } else {
+        *input_tokens_out = nullptr;
+        *n_input_tokens = 0;
+    }
+    return bytesWritten;
 }
 
-uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src, uint64_t size)
+void llmodel_state_free_input_tokens(LLModel::Token *input_tokens)
+{
+    delete[] input_tokens;
+}
+
+uint64_t llmodel_state_set_data(llmodel_model model, const uint8_t *state, uint64_t state_size,
+                                const token_t *input_tokens, uint64_t n_input_tokens)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    return wrapper->llModel->restoreState({src, size_t(size)});
+    return wrapper->llModel->restoreState({state, size_t(state_size)}, {input_tokens, size_t(n_input_tokens)});
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
@@ -121,7 +144,6 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
-    wrapper->promptContext.n_ctx = ctx->n_ctx;
     wrapper->promptContext.n_predict = ctx->n_predict;
     wrapper->promptContext.top_k = ctx->top_k;
     wrapper->promptContext.top_p = ctx->top_p;
@@ -137,14 +159,8 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                              wrapper->promptContext, special,
                              fake_reply ? std::make_optional<std::string_view>(fake_reply) : std::nullopt);
 
-    // Update the C context by giving access to the wrappers raw pointers to std::vector data
-    // which involves no copies
-    ctx->tokens = wrapper->promptContext.tokens.data();
-    ctx->tokens_size = wrapper->promptContext.tokens.size();
-
     // Update the rest of the C prompt context
     ctx->n_past = wrapper->promptContext.n_past;
-    ctx->n_ctx = wrapper->promptContext.n_ctx;
     ctx->n_predict = wrapper->promptContext.n_predict;
     ctx->top_k = wrapper->promptContext.top_k;
     ctx->top_p = wrapper->promptContext.top_p;

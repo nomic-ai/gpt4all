@@ -22,6 +22,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -277,6 +278,8 @@ private:
     ModelInfo m_modelInfo;
     TokenTimer *m_timer;
     QByteArray m_state;
+    std::vector<LLModel::Token> m_stateInputTokens;
+    int32_t m_stateContextLength = -1;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;

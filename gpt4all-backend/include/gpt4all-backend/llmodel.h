@@ -124,9 +124,7 @@ public:
     };
 
     struct PromptContext {
-        std::vector<int32_t> tokens;    // current tokens in the context window
         int32_t n_past = 0;             // number of tokens in past conversation
-        int32_t n_ctx = 0;              // number of tokens possible in context window
         int32_t n_predict = 200;
         int32_t top_k = 40;
         float   top_p = 0.9f;
@@ -151,8 +149,8 @@ public:
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;
     virtual size_t stateSize() const = 0;
-    virtual size_t saveState(std::span<uint8_t> dest) const = 0;
-    virtual size_t restoreState(std::span<const uint8_t> src) = 0;
+    virtual size_t saveState(std::span<uint8_t> stateOut, std::vector<Token> &inputTokensOut) const = 0;
+    virtual size_t restoreState(std::span<const uint8_t> state, std::span<const Token> inputTokens) = 0;
 
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
@@ -210,6 +208,8 @@ public:
 
     void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
 
+    virtual int32_t contextLength() const = 0;
+
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
@@ -220,7 +220,10 @@ protected:
     virtual Token sampleToken() const = 0;
     virtual bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const = 0;
     virtual void shiftContext(PromptContext &promptCtx) = 0;
-    virtual int32_t contextLength() const = 0;
+    virtual int32_t inputLength() const = 0;
+    virtual void setTokenizeInputPosition(int32_t pos) = 0;
+    virtual void setModelInputPosition(int32_t pos) = 0;
+    virtual void appendInputToken(PromptContext &ctx, Token tok) = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;
 
@@ -257,6 +260,10 @@ protected:
                           bool allowContextShift,
                           PromptContext &promptCtx);
 
+    // Use only for testing and debugging. Throws if the backend was built with -DNDEBUG.
+    virtual std::span<const Token> inputTokens() const = 0;
+
+protected:
     Token m_tokenize_last_token = -1; // not serialized
 
     friend class LLMImplementation;
