@@ -1340,7 +1340,7 @@ ChunkStreamer::Status ChunkStreamer::step()
             }
         }
 
-        if (!word || m_chunk.length() >= maxChunkSize + 1) { // +1 for leading space
+        if (!word || m_chunk.length() >= maxChunkSize + 1) { // +1 for trailing space
             if (!m_chunk.isEmpty()) {
                 int nThisChunkWords = 0;
                 auto chunk = m_chunk; // copy
@@ -1348,34 +1348,43 @@ ChunkStreamer::Status ChunkStreamer::step()
                 // handle overlength chunks
                 if (m_chunk.length() > maxChunkSize + 1) {
                     // find the final space
-                    qsizetype lastSpace = chunk.lastIndexOf(u' ', -2);
+                    qsizetype chunkEnd = chunk.lastIndexOf(u' ', -2);
 
-                    if (lastSpace < 0) {
+                    qsizetype spaceSize;
+                    if (chunkEnd >= 0) {
                         // slice off the last word
+                        spaceSize = 1;
                         Q_ASSERT(m_nChunkWords >= 1);
-                        lastSpace = maxChunkSize;
+                        // one word left
                         nThisChunkWords = m_nChunkWords - 1;
                         m_nChunkWords = 1;
                     } else {
                         // slice the overlong word
+                        spaceSize = 0;
+                        chunkEnd = maxChunkSize;
+                        // partial word left, don't count it
                         nThisChunkWords = m_nChunkWords;
                         m_nChunkWords = 0;
                     }
-                    // save the extra part
-                    m_chunk = chunk.sliced(lastSpace + 1);
-                    // slice
-                    chunk.truncate(lastSpace + 1);
-                    Q_ASSERT(chunk.length() <= maxChunkSize + 1);
+                    // save the second part, excluding space if any
+                    m_chunk = chunk.sliced(chunkEnd + spaceSize);
+                    // consume the first part
+                    chunk.truncate(chunkEnd);
                 } else {
                     nThisChunkWords = m_nChunkWords;
                     m_nChunkWords = 0;
+                    // there is no second part
+                    m_chunk.clear();
+                    // consume the whole chunk, excluding space
+                    chunk.chop(1);
                 }
+                Q_ASSERT(chunk.length() <= maxChunkSize);
 
                 QSqlQuery q(m_database->m_db);
                 int chunkId = 0;
                 if (!addChunk(q,
                     m_documentId,
-                    chunk.chopped(1), // strip trailing space
+                    chunk,
                     m_reader->doc().file.canonicalFilePath(),
                     m_title,
                     m_author,
@@ -1399,8 +1408,6 @@ ChunkStreamer::Status ChunkStreamer::step()
                 toEmbed.chunk = chunk;
                 m_database->appendChunk(toEmbed);
                 ++nChunks;
-
-                m_chunk.clear();
             }
 
             if (!word) {
