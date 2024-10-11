@@ -32,6 +32,7 @@
 #include <stdexcept>
 
 using namespace Qt::Literals::StringLiterals;
+namespace ranges = std::ranges;
 namespace us = unum::usearch;
 
 //#define DEBUG
@@ -1336,6 +1337,16 @@ void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const Q
     }
 }
 
+std::optional<DocumentInfo::key_type> ChunkStreamer::currentDocKey() const
+{
+    return m_docKey;
+}
+
+void ChunkStreamer::reset()
+{
+    m_docKey.reset();
+}
+
 ChunkStreamer::Status ChunkStreamer::step()
 {
     // TODO: implement line_from/line_to
@@ -1348,8 +1359,10 @@ ChunkStreamer::Status ChunkStreamer::step()
     Status retval;
 
     for (;;) {
-        if (auto error = m_reader->getError())
+        if (auto error = m_reader->getError()) {
+            m_docKey.reset(); // done processing
             return *error;
+        }
         if (m_database->scanQueueInterrupted()) {
             retval = Status::INTERRUPTED;
             break;
@@ -1442,6 +1455,7 @@ ChunkStreamer::Status ChunkStreamer::step()
 
             if (!word) {
                 retval = Status::DOC_COMPLETE;
+                m_docKey.reset(); // done processing
                 break;
             }
         }
@@ -1569,8 +1583,14 @@ DocumentInfo Database::dequeueDocument()
 
 void Database::removeFolderFromDocumentQueue(int folder_id)
 {
-    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
-        m_docsToScan.erase(it);
+    if (auto queueIt = m_docsToScan.find(folder_id); queueIt != m_docsToScan.end()) {
+        if (auto key = m_chunkStreamer.currentDocKey()) {
+            if (ranges::any_of(queueIt->second, [&key](auto &d) { return d.key() == key; }))
+                m_chunkStreamer.reset(); // done with this document
+        }
+        // remove folder from queue
+        m_docsToScan.erase(queueIt);
+    }
 }
 
 void Database::enqueueDocumentInternal(DocumentInfo &&info, bool prepend)

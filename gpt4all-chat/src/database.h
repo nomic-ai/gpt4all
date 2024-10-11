@@ -163,6 +163,8 @@ public:
 
     void setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel, const QString &title,
                      const QString &author, const QString &subject, const QString &keywords);
+    std::optional<DocumentInfo::key_type> currentDocKey() const;
+    void reset();
 
     Status step();
 
