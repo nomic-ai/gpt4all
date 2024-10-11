@@ -1135,7 +1135,7 @@ private:
     {
         QString word;
         do {
-            while (!m_stream || m_stream->atEnd()) {
+            while (!m_stream || m_stream->atEnd() || m_stream->status() != QTextStream::Ok) {
                 if (m_currentPage >= m_doc.pageCount())
                     return std::nullopt;
                 m_pageText = m_doc.getAllText(m_currentPage++).text();
@@ -1246,7 +1246,7 @@ public:
 protected:
     std::optional<QString> advance() override
     {
-        while (!m_stream.atEnd()) {
+        while (!m_stream.atEnd() && m_stream.status() == QTextStream::Ok) {
             QString word;
             m_stream >> word;
             if (!word.isEmpty())
