@@ -1,5 +1,13 @@
 ## Latest News
 
+<br/>
+
+**UPDATE:** We are aware of problems with LocalDocs in v3.4.0 including hangs and missing words in references. We are working on a fix.
+
+---
+
+<br/>
+
 GPT4All v3.4.0 was released on October 8th. Changes include:
 
 * **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.
