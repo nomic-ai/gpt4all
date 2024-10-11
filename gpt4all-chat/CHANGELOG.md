@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - Fix models.json cache location ([#3052](https://github.com/nomic-ai/gpt4all/pull/3052))
 - Fix LocalDocs regressions caused by docx change ([#3079](https://github.com/nomic-ai/gpt4all/pull/3079))
+- Fix Go code being highlighted as Java ([#3080](https://github.com/nomic-ai/gpt4all/pull/3080))
 
 ## [3.4.0] - 2024-10-08
 
