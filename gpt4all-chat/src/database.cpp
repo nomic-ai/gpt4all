@@ -175,6 +175,14 @@ static const QString INSERT_CHUNK_FTS_SQL = uR"(
             values(?, ?, ?, ?, ?, ?, ?);
 )"_s;
 
+static const QString SELECT_CHUNKED_DOCUMENTS_SQL[] = {
+    uR"(
+        select distinct document_id from chunks;
+    )"_s, uR"(
+        select distinct document_id from chunks_fts;
+    )"_s,
+};
+
 static const QString DELETE_CHUNKS_SQL[] = {
     uR"(
         delete from embeddings
@@ -229,53 +237,6 @@ static const QString SELECT_CHUNKS_FTS_SQL = uR"(
     where chunks_fts match ?
     order by score limit %1;
 )"_s;
-
-static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
-                     const QString &title, const QString &author, const QString &subject, const QString &keywords,
-                     int page, int from, int to, int words, int *chunk_id)
-{
-    if (!q.prepare(INSERT_CHUNK_SQL))
-        return false;
-    q.addBindValue(document_id);
-    q.addBindValue(chunk_text);
-    q.addBindValue(file);
-    q.addBindValue(title);
-    q.addBindValue(author);
-    q.addBindValue(subject);
-    q.addBindValue(keywords);
-    q.addBindValue(page);
-    q.addBindValue(from);
-    q.addBindValue(to);
-    q.addBindValue(words);
-    if (!q.exec() || !q.next())
-        return false;
-    *chunk_id = q.value(0).toInt();
-
-    if (!q.prepare(INSERT_CHUNK_FTS_SQL))
-        return false;
-    q.addBindValue(document_id);
-    q.addBindValue(chunk_text);
-    q.addBindValue(file);
-    q.addBindValue(title);
-    q.addBindValue(author);
-    q.addBindValue(subject);
-    q.addBindValue(keywords);
-    if (!q.exec())
-        return false;
-    return true;
-}
-
-static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
-{
-    for (const auto &cmd: DELETE_CHUNKS_SQL) {
-        if (!q.prepare(cmd))
-            return false;
-        q.addBindValue(document_id);
-        if (!q.exec())
-            return false;
-    }
-    return true;
-}
 
 #define NAMED_PAIR(name, typea, a, typeb, b) \
     struct name { typea a; typeb b; }; \
@@ -634,18 +595,6 @@ static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
     return true;
 }
 
-static bool sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path)
-{
-    for (const auto &cmd: FOLDER_REMOVE_ALL_DOCS_SQL) {
-        if (!q.prepare(cmd))
-            return false;
-        q.addBindValue(path);
-        if (!q.exec())
-            return false;
-    }
-    return true;
-}
-
 static const QString INSERT_COLLECTION_ITEM_SQL = uR"(
     insert into collection_items(collection_id, folder_id)
     values(?, ?)
@@ -887,6 +836,79 @@ void Database::rollback()
 {
     bool ok = m_db.rollback();
     Q_ASSERT(ok);
+}
+
+bool Database::refreshDocumentIdCache(QSqlQuery &q)
+{
+    m_documentIdCache.clear();
+    for (const auto &cmd: SELECT_CHUNKED_DOCUMENTS_SQL) {
+        if (!q.exec(cmd))
+            return false;
+        while (q.next())
+            m_documentIdCache << q.value(0).toInt();
+    }
+    return true;
+}
+
+bool Database::addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
+                        const QString &title, const QString &author, const QString &subject, const QString &keywords,
+                        int page, int from, int to, int words, int *chunk_id)
+{
+    if (!q.prepare(INSERT_CHUNK_SQL))
+        return false;
+    q.addBindValue(document_id);
+    q.addBindValue(chunk_text);
+    q.addBindValue(file);
+    q.addBindValue(title);
+    q.addBindValue(author);
+    q.addBindValue(subject);
+    q.addBindValue(keywords);
+    q.addBindValue(page);
+    q.addBindValue(from);
+    q.addBindValue(to);
+    q.addBindValue(words);
+    if (!q.exec() || !q.next())
+        return false;
+    *chunk_id = q.value(0).toInt();
+
+    if (!q.prepare(INSERT_CHUNK_FTS_SQL))
+        return false;
+    q.addBindValue(document_id);
+    q.addBindValue(chunk_text);
+    q.addBindValue(file);
+    q.addBindValue(title);
+    q.addBindValue(author);
+    q.addBindValue(subject);
+    q.addBindValue(keywords);
+    if (!q.exec())
+        return false;
+    m_documentIdCache << document_id;
+    return true;
+}
+
+bool Database::removeChunksByDocumentId(QSqlQuery &q, int document_id)
+{
+    for (const auto &cmd: DELETE_CHUNKS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(document_id);
+        if (!q.exec())
+            return false;
+    }
+    m_documentIdCache.remove(document_id);
+    return true;
+}
+
+bool Database::sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path)
+{
+    for (const auto &cmd: FOLDER_REMOVE_ALL_DOCS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(path);
+        if (!q.exec())
+            return false;
+    }
+    return refreshDocumentIdCache(q);
 }
 
 bool Database::hasContent()
@@ -1306,9 +1328,11 @@ void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const Q
         m_page = 0;
 
         // make sure the document doesn't already have any chunks
-        QSqlQuery q(m_database->m_db);
-        if (!removeChunksByDocumentId(q, documentId))
-            handleDocumentError("ERROR: Cannot remove chunks of document", documentId, doc.file.canonicalPath(), q.lastError());
+        if (m_database->m_documentIdCache.contains(documentId)) {
+            QSqlQuery q(m_database->m_db);
+            if (!m_database->removeChunksByDocumentId(q, documentId))
+                handleDocumentError("ERROR: Cannot remove chunks of document", documentId, doc.file.canonicalPath(), q.lastError());
+        }
     }
 }
 
@@ -1388,7 +1412,7 @@ ChunkStreamer::Status ChunkStreamer::step()
 
                 QSqlQuery q(m_database->m_db);
                 int chunkId = 0;
-                if (!addChunk(q,
+                if (!m_database->addChunk(q,
                     m_documentId,
                     chunk,
                     m_reader->doc().file.fileName(), // basename
@@ -1771,7 +1795,12 @@ void Database::start()
         m_databaseValid = false;
     } else {
         cleanDB();
-        addCurrentFolders();
+        QSqlQuery q(m_db);
+        if (!refreshDocumentIdCache(q)) {
+            m_databaseValid = false;
+        } else {
+            addCurrentFolders();
+        }
     }
 
     if (!m_databaseValid)

@@ -224,6 +224,12 @@ private:
     void commit();
     void rollback();
 
+    bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
+                  const QString &title, const QString &author, const QString &subject, const QString &keywords,
+                  int page, int from, int to, int words, int *chunk_id);
+    bool refreshDocumentIdCache(QSqlQuery &q);
+    bool removeChunksByDocumentId(QSqlQuery &q, int document_id);
+    bool sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path);
     bool hasContent();
     // not found -> 0, , exists and has content -> 1, error -> -1
     int openDatabase(const QString &modelPath, bool create = true, int ver = LOCALDOCS_VERSION);
@@ -293,6 +299,7 @@ private:
     QHash<int, CollectionItem> m_collectionMap; // used only for tracking indexing/embedding progress
     std::atomic<bool> m_databaseValid;
     ChunkStreamer m_chunkStreamer;
+    QSet<int> m_documentIdCache; // cached list of documents with chunks for fast lookup
 
     friend class ChunkStreamer;
 };
