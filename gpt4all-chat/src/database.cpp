@@ -1246,9 +1246,13 @@ public:
 protected:
     std::optional<QString> advance() override
     {
+        if (getError())
+            return std::nullopt;
         while (!m_stream.atEnd()) {
             QString word;
             m_stream >> word;
+            if (getError())
+                return std::nullopt;
             if (!word.isEmpty())
                 return word;
         }
@@ -1257,9 +1261,11 @@ protected:
 
     std::optional<ChunkStreamer::Status> getError() const override
     {
-        if (!m_file.error())
-            return std::nullopt;
-        return m_file.binarySeen() ? ChunkStreamer::Status::BINARY_SEEN : ChunkStreamer::Status::ERROR;
+        if (m_file.binarySeen())
+            return ChunkStreamer::Status::BINARY_SEEN;
+        if (m_file.error())
+            return ChunkStreamer::Status::ERROR;
+        return std::nullopt;
     }
 
     BinaryDetectingFile m_file;
