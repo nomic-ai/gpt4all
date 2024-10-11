@@ -1385,7 +1385,7 @@ ChunkStreamer::Status ChunkStreamer::step()
                 if (!addChunk(q,
                     m_documentId,
                     chunk,
-                    m_reader->doc().file.canonicalFilePath(),
+                    m_reader->doc().file.fileName(), // basename
                     m_title,
                     m_author,
                     m_subject,
