@@ -738,7 +738,7 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     case Java:
         rules = javaHighlightingRules(); break;
     case Go:
-        rules = javaHighlightingRules(); break;
+        rules = goHighlightingRules(); break;
     case Json:
         rules = jsonHighlightingRules(); break;
     case Latex:
