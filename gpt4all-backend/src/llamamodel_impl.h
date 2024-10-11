@@ -7,6 +7,7 @@
 #include "llmodel.h"
 
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -27,8 +28,8 @@ public:
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
     size_t stateSize() const override;
-    size_t saveState(uint8_t *dest) const override;
-    size_t restoreState(const uint8_t *src) override;
+    size_t saveState(std::span<uint8_t> dest) const override;
+    size_t restoreState(std::span<const uint8_t> src) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
     std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired = 0) const override;
@@ -56,7 +57,8 @@ protected:
     std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special) override;
     bool isSpecialToken(Token id) const override;
     std::string tokenToString(Token id) const override;
-    Token sampleToken(PromptContext &ctx) const override;
+    void initSampler(PromptContext &ctx) override;
+    Token sampleToken() const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     void shiftContext(PromptContext &promptCtx) override;
     int32_t contextLength() const override;

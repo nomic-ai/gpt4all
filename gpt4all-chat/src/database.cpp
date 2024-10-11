@@ -1,13 +1,15 @@
 #include "database.h"
 
 #include "mysettings.h"
+#include "utils.h"
 
+#include <duckx/duckx.hpp>
+#include <fmt/format.h>
 #include <usearch/index_plugins.hpp>
 
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QIODevice>
@@ -18,18 +20,19 @@
 #include <QSqlQuery>
 #include <QTextStream>
 #include <QTimer>
+#include <QMap>
+#include <QUtf8StringView>
 #include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <algorithm>
 #include <cmath>
 #include <optional>
-#include <utility>
-#include <vector>
+#include <stdexcept>
 
 using namespace Qt::Literals::StringLiterals;
+namespace ranges = std::ranges;
 namespace us = unum::usearch;
 
 //#define DEBUG
@@ -104,6 +107,20 @@ static const QString INIT_DB_SQL[] = {
             foreign key(document_id) references documents(id)
         );
     )"_s, uR"(
+        create virtual table chunks_fts using fts5(
+            id unindexed,
+            document_id unindexed,
+            chunk_text,
+            file,
+            title,
+            author,
+            subject,
+            keywords,
+            content='chunks',
+            content_rowid='id',
+            tokenize='porter'
+        );
+    )"_s, uR"(
         create table collections(
             id                  integer primary key,
             name                text unique not null,
@@ -151,7 +168,21 @@ static const QString INSERT_CHUNK_SQL = uR"(
         file, title, author, subject, keywords, page, line_from, line_to, words)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         returning id;
-    )"_s;
+)"_s;
+
+static const QString INSERT_CHUNK_FTS_SQL = uR"(
+        insert into chunks_fts(document_id, chunk_text,
+            file, title, author, subject, keywords)
+            values(?, ?, ?, ?, ?, ?, ?);
+)"_s;
+
+static const QString SELECT_CHUNKED_DOCUMENTS_SQL[] = {
+    uR"(
+        select distinct document_id from chunks;
+    )"_s, uR"(
+        select distinct document_id from chunks_fts;
+    )"_s,
+};
 
 static const QString DELETE_CHUNKS_SQL[] = {
     uR"(
@@ -161,12 +192,14 @@ static const QString DELETE_CHUNKS_SQL[] = {
         );
     )"_s, uR"(
         delete from chunks where document_id = ?;
+    )"_s, uR"(
+        delete from chunks_fts where document_id = ?;
     )"_s,
 };
 
 static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
     select id from chunks WHERE document_id = ?;
-    )"_s;
+)"_s;
 
 static const QString SELECT_CHUNKS_SQL = uR"(
     select c.id, d.document_time, d.document_path, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to, co.name
@@ -190,49 +223,21 @@ static const QString SELECT_UNCOMPLETED_CHUNKS_SQL = uR"(
         from embeddings e
         where e.chunk_id = c.id and e.model = co.embedding_model
     );
-    )"_s;
+)"_s;
 
 static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
     select count(c.id)
     from chunks c
     join documents d on d.id = c.document_id
     where d.folder_id = ?;
-    )"_s;
+)"_s;
 
-static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
-                     const QString &title, const QString &author, const QString &subject, const QString &keywords,
-                     int page, int from, int to, int words, int *chunk_id)
-{
-    if (!q.prepare(INSERT_CHUNK_SQL))
-        return false;
-    q.addBindValue(document_id);
-    q.addBindValue(chunk_text);
-    q.addBindValue(file);
-    q.addBindValue(title);
-    q.addBindValue(author);
-    q.addBindValue(subject);
-    q.addBindValue(keywords);
-    q.addBindValue(page);
-    q.addBindValue(from);
-    q.addBindValue(to);
-    q.addBindValue(words);
-    if (!q.exec() || !q.next())
-        return false;
-    *chunk_id = q.value(0).toInt();
-    return true;
-}
-
-static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
-{
-    for (const auto &cmd: DELETE_CHUNKS_SQL) {
-        if (!q.prepare(cmd))
-            return false;
-        q.addBindValue(document_id);
-        if (!q.exec())
-            return false;
-    }
-    return true;
-}
+static const QString SELECT_CHUNKS_FTS_SQL = uR"(
+    select id, bm25(chunks_fts) as score
+    from chunks_fts
+    where chunks_fts match ?
+    order by score limit %1;
+)"_s;
 
 #define NAMED_PAIR(name, typea, a, typeb, b) \
     struct name { typea a; typeb b; }; \
@@ -253,10 +258,12 @@ static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStr
     while (q.next()) {
         QString collection = q.value(0).toString();
         IncompleteChunk ic {
-            /*embedding_model =*/ q.value(1).toString(),
-            /*chunk_id        =*/ q.value(2).toInt(),
-            /*folder_id       =*/ q.value(3).toInt(),
-            /*text            =*/ q.value(4).toString(),
+            /*EmbeddingKey*/ {
+                .embedding_model = q.value(1).toString(),
+                .chunk_id        = q.value(2).toInt(),
+            },
+            /*folder_id =*/ q.value(3).toInt(),
+            /*text      =*/ q.value(4).toString(),
         };
         chunks[ic] << collection;
     }
@@ -424,6 +431,7 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
             return false;
         break;
     case 2:
+    case 3:
         if (!q.prepare(SELECT_COLLECTIONS_SQL_V2))
             return false;
         break;
@@ -585,18 +593,6 @@ static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
         return false;
     while (q.next())
         folder_paths->append(q.value(0).toString());
-    return true;
-}
-
-static bool sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path)
-{
-    for (const auto &cmd: FOLDER_REMOVE_ALL_DOCS_SQL) {
-        if (!q.prepare(cmd))
-            return false;
-        q.addBindValue(path);
-        if (!q.exec())
-            return false;
-    }
     return true;
 }
 
@@ -770,6 +766,12 @@ static const QString GET_COLLECTION_EMBEDDINGS_SQL = uR"(
     where co.name in ('%1');
 )"_s;
 
+static const QString GET_CHUNK_EMBEDDINGS_SQL = uR"(
+    select e.chunk_id, e.embedding
+    from embeddings e
+    where e.chunk_id in (%1);
+)"_s;
+
 static const QString GET_CHUNK_FILE_SQL = uR"(
     select file from chunks where id = ?;
 )"_s;
@@ -835,6 +837,79 @@ void Database::rollback()
 {
     bool ok = m_db.rollback();
     Q_ASSERT(ok);
+}
+
+bool Database::refreshDocumentIdCache(QSqlQuery &q)
+{
+    m_documentIdCache.clear();
+    for (const auto &cmd: SELECT_CHUNKED_DOCUMENTS_SQL) {
+        if (!q.exec(cmd))
+            return false;
+        while (q.next())
+            m_documentIdCache << q.value(0).toInt();
+    }
+    return true;
+}
+
+bool Database::addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
+                        const QString &title, const QString &author, const QString &subject, const QString &keywords,
+                        int page, int from, int to, int words, int *chunk_id)
+{
+    if (!q.prepare(INSERT_CHUNK_SQL))
+        return false;
+    q.addBindValue(document_id);
+    q.addBindValue(chunk_text);
+    q.addBindValue(file);
+    q.addBindValue(title);
+    q.addBindValue(author);
+    q.addBindValue(subject);
+    q.addBindValue(keywords);
+    q.addBindValue(page);
+    q.addBindValue(from);
+    q.addBindValue(to);
+    q.addBindValue(words);
+    if (!q.exec() || !q.next())
+        return false;
+    *chunk_id = q.value(0).toInt();
+
+    if (!q.prepare(INSERT_CHUNK_FTS_SQL))
+        return false;
+    q.addBindValue(document_id);
+    q.addBindValue(chunk_text);
+    q.addBindValue(file);
+    q.addBindValue(title);
+    q.addBindValue(author);
+    q.addBindValue(subject);
+    q.addBindValue(keywords);
+    if (!q.exec())
+        return false;
+    m_documentIdCache << document_id;
+    return true;
+}
+
+bool Database::removeChunksByDocumentId(QSqlQuery &q, int document_id)
+{
+    for (const auto &cmd: DELETE_CHUNKS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(document_id);
+        if (!q.exec())
+            return false;
+    }
+    m_documentIdCache.remove(document_id);
+    return true;
+}
+
+bool Database::sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path)
+{
+    for (const auto &cmd: FOLDER_REMOVE_ALL_DOCS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(path);
+        if (!q.exec())
+            return false;
+    }
+    return refreshDocumentIdCache(q);
 }
 
 bool Database::hasContent()
@@ -943,10 +1018,11 @@ Database::Database(int chunkSize, QStringList extensions)
     : QObject(nullptr)
     , m_chunkSize(chunkSize)
     , m_scannedFileExtensions(std::move(extensions))
-    , m_scanTimer(new QTimer(this))
+    , m_scanIntervalTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
     , m_databaseValid(true)
+    , m_chunkStreamer(this)
 {
     m_db = QSqlDatabase::database(QSqlDatabase::defaultConnection, false);
     if (!m_db.isValid())
@@ -1032,87 +1108,373 @@ void Database::updateFolderToIndex(int folder_id, size_t countForFolder, bool se
     updateGuiForCollectionItem(item);
 }
 
-void Database::handleDocumentError(const QString &errorMessage,
-    int document_id, const QString &document_path, const QSqlError &error)
+static void handleDocumentError(const QString &errorMessage, int document_id, const QString &document_path,
+                                const QSqlError &error)
 {
     qWarning() << errorMessage << document_id << document_path << error;
 }
 
-size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
-    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
-    int page, int maxChunks)
+class DocumentReader {
+public:
+    static std::unique_ptr<DocumentReader> fromDocument(const DocumentInfo &info);
+
+    const DocumentInfo           &doc     () const { return *m_info; }
+    const std::optional<QString> &word    () const { return m_word; }
+    const std::optional<QString> &nextWord()       { m_word = advance(); return m_word; }
+    virtual std::optional<ChunkStreamer::Status> getError() const { return std::nullopt; }
+    virtual int page() const { return -1; }
+
+    virtual ~DocumentReader() = default;
+
+protected:
+    explicit DocumentReader(const DocumentInfo &info)
+        : m_info(&info) {}
+
+    void postInit() { m_word = advance(); }
+
+    virtual std::optional<QString> advance() = 0;
+
+    const DocumentInfo     *m_info;
+    std::optional<QString>  m_word;
+};
+
+namespace {
+
+class PdfDocumentReader final : public DocumentReader {
+public:
+    explicit PdfDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+    {
+        QString path = info.file.canonicalFilePath();
+        if (m_doc.load(path) != QPdfDocument::Error::None)
+            throw std::runtime_error(fmt::format("Failed to load PDF: {}", path));
+        postInit();
+    }
+
+    int page() const override { return m_currentPage; }
+
+private:
+    std::optional<QString> advance() override
+    {
+        QString word;
+        do {
+            while (!m_stream || m_stream->atEnd()) {
+                if (m_currentPage >= m_doc.pageCount())
+                    return std::nullopt;
+                m_pageText = m_doc.getAllText(m_currentPage++).text();
+                m_stream.emplace(&m_pageText);
+            }
+            *m_stream >> word;
+        } while (word.isEmpty());
+        return word;
+    }
+
+    QPdfDocument               m_doc;
+    int                        m_currentPage = 0;
+    QString                    m_pageText;
+    std::optional<QTextStream> m_stream;
+};
+
+class WordDocumentReader final : public DocumentReader {
+public:
+    explicit WordDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+        , m_doc(info.file.canonicalFilePath().toStdString())
+    {
+        m_doc.open();
+        if (!m_doc.is_open())
+            throw std::runtime_error(fmt::format("Failed to open DOCX: {}", info.file.canonicalFilePath()));
+
+        m_paragraph = &m_doc.paragraphs();
+        m_run       = &m_paragraph->runs();
+        postInit();
+    }
+
+protected:
+    std::optional<QString> advance() override
+    {
+        // find non-space char
+        qsizetype wordStart = 0;
+        while (m_buffer.isEmpty() || m_buffer[wordStart].isSpace()) {
+            if (m_buffer.isEmpty() && !fillBuffer())
+                return std::nullopt;
+            if (m_buffer[wordStart].isSpace() && ++wordStart >= m_buffer.size()) {
+                m_buffer.clear();
+                wordStart = 0;
+            }
+        }
+
+        // find space char
+        qsizetype wordEnd = wordStart + 1;
+        while (wordEnd >= m_buffer.size() || !m_buffer[wordEnd].isSpace()) {
+            if (wordEnd >= m_buffer.size() && !fillBuffer())
+                return std::nullopt;
+            if (!m_buffer[wordEnd].isSpace())
+                ++wordEnd;
+        }
+
+        auto size = wordEnd - wordStart;
+        QString word = std::move(m_buffer);
+        m_buffer = word.sliced(wordStart + size);
+        if (wordStart == 0)
+            word.resize(size);
+        else
+            word = word.sliced(wordStart, size);
+
+        return word;
+    }
+
+    bool fillBuffer()
+    {
+        for (;;) {
+            // get a run
+            while (!m_run->has_next()) {
+                // try next paragraph
+                if (!m_paragraph->has_next())
+                    return false;
+                m_paragraph->next();
+                m_buffer += u'\n';
+            }
+            auto &run = m_run->get_node();
+            const char *text = run.child("w:t").text().get();
+            if (!*text && run.child("w:tab"))
+                text = "\t";
+            m_run->next();
+            if (*text) {
+                m_buffer += QUtf8StringView(text);
+                return true;
+            }
+        }
+    }
+
+    duckx::Document   m_doc;
+    duckx::Paragraph *m_paragraph;
+    duckx::Run       *m_run;
+    QString           m_buffer;
+};
+
+class TxtDocumentReader final : public DocumentReader {
+public:
+    explicit TxtDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+        , m_file(info.file.canonicalFilePath())
+    {
+        if (!m_file.open(QIODevice::ReadOnly))
+            throw std::runtime_error(fmt::format("Failed to open text file: {}", m_file.fileName()));
+
+        m_stream.setDevice(&m_file);
+        postInit();
+    }
+
+protected:
+    std::optional<QString> advance() override
+    {
+        if (getError())
+            return std::nullopt;
+        while (!m_stream.atEnd()) {
+            QString word;
+            m_stream >> word;
+            if (getError())
+                return std::nullopt;
+            if (!word.isEmpty())
+                return word;
+        }
+        return std::nullopt;
+    }
+
+    std::optional<ChunkStreamer::Status> getError() const override
+    {
+        if (m_file.binarySeen())
+            return ChunkStreamer::Status::BINARY_SEEN;
+        if (m_file.error())
+            return ChunkStreamer::Status::ERROR;
+        return std::nullopt;
+    }
+
+    BinaryDetectingFile m_file;
+    QTextStream m_stream;
+};
+
+} // namespace
+
+std::unique_ptr<DocumentReader> DocumentReader::fromDocument(const DocumentInfo &doc)
 {
-    int charCount = 0;
+    if (doc.isPdf())
+        return std::make_unique<PdfDocumentReader>(doc);
+    if (doc.isDocx())
+        return std::make_unique<WordDocumentReader>(doc);
+    return std::make_unique<TxtDocumentReader>(doc);
+}
+
+ChunkStreamer::ChunkStreamer(Database *database)
+    : m_database(database) {}
+
+ChunkStreamer::~ChunkStreamer() = default;
+
+void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel,
+                                const QString &title, const QString &author, const QString &subject,
+                                const QString &keywords)
+{
+    auto docKey = doc.key();
+    if (!m_docKey || *m_docKey != docKey) {
+        m_docKey         = docKey;
+        m_reader         = DocumentReader::fromDocument(doc);
+        m_documentId     = documentId;
+        m_embeddingModel = embeddingModel;
+        m_title          = title;
+        m_author         = author;
+        m_subject        = subject;
+        m_keywords       = keywords;
+        m_chunk.clear();
+        m_page = 0;
+
+        // make sure the document doesn't already have any chunks
+        if (m_database->m_documentIdCache.contains(documentId)) {
+            QSqlQuery q(m_database->m_db);
+            if (!m_database->removeChunksByDocumentId(q, documentId))
+                handleDocumentError("ERROR: Cannot remove chunks of document", documentId, doc.file.canonicalPath(), q.lastError());
+        }
+    }
+}
+
+std::optional<DocumentInfo::key_type> ChunkStreamer::currentDocKey() const
+{
+    return m_docKey;
+}
+
+void ChunkStreamer::reset()
+{
+    m_docKey.reset();
+}
+
+ChunkStreamer::Status ChunkStreamer::step()
+{
     // TODO: implement line_from/line_to
     constexpr int line_from = -1;
     constexpr int line_to = -1;
-    QList<QString> words;
-    int chunks = 0;
-    int addedWords = 0;
+    const int folderId = m_reader->doc().folder;
+    const int maxChunkSize = m_database->m_chunkSize;
+    int nChunks = 0;
+    int nAddedWords = 0;
+    Status retval;
 
     for (;;) {
-        QString word;
-        stream >> word;
-        if (stream.status() && !stream.atEnd())
-            return -1;
-        charCount += word.length();
-        if (!word.isEmpty())
-            words.append(word);
-        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
-            if (!words.isEmpty()) {
-                const QString chunk = words.join(" ");
-                QSqlQuery q(m_db);
-                int chunk_id = 0;
-                if (!addChunk(q,
-                    document_id,
+        if (auto error = m_reader->getError()) {
+            m_docKey.reset(); // done processing
+            return *error;
+        }
+        if (m_database->scanQueueInterrupted()) {
+            retval = Status::INTERRUPTED;
+            break;
+        }
+
+        // get a word, if needed
+        std::optional<QString> word = QString(); // empty string to disable EOF logic
+        if (m_chunk.length() < maxChunkSize + 1) {
+            word = m_reader->word();
+            if (m_chunk.isEmpty())
+                m_page = m_reader->page(); // page number of first word
+
+            if (word) {
+                m_chunk += *word;
+                m_chunk += u' ';
+                m_reader->nextWord();
+                m_nChunkWords++;
+            }
+        }
+
+        if (!word || m_chunk.length() >= maxChunkSize + 1) { // +1 for trailing space
+            if (!m_chunk.isEmpty()) {
+                int nThisChunkWords = 0;
+                auto chunk = m_chunk; // copy
+
+                // handle overlength chunks
+                if (m_chunk.length() > maxChunkSize + 1) {
+                    // find the final space
+                    qsizetype chunkEnd = chunk.lastIndexOf(u' ', -2);
+
+                    qsizetype spaceSize;
+                    if (chunkEnd >= 0) {
+                        // slice off the last word
+                        spaceSize = 1;
+                        Q_ASSERT(m_nChunkWords >= 1);
+                        // one word left
+                        nThisChunkWords = m_nChunkWords - 1;
+                        m_nChunkWords = 1;
+                    } else {
+                        // slice the overlong word
+                        spaceSize = 0;
+                        chunkEnd = maxChunkSize;
+                        // partial word left, don't count it
+                        nThisChunkWords = m_nChunkWords;
+                        m_nChunkWords = 0;
+                    }
+                    // save the second part, excluding space if any
+                    m_chunk = chunk.sliced(chunkEnd + spaceSize);
+                    // consume the first part
+                    chunk.truncate(chunkEnd);
+                } else {
+                    nThisChunkWords = m_nChunkWords;
+                    m_nChunkWords = 0;
+                    // there is no second part
+                    m_chunk.clear();
+                    // consume the whole chunk, excluding space
+                    chunk.chop(1);
+                }
+                Q_ASSERT(chunk.length() <= maxChunkSize);
+
+                QSqlQuery q(m_database->m_db);
+                int chunkId = 0;
+                if (!m_database->addChunk(q,
+                    m_documentId,
                     chunk,
-                    file,
-                    title,
-                    author,
-                    subject,
-                    keywords,
-                    page,
+                    m_reader->doc().file.fileName(), // basename
+                    m_title,
+                    m_author,
+                    m_subject,
+                    m_keywords,
+                    m_page,
                     line_from,
                     line_to,
-                    words.size(),
-                    &chunk_id
+                    nThisChunkWords,
+                    &chunkId
                 )) {
                     qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
                 }
 
-                addedWords += words.size();
+                nAddedWords += nThisChunkWords;
 
                 EmbeddingChunk toEmbed;
-                toEmbed.model = embedding_model;
-                toEmbed.folder_id = folder_id;
-                toEmbed.chunk_id = chunk_id;
+                toEmbed.model = m_embeddingModel;
+                toEmbed.folder_id = folderId;
+                toEmbed.chunk_id = chunkId;
                 toEmbed.chunk = chunk;
-                appendChunk(toEmbed);
-                ++chunks;
-
-                words.clear();
-                charCount = 0;
+                m_database->appendChunk(toEmbed);
+                ++nChunks;
             }
 
-            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
+            if (!word) {
+                retval = Status::DOC_COMPLETE;
+                m_docKey.reset(); // done processing
                 break;
+            }
         }
     }
 
-    if (chunks) {
-        CollectionItem item = guiCollectionItem(folder_id);
+    if (nChunks) {
+        CollectionItem item = m_database->guiCollectionItem(folderId);
 
         // Set the start update if we haven't done so already
         if (item.startUpdate <= item.lastUpdate && item.currentEmbeddingsToIndex == 0)
-            setStartUpdateTime(item);
+            m_database->setStartUpdateTime(item);
 
-        item.currentEmbeddingsToIndex += chunks;
-        item.totalEmbeddingsToIndex += chunks;
-        item.totalWords += addedWords;
-        updateGuiForCollectionItem(item);
+        item.currentEmbeddingsToIndex += nChunks;
+        item.totalEmbeddingsToIndex += nChunks;
+        item.totalWords += nAddedWords;
+        m_database->updateGuiForCollectionItem(item);
     }
 
-    return stream.pos();
+    return retval;
 }
 
 void Database::appendChunk(const EmbeddingChunk &chunk)
@@ -1190,83 +1552,88 @@ void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const
 
 size_t Database::countOfDocuments(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    return m_docsToScan.value(folder_id).size();
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end())
+        return it->second.size();
+    return 0;
 }
 
 size_t Database::countOfBytes(int folder_id) const
 {
-    if (!m_docsToScan.contains(folder_id))
-        return 0;
-    size_t totalBytes = 0;
-    const QQueue<DocumentInfo> &docs = m_docsToScan.value(folder_id);
-    for (const DocumentInfo &f : docs)
-        totalBytes += f.doc.size();
-    return totalBytes;
+    if (auto it = m_docsToScan.find(folder_id); it != m_docsToScan.end()) {
+        size_t totalBytes = 0;
+        for (const DocumentInfo &f : it->second)
+            totalBytes += f.file.size();
+        return totalBytes;
+    }
+    return 0;
 }
 
 DocumentInfo Database::dequeueDocument()
 {
-    Q_ASSERT(!m_docsToScan.isEmpty());
-    const int firstKey = m_docsToScan.firstKey();
-    QQueue<DocumentInfo> &queue = m_docsToScan[firstKey];
-    Q_ASSERT(!queue.isEmpty());
-    DocumentInfo result = queue.dequeue();
-    if (queue.isEmpty())
-        m_docsToScan.remove(firstKey);
+    Q_ASSERT(!m_docsToScan.empty());
+    auto firstEntry = m_docsToScan.begin();
+    auto &[firstKey, queue] = *firstEntry;
+    Q_ASSERT(!queue.empty());
+    DocumentInfo result = std::move(queue.front());
+    queue.pop_front();
+    if (queue.empty())
+        m_docsToScan.erase(firstEntry);
     return result;
 }
 
 void Database::removeFolderFromDocumentQueue(int folder_id)
 {
-    if (!m_docsToScan.contains(folder_id))
-        return;
-    m_docsToScan.remove(folder_id);
+    if (auto queueIt = m_docsToScan.find(folder_id); queueIt != m_docsToScan.end()) {
+        if (auto key = m_chunkStreamer.currentDocKey()) {
+            if (ranges::any_of(queueIt->second, [&key](auto &d) { return d.key() == key; }))
+                m_chunkStreamer.reset(); // done with this document
+        }
+        // remove folder from queue
+        m_docsToScan.erase(queueIt);
+    }
 }
 
-void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
+void Database::enqueueDocumentInternal(DocumentInfo &&info, bool prepend)
 {
-    const int key = info.folder;
-    if (!m_docsToScan.contains(key))
-        m_docsToScan[key] = QQueue<DocumentInfo>();
-    if (prepend)
-        m_docsToScan[key].prepend(info);
-    else
-        m_docsToScan[key].enqueue(info);
+    auto &queue = m_docsToScan[info.folder];
+    queue.insert(prepend ? queue.begin() : queue.end(), std::move(info));
 }
 
-void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos)
+void Database::enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos)
 {
-    for (int i = 0; i < infos.size(); ++i)
-        enqueueDocumentInternal(infos[i]);
-    const size_t count = countOfDocuments(folder_id);
+    // enqueue all documents
+    auto &queue = m_docsToScan[folder_id];
+    queue.splice(queue.end(), std::move(infos));
 
     CollectionItem item = guiCollectionItem(folder_id);
-    item.currentDocsToIndex = count;
-    item.totalDocsToIndex = count;
+    item.currentDocsToIndex = queue.size();
+    item.totalDocsToIndex = queue.size();
     const size_t bytes = countOfBytes(folder_id);
     item.currentBytesToIndex = bytes;
     item.totalBytesToIndex = bytes;
     updateGuiForCollectionItem(item);
-    m_scanTimer->start();
+    m_scanIntervalTimer->start();
+}
+
+bool Database::scanQueueInterrupted() const
+{
+    return m_scanDurationTimer.elapsed() >= 100;
 }
 
 void Database::scanQueueBatch()
 {
-    QElapsedTimer timer;
-    timer.start();
+    m_scanDurationTimer.start();
 
     transaction();
 
     // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
+    while (!m_docsToScan.empty() && !scanQueueInterrupted())
         scanQueue();
 
     commit();
 
-    if (m_docsToScan.isEmpty())
-        m_scanTimer->stop();
+    if (m_docsToScan.empty())
+        m_scanIntervalTimer->stop();
 }
 
 void Database::scanQueue()
@@ -1276,15 +1643,15 @@ void Database::scanQueue()
     const int folder_id = info.folder;
 
     // Update info
-    info.doc.stat();
+    info.file.stat();
 
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
-    if (!info.doc.exists() || !info.doc.isReadable())
+    if (!info.file.exists() || !info.file.isReadable())
         return updateFolderToIndex(folder_id, countForFolder);
 
-    const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
-    const QString document_path = info.doc.canonicalFilePath();
+    const qint64 document_time = info.file.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
+    const QString document_path = info.file.canonicalFilePath();
     const bool currentlyProcessing = info.currentlyProcessing;
 
     // Check and see if we already have this document
@@ -1345,104 +1712,57 @@ void Database::scanQueue()
     }
 
     Q_ASSERT(document_id != -1);
-    if (info.isPdf()) {
-        QPdfDocument doc;
-        if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
-            handleDocumentError("ERROR: Could not load pdf",
-                document_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        const size_t bytes = info.doc.size();
-        const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
-        const int pageIndex = info.currentPage;
-#if defined(DEBUG)
-        qDebug() << "scanning page" << pageIndex << "of" << doc.pageCount() << document_path;
-#endif
-        const QPdfSelection selection = doc.getAllText(pageIndex);
-        QString text = selection.text();
-        QTextStream stream(&text);
-        chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
-            doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
-            doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
-            pageIndex + 1
-        );
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesPerPage;
-        updateGuiForCollectionItem(item);
-        if (info.currentPage < doc.pageCount()) {
-            info.currentPage += 1;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
-        }
 
-        item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
-        updateGuiForCollectionItem(item);
-    } else {
-        BinaryDetectingFile file(document_path);
-        if (!file.open(QIODevice::ReadOnly)) {
-            handleDocumentError("ERROR: Cannot open file for scanning",
-                                existing_id, document_path, q.lastError());
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        Q_ASSERT(!file.isSequential()); // we need to seek
-
-        const size_t bytes = info.doc.size();
-        QTextStream stream(&file);
-        const size_t byteIndex = info.currentPosition;
-        if (byteIndex) {
-            /* Read the Unicode BOM to detect the encoding. Without this, QTextStream will
-             * always interpret the text as UTF-8 when byteIndex is nonzero. */
-            stream.read(1);
-
-            if (!stream.seek(byteIndex)) {
-                handleDocumentError("ERROR: Cannot seek to pos for scanning",
-                                    existing_id, document_path, q.lastError());
+    {
+        QString title, author, subject, keywords;
+        if (info.isPdf()) {
+            QPdfDocument doc;
+            if (doc.load(document_path) != QPdfDocument::Error::None) {
+                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;
                 return updateFolderToIndex(folder_id, countForFolder);
             }
+            title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();
+            author   = doc.metaData(QPdfDocument::MetaDataField::Author).toString();
+            subject  = doc.metaData(QPdfDocument::MetaDataField::Subject).toString();
+            keywords = doc.metaData(QPdfDocument::MetaDataField::Keywords).toString();
+            // TODO(jared): metadata for Word documents?
         }
-#if defined(DEBUG)
-        qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
-#endif
-        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
-            QString() /*title*/, QString() /*author*/, QString() /*subject*/, QString() /*keywords*/, -1 /*page*/,
-            100 /*maxChunks*/);
-        if (pos < 0) {
-            if (!file.binarySeen()) {
-                handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
-                                    existing_id, document_path, q.lastError());
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
 
-            /* When we see a binary file, we treat it like an empty file so we know not to
-             * scan it again. All existing chunks are removed, and in-progress embeddings
-             * are ignored when they complete. */
-
-            qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
-
-            // this will also ensure in-flight embeddings are ignored
-            if (!removeChunksByDocumentId(q, existing_id)) {
-                handleDocumentError("ERROR: Cannot remove chunks of document",
-                    existing_id, document_path, q.lastError());
-            }
-            updateCollectionStatistics();
-            return updateFolderToIndex(folder_id, countForFolder);
-        }
-        file.close();
-        const size_t bytesChunked = pos - byteIndex;
-        CollectionItem item = guiCollectionItem(info.folder);
-        item.currentBytesToIndex -= bytesChunked;
-        updateGuiForCollectionItem(item);
-        if (info.currentPosition < bytes) {
-            info.currentPosition = pos;
-            info.currentlyProcessing = true;
-            enqueueDocumentInternal(info, true /*prepend*/);
-            return updateFolderToIndex(folder_id, countForFolder + 1);
+        try {
+            m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+        } catch (const std::runtime_error &e) {
+            qWarning() << "LocalDocs ERROR:" << e.what();
+            goto dequeue;
         }
     }
 
+    switch (m_chunkStreamer.step()) {
+    case ChunkStreamer::Status::INTERRUPTED:
+        info.currentlyProcessing = true;
+        enqueueDocumentInternal(std::move(info), /*prepend*/ true);
+        return updateFolderToIndex(folder_id, countForFolder + 1);
+    case ChunkStreamer::Status::BINARY_SEEN:
+        /* When we see a binary file, we treat it like an empty file so we know not to
+         * scan it again. All existing chunks are removed, and in-progress embeddings
+         * are ignored when they complete. */
+        qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
+
+        // this will also ensure in-flight embeddings are ignored
+        if (!removeChunksByDocumentId(q, existing_id))
+            handleDocumentError("ERROR: Cannot remove chunks of document", existing_id, document_path, q.lastError());
+        updateCollectionStatistics();
+        break;
+    case ChunkStreamer::Status::ERROR:
+        qWarning() << "error reading" << document_path;
+        break;
+    case ChunkStreamer::Status::DOC_COMPLETE:
+        ;
+    }
+
+dequeue:
+    auto item = guiCollectionItem(folder_id);
+    item.currentBytesToIndex -= info.file.size();
+    updateGuiForCollectionItem(item);
     return updateFolderToIndex(folder_id, countForFolder);
 }
 
@@ -1454,7 +1774,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 
     QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
                     QDirIterator::Subdirectories);
-    QVector<DocumentInfo> infos;
+    std::list<DocumentInfo> infos;
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo = it.fileInfo();
@@ -1466,17 +1786,14 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
         if (!m_scannedFileExtensions.contains(fileInfo.suffix(), Qt::CaseInsensitive))
             continue;
 
-        DocumentInfo info;
-        info.folder = folder_id;
-        info.doc = fileInfo;
-        infos.append(info);
+        infos.push_back({ folder_id, fileInfo });
     }
 
-    if (!infos.isEmpty()) {
+    if (!infos.empty()) {
         CollectionItem item = guiCollectionItem(folder_id);
         item.indexing = true;
         updateGuiForCollectionItem(item);
-        enqueueDocuments(folder_id, infos);
+        enqueueDocuments(folder_id, std::move(infos));
     } else {
         updateFolderToIndex(folder_id, 0, false);
     }
@@ -1487,7 +1804,7 @@ void Database::start()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
     connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
-    m_scanTimer->callOnTimeout(this, &Database::scanQueueBatch);
+    m_scanIntervalTimer->callOnTimeout(this, &Database::scanQueueBatch);
 
     const QString modelPath = MySettings::globalInstance()->modelPath();
     QList<CollectionItem> oldCollections;
@@ -1498,7 +1815,12 @@ void Database::start()
         m_databaseValid = false;
     } else {
         cleanDB();
-        addCurrentFolders();
+        QSqlQuery q(m_db);
+        if (!refreshDocumentIdCache(q)) {
+            m_databaseValid = false;
+        } else {
+            addCurrentFolders();
+        }
     }
 
     if (!m_databaseValid)
@@ -1858,18 +2180,12 @@ void Database::removeFolderFromWatch(const QString &path)
     m_watchedPaths -= QSet(children.begin(), children.end());
 }
 
-QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors)
+QList<int> Database::searchEmbeddingsHelper(const std::vector<float> &query, QSqlQuery &q, int nNeighbors)
 {
     constexpr int BATCH_SIZE = 2048;
 
     const int n_embd = query.size();
     const us::metric_punned_t metric(n_embd, us::metric_kind_t::ip_k); // inner product
-
-    QSqlQuery q(m_db);
-    if (!q.exec(GET_COLLECTION_EMBEDDINGS_SQL.arg(collections.join("', '")))) {
-        qWarning() << "Database ERROR: Failed to exec embeddings query:" << q.lastError();
-        return {};
-    }
 
     us::executor_default_t executor(std::thread::hardware_concurrency());
     us::exact_search_t search;
@@ -1882,6 +2198,7 @@ QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QLi
     struct Result { int chunkId; us::distance_punned_t dist; };
     QList<Result> results;
 
+    // The q parameter is expected to be the result of a QSqlQuery returning (chunk_id, embedding) pairs
     while (q.at() != QSql::AfterLastRow) { // batches
         batchChunkIds.clear();
         batchEmbeddings.clear();
@@ -1937,6 +2254,223 @@ QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QLi
     return chunkIds;
 }
 
+QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections,
+    int nNeighbors)
+{
+    QSqlQuery q(m_db);
+    if (!q.exec(GET_COLLECTION_EMBEDDINGS_SQL.arg(collections.join("', '")))) {
+        qWarning() << "Database ERROR: Failed to exec embeddings query:" << q.lastError();
+        return {};
+    }
+    return searchEmbeddingsHelper(query, q, nNeighbors);
+}
+
+QList<int> Database::scoreChunks(const std::vector<float> &query, const QList<int> &chunks)
+{
+    QList<QString> chunkStrings;
+    for (int id : chunks)
+        chunkStrings << QString::number(id);
+    QSqlQuery q(m_db);
+    if (!q.exec(GET_CHUNK_EMBEDDINGS_SQL.arg(chunkStrings.join(", ")))) {
+        qWarning() << "Database ERROR: Failed to exec embeddings query:" << q.lastError();
+        return {};
+    }
+    return searchEmbeddingsHelper(query, q, chunks.size());
+}
+
+QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
+{
+    // Escape double quotes by adding a second double quote
+    QString escapedInput = input;
+    escapedInput.replace("\"", "\"\"");
+
+    static QRegularExpression spaces("\\s+");
+    QStringList oWords = escapedInput.split(spaces, Qt::SkipEmptyParts);
+
+    QList<BM25Query> queries;
+
+    // Start by trying to match the entire input
+    BM25Query e;
+    e.isExact = true;
+    e.input = oWords.join(" ");
+    e.query = "\"" + oWords.join(" ") + "\"";
+    e.qlength = oWords.size();
+    e.ilength = oWords.size();
+    queries << e;
+
+    // https://github.com/igorbrigadir/stopwords?tab=readme-ov-file
+    // Lucene, Solr, Elastisearch
+    static const QSet<QString> stopWords = {
+        "a", "an", "and", "are", "as", "at", "be", "but", "by",
+        "for", "if", "in", "into", "is", "it", "no", "not", "of",
+        "on", "or", "such", "that", "the", "their", "then", "there",
+        "these", "they", "this", "to", "was", "will", "with"
+    };
+
+    QStringList quotedWords;
+    for (const QString &w : oWords)
+        if (!stopWords.contains(w.toLower()))
+            quotedWords << "\"" + w + "\"";
+
+    BM25Query b;
+    b.input = oWords.join(" ");
+    b.query = "(" + quotedWords.join(" OR ") + ")";
+    b.qlength = 1; // length of phrase
+    b.ilength = oWords.size();
+    b.rlength = oWords.size() - quotedWords.size();
+    queries << b;
+    return queries;
+}
+
+QList<int> Database::searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k)
+{
+    struct SearchResult { int chunkId; float score; };
+    QList<BM25Query> bm25Queries = queriesForFTS5(query);
+
+    QSqlQuery sqlQuery(m_db);
+    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
+
+    QList<SearchResult> results;
+    for (auto &bm25Query : std::as_const(bm25Queries)) {
+        sqlQuery.addBindValue(bm25Query.query);
+
+        if (!sqlQuery.exec()) {
+            qWarning() << "Database ERROR: Failed to execute BM25 query:" << sqlQuery.lastError();
+            return {};
+        }
+
+        if (sqlQuery.next()) {
+            // Save the query that was used to produce results
+            bm25q = bm25Query;
+            break;
+        }
+    }
+
+    do {
+        const int chunkId = sqlQuery.value(0).toInt();
+        const float score = sqlQuery.value(1).toFloat();
+        results.append({chunkId, score});
+    } while (sqlQuery.next());
+
+    k = qMin(k, results.size());
+    std::partial_sort(
+        results.begin(), results.begin() + k, results.end(),
+        [](const SearchResult &a, const SearchResult &b) { return a.score < b.score; }
+    );
+
+    QList<int> chunkIds;
+    chunkIds.reserve(k);
+    for (int i = 0; i < k; i++)
+        chunkIds << results[i].chunkId;
+    return chunkIds;
+}
+
+float Database::computeBM25Weight(const Database::BM25Query &bm25q)
+{
+    float bmWeight = 0.0f;
+    if (bm25q.isExact) {
+        bmWeight = 0.9f; // the highest we give
+    } else {
+        // qlength is the length of the phrases in the query by number of distinct words
+        // ilength is the length of the natural language query by number of distinct words
+        // rlength is the number of stop words removed from the natural language query to form the query
+
+        // calculate the query length weight based on the ratio of query terms to meaningful terms.
+        // this formula adjusts the weight with the empirically determined insight that BM25's
+        // effectiveness decreases as query length increases.
+        float queryLengthWeight = 1 / powf(float(bm25q.ilength - bm25q.rlength), 2);
+        queryLengthWeight = qBound(0.0f, queryLengthWeight, 1.0f);
+
+        // the weighting is bound between 1/4 and 3/4 which was determined empirically to work well
+        // with the beir nfcorpus, scifact, fiqa and trec-covid datasets along with our embedding
+        // model
+        bmWeight = 0.25f + queryLengthWeight * 0.50f;
+    }
+
+#if 0
+    qDebug()
+        << "bm25q.type"         << bm25q.type
+        << "bm25q.qlength"      << bm25q.qlength
+        << "bm25q.ilength"      << bm25q.ilength
+        << "bm25q.rlength"      << bm25q.rlength
+        << "bmWeight"           << bmWeight;
+#endif
+
+    return bmWeight;
+}
+
+QList<int> Database::reciprocalRankFusion(const std::vector<float> &query, const QList<int> &embeddingResults,
+    const QList<int> &bm25Results, const BM25Query &bm25q, int k)
+{
+    // We default to the embedding results and augment with bm25 if any
+    QList<int> results = embeddingResults;
+
+    QList<int> missingScores;
+    QHash<int, int> bm25Ranks;
+    for (int i = 0; i < bm25Results.size(); ++i) {
+        if (!results.contains(bm25Results[i]))
+            missingScores.append(bm25Results[i]);
+        bm25Ranks[bm25Results[i]] = i + 1;
+    }
+
+    if (!missingScores.isEmpty()) {
+        QList<int> scored = scoreChunks(query, missingScores);
+        results << scored;
+    }
+
+    QHash<int, int> embeddingRanks;
+    for (int i = 0; i < results.size(); ++i)
+        embeddingRanks[results[i]] = i + 1;
+
+    const float bmWeight = bm25Results.isEmpty() ? 0 : computeBM25Weight(bm25q);
+
+    // From the paper: "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods"
+    // doi: 10.1145/1571941.157211
+    const int fusion_k = 60;
+
+    std::stable_sort(
+        results.begin(), results.end(),
+        [&](const int &a, const int &b) {
+            // Reciprocal Rank Fusion (RRF)
+            const int aBm25Rank = bm25Ranks.value(a, bm25Results.size() + 1);
+            const int aEmbeddingRank = embeddingRanks.value(a, embeddingResults.size() + 1);
+            Q_ASSERT(embeddingRanks.contains(a));
+
+            const int bBm25Rank = bm25Ranks.value(b, bm25Results.size() + 1);
+            const int bEmbeddingRank = embeddingRanks.value(b, embeddingResults.size() + 1);
+            Q_ASSERT(embeddingRanks.contains(b));
+
+            const float aBm25Score = 1.0f / (fusion_k + aBm25Rank);
+            const float bBm25Score = 1.0f / (fusion_k + bBm25Rank);
+            const float aEmbeddingScore = 1.0f / (fusion_k + aEmbeddingRank);
+            const float bEmbeddingScore = 1.0f / (fusion_k + bEmbeddingRank);
+            const float aWeightedScore = bmWeight * aBm25Score + (1.f - bmWeight) * aEmbeddingScore;
+            const float bWeightedScore = bmWeight * bBm25Score + (1.f - bmWeight) * bEmbeddingScore;
+
+            // Higher RRF score means better ranking, so we use greater than for sorting
+            return aWeightedScore > bWeightedScore;
+        }
+    );
+
+    k = qMin(k, results.size());
+    results.resize(k);
+    return results;
+}
+
+QList<int> Database::searchDatabase(const QString &query, const QList<QString> &collections, int k)
+{
+    std::vector<float> queryEmbd = m_embLLM->generateQueryEmbedding(query);
+    if (queryEmbd.empty()) {
+        qDebug() << "ERROR: generating embeddings returned a null result";
+        return { };
+    }
+
+    const QList<int> embeddingResults = searchEmbeddings(queryEmbd, collections, k);
+    BM25Query bm25q;
+    const QList<int> bm25Results = searchBM25(query, collections, bm25q, k);
+    return reciprocalRankFusion(queryEmbd, embeddingResults, bm25Results, bm25q, k);
+}
+
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
     QList<ResultInfo> *results)
 {
@@ -1944,13 +2478,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
-    std::vector<float> queryEmbd = m_embLLM->generateQueryEmbedding(text);
-    if (queryEmbd.empty()) {
-        qDebug() << "ERROR: generating embeddings returned a null result";
-        return;
-    }
-
-    QList<int> searchResults = searchEmbeddings(queryEmbd, collections, retrievalSize);
+    QList<int> searchResults = searchDatabase(text, collections, retrievalSize);
     if (searchResults.isEmpty())
         return;
 
@@ -1960,10 +2488,9 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
     }
 
+    QHash<int, ResultInfo> tempResults;
     while (q.next()) {
-#if defined(DEBUG)
         const int rowid = q.value(0).toInt();
-#endif
         const QString document_path = q.value(2).toString();
         const QString chunk_text = q.value(3).toString();
         const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
@@ -1985,12 +2512,16 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         info.page = page;
         info.from = from;
         info.to = to;
-        results->append(info);
+        tempResults.insert(rowid, info);
 #if defined(DEBUG)
         qDebug() << "retrieve rowid:" << rowid
                  << "chunk_text:" << chunk_text;
 #endif
     }
+
+    for (int id : searchResults)
+        if (tempResults.contains(id))
+            results->append(tempResults.value(id));
 }
 
 // FIXME This is very slow and non-interruptible and when we close the application and we're

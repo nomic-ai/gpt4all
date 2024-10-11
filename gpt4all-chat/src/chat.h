@@ -7,6 +7,7 @@
 #include "localdocsmodel.h" // IWYU pragma: keep
 #include "modellist.h"
 
+#include <QDateTime>
 #include <QList>
 #include <QObject>
 #include <QQmlEngine>
@@ -32,7 +33,7 @@ class Chat : public QObject
     Q_PROPERTY(ResponseState responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
-    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
+    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged)
     Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
@@ -66,6 +67,7 @@ public:
     {
         m_userName = name;
         emit nameChanged();
+        m_needsSave = true;
     }
     ChatModel *chatModel() { return m_chatModel; }
 
@@ -76,10 +78,10 @@ public:
     bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
+    Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
     Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
-    Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
@@ -123,8 +125,10 @@ public:
 
     QList<QString> generatedQuestions() const { return m_generatedQuestions; }
 
+    bool needsSave() const { return m_needsSave; }
+
 public Q_SLOTS:
-    void serverNewPromptResponsePair(const QString &prompt);
+    void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});
 
 Q_SIGNALS:
     void idChanged(const QString &id);
@@ -174,6 +178,9 @@ private Q_SLOTS:
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
 private:
+    void newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments);
+
+private:
     QString m_id;
     QString m_name;
     QString m_generatedName;
@@ -199,6 +206,10 @@ private:
     bool m_firstResponse = true;
     int m_trySwitchContextInProgress = 0;
     bool m_isCurrentlyLoading = false;
+    // True if we need to serialize the chat to disk, because of one of two reasons:
+    // - The chat was freshly created during this launch.
+    // - The chat was changed after loading it from disk.
+    bool m_needsSave = true;
 };
 
 #endif // CHAT_H

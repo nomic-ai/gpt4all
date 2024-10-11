@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 9
+#define CHAT_FORMAT_VERSION 10
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
@@ -99,7 +99,12 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
     QElapsedTimer timer;
     timer.start();
     const QString savePath = MySettings::globalInstance()->modelPath();
+    qsizetype nSavedChats = 0;
     for (Chat *chat : chats) {
+        if (!chat->needsSave())
+            continue;
+        ++nSavedChats;
+
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QString filePath = savePath + "/" + fileName;
         QFile originalFile(filePath);
@@ -129,7 +134,7 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
     }
 
     qint64 elapsedTime = timer.elapsed();
-    qDebug() << "serializing chats took:" << elapsedTime << "ms";
+    qDebug() << "serializing chats took" << elapsedTime << "ms, saved" << nSavedChats << "/" << chats.size() << "chats";
     emit saveChatsFinished();
 }
 
@@ -194,11 +199,16 @@ void ChatsRestoreThread::run()
             qint32 version;
             in >> version;
             if (version < 1) {
-                qWarning() << "ERROR: Chat file has non supported version:" << file.fileName();
+                qWarning() << "WARNING: Chat file version" << version << "is not supported:" << file.fileName();
+                continue;
+            }
+            if (version > CHAT_FORMAT_VERSION) {
+                qWarning().nospace() << "WARNING: Chat file is from a future version (have " << version << " want "
+                                     << CHAT_FORMAT_VERSION << "): " << file.fileName();
                 continue;
             }
 
-            if (version <= 1)
+            if (version < 2)
                 in.setVersion(QDataStream::Qt_6_2);
 
             FileInfo info;
@@ -239,7 +249,7 @@ void ChatsRestoreThread::run()
                 continue;
             }
 
-            if (version <= 1)
+            if (version < 2)
                 in.setVersion(QDataStream::Qt_6_2);
         }
 

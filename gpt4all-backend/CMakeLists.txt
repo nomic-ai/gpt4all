@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.23)  # for FILE_SET
+
+include(../common/common.cmake)
+
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -94,8 +97,6 @@ if (LLMODEL_ROCM)
     list(APPEND BUILD_VARIANTS rocm rocm-avxonly)
 endif()
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 # Go through each build variant
 foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Determine flags
@@ -128,6 +129,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Include GGML
     include_ggml(-mainline-${BUILD_VARIANT})
 
+    if (BUILD_VARIANT MATCHES metal)
+        set(GGML_METALLIB "${GGML_METALLIB}" PARENT_SCOPE)
+    endif()
+
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
         set(TARGET_NAME ${TARGET_NAME}-${BUILD_VARIANT})
@@ -147,6 +152,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
         src/llamamodel.cpp src/llmodel_shared.cpp)
+    gpt4all_add_warning_options(llamamodel-mainline-${BUILD_VARIANT})
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     target_include_directories(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
@@ -165,6 +171,7 @@ add_library(llmodel
     src/llmodel_c.cpp
     src/llmodel_shared.cpp
 )
+gpt4all_add_warning_options(llmodel)
 target_sources(llmodel PUBLIC
     FILE_SET public_headers TYPE HEADERS BASE_DIRS include
     FILES include/gpt4all-backend/llmodel.h

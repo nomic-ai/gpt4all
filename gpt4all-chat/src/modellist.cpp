@@ -27,6 +27,7 @@
 #include <QSettings>
 #include <QSslConfiguration>
 #include <QSslSocket>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QTextStream>
 #include <QTimer>
@@ -36,12 +37,15 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
 
 //#define USE_LOCAL_MODELSJSON
+
+#define MODELS_JSON_VERSION "3"
 
 static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmodel"_s };
 
@@ -398,7 +402,6 @@ InstalledModels::InstalledModels(QObject *parent, bool selectable)
     connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
-    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
 }
 
 bool InstalledModels::filterAcceptsRow(int sourceRow,
@@ -423,7 +426,6 @@ DownloadableModels::DownloadableModels(QObject *parent)
     connect(this, &DownloadableModels::rowsInserted, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::rowsRemoved, this, &DownloadableModels::countChanged);
     connect(this, &DownloadableModels::modelReset, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::layoutChanged, this, &DownloadableModels::countChanged);
 }
 
 bool DownloadableModels::filterAcceptsRow(int sourceRow,
@@ -502,7 +504,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
@@ -518,12 +520,12 @@ QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
     QCryptographicHash sha256(QCryptographicHash::Sha256);
     sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
     return sha256.result().toHex();
-};
+}
 
 QString ModelList::compatibleModelFilename(QUrl baseUrl, QString modelName) {
     QString hash(compatibleModelNameHash(baseUrl, modelName));
     return QString(u"gpt4all-%1-capi.rmodel"_s).arg(hash);
-};
+}
 
 bool ModelList::eventFilter(QObject *obj, QEvent *ev)
 {
@@ -821,7 +823,11 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>> &data)
 {
+    // We only sort when one of the fields used by the sorting algorithm actually changes that
+    // is implicated or used by the sorting algorithm
+    bool shouldSort = false;
     int index;
+
     {
         QMutexLocker locker(&m_mutex);
         if (!m_modelMap.contains(id)) {
@@ -835,10 +841,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             qWarning() << "ERROR: cannot update as model list does not contain" << id;
             return;
         }
-
-        // We only sort when one of the fields used by the sorting algorithm actually changes that
-        // is implicated or used by the sorting algorithm
-        bool shouldSort = false;
 
         for (const auto &d : data) {
             const int role = d.first;
@@ -1000,21 +1002,12 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
             info->checkedEmbeddingModel = true;
         }
-
-        if (shouldSort) {
-            auto s = m_discoverSort;
-            auto d = m_discoverSortDirection;
-            std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-                return ModelList::lessThan(lhs, rhs, s, d);
-            });
-        }
     }
+
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
 
-    // FIXME(jared): for some reason these don't update correctly when the source model changes, so we explicitly invalidate them
-    m_selectableModels->invalidate();
-    m_installedModels->invalidate();
-    m_downloadableModels->invalidate();
+    if (shouldSort)
+        resortModel();
 
     emit selectableModelListChanged();
 }
@@ -1122,7 +1115,6 @@ void ModelList::removeClone(const ModelInfo &model)
         return;
 
     removeInternal(model);
-    emit layoutChanged();
 }
 
 void ModelList::removeInstalled(const ModelInfo &model)
@@ -1131,7 +1123,6 @@ void ModelList::removeInstalled(const ModelInfo &model)
     Q_ASSERT(!model.isClone());
     Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
     removeInternal(model);
-    emit layoutChanged();
 }
 
 void ModelList::removeInternal(const ModelInfo &model)
@@ -1344,15 +1335,32 @@ void ModelList::updateModelsFromDirectory()
     }
 }
 
-#define MODELS_VERSION 3
+static QString modelsJsonFilename()
+{
+    return QStringLiteral("models" MODELS_JSON_VERSION ".json");
+}
+
+static std::optional<QFile> modelsJsonCacheFile()
+{
+    constexpr auto loc = QStandardPaths::CacheLocation;
+    QString modelsJsonFname = modelsJsonFilename();
+    if (auto path = QStandardPaths::locate(loc, modelsJsonFname); !path.isEmpty())
+        return std::make_optional<QFile>(path);
+    if (auto path = QStandardPaths::writableLocation(loc); !path.isEmpty())
+        return std::make_optional<QFile>(u"%1/%2"_s.arg(path, modelsJsonFname));
+    return std::nullopt;
+}
 
 void ModelList::updateModelsFromJson()
 {
+    QString modelsJsonFname = modelsJsonFilename();
+
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
+
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -1371,18 +1379,15 @@ void ModelList::updateModelsFromJson()
         qWarning() << "WARNING: Could not download models.json synchronously";
         updateModelsFromJsonAsync();
 
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
-        QFile file(modelsConfig);
-        if (!file.open(QIODeviceBase::ReadOnly)) {
-            qWarning() << "ERROR: Couldn't read models config file: " << modelsConfig;
-        } else {
-            QByteArray jsonData = file.readAll();
-            file.close();
+        auto cacheFile = modelsJsonCacheFile();
+        if (!cacheFile) {
+            // no known location
+        } else if (cacheFile->open(QIODeviceBase::ReadOnly)) {
+            QByteArray jsonData = cacheFile->readAll();
+            cacheFile->close();
             parseModelsJsonFile(jsonData, false);
-        }
+        } else if (cacheFile->exists())
+            qWarning() << "ERROR: Couldn't read models.json cache file: " << cacheFile->fileName();
     }
     delete jsonReply;
 }
@@ -1391,12 +1396,14 @@ void ModelList::updateModelsFromJsonAsync()
 {
     m_asyncModelRequestOngoing = true;
     emit asyncModelRequestOngoingChanged();
+    QString modelsJsonFname = modelsJsonFilename();
 
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
+
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -1459,17 +1466,14 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     }
 
     if (save) {
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
-        QFile file(modelsConfig);
-        if (!file.open(QIODeviceBase::WriteOnly)) {
-            qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;
-        } else {
-            file.write(jsonData);
-            file.close();
-        }
+        auto cacheFile = modelsJsonCacheFile();
+        if (!cacheFile) {
+            // no known location
+        } else if (QFileInfo(*cacheFile).dir().mkpath(u"."_s) && cacheFile->open(QIODeviceBase::WriteOnly)) {
+            cacheFile->write(jsonData);
+            cacheFile->close();
+        } else
+            qWarning() << "ERROR: Couldn't write models config file: " << cacheFile->fileName();
     }
 
     QJsonArray jsonArray = document.array();
@@ -1928,7 +1932,6 @@ void ModelList::clearDiscoveredModels()
     }
     for (ModelInfo &info : infos)
         removeInternal(info);
-    emit layoutChanged();
 }
 
 float ModelList::discoverProgress() const
@@ -2100,7 +2103,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
     emit discoverProgressChanged();
     if (!m_discoverNumberOfResults) {
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 }
 
@@ -2176,9 +2179,8 @@ void ModelList::handleDiscoveryItemFinished()
     emit discoverProgressChanged();
 
     if (discoverProgress() >= 1.0) {
-        emit layoutChanged();
         m_discoverInProgress = false;
-        emit discoverInProgressChanged();;
+        emit discoverInProgressChanged();
     }
 
     reply->deleteLater();

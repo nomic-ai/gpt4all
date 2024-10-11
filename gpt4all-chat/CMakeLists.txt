@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
+include(../common/common.cmake)
+
 set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 3)
-set(APP_VERSION_PATCH 0)
+set(APP_VERSION_MINOR 4)
+set(APP_VERSION_PATCH 1)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
-set(APP_VERSION "${APP_VERSION_BASE}-dev0")
+set(APP_VERSION "${APP_VERSION_BASE}")
 
 project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
@@ -86,14 +88,9 @@ get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
 message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(FMT_INSTALL OFF)
-set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(deps/fmt)
-set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-
+add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(CHAT_EXE_RESOURCES)
@@ -114,8 +111,6 @@ elseif (APPLE)
 
     # And the following tells CMake where to find and install the file itself.
     set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
-    set_source_files_properties(${APP_ICON_RESOURCE} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources")
     list(APPEND CHAT_EXE_RESOURCES "${APP_ICON_RESOURCE}")
 endif()
 
@@ -135,13 +130,87 @@ if (APPLE)
     list(APPEND CHAT_EXE_RESOURCES "${LOCAL_EMBEDDING_MODEL_PATH}")
 endif()
 
-set(QAPPLICATION_CLASS QGuiApplication)
-add_subdirectory(deps/SingleApplication)
-add_subdirectory(src)
+if (DEFINED GGML_METALLIB)
+    set_source_files_properties("${GGML_METALLIB}" PROPERTIES GENERATED ON)
+endif()
+if (APPLE)
+    set_source_files_properties(${CHAT_EXE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
-target_sources(chat PRIVATE ${APP_ICON_RESOURCE} ${CHAT_EXE_RESOURCES})
+qt_add_executable(chat
+    src/main.cpp
+    src/chat.cpp                  src/chat.h
+    src/chatapi.cpp               src/chatapi.h
+    src/chatlistmodel.cpp         src/chatlistmodel.h
+    src/chatllm.cpp               src/chatllm.h
+    src/chatmodel.h
+    src/chatviewtextprocessor.cpp src/chatviewtextprocessor.h
+    src/database.cpp              src/database.h
+    src/download.cpp              src/download.h
+    src/embllm.cpp                src/embllm.h
+    src/llm.cpp                   src/llm.h
+    src/localdocs.cpp             src/localdocs.h
+    src/localdocsmodel.cpp        src/localdocsmodel.h
+    src/logger.cpp                src/logger.h
+    src/modellist.cpp             src/modellist.h
+    src/mysettings.cpp            src/mysettings.h
+    src/network.cpp               src/network.h
+    src/server.cpp                src/server.h
+    src/xlsxtomd.cpp              src/xlsxtomd.h
+    ${CHAT_EXE_RESOURCES}
+)
+gpt4all_add_warning_options(chat)
 
-qt_target_qml_sources(chat
+qt_add_qml_module(chat
+    URI gpt4all
+    VERSION 1.0
+    NO_CACHEGEN
+    QML_FILES
+      main.qml
+      qml/AddCollectionView.qml
+      qml/AddModelView.qml
+      qml/ApplicationSettings.qml
+      qml/ChatDrawer.qml
+      qml/ChatView.qml
+      qml/CollectionsDrawer.qml
+      qml/HomeView.qml
+      qml/LocalDocsSettings.qml
+      qml/LocalDocsView.qml
+      qml/ModelSettings.qml
+      qml/ModelsView.qml
+      qml/NetworkDialog.qml
+      qml/NewVersionDialog.qml
+      qml/PopupDialog.qml
+      qml/SettingsView.qml
+      qml/StartupDialog.qml
+      qml/SwitchModelDialog.qml
+      qml/Theme.qml
+      qml/ThumbsDownDialog.qml
+      qml/Toast.qml
+      qml/ToastManager.qml
+      qml/MyBusyIndicator.qml
+      qml/MyButton.qml
+      qml/MyCheckBox.qml
+      qml/MyComboBox.qml
+      qml/MyDialog.qml
+      qml/MyDirectoryField.qml
+      qml/MyFileDialog.qml
+      qml/MyFolderDialog.qml
+      qml/MyFancyLink.qml
+      qml/MyMenu.qml
+      qml/MyMenuItem.qml
+      qml/MyMiniButton.qml
+      qml/MySettingsButton.qml
+      qml/MySettingsDestructiveButton.qml
+      qml/MySettingsLabel.qml
+      qml/MySettingsStack.qml
+      qml/MySettingsTab.qml
+      qml/MySlug.qml
+      qml/MyTextArea.qml
+      qml/MyTextButton.qml
+      qml/MyTextField.qml
+      qml/MyToolButton.qml
+      qml/MyWelcomeButton.qml
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -159,9 +228,11 @@ qt_target_qml_sources(chat
       icons/edit.svg
       icons/eject.svg
       icons/email.svg
+      icons/file-doc.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
+      icons/file-xls.svg
       icons/file.svg
       icons/github.svg
       icons/globe.svg
@@ -179,7 +250,9 @@ qt_target_qml_sources(chat
       icons/network.svg
       icons/nomic_logo.svg
       icons/notes.svg
+      icons/paperclip.svg
       icons/plus.svg
+      icons/plus_circle.svg
       icons/recycle.svg
       icons/regenerate.svg
       icons/search.svg
@@ -192,6 +265,7 @@ qt_target_qml_sources(chat
       icons/trash.svg
       icons/twitter.svg
       icons/up_down.svg
+      icons/webpage.svg
       icons/you.svg
 )
 
@@ -223,19 +297,20 @@ if (APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER gpt4all
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        RESOURCE "${CHAT_EXE_RESOURCES}"
         OUTPUT_NAME gpt4all
     )
     add_dependencies(chat ggml-metal)
+endif()
 
-    if(NOT MAC_SIGNING_IDENTITY)
-        if(NOT DEFINED ENV{MAC_SIGNING_CERT_NAME} AND GPT4ALL_SIGN_INSTALL)
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
+    if (NOT MAC_SIGNING_IDENTITY)
+        if (NOT DEFINED ENV{MAC_SIGNING_CERT_NAME})
             REPORT_MISSING_SIGNING_CONTEXT()
         endif()
         set(MAC_SIGNING_IDENTITY $ENV{MAC_SIGNING_CERT_NAME})
     endif()
-    if(NOT MAC_SIGNING_TID)
-        if(NOT DEFINED ENV{MAC_NOTARIZATION_TID} AND GPT4ALL_SIGN_INSTALL)
+    if (NOT MAC_SIGNING_TID)
+        if (NOT DEFINED ENV{MAC_NOTARIZATION_TID})
             REPORT_MISSING_SIGNING_CONTEXT()
         endif()
         set(MAC_SIGNING_TID $ENV{MAC_NOTARIZATION_TID})
@@ -265,7 +340,7 @@ target_include_directories(chat PRIVATE deps/usearch/include
 target_link_libraries(chat
     PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
 
 
 # -- install --

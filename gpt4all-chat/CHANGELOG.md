@@ -4,7 +4,43 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.4.1] - 2024-10-11
+
+### Fixed
+- Improve the Italian translation ([#3048](https://github.com/nomic-ai/gpt4all/pull/3048))
+- Fix models.json cache location ([#3052](https://github.com/nomic-ai/gpt4all/pull/3052))
+- Fix LocalDocs regressions caused by docx change ([#3079](https://github.com/nomic-ai/gpt4all/pull/3079))
+- Fix Go code being highlighted as Java ([#3080](https://github.com/nomic-ai/gpt4all/pull/3080))
+
+## [3.4.0] - 2024-10-08
+
+### Added
+- Add bm25 hybrid search to localdocs ([#2969](https://github.com/nomic-ai/gpt4all/pull/2969))
+- LocalDocs support for .docx files ([#2986](https://github.com/nomic-ai/gpt4all/pull/2986))
+- Add support for attaching Excel spreadsheet to chat ([#3007](https://github.com/nomic-ai/gpt4all/pull/3007), [#3028](https://github.com/nomic-ai/gpt4all/pull/3028))
+
+### Changed
+- Rebase llama.cpp on latest upstream as of September 26th ([#2998](https://github.com/nomic-ai/gpt4all/pull/2998))
+- Change the error message when a message is too long ([#3004](https://github.com/nomic-ai/gpt4all/pull/3004))
+- Simplify chatmodel to get rid of unnecessary field and bump chat version ([#3016](https://github.com/nomic-ai/gpt4all/pull/3016))
+- Allow ChatLLM to have direct access to ChatModel for restoring state from text ([#3018](https://github.com/nomic-ai/gpt4all/pull/3018))
+- Improvements to XLSX conversion and UI fix ([#3022](https://github.com/nomic-ai/gpt4all/pull/3022))
+
+### Fixed
+- Fix a crash when attempting to continue a chat loaded from disk ([#2995](https://github.com/nomic-ai/gpt4all/pull/2995))
+- Fix the local server rejecting min\_p/top\_p less than 1 ([#2996](https://github.com/nomic-ai/gpt4all/pull/2996))
+- Fix "regenerate" always forgetting the most recent message ([#3011](https://github.com/nomic-ai/gpt4all/pull/3011))
+- Fix loaded chats forgetting context when there is a system prompt ([#3015](https://github.com/nomic-ai/gpt4all/pull/3015))
+- Make it possible to downgrade and keep some chats, and avoid crash for some model types ([#3030](https://github.com/nomic-ai/gpt4all/pull/3030))
+- Fix scroll positition being reset in model view, and attempt a better fix for the clone issue ([#3042](https://github.com/nomic-ai/gpt4all/pull/3042))
+
+## [3.3.1] - 2024-09-27 ([v3.3.y](https://github.com/nomic-ai/gpt4all/tree/v3.3.y))
+
+### Fixed
+- Fix a crash when attempting to continue a chat loaded from disk ([#2995](https://github.com/nomic-ai/gpt4all/pull/2995))
+- Fix the local server rejecting min\_p/top\_p less than 1 ([#2996](https://github.com/nomic-ai/gpt4all/pull/2996))
+
+## [3.3.0] - 2024-09-20
 
 ### Added
 - Use greedy sampling when temperature is set to zero ([#2854](https://github.com/nomic-ai/gpt4all/pull/2854))
@@ -29,7 +65,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix the antenna icon tooltip when using the local server ([#2922](https://github.com/nomic-ai/gpt4all/pull/2922))
 - Fix a few issues with locating files and handling errors when loading remote models on startup ([#2875](https://github.com/nomic-ai/gpt4all/pull/2875))
 - Significantly improve API server request parsing and response correctness ([#2929](https://github.com/nomic-ai/gpt4all/pull/2929))
-- Removed unnecessary dependency on Qt WaylandCompositor module ([#2949](https://github.com/nomic-ai/gpt4all/pull/2949))
+- Remove unnecessary dependency on Qt WaylandCompositor module ([#2949](https://github.com/nomic-ai/gpt4all/pull/2949))
+- Update translations ([#2970](https://github.com/nomic-ai/gpt4all/pull/2970))
+- Fix macOS installer and remove extra installed copy of Nomic Embed ([#2973](https://github.com/nomic-ai/gpt4all/pull/2973))
 
 ## [3.2.1] - 2024-08-13
 
@@ -117,7 +155,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...HEAD
+[3.4.1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.0...v3.4.1
+[3.4.0]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.4.0
+[3.3.1]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.3.1
+[3.3.0]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...v3.3.0
 [3.2.1]: https://github.com/nomic-ai/gpt4all/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/nomic-ai/gpt4all/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/nomic-ai/gpt4all/compare/v3.1.0...v3.1.1

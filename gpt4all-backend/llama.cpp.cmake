@@ -978,10 +978,13 @@ function(include_ggml SUFFIX)
 
     add_library(llama${SUFFIX} STATIC
                 ${DIRECTORY}/include/llama.h
+                ${DIRECTORY}/src/llama-grammar.cpp
+                ${DIRECTORY}/src/llama-sampling.cpp
+                ${DIRECTORY}/src/llama-vocab.cpp
                 ${DIRECTORY}/src/llama.cpp
-                ${DIRECTORY}/src/unicode.h
-                ${DIRECTORY}/src/unicode.cpp
                 ${DIRECTORY}/src/unicode-data.cpp
+                ${DIRECTORY}/src/unicode.cpp
+                ${DIRECTORY}/src/unicode.h
                 )
 
     target_include_directories(llama${SUFFIX} PUBLIC  ${DIRECTORY}/include ${DIRECTORY}/ggml/include)

@@ -55,7 +55,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
-    { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
+    { "localdocs/fileExtensions", QStringList { "docx", "pdf", "txt", "md", "rst" } },
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
     { "localdocs/embedDevice",    "Auto" },
@@ -186,7 +186,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelTemperature(info, info.m_temperature);
     setModelTopP(info, info.m_topP);
     setModelMinP(info, info.m_minP);
-    setModelTopK(info, info.m_topK);;
+    setModelTopK(info, info.m_topK);
     setModelMaxLength(info, info.m_maxLength);
     setModelPromptBatchSize(info, info.m_promptBatchSize);
     setModelContextLength(info, info.m_contextLength);

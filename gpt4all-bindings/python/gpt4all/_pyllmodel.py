@@ -3,7 +3,6 @@ from __future__ import annotations
 import ctypes
 import os
 import platform
-import re
 import subprocess
 import sys
 import textwrap
@@ -28,16 +27,25 @@ if TYPE_CHECKING:
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
+cuda_found: bool = False
+
+
+# TODO(jared): use operator.call after we drop python 3.10 support
+def _operator_call(obj, /, *args, **kwargs):
+    return obj(*args, **kwargs)
+
 
 # Detect Rosetta 2
-if platform.system() == "Darwin" and platform.processor() == "i386":
-    if subprocess.run(
-        "sysctl -n sysctl.proc_translated".split(), check=True, capture_output=True, text=True,
-    ).stdout.strip() == "1":
-        raise RuntimeError(textwrap.dedent("""\
-            Running GPT4All under Rosetta is not supported due to CPU feature requirements.
-            Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
-        """).strip())
+@_operator_call
+def check_rosetta() -> None:
+    if platform.system() == "Darwin" and platform.processor() == "i386":
+        p = subprocess.run("sysctl -n sysctl.proc_translated".split(), capture_output=True, text=True)
+        if p.returncode == 0 and p.stdout.strip() == "1":
+            raise RuntimeError(textwrap.dedent("""\
+                Running GPT4All under Rosetta is not supported due to CPU feature requirements.
+                Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
+            """).strip())
+
 
 # Check for C++ runtime libraries
 if platform.system() == "Windows":
@@ -53,33 +61,35 @@ if platform.system() == "Windows":
         """), file=sys.stderr)
 
 
-def _load_cuda(rtver: str, blasver: str) -> None:
-    if platform.system() == "Linux":
-        cudalib   = f"lib/libcudart.so.{rtver}"
-        cublaslib = f"lib/libcublas.so.{blasver}"
-    else:  # Windows
-        cudalib   = fr"bin\cudart64_{rtver.replace('.', '')}.dll"
-        cublaslib = fr"bin\cublas64_{blasver}.dll"
+@_operator_call
+def find_cuda() -> None:
+    global cuda_found
 
-    # preload the CUDA libs so the backend can find them
-    ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
-    ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
+    def _load_cuda(rtver: str, blasver: str) -> None:
+        if platform.system() == "Linux":
+            cudalib   = f"lib/libcudart.so.{rtver}"
+            cublaslib = f"lib/libcublas.so.{blasver}"
+        else:  # Windows
+            cudalib   = fr"bin\cudart64_{rtver.replace('.', '')}.dll"
+            cublaslib = fr"bin\cublas64_{blasver}.dll"
 
+        # preload the CUDA libs so the backend can find them
+        ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
+        ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
 
-# Find CUDA libraries from the official packages
-cuda_found = False
-if platform.system() in ("Linux", "Windows"):
-    try:
-        from nvidia import cuda_runtime, cublas
-    except ImportError:
-        pass  # CUDA is optional
-    else:
-        for rtver, blasver in [("12", "12"), ("11.0", "11")]:
-            try:
-                _load_cuda(rtver, blasver)
-                cuda_found = True
-            except OSError:  # dlopen() does not give specific error codes
-                pass  # try the next one
+    # Find CUDA libraries from the official packages
+    if platform.system() in ("Linux", "Windows"):
+        try:
+            from nvidia import cuda_runtime, cublas
+        except ImportError:
+            pass  # CUDA is optional
+        else:
+            for rtver, blasver in [("12", "12"), ("11.0", "11")]:
+                try:
+                    _load_cuda(rtver, blasver)
+                    cuda_found = True
+                except OSError:  # dlopen() does not give specific error codes
+                    pass  # try the next one
 
 
 # TODO: provide a config file to make this more robust
@@ -121,6 +131,7 @@ class LLModelPromptContext(ctypes.Structure):
         ("context_erase", ctypes.c_float),
     ]
 
+
 class LLModelGPUDevice(ctypes.Structure):
     _fields_ = [
         ("backend", ctypes.c_char_p),
@@ -130,6 +141,7 @@ class LLModelGPUDevice(ctypes.Structure):
         ("name", ctypes.c_char_p),
         ("vendor", ctypes.c_char_p),
     ]
+
 
 # Define C function signatures using ctypes
 llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
@@ -540,7 +552,6 @@ class LLModel:
             ctypes.c_char_p(),
         )
 
-
     def prompt_model_streaming(
         self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
@@ -589,16 +600,16 @@ class LLModel:
             decoded = []
 
             for byte in response:
-                
+
                 bits = "{:08b}".format(byte)
                 (high_ones, _, _) = bits.partition('0')
 
-                if len(high_ones) == 1: 
+                if len(high_ones) == 1:
                     # continuation byte
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes -= 1
 
-                else: 
+                else:
                     # beginning of a byte sequence
                     if len(self.buffer) > 0:
                         decoded.append(self.buffer.decode(errors='replace'))
@@ -608,18 +619,18 @@ class LLModel:
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes = max(0, len(high_ones) - 1)
 
-                if self.buff_expecting_cont_bytes <= 0: 
+                if self.buff_expecting_cont_bytes <= 0:
                     # received the whole sequence or an out of place continuation byte
                     decoded.append(self.buffer.decode(errors='replace'))
 
                     self.buffer.clear()
                     self.buff_expecting_cont_bytes = 0
-                    
+
             if len(decoded) == 0 and self.buff_expecting_cont_bytes > 0:
                 # wait for more continuation bytes
                 return True
-            
-            return callback(token_id, ''.join(decoded))     
+
+            return callback(token_id, ''.join(decoded))
 
         return _raw_callback
 

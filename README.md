@@ -15,7 +15,7 @@
   Read about what's new in <a href="https://www.nomic.ai/blog/tag/gpt4all">our blog</a>.
 </p>
 <p align="center">
-  <a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Subscribe to the newsletter</a>
+  <a href="https://nomic.ai/gpt4all/#newsletter-form">Subscribe to the newsletter</a>
 </p>
 
 https://github.com/nomic-ai/gpt4all/assets/70534565/513a0f15-4964-4109-89e4-4f9a9011f311

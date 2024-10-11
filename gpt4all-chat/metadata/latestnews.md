@@ -1,10 +1,20 @@
 ## Latest News
 
-Version 3.2.1 has now been released which fixes an issue with poor quality responses on NVIDIA GPUs in 3.2.0. The new 3.2 minor version brings:
+<br/>
 
-* **Official Language Translations**: Translations for Simplified Chinese, Traditional Chinese, Italian, Portuguese, Romanian, and Spanish.<br/>
-  Go to Settings > Language and Locale to change the application language.
-* **Context Window Improvements**: Significantly faster context recalculation when context runs out
-* **Bugfixes**: Models no longer stop generating when they run out of context
+**UPDATE:** We are aware of problems with LocalDocs in v3.4.0 including hangs and missing words in references. We are working on a fix.
 
-Also, Qwen2-1.5B-Instruct was recently added to the model list, which has good Chinese support.
+---
+
+<br/>
+
+GPT4All v3.4.0 was released on October 8th. Changes include:
+
+* **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.
+* **LocalDocs Accuracy:** The LocalDocs algorithm has been enhanced to find more accurate references for some queries.
+* **Word Document Support:** LocalDocs now supports Microsoft Word (.docx) documents natively.
+  * **IMPORTANT NOTE:** If .docx files are not found, make sure Settings > LocalDocs > Allowed File Extensions includes "docx".
+* **Forgetful Model Fixes:** Issues with the "Redo last chat response" button, and with continuing chats from previous sessions, have been fixed.
+* **Chat Saving Improvements:** On exit, GPT4All will no longer save chats that are not new or modified. As a bonus, downgrading without losing access to all chats will be possible in the future, should the need arise.
+* **UI Fixes:** The model list no longer scrolls to the top when you start downloading a model.
+* **New Models:** LLama 3.2 Instruct 3B and 1B models now available in model list.
