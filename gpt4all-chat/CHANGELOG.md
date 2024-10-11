@@ -4,9 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.4.1] - 2024-10-11
 
 ### Fixed
+- Improve the Italian translation ([#3048](https://github.com/nomic-ai/gpt4all/pull/3048))
 - Fix models.json cache location ([#3052](https://github.com/nomic-ai/gpt4all/pull/3052))
 - Fix LocalDocs regressions caused by docx change ([#3079](https://github.com/nomic-ai/gpt4all/pull/3079))
 - Fix Go code being highlighted as Java ([#3080](https://github.com/nomic-ai/gpt4all/pull/3080))
@@ -154,7 +155,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.4.0...HEAD
+[3.4.1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.0...v3.4.1
 [3.4.0]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.4.0
 [3.3.1]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/nomic-ai/gpt4all/compare/v3.2.1...v3.3.0
