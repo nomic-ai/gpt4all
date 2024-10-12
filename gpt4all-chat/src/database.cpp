@@ -233,10 +233,15 @@ static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
 )"_s;
 
 static const QString SELECT_CHUNKS_FTS_SQL = uR"(
-    select id, bm25(chunks_fts) as score
-    from chunks_fts
+    select c.id, bm25(chunks_fts) as score
+    from chunks_fts fts
+    join chunks c on fts.id = c.id
+    join documents d on c.document_id = d.id
+    join collection_items ci on d.folder_id = ci.folder_id
+    join collections co on ci.collection_id = co.id
     where chunks_fts match ?
-    order by score limit %1;
+    and co.name in ('%1')
+    order by score limit %2;
 )"_s;
 
 #define NAMED_PAIR(name, typea, a, typeb, b) \
@@ -2328,7 +2333,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
     QList<BM25Query> bm25Queries = queriesForFTS5(query);
 
     QSqlQuery sqlQuery(m_db);
-    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
+    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(collections.join("', '"), QString::number(k)));
 
     QList<SearchResult> results;
     for (auto &bm25Query : std::as_const(bm25Queries)) {
