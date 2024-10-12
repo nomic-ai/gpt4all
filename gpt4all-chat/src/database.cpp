@@ -2336,6 +2336,7 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
     QSqlQuery sqlQuery(m_db);
     sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(collections.join("', '"), QString::number(k)));
 
+    bool foundQuery = false;
     QList<SearchResult> results;
     for (auto &bm25Query : std::as_const(bm25Queries)) {
         sqlQuery.addBindValue(bm25Query.query);
@@ -2347,16 +2348,19 @@ QList<int> Database::searchBM25(const QString &query, const QList<QString> &coll
 
         if (sqlQuery.next()) {
             // Save the query that was used to produce results
+            foundQuery = true;
             bm25q = bm25Query;
             break;
         }
     }
 
-    do {
-        const int chunkId = sqlQuery.value(0).toInt();
-        const float score = sqlQuery.value(1).toFloat();
-        results.append({chunkId, score});
-    } while (sqlQuery.next());
+    if (foundQuery) {
+        do {
+            const int chunkId = sqlQuery.value(0).toInt();
+            const float score = sqlQuery.value(1).toFloat();
+            results.append({chunkId, score});
+        } while (sqlQuery.next());
+    }
 
     k = qMin(k, results.size());
     std::partial_sort(
