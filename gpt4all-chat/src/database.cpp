@@ -2579,7 +2579,7 @@ bool Database::cleanDB()
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
         QFileInfo info(document_path);
-        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix()))
+        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix(), Qt::CaseInsensitive))
             continue;
 
 #if defined(DEBUG)
