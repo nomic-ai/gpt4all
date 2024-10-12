@@ -41,7 +41,9 @@ class QTimer;
 
 /* Version 0: GPT4All v2.4.3, full-text search
  * Version 1: GPT4All v2.5.3, embeddings in hsnwlib
- * Version 2: GPT4All v3.0.0, embeddings in sqlite */
+ * Version 2: GPT4All v3.0.0, embeddings in sqlite
+ * Version 3: GPT4All v3.4.0, hybrid search
+ */
 
 // minimum supported version
 static const int LOCALDOCS_MIN_VER = 1;
