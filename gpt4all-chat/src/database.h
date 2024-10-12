@@ -47,6 +47,11 @@ class QTimer;
 
 // minimum supported version
 static const int LOCALDOCS_MIN_VER = 1;
+
+// FIXME: (Adam) The next time we bump the version we should add triggers to manage the fts external
+// content table as recommended in the official documentation to keep the fts index in sync
+// See: https://www.sqlite.org/fts5.html#external_content_tables
+
 // current version
 static const int LOCALDOCS_VERSION = 3;
 
@@ -254,6 +259,7 @@ private:
     void enqueueDocumentInternal(DocumentInfo &&info, bool prepend = false);
     void enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos);
     void scanQueue();
+    bool ftsIntegrityCheck();
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);

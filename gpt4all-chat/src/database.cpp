@@ -1820,6 +1820,7 @@ void Database::start()
         m_databaseValid = false;
     } else {
         cleanDB();
+        ftsIntegrityCheck();
         QSqlQuery q(m_db);
         if (!refreshDocumentIdCache(q)) {
             m_databaseValid = false;
@@ -2527,6 +2528,35 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     for (int id : searchResults)
         if (tempResults.contains(id))
             results->append(tempResults.value(id));
+}
+
+bool Database::ftsIntegrityCheck()
+{
+    bool isConsistent = false;
+
+    QSqlQuery q(m_db);
+    if (!q.prepare("insert into chunks_fts(chunks_fts, rank) values('integrity-check', 1);")) {
+        qWarning() << "ERROR: Cannot prepare sql for fts integrity check" << q.lastError();
+        return false;
+    }
+
+    // Returns an error executing sql if it the integrity check fails
+    // See: https://www.sqlite.org/fts5.html#the_integrity_check_command
+    isConsistent = q.exec();
+
+    if (!isConsistent) {
+        if (!q.prepare("insert into chunks_fts(chunks_fts) values('rebuild');")) {
+            qWarning() << "ERROR: Cannot prepare sql for fts rebuild" << q.lastError();
+            return false;
+        }
+
+        if (!q.exec()) {
+            qWarning() << "ERROR: Cannot exec sql for fts rebuild" << q.lastError();
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // FIXME This is very slow and non-interruptible and when we close the application and we're
