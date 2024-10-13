@@ -176,6 +176,7 @@ MySettingsTab {
                     ListElement { text: qsTr("Application default") }
                     Component.onCompleted: {
                         MySettings.embeddingsDeviceList.forEach(d => append({"text": d}));
+                        deviceBox.updateModel();
                     }
                 }
                 Accessible.name: deviceLabel.text
