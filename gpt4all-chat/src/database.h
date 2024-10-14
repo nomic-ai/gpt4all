@@ -156,7 +156,7 @@ Q_DECLARE_METATYPE(CollectionItem)
 
 class ChunkStreamer {
 public:
-    enum class Status { DOC_COMPLETE, INTERRUPTED, ERROR, BINARY_SEEN };
+    enum class Status { DOC_COMPLETE, ERROR, BINARY_SEEN };
 
     explicit ChunkStreamer(Database *database);
     ~ChunkStreamer();
@@ -196,7 +196,6 @@ public:
 
 public Q_SLOTS:
     void start();
-    bool scanQueueInterrupted() const;
     void scanQueueBatch();
     void scanDocuments(int folder_id, const QString &folder_path);
     void forceIndexing(const QString &collection, const QString &embedding_model);
@@ -290,7 +289,6 @@ private:
     int m_chunkSize;
     QStringList m_scannedFileExtensions;
     QTimer *m_scanIntervalTimer;
-    QElapsedTimer m_scanDurationTimer;
     std::map<int, std::list<DocumentInfo>> m_docsToScan;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;

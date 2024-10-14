@@ -1363,10 +1363,6 @@ ChunkStreamer::Status ChunkStreamer::step()
             m_docKey.reset(); // done processing
             return *error;
         }
-        if (m_database->scanQueueInterrupted()) {
-            retval = Status::INTERRUPTED;
-            break;
-        }
 
         // get a word, if needed
         std::optional<QString> word = QString(); // empty string to disable EOF logic
@@ -1615,19 +1611,12 @@ void Database::enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos)
     m_scanIntervalTimer->start();
 }
 
-bool Database::scanQueueInterrupted() const
-{
-    return m_scanDurationTimer.elapsed() >= 100;
-}
-
 void Database::scanQueueBatch()
 {
-    m_scanDurationTimer.start();
-
     transaction();
 
-    // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.empty() && !scanQueueInterrupted())
+    // scan for up to some timeout or until we run out of documents
+    while (!m_docsToScan.empty())
         scanQueue();
 
     commit();
@@ -1737,10 +1726,6 @@ void Database::scanQueue()
     }
 
     switch (m_chunkStreamer.step()) {
-    case ChunkStreamer::Status::INTERRUPTED:
-        info.currentlyProcessing = true;
-        enqueueDocumentInternal(std::move(info), /*prepend*/ true);
-        return updateFolderToIndex(folder_id, countForFolder + 1);
     case ChunkStreamer::Status::BINARY_SEEN:
         /* When we see a binary file, we treat it like an empty file so we know not to
          * scan it again. All existing chunks are removed, and in-progress embeddings
