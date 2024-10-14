@@ -35,6 +35,37 @@ MySettingsTab {
                 color: theme.styledTextColor
                 font.pixelSize: theme.fontSizeLarge
                 font.bold: true
+                text: qsTr("Behavior")
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.settingsDivider
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                id: automaticUpdateLabel
+                text: qsTr("Automatic Update")
+                helpText: qsTr("Whenever a file or folder changes it should automatically be re-indexed/embedded.")
+            }
+            MyCheckBox {
+                id: automaticUpdateBox
+                checked: MySettings.localDocsAutomaticUpdate
+                onClicked: {
+                    MySettings.localDocsAutomaticUpdate = !MySettings.localDocsAutomaticUpdate
+                }
+            }
+        }
+
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
                 text: qsTr("Indexing")
             }
 

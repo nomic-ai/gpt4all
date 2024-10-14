@@ -210,6 +210,9 @@ Rectangle {
                                             if (model.currentEmbeddingsToIndex !== 0)
                                                  return theme.altProgressBackground
 
+                                            if (model.outOfDate)
+                                                 return theme.altProgressBackground
+
                                             if (model.forceIndexing)
                                                 return theme.red200
 
@@ -247,6 +250,9 @@ Rectangle {
                                         if (model.currentEmbeddingsToIndex !== 0)
                                             return theme.altProgressText
 
+                                        if (model.outOfDate)
+                                            return theme.altProgressText
+
                                         if (model.forceIndexing)
                                             return theme.textErrorColor
 
@@ -266,6 +272,9 @@ Rectangle {
 
                                         if (model.forceIndexing)
                                             return qsTr("REQUIRES UPDATE")
+
+                                        if (model.outOfDate)
+                                            return qsTr("OUT OF DATE")
 
                                         if (model.installed)
                                             return qsTr("READY")
@@ -305,8 +314,11 @@ Rectangle {
                                     if (model.forceIndexing)
                                         return qsTr("This collection requires an update after version change")
 
+                                    if (model.outOfDate)
+                                        return qsTr("This collection is out of date and needs to be rebuilt")
+
                                     if (model.installed)
-                                        return qsTr("Automatically reindexes upon changes to the folder")
+                                        return qsTr("This collection is up to date")
 
                                     return qsTr("Installation in progress")
                                 }

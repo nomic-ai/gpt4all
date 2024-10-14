@@ -134,6 +134,7 @@ struct CollectionItem {
     bool installed = false;
     bool indexing = false;
     bool forceIndexing = false;
+    bool outOfDate = false;
     QString error;
 
     // progress
@@ -189,7 +190,7 @@ class Database : public QObject
 {
     Q_OBJECT
 public:
-    Database(int chunkSize, QStringList extensions);
+    Database(bool automaticUpdate, int chunkSize, QStringList extensions);
     ~Database() override;
 
     bool isValid() const { return m_databaseValid; }
@@ -198,7 +199,7 @@ public Q_SLOTS:
     void start();
     bool scanQueueInterrupted() const;
     void scanQueueBatch();
-    void scanDocuments(int folder_id, const QString &folder_path);
+    void scanDocuments(int folder_id, const QString &folder_path, bool forceIndexing);
     void forceIndexing(const QString &collection, const QString &embedding_model);
     void forceRebuildFolder(const QString &path);
     bool addFolder(const QString &collection, const QString &path, const QString &embedding_model);
@@ -250,6 +251,7 @@ private:
     DocumentInfo dequeueDocument();
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(DocumentInfo &&info, bool prepend = false);
+    bool isOutOfDate(int folder_id, std::list<DocumentInfo> &&infos) const;
     void enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos);
     void scanQueue();
     bool cleanDB();
@@ -287,6 +289,7 @@ private:
 
 private:
     QSqlDatabase m_db;
+    bool m_automaticUpdate;
     int m_chunkSize;
     QStringList m_scannedFileExtensions;
     QTimer *m_scanIntervalTimer;

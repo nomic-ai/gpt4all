@@ -59,6 +59,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
     { "localdocs/embedDevice",    "Auto" },
+    { "localdocs/automaticUpdate",false },
     { "network/attribution",      "" },
 };
 
@@ -224,6 +225,7 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsUseRemoteEmbed(basicDefaults.value("localdocs/useRemoteEmbed").toBool());
     setLocalDocsNomicAPIKey(basicDefaults.value("localdocs/nomicAPIKey").toString());
     setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
+    setLocalDocsAutomaticUpdate(basicDefaults.value("localdocs/automaticUpdate").toBool());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
@@ -455,6 +457,7 @@ QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting
 bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
 QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
 QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
+bool        MySettings::localDocsAutomaticUpdate() const{ return getBasicSetting("localdocs/automaticUpdate").toBool(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 
 ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
@@ -473,6 +476,7 @@ void MySettings::setLocalDocsFileExtensions(const QStringList &value) { setBasic
 void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasicSetting("localdocs/useRemoteEmbed", value, "localDocsUseRemoteEmbed"); }
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
+void MySettings::setLocalDocsAutomaticUpdate(bool value)              { setBasicSetting("localdocs/automaticUpdate",value, "localDocsAutomaticUpdate"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 
 void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
