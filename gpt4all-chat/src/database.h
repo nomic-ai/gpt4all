@@ -52,6 +52,9 @@ static const int LOCALDOCS_MIN_VER = 1;
 // content table as recommended in the official documentation to keep the fts index in sync
 // See: https://www.sqlite.org/fts5.html#external_content_tables
 
+// FIXME: (Adam) The fts virtual table should include the chunk_id expicitly instead of relying upon
+// the id of the two tables to be in sync
+
 // current version
 static const int LOCALDOCS_VERSION = 3;
 
