@@ -41,10 +41,20 @@ class QTimer;
 
 /* Version 0: GPT4All v2.4.3, full-text search
  * Version 1: GPT4All v2.5.3, embeddings in hsnwlib
- * Version 2: GPT4All v3.0.0, embeddings in sqlite */
+ * Version 2: GPT4All v3.0.0, embeddings in sqlite
+ * Version 3: GPT4All v3.4.0, hybrid search
+ */
 
 // minimum supported version
 static const int LOCALDOCS_MIN_VER = 1;
+
+// FIXME: (Adam) The next time we bump the version we should add triggers to manage the fts external
+// content table as recommended in the official documentation to keep the fts index in sync
+// See: https://www.sqlite.org/fts5.html#external_content_tables
+
+// FIXME: (Adam) The fts virtual table should include the chunk_id explicitly instead of relying upon
+// the id of the two tables to be in sync
+
 // current version
 static const int LOCALDOCS_VERSION = 3;
 
@@ -252,6 +262,7 @@ private:
     void enqueueDocumentInternal(DocumentInfo &&info, bool prepend = false);
     void enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos);
     void scanQueue();
+    bool ftsIntegrityCheck();
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
