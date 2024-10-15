@@ -1635,9 +1635,9 @@ bool Database::scanQueueInterrupted() const
 
 void Database::scanQueueBatch()
 {
-    m_scanDurationTimer.start();
-
     transaction();
+
+    m_scanDurationTimer.start();
 
     // scan for up to 100ms or until we run out of documents
     while (!m_docsToScan.empty() && !scanQueueInterrupted())
