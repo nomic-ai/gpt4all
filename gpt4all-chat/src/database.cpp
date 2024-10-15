@@ -1376,10 +1376,6 @@ ChunkStreamer::Status ChunkStreamer::step()
             m_docKey.reset(); // done processing
             return *error;
         }
-        if (m_database->scanQueueInterrupted()) {
-            retval = Status::INTERRUPTED;
-            break;
-        }
 
         // get a word, if needed
         std::optional<QString> word = QString(); // empty string to disable EOF logic
@@ -1471,6 +1467,11 @@ ChunkStreamer::Status ChunkStreamer::step()
                 m_docKey.reset(); // done processing
                 break;
             }
+        }
+
+        if (m_database->scanQueueInterrupted()) {
+            retval = Status::INTERRUPTED;
+            break;
         }
     }
 
