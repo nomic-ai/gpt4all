@@ -19,10 +19,16 @@ parameters:
     default: false
 
 commands:
-  install_qt_macos:
+  install-deps-gui-macos:
     steps:
       - run:
-          name: Installing Qt
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
+          name: Install ccache
+          command: brew install ccache
+      - run:
+          name: Install Qt
           command: |
             curl -OL https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.0.dmg
             hdiutil attach qt-online-installer-macOS-x64-4.8.0.dmg
@@ -32,10 +38,88 @@ commands:
               install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.672.clang_64 qt.qt6.672.qt5compat \
               qt.qt6.672.debug_info qt.qt6.672.addons.qtpdf qt.qt6.672.addons.qthttpserver
             hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.0
-  install_qt_linux:
+  install-deps-backend-macos:
     steps:
       - run:
-          name: Installing Qt
+          name: Install dependencies
+          command: brew install ccache cmake
+  setup-keychain-macos:
+    steps:
+      - run:
+          name: Setup Keychain
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+  sign-chat-installer-macos:
+    steps:
+      - checkout
+      # attach to a workspace containing unsigned dmg
+      - attach_workspace:
+          at: build
+      - setup-keychain-macos
+      - run:
+          name: Sign App Bundle
+          command: |
+            python3 -m pip install click
+            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
+      - run:
+          name: Sign DMG
+          command: |
+            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+  notarize-chat-installer-macos:
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: Notarize
+          command: |
+            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
+      - run:
+          name: Report Notarization Failure
+          command: |
+            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
+            xcrun notarytool log $NID --keychain-profile "notary-profile"
+            exit 1
+          when: on_fail
+      - run:
+          name: Staple
+          command: |
+            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
+      - store_artifacts:
+          path: build/upload
+  install-deps-gui-linux:
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            packages=(
+              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
+              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
+              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
+              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
+              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 python3
+              vulkan-sdk
+            )
+            sudo apt-get update
+            sudo apt-get install -y "${packages[@]}"
+      - run:
+          name: Install Qt
           command: |
             curl -OL https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.0.run
             chmod +x qt-online-installer-linux-x64-4.8.0.run
@@ -44,10 +128,36 @@ commands:
               --email $QT_EMAIL --password $QT_PASSWORD \
               install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.672.gcc_64 qt.qt6.672.qt5compat \
               qt.qt6.672.debug_info qt.qt6.672.addons.qtpdf qt.qt6.672.addons.qthttpserver
-  install_qt_windows:
+  install-deps-gui-installer-linux:
+    steps:
+      - install-deps-gui-linux
+      - run:
+          name: Install patchelf
+          command: sudo apt install -y patchelf
+      - run:
+          name: Build linuxdeployqt
+          command: |
+            git clone https://github.com/nomic-ai/linuxdeployqt
+            cd linuxdeployqt && qmake && sudo make install
+  install-deps-backend-linux:
     steps:
       - run:
-          name: Installing Qt
+          name: Install dependencies
+          command: |
+            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            packages=(
+              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
+              vulkan-sdk
+            )
+            sudo apt-get update
+            sudo apt-get install -y "${packages[@]}"
+  install-deps-gui-windows:
+    steps:
+      - run:
+          name: Install Qt
           command: |
             Invoke-WebRequest -Uri https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.0.exe ^
               -OutFile qt-online-installer-windows-x64-4.8.0.exe
@@ -56,6 +166,60 @@ commands:
               --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} ^
               install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.672.win64_msvc2019_64 qt.qt6.672.qt5compat ^
               qt.qt6.672.debug_info qt.qt6.672.addons.qtpdf qt.qt6.672.addons.qthttpserver
+  install-signing-deps-windows:
+    steps:
+      - run:
+          name: Install Dotnet 8 and Azure Sign Tool
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+  setup-gui-windows:
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:
+          keys:
+            - ccache-gpt4all-win-amd64-
+      - run:
+          name: Install dependencies
+          command: choco install -y ccache
+      - install-deps-gui-windows
+      - run:
+          name: Install VulkanSDK
+          command: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
+      - install-signing-deps-windows
+  sign-chat-installer-windows:
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - install-signing-deps-windows
+      - run:
+          name: Sign Windows Installer With AST
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)/build/upload/gpt4all-installer-win64.exe"
+      - store_artifacts:
+          path: build/upload
 
 jobs:
   build-offline-chat-installer-macos:
@@ -71,22 +235,8 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
-      - run:
-          name: Install Rosetta
-          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache
-      - install_qt_macos
-      - run:
-          name: Setup Keychain
-          command: |
-            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
-            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security default-keychain -s sign.keychain
-            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
-            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+      - install-deps-gui-macos
+      - setup-keychain-macos
       - run:
           name: Build
           no_output_timeout: 30m
@@ -134,61 +284,13 @@ jobs:
     macos:
       xcode: 15.4.0
     steps:
-      - checkout
-      # attach to a workspace containing unsigned dmg
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Setup Keychain"
-          command: |
-            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
-            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security default-keychain -s sign.keychain
-            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
-            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
-            rm cert.p12
-      - run:
-          name: "Sign App Bundle"
-          command: |
-            python3 -m pip install click
-            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
-      - run:
-          name: "Sign DMG"
-          command: |
-            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
-      # add workspace so signing jobs can connect & obtain dmg
-      - persist_to_workspace:
-          root: build
-          # specify path to only include components we want to persist
-          # accross builds
-          paths:
-            - upload
+      - sign-chat-installer-macos
 
   notarize-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
     steps:
-      - checkout
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Notarize"
-          command: |
-            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
-      - run:
-          name: "Report Notarization Failure"
-          command: |
-            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
-            xcrun notarytool log $NID --keychain-profile "notary-profile"
-            exit 1
-          when: on_fail
-      - run:
-          name: "Staple"
-          command: |
-            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
-      - store_artifacts:
-          path: build/upload
+      - notarize-chat-installer-macos
 
   build-online-chat-installer-macos:
     macos:
@@ -203,22 +305,8 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
-      - run:
-          name: Install Rosetta
-          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache
-      - install_qt_macos
-      - run:
-          name: Setup Keychain
-          command: |
-            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
-            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security default-keychain -s sign.keychain
-            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
-            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+      - install-deps-gui-macos
+      - setup-keychain-macos
       - run:
           name: Build
           no_output_timeout: 30m
@@ -267,61 +355,13 @@ jobs:
     macos:
       xcode: 15.4.0
     steps:
-      - checkout
-      # attach to a workspace containing unsigned dmg
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Setup Keychain"
-          command: |
-            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
-            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security default-keychain -s sign.keychain
-            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
-            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
-            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
-            rm cert.p12
-      - run:
-          name: "Sign App Bundle"
-          command: |
-            python3 -m pip install click
-            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
-      - run:
-          name: "Sign DMG"
-          command: |
-            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
-      # add workspace so signing jobs can connect & obtain dmg
-      - persist_to_workspace:
-          root: build
-          # specify path to only include components we want to persist
-          # accross builds
-          paths:
-            - upload
+      - sign-chat-installer-macos
 
   notarize-online-chat-installer-macos:
     macos:
       xcode: 15.4.0
     steps:
-      - checkout
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Notarize"
-          command: |
-            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
-      - run:
-          name: "Report Notarization Failure"
-          command: |
-            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
-            xcrun notarytool log $NID --keychain-profile "notary-profile"
-            exit 1
-          when: on_fail
-      - run:
-          name: "Staple"
-          command: |
-            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
-      - store_artifacts:
-          path: build/upload
+      - notarize-chat-installer-macos
 
   build-offline-chat-installer-linux:
     machine:
@@ -336,29 +376,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-linux-amd64-
-      - run:
-          name: Setup Linux and Dependencies
-          command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
-              python3 vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - install_qt_linux
-      - run:
-          name: Build linuxdeployqt
-          command: |
-            git clone https://github.com/nomic-ai/linuxdeployqt
-            cd linuxdeployqt && qmake && sudo make install
+      - install-deps-gui-installer-linux
       - run:
           name: Build
           no_output_timeout: 30m
@@ -407,29 +425,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-linux-amd64-
-      - run:
-          name: Setup Linux and Dependencies
-          command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
-              python3 vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - install_qt_linux
-      - run:
-          name: Build linuxdeployqt
-          command: |
-            git clone https://github.com/nomic-ai/linuxdeployqt
-            cd linuxdeployqt && qmake && sudo make install
+      - install-deps-gui-installer-linux
       - run:
           name: Build
           no_output_timeout: 30m
@@ -472,41 +468,7 @@ jobs:
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
-      - checkout
-      - run:
-          name: Update Submodules
-          command: |
-            git submodule sync
-            git submodule update --init --recursive
-      - restore_cache:
-          keys:
-            - ccache-gpt4all-win-amd64-
-      - run:
-          name: Install dependencies
-          command: choco install -y ccache
-      - install_qt_windows
-      - run:
-          name: Install VulkanSDK
-          command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
-            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
-      - run:
-          name: Install CUDA Toolkit
-          command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
-            .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
-      - run:
-          name: "Install Dotnet 8"
-          command: |
-            mkdir dotnet
-            cd dotnet
-            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
-            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
-            dotnet tool install --global AzureSignTool
+      - setup-gui-windows
       - run:
           name: Build
           no_output_timeout: 30m
@@ -559,29 +521,7 @@ jobs:
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
-      - checkout
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Install Dotnet 8 && Azure Sign Tool"
-          command: |
-            mkdir dotnet
-            cd dotnet
-            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
-            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
-            dotnet tool install --global AzureSignTool
-      - run:
-          name: "Sign Windows Installer With AST"
-          command: |
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)\build\upload\gpt4all-installer-win64.exe"
-      - store_artifacts:
-          path: build/upload
+      - sign-chat-installer-windows
 
   build-online-chat-installer-windows:
     machine:
@@ -589,46 +529,7 @@ jobs:
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
-      - checkout
-      - run:
-          name: Update Submodules
-          command: |
-            git submodule sync
-            git submodule update --init --recursive
-      - restore_cache:
-          keys:
-            - ccache-gpt4all-win-amd64-
-      - run:
-          name: Install dependencies
-          command: choco install -y ccache
-      - install_qt_windows
-      - run:
-          name: Install VulkanSDK
-          command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
-            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
-      - run:
-          name: Install CUDA Toolkit
-          command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
-            .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
-      - run:
-          name: "Install Dotnet 8"
-          command: |
-            mkdir dotnet
-            cd dotnet
-            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
-            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-      - run:
-          name: "Setup Azure SignTool"
-          command: |
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
-            dotnet tool install --global AzureSignTool
+      - setup-gui-windows
       - run:
           name: Build
           no_output_timeout: 30m
@@ -683,34 +584,7 @@ jobs:
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
-      - checkout
-      - attach_workspace:
-          at: build
-      - run:
-          name: "Install Dotnet 8"
-          command: |
-            mkdir dotnet
-            cd dotnet
-            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
-            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-      - run:
-          name: "Setup Azure SignTool"
-          command: |
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
-            dotnet tool install --global AzureSignTool
-      - run:
-          name: "Sign Windows Installer With AST"
-          command: |
-            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
-            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
-            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)/build/upload/gpt4all-installer-win64.exe"
-      - store_artifacts:
-          path: build/upload
+      - sign-chat-installer-windows
 
   build-gpt4all-chat-linux:
     machine:
@@ -725,24 +599,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-linux-amd64-
-      - run:
-          name: Setup Linux and Dependencies
-          command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 python3
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - install_qt_linux
+      - install-deps-gui-linux
       - run:
           name: Build
           no_output_timeout: 30m
@@ -785,7 +642,7 @@ jobs:
       - run:
           name: Install dependencies
           command: choco install -y ccache
-      - install_qt_windows
+      - install-deps-gui-windows
       - run:
           name: Install VulkanSDK
           command: |
@@ -837,13 +694,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
-      - run:
-          name: Install Rosetta
-          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache
-      - install_qt_macos
+      - install-deps-gui-macos
       - run:
           name: Build
           no_output_timeout: 30m
@@ -923,20 +774,10 @@ jobs:
       - run:
           name: Set Python Version
           command: pyenv global 3.11.2
+      - install-deps-backend-linux
       - run:
-          name: Install dependencies
-          command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-            pip install setuptools wheel cmake
+          name: Install Python dependencies
+          command: pip install setuptools wheel cmake
       - run:
           name: Build C library
           no_output_timeout: 30m
@@ -982,11 +823,10 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
+      - install-deps-backend-macos
       - run:
-          name: Install dependencies
-          command: |
-            brew install ccache cmake
-            pip install setuptools wheel cmake
+          name: Install Python dependencies
+          command: pip install setuptools wheel cmake
       - run:
           name: Build C library
           no_output_timeout: 30m
@@ -1047,7 +887,7 @@ jobs:
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
       - run:
           name: Install dependencies
-          command:
+          command: |
             choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Install Python dependencies
@@ -1123,19 +963,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-linux-amd64-
-      - run:
-          name: Install dependencies
-          command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
+      - install-deps-backend-linux
       - run:
           name: Build Libraries
           no_output_timeout: 30m
@@ -1181,10 +1009,7 @@ jobs:
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
-      - run:
-          name: Install dependencies
-          command: |
-            brew install ccache cmake
+      - install-deps-backend-macos
       - run:
           name: Build Libraries
           no_output_timeout: 30m
