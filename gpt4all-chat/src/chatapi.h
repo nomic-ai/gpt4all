@@ -98,9 +98,8 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
-    std::vector<Token> tokenize(PromptContext &ctx, std::string_view str, bool special) override
+    std::vector<Token> tokenize(std::string_view str, bool special) override
     {
-        (void)ctx;
         (void)str;
         (void)special;
         throw std::logic_error("not implemented");

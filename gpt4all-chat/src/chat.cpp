@@ -31,7 +31,7 @@ Chat::Chat(QObject *parent)
     connectLLM();
 }
 
-Chat::Chat(bool isServer, QObject *parent)
+Chat::Chat(server_tag_t, QObject *parent)
     : QObject(parent)
     , m_id(Network::globalInstance()->generateUniqueId())
     , m_name(tr("Server Chat"))
