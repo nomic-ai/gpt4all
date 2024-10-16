@@ -171,8 +171,7 @@ public:
     explicit ChunkStreamer(Database *database);
     ~ChunkStreamer();
 
-    void setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel, const QString &title,
-                     const QString &author, const QString &subject, const QString &keywords);
+    void setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel);
     std::optional<DocumentInfo::key_type> currentDocKey() const;
     void reset();
 
