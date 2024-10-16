@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix bug removing documents because of a wrong case sensitive file suffix check ([#3083](https://github.com/nomic-ai/gpt4all/pull/3083))
 - Fix bug with hybrid localdocs search where database would get out of sync ([#3083](https://github.com/nomic-ai/gpt4all/pull/3083))
 - Fix GUI bug where the localdocs embedding device appears blank ([#3083](https://github.com/nomic-ai/gpt4all/pull/3083))
+- Prevent LocalDocs from not making progress in certain cases ([#3094](https://github.com/nomic-ai/gpt4all/pull/3094))
 
 ## [3.4.1] - 2024-10-11
 
