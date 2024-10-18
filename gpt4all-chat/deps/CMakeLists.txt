@@ -3,7 +3,7 @@ set(BUILD_SHARED_LIBS OFF)
 set(FMT_INSTALL OFF)
 add_subdirectory(fmt)
 
-set(QAPPLICATION_CLASS QGuiApplication)
+set(QAPPLICATION_CLASS QApplication)
 add_subdirectory(SingleApplication)
 
 set(DUCKX_INSTALL OFF)

@@ -12,6 +12,7 @@ import network
 import gpt4all
 import localdocs
 import mysettings
+import Qt.labs.platform
 
 Window {
     id: window
@@ -21,6 +22,32 @@ Window {
     minimumHeight: 384 + 160 * theme.fontScale
     visible: true
     title: qsTr("GPT4All v%1").arg(Qt.application.version)
+
+    SystemTrayIcon {
+        visible: MySettings.systemTray
+        icon.source: "qrc:/gpt4all/icons/gpt4all.svg"
+
+        menu: Menu {
+            MenuItem {
+                text: qsTr("Restore")
+                onTriggered: {
+                    window.hasSaved = false;
+                    window.visible = true;
+                }
+            }
+            MenuItem {
+                text: qsTr("Quit")
+                onTriggered: {
+                    window.shouldClose = true;
+                    // Window should be visible to trigger the close call
+                    window.visible = true;
+                    savingPopup.open();
+                    // SaveChats will trigger the close
+                    ChatListModel.saveChats();
+                }
+            }
+        }
+    }
 
     Settings {
         property alias x: window.x
@@ -157,6 +184,7 @@ Window {
     }
 
     property bool hasSaved: false
+    property bool shouldClose: false
 
     PopupDialog {
         id: savingPopup
@@ -180,12 +208,19 @@ Window {
     }
 
     onClosing: function(close) {
-        if (window.hasSaved)
-            return;
 
-        savingPopup.open();
-        ChatListModel.saveChats();
-        close.accepted = false
+        if (window.hasSaved && (window.shouldClose || !MySettings.systemTray)) {
+            close.accepted = true;
+        }
+        else {
+            close.accepted = false;
+
+            if (!window.hasSaved) {
+                savingPopup.open();
+                ChatListModel.saveChats();
+                window.visible = false;
+            }
+        }
     }
 
     Connections {

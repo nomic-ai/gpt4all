@@ -49,6 +49,7 @@ static const QVariantMap basicDefaults {
     { "lastVersionStarted",       "" },
     { "networkPort",              4891, },
     { "saveChatsContext",         false },
+    { "systemTray",               false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
     { "suggestionMode",           QVariant::fromValue(SuggestionMode::LocalDocsOnly) },
@@ -206,6 +207,7 @@ void MySettings::restoreApplicationDefaults()
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
     setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
+    setSystemTray(basicDefaults.value("saveTrayContext").toBool());
     setServerChat(basicDefaults.value("serverChat").toBool());
     setNetworkPort(basicDefaults.value("networkPort").toInt());
     setModelPath(defaultLocalModelsPath());
@@ -444,6 +446,7 @@ void MySettings::setThreadCount(int value)
 }
 
 bool        MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
+bool        MySettings::systemTray() const              { return getBasicSetting("systemTray"              ).toBool(); }
 bool        MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
 int         MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
 QString     MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
@@ -462,6 +465,7 @@ FontSize       MySettings::fontSize() const       { return FontSize      (getEnu
 SuggestionMode MySettings::suggestionMode() const { return SuggestionMode(getEnumSetting("suggestionMode", suggestionModeNames)); }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
+void MySettings::setSystemTray(bool value)                            { setBasicSetting("systemTray",               value); }
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
 void MySettings::setNetworkPort(int value)                            { setBasicSetting("networkPort",              value); }
 void MySettings::setUserDefaultModel(const QString &value)            { setBasicSetting("userDefaultModel",         value); }
