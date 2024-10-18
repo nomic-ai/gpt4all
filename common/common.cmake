@@ -11,7 +11,6 @@ function(gpt4all_add_warning_options target)
         -Wextra-semi
         -Wformat=2
         -Wmissing-include-dirs
-        -Wnull-dereference
         -Wstrict-overflow=2
         -Wvla
         # errors
@@ -22,8 +21,6 @@ function(gpt4all_add_warning_options target)
         # disabled warnings
         -Wno-sign-compare
         -Wno-unused-parameter
-        -Wno-unused-function
-        -Wno-unused-variable
     )
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options("${target}" PRIVATE
