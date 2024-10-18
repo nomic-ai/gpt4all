@@ -1,6 +1,6 @@
 include(FetchContent)
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(Python3 3.12 REQUIRED COMPONENTS Interpreter)
 
 # Google test download and setup
 FetchContent_Declare(
@@ -9,8 +9,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+configure_file(python/config.py.in "${CMAKE_CURRENT_SOURCE_DIR}/python/config.py")
+
 add_test(NAME ChatPythonTests
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_SOURCE_DIR}/tests/python
+    COMMAND ${Python3_EXECUTABLE} -m pytest --color=yes "${CMAKE_CURRENT_SOURCE_DIR}/python"
 )
 set_tests_properties(ChatPythonTests PROPERTIES
     ENVIRONMENT "CHAT_EXECUTABLE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/chat"

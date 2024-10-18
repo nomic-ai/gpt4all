@@ -22,7 +22,7 @@ if(APPLE)
   endif()
 endif()
 
-find_package(Python3 QUIET COMPONENTS Interpreter)
+find_package(Python3 3.12 QUIET COMPONENTS Interpreter)
 
 option(GPT4ALL_TEST "Build the tests" ${Python3_FOUND})
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
@@ -101,7 +101,7 @@ if (GPT4ALL_TEST)
     add_subdirectory(tests)
 
     # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS chat gpt4all_tests)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS chat gpt4all_tests)
 endif()
 
 set(CHAT_EXE_RESOURCES)
