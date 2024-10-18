@@ -45,6 +45,10 @@ class Chat : public QObject
     QML_UNCREATABLE("Only creatable from c++!")
 
 public:
+    // tag for constructing a server chat
+    struct server_tag_t { explicit server_tag_t() = default; };
+    static inline constexpr server_tag_t server_tag = server_tag_t();
+
     enum ResponseState {
         ResponseStopped,
         LocalDocsRetrieval,
@@ -56,7 +60,7 @@ public:
     Q_ENUM(ResponseState)
 
     explicit Chat(QObject *parent = nullptr);
-    explicit Chat(bool isServer, QObject *parent = nullptr);
+    explicit Chat(server_tag_t, QObject *parent = nullptr);
     virtual ~Chat();
     void destroy() { m_llmodel->destroy(); }
     void connectLLM();

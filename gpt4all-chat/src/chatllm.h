@@ -51,7 +51,7 @@ enum class LLModelTypeV1 { // since chat version 6 (v2.5.0)
     NONE      = -1, // no state
 };
 
-static LLModelTypeV1 parseLLModelTypeV1(int type)
+inline LLModelTypeV1 parseLLModelTypeV1(int type)
 {
     switch (LLModelTypeV1(type)) {
     case LLModelTypeV1::GPTJ:
@@ -68,7 +68,7 @@ static LLModelTypeV1 parseLLModelTypeV1(int type)
     }
 }
 
-static LLModelTypeV1 parseLLModelTypeV0(int v0)
+inline LLModelTypeV1 parseLLModelTypeV0(int v0)
 {
     switch (LLModelTypeV0(v0)) {
     case LLModelTypeV0::MPT:       return LLModelTypeV1::MPT;
