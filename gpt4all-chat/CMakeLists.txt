@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
+enable_testing()
+
 include(../common/common.cmake)
 
 set(APP_VERSION_MAJOR 3)
@@ -92,30 +94,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
-
-# Google test download and setup
-include(FetchContent)
-
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
-)
-
-FetchContent_MakeAvailable(googletest)
-
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-
-enable_testing()
-
-set(CHAT_EXECUTABLE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/chat")
-add_test(NAME ChatPythonTests
-  COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_SOURCE_DIR}/tests/python_tests/test_server_api.py
-)
-set_tests_properties(ChatPythonTests PROPERTIES
-  ENVIRONMENT "CHAT_EXECUTABLE=${CHAT_EXECUTABLE_PATH}"
-  TIMEOUT 60
-)
-message(STATUS "Enabling tests")
 add_subdirectory(tests)
 
 # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
