@@ -1,0 +1,2 @@
+pytest~=8.3
+requests~=2.32

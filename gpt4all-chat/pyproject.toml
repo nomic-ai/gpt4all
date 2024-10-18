@@ -1,0 +1,29 @@
+[tool.pytest.ini_options]
+addopts = ['--import-mode=importlib']
+
+[tool.mypy]
+files = 'tests/python'
+pretty = true
+strict = true
+warn_unused_ignores = false
+
+[tool.pytype]
+inputs = ['tests/python']
+jobs = 'auto'
+bind_decorated_methods = true
+none_is_not_bool = true
+overriding_renamed_parameter_count_checks = true
+strict_none_binding = true
+precise_return = true
+# protocols:
+# - https://github.com/google/pytype/issues/1423
+# - https://github.com/google/pytype/issues/1424
+strict_import = true
+strict_parameter_checks = true
+strict_primitive_comparisons = true
+# strict_undefined_checks: too many false positives
+
+[tool.isort]
+src_paths = ['tests/python']
+line_length = 120
+combine_as_imports = true

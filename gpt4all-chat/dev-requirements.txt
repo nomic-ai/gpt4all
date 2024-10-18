@@ -1,0 +1,11 @@
+-r test-requirements.txt
+
+# dev tools
+flake8~=7.1
+mypy~=1.12
+pytype>=2024.10.11
+wemake-python-styleguide~=0.19.2
+
+# type stubs and other optional modules
+types-requests~=2.32
+urllib3[socks]

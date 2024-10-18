@@ -26,6 +26,8 @@
 
 #ifdef Q_OS_WINDOWS
 #   include <windows.h>
+#else
+#   include <signal.h>
 #endif
 
 using namespace Qt::Literals::StringLiterals;
@@ -128,6 +130,17 @@ int main(int argc, char *argv[])
     while (it.hasNext()) {
         qDebug() << it.next();
     }
+#endif
+
+#ifndef Q_OS_WINDOWS
+    // handle signals gracefully
+    struct sigaction sa;
+    sa.sa_handler = [](int s) { QCoreApplication::exit(s == SIGINT ? 0 : 1); };
+    sa.sa_flags   = SA_RESETHAND;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT,  &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGHUP,  &sa, nullptr);
 #endif
 
     int res = app.exec();

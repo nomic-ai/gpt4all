@@ -182,6 +182,7 @@ gpt4all-chat/models/*
 build_*
 build-*
 cmake-build-*
+/gpt4all-chat/tests/python/config.py
 
 # IntelliJ
 .idea/
