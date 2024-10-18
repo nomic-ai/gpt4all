@@ -22,6 +22,9 @@ if(APPLE)
   endif()
 endif()
 
+find_package(Python3 QUIET COMPONENTS Interpreter)
+
+option(GPT4ALL_TEST "Build the tests" ${Python3_FOUND})
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
@@ -92,6 +95,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
+
+if (GPT4ALL_TEST)
+    enable_testing()
+    add_subdirectory(tests)
+
+    # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS chat gpt4all_tests)
+endif()
 
 set(CHAT_EXE_RESOURCES)
 
