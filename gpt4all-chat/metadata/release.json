@@ -216,7 +216,17 @@
   },
   {
     "version": "3.4.0",
-    "notes": "* **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.\n* **LocalDocs Accuracy:** The LocalDocs algorithm has been enhanced to find more accurate references for some queries.\n* **Word Document Support:** LocalDocs now supports Microsoft Word (.docx) documents natively.\n  * **IMPORTANT NOTE:** If .docx files are not found, make sure Settings > LocalDocs > Allowed File Extensions includes \"docx\".\n* **Forgetful Model Fixes:** Issues with the \"Redo last chat response\" button, and with continuing chats from previous sessions, have been fixed.\n* **Chat Saving Improvements:** On exit, GPT4All will no longer save chats that are not new or modified. As a bonus, downgrading without losing access to all chats will be possible in the future, should the need arise.\n* **UI Fixes:** The model list no longer scrolls to the top when you start downloading a model.\n* **New Models:** LLama 3.2 Instruct 3B and 1B models now available in model list.",
+    "notes": "* **Attached Files:** You can now attach a small Microsoft Excel spreadsheet (.xlsx) to a chat message and ask the model about it.\n* **LocalDocs Accuracy:** The LocalDocs algorithm has been enhanced to find more accurate references for some queries.\n* **Word Document Support:** LocalDocs now supports Microsoft Word (.docx) documents natively.\n  * **IMPORTANT NOTE:** If .docx files are not found, make sure Settings > LocalDocs > Allowed File Extensions includes \"docx\".\n* **Forgetful Model Fixes:** Issues with the \"Redo last chat response\" button, and with continuing chats from previous sessions, have been fixed.\n* **Chat Saving Improvements:** On exit, GPT4All will no longer save chats that are not new or modified. As a bonus, downgrading without losing access to all chats will be possible in the future, should the need arise.\n* **UI Fixes:** The model list no longer scrolls to the top when you start downloading a model.\n* **New Models:** LLama 3.2 Instruct 3B and 1B models now available in model list.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Andriy Mulyar (Nomic AI)\n* Ikko Eltociear Ashimine (`@eltociear`)\n* Victor Emanuel (`@SINAPSA-IC`)\n* Shiranui (`@supersonictw`)"
+  },
+  {
+    "version": "3.4.1",
+    "notes": "* **LocalDocs Fixes:** Several issues with LocalDocs in v3.4.0 have been fixed, including missing words and very slow indexing.\n* **Syntax Highlighting:** Go code is now highlighted with the correct colors.\n* **Cache Fixes:** The model list cache is now stored with a version number, and in a more appropriate directory.\n* **Translation Updates:** The Italian translation has been improved.\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* John Parent (Kitware)\n* Riccardo Giovanetti (`@Harvester62`)"
+  },
+  {
+    "version": "3.4.2",
+    "notes": "* **LocalDocs Fixes:** Several issues with LocalDocs, some of which were introduced in v3.4.0, have been fixed.\n  * Fixed the possible use of references from unselected collections.\n  * Fixed unnecessary reindexing of files with uppercase extensions.\n  * Fixed hybrid search failure due to inconsistent database state.\n  * Fully fixed the blank Embeddings Device selection in LocalDocs settings.\n  * Fixed LocalDocs indexing of large PDFs making very slow progress or even stalling.\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)"
   }
 ]

@@ -233,11 +233,16 @@ static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
 )"_s;
 
 static const QString SELECT_CHUNKS_FTS_SQL = uR"(
-    select id, bm25(chunks_fts) as score
-    from chunks_fts
+    select fts.id, bm25(chunks_fts) as score
+    from chunks_fts fts
+    join documents d on fts.document_id = d.id
+    join collection_items ci on d.folder_id = ci.folder_id
+    join collections co on ci.collection_id = co.id
     where chunks_fts match ?
-    order by score limit %1;
+    and co.name in ('%1')
+    order by score limit %2;
 )"_s;
+
 
 #define NAMED_PAIR(name, typea, a, typeb, b) \
     struct name { typea a; typeb b; }; \
@@ -343,6 +348,14 @@ static const QString UPDATE_START_UPDATE_TIME_SQL = uR"(
 
 static const QString UPDATE_LAST_UPDATE_TIME_SQL = uR"(
     update collections set last_update_time = ? where id = ?;
+)"_s;
+
+static const QString FTS_INTEGRITY_SQL = uR"(
+    insert into chunks_fts(chunks_fts, rank) values('integrity-check', 1);
+)"_s;
+
+static const QString FTS_REBUILD_SQL = uR"(
+    insert into chunks_fts(chunks_fts) values('rebuild');
 )"_s;
 
 static bool addCollection(QSqlQuery &q, const QString &collection_name, const QDateTime &start_update,
@@ -1088,9 +1101,12 @@ static void handleDocumentError(const QString &errorMessage, int document_id, co
 
 class DocumentReader {
 public:
+    struct Metadata { QString title, author, subject, keywords; };
+
     static std::unique_ptr<DocumentReader> fromDocument(const DocumentInfo &info);
 
     const DocumentInfo           &doc     () const { return *m_info; }
+    const Metadata               &metadata() const { return m_metadata; }
     const std::optional<QString> &word    () const { return m_word; }
     const std::optional<QString> &nextWord()       { m_word = advance(); return m_word; }
     virtual std::optional<ChunkStreamer::Status> getError() const { return std::nullopt; }
@@ -1102,11 +1118,16 @@ protected:
     explicit DocumentReader(const DocumentInfo &info)
         : m_info(&info) {}
 
-    void postInit() { m_word = advance(); }
+    void postInit(Metadata &&metadata = {})
+    {
+        m_metadata = std::move(metadata);
+        m_word = advance();
+    }
 
     virtual std::optional<QString> advance() = 0;
 
     const DocumentInfo     *m_info;
+    Metadata                m_metadata;
     std::optional<QString>  m_word;
 };
 
@@ -1120,7 +1141,13 @@ public:
         QString path = info.file.canonicalFilePath();
         if (m_doc.load(path) != QPdfDocument::Error::None)
             throw std::runtime_error(fmt::format("Failed to load PDF: {}", path));
-        postInit();
+        Metadata metadata {
+            .title    = m_doc.metaData(QPdfDocument::MetaDataField::Title   ).toString(),
+            .author   = m_doc.metaData(QPdfDocument::MetaDataField::Author  ).toString(),
+            .subject  = m_doc.metaData(QPdfDocument::MetaDataField::Subject ).toString(),
+            .keywords = m_doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
+        };
+        postInit(std::move(metadata));
     }
 
     int page() const override { return m_currentPage; }
@@ -1159,6 +1186,7 @@ public:
 
         m_paragraph = &m_doc.paragraphs();
         m_run       = &m_paragraph->runs();
+        // TODO(jared): metadata for Word documents?
         postInit();
     }
 
@@ -1283,9 +1311,7 @@ ChunkStreamer::ChunkStreamer(Database *database)
 
 ChunkStreamer::~ChunkStreamer() = default;
 
-void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel,
-                                const QString &title, const QString &author, const QString &subject,
-                                const QString &keywords)
+void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel)
 {
     auto docKey = doc.key();
     if (!m_docKey || *m_docKey != docKey) {
@@ -1293,10 +1319,6 @@ void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const Q
         m_reader         = DocumentReader::fromDocument(doc);
         m_documentId     = documentId;
         m_embeddingModel = embeddingModel;
-        m_title          = title;
-        m_author         = author;
-        m_subject        = subject;
-        m_keywords       = keywords;
         m_chunk.clear();
         m_page = 0;
 
@@ -1334,10 +1356,6 @@ ChunkStreamer::Status ChunkStreamer::step()
         if (auto error = m_reader->getError()) {
             m_docKey.reset(); // done processing
             return *error;
-        }
-        if (m_database->scanQueueInterrupted()) {
-            retval = Status::INTERRUPTED;
-            break;
         }
 
         // get a word, if needed
@@ -1397,14 +1415,15 @@ ChunkStreamer::Status ChunkStreamer::step()
 
                 QSqlQuery q(m_database->m_db);
                 int chunkId = 0;
+                auto &metadata = m_reader->metadata();
                 if (!m_database->addChunk(q,
                     m_documentId,
                     chunk,
                     m_reader->doc().file.fileName(), // basename
-                    m_title,
-                    m_author,
-                    m_subject,
-                    m_keywords,
+                    metadata.title,
+                    metadata.author,
+                    metadata.subject,
+                    metadata.keywords,
                     m_page,
                     line_from,
                     line_to,
@@ -1430,6 +1449,11 @@ ChunkStreamer::Status ChunkStreamer::step()
                 m_docKey.reset(); // done processing
                 break;
             }
+        }
+
+        if (m_database->scanQueueInterrupted()) {
+            retval = Status::INTERRUPTED;
+            break;
         }
     }
 
@@ -1594,13 +1618,16 @@ bool Database::scanQueueInterrupted() const
 
 void Database::scanQueueBatch()
 {
-    m_scanDurationTimer.start();
-
     transaction();
 
-    // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.empty() && !scanQueueInterrupted())
+    m_scanDurationTimer.start();
+
+    // scan for up to the maximum scan duration or until we run out of documents
+    while (!m_docsToScan.empty()) {
         scanQueue();
+        if (scanQueueInterrupted())
+            break;
+    }
 
     commit();
 
@@ -1686,22 +1713,8 @@ void Database::scanQueue()
     Q_ASSERT(document_id != -1);
 
     {
-        QString title, author, subject, keywords;
-        if (info.isPdf()) {
-            QPdfDocument doc;
-            if (doc.load(document_path) != QPdfDocument::Error::None) {
-                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-            title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();
-            author   = doc.metaData(QPdfDocument::MetaDataField::Author).toString();
-            subject  = doc.metaData(QPdfDocument::MetaDataField::Subject).toString();
-            keywords = doc.metaData(QPdfDocument::MetaDataField::Keywords).toString();
-            // TODO(jared): metadata for Word documents?
-        }
-
         try {
-            m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+            m_chunkStreamer.setDocument(info, document_id, embedding_model);
         } catch (const std::runtime_error &e) {
             qWarning() << "LocalDocs ERROR:" << e.what();
             goto dequeue;
@@ -1787,6 +1800,7 @@ void Database::start()
         m_databaseValid = false;
     } else {
         cleanDB();
+        ftsIntegrityCheck();
         QSqlQuery q(m_db);
         if (!refreshDocumentIdCache(q)) {
             m_databaseValid = false;
@@ -2294,13 +2308,13 @@ QList<Database::BM25Query> Database::queriesForFTS5(const QString &input)
     return queries;
 }
 
-QList<int> Database::searchBM25(const QString &query, BM25Query &bm25q, int k)
+QList<int> Database::searchBM25(const QString &query, const QList<QString> &collections, BM25Query &bm25q, int k)
 {
     struct SearchResult { int chunkId; float score; };
     QList<BM25Query> bm25Queries = queriesForFTS5(query);
 
     QSqlQuery sqlQuery(m_db);
-    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(k));
+    sqlQuery.prepare(SELECT_CHUNKS_FTS_SQL.arg(collections.join("', '"), QString::number(k)));
 
     QList<SearchResult> results;
     for (auto &bm25Query : std::as_const(bm25Queries)) {
@@ -2318,11 +2332,13 @@ QList<int> Database::searchBM25(const QString &query, BM25Query &bm25q, int k)
         }
     }
 
-    do {
-        const int chunkId = sqlQuery.value(0).toInt();
-        const float score = sqlQuery.value(1).toFloat();
-        results.append({chunkId, score});
-    } while (sqlQuery.next());
+    if (sqlQuery.at() != QSql::AfterLastRow) {
+        do {
+            const int chunkId = sqlQuery.value(0).toInt();
+            const float score = sqlQuery.value(1).toFloat();
+            results.append({chunkId, score});
+        } while (sqlQuery.next());
+    }
 
     k = qMin(k, results.size());
     std::partial_sort(
@@ -2439,7 +2455,7 @@ QList<int> Database::searchDatabase(const QString &query, const QList<QString> &
 
     const QList<int> embeddingResults = searchEmbeddings(queryEmbd, collections, k);
     BM25Query bm25q;
-    const QList<int> bm25Results = searchBM25(query, bm25q, k);
+    const QList<int> bm25Results = searchBM25(query, collections, bm25q, k);
     return reciprocalRankFusion(queryEmbd, embeddingResults, bm25Results, bm25q, k);
 }
 
@@ -2496,6 +2512,26 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
             results->append(tempResults.value(id));
 }
 
+bool Database::ftsIntegrityCheck()
+{
+    QSqlQuery q(m_db);
+
+    // Returns an error executing sql if it the integrity check fails
+    // See: https://www.sqlite.org/fts5.html#the_integrity_check_command
+    const bool success = q.exec(FTS_INTEGRITY_SQL);
+    if (!success && q.lastError().nativeErrorCode() != "267" /*SQLITE_CORRUPT_VTAB from sqlite header*/) {
+        qWarning() << "ERROR: Cannot prepare sql for fts integrity check" << q.lastError();
+        return false;
+    }
+
+    if (!success && !q.exec(FTS_REBUILD_SQL)) {
+        qWarning() << "ERROR: Cannot exec sql for fts rebuild" << q.lastError();
+        return false;
+    }
+
+    return true;
+}
+
 // FIXME This is very slow and non-interruptible and when we close the application and we're
 // cleaning a large table this can cause the app to take forever to shut down. This would ideally be
 // interruptible and we'd continue 'cleaning' when we restart
@@ -2546,7 +2582,7 @@ bool Database::cleanDB()
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
         QFileInfo info(document_path);
-        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix()))
+        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix(), Qt::CaseInsensitive))
             continue;
 
 #if defined(DEBUG)
