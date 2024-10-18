@@ -1,13 +1,13 @@
 include(FetchContent)
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 # Google test download and setup
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 FetchContent_MakeAvailable(googletest)
-
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_test(NAME ChatPythonTests
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_SOURCE_DIR}/tests/python_tests
