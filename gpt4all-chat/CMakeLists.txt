@@ -118,6 +118,9 @@ set_tests_properties(ChatPythonTests PROPERTIES
 message(STATUS "Enabling tests")
 add_subdirectory(tests)
 
+# The 'check' target makes sure the tests and their dependencies are up-to-date before running them
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS chat gpt4all_tests)
+
 set(CHAT_EXE_RESOURCES)
 
 # Metal shader library
