@@ -223,5 +223,10 @@
     "version": "3.4.1",
     "notes": "* **LocalDocs Fixes:** Several issues with LocalDocs in v3.4.0 have been fixed, including missing words and very slow indexing.\n* **Syntax Highlighting:** Go code is now highlighted with the correct colors.\n* **Cache Fixes:** The model list cache is now stored with a version number, and in a more appropriate directory.\n* **Translation Updates:** The Italian translation has been improved.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* John Parent (Kitware)\n* Riccardo Giovanetti (`@Harvester62`)"
+  },
+  {
+    "version": "3.4.2",
+    "notes": "* **LocalDocs Fixes:** Several issues with LocalDocs, some of which were introduced in v3.4.0, have been fixed.\n  * Fixed the possible use of references from unselected collections.\n  * Fixed unnecessary reindexing of files with uppercase extensions.\n  * Fixed hybrid search failure due to inconsistent database state.\n  * Fully fixed the blank Embeddings Device selection in LocalDocs settings.\n  * Fixed LocalDocs indexing of large PDFs making very slow progress or even stalling.\n",
+    "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)"
   }
 ]

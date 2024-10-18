@@ -1129,9 +1129,12 @@ static void handleDocumentError(const QString &errorMessage, int document_id, co
 
 class DocumentReader {
 public:
+    struct Metadata { QString title, author, subject, keywords; };
+
     static std::unique_ptr<DocumentReader> fromDocument(const DocumentInfo &info);
 
     const DocumentInfo           &doc     () const { return *m_info; }
+    const Metadata               &metadata() const { return m_metadata; }
     const std::optional<QString> &word    () const { return m_word; }
     const std::optional<QString> &nextWord()       { m_word = advance(); return m_word; }
     virtual std::optional<ChunkStreamer::Status> getError() const { return std::nullopt; }
@@ -1143,11 +1146,16 @@ protected:
     explicit DocumentReader(const DocumentInfo &info)
         : m_info(&info) {}
 
-    void postInit() { m_word = advance(); }
+    void postInit(Metadata &&metadata = {})
+    {
+        m_metadata = std::move(metadata);
+        m_word = advance();
+    }
 
     virtual std::optional<QString> advance() = 0;
 
     const DocumentInfo     *m_info;
+    Metadata                m_metadata;
     std::optional<QString>  m_word;
 };
 
@@ -1161,7 +1169,13 @@ public:
         QString path = info.file.canonicalFilePath();
         if (m_doc.load(path) != QPdfDocument::Error::None)
             throw std::runtime_error(fmt::format("Failed to load PDF: {}", path));
-        postInit();
+        Metadata metadata {
+            .title    = m_doc.metaData(QPdfDocument::MetaDataField::Title   ).toString(),
+            .author   = m_doc.metaData(QPdfDocument::MetaDataField::Author  ).toString(),
+            .subject  = m_doc.metaData(QPdfDocument::MetaDataField::Subject ).toString(),
+            .keywords = m_doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
+        };
+        postInit(std::move(metadata));
     }
 
     int page() const override { return m_currentPage; }
@@ -1200,6 +1214,7 @@ public:
 
         m_paragraph = &m_doc.paragraphs();
         m_run       = &m_paragraph->runs();
+        // TODO(jared): metadata for Word documents?
         postInit();
     }
 
@@ -1324,9 +1339,7 @@ ChunkStreamer::ChunkStreamer(Database *database)
 
 ChunkStreamer::~ChunkStreamer() = default;
 
-void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel,
-                                const QString &title, const QString &author, const QString &subject,
-                                const QString &keywords)
+void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const QString &embeddingModel)
 {
     auto docKey = doc.key();
     if (!m_docKey || *m_docKey != docKey) {
@@ -1334,10 +1347,6 @@ void ChunkStreamer::setDocument(const DocumentInfo &doc, int documentId, const Q
         m_reader         = DocumentReader::fromDocument(doc);
         m_documentId     = documentId;
         m_embeddingModel = embeddingModel;
-        m_title          = title;
-        m_author         = author;
-        m_subject        = subject;
-        m_keywords       = keywords;
         m_chunk.clear();
         m_page = 0;
 
@@ -1375,10 +1384,6 @@ ChunkStreamer::Status ChunkStreamer::step()
         if (auto error = m_reader->getError()) {
             m_docKey.reset(); // done processing
             return *error;
-        }
-        if (m_database->scanQueueInterrupted()) {
-            retval = Status::INTERRUPTED;
-            break;
         }
 
         // get a word, if needed
@@ -1438,14 +1443,15 @@ ChunkStreamer::Status ChunkStreamer::step()
 
                 QSqlQuery q(m_database->m_db);
                 int chunkId = 0;
+                auto &metadata = m_reader->metadata();
                 if (!m_database->addChunk(q,
                     m_documentId,
                     chunk,
                     m_reader->doc().file.fileName(), // basename
-                    m_title,
-                    m_author,
-                    m_subject,
-                    m_keywords,
+                    metadata.title,
+                    metadata.author,
+                    metadata.subject,
+                    metadata.keywords,
                     m_page,
                     line_from,
                     line_to,
@@ -1471,6 +1477,11 @@ ChunkStreamer::Status ChunkStreamer::step()
                 m_docKey.reset(); // done processing
                 break;
             }
+        }
+
+        if (m_database->scanQueueInterrupted()) {
+            retval = Status::INTERRUPTED;
+            break;
         }
     }
 
@@ -1635,13 +1646,16 @@ bool Database::scanQueueInterrupted() const
 
 void Database::scanQueueBatch()
 {
-    m_scanDurationTimer.start();
-
     transaction();
 
-    // scan for up to 100ms or until we run out of documents
-    while (!m_docsToScan.empty() && !scanQueueInterrupted())
+    m_scanDurationTimer.start();
+
+    // scan for up to the maximum scan duration or until we run out of documents
+    while (!m_docsToScan.empty()) {
         scanQueue();
+        if (scanQueueInterrupted())
+            break;
+    }
 
     commit();
 
@@ -1727,22 +1741,8 @@ void Database::scanQueue()
     Q_ASSERT(document_id != -1);
 
     {
-        QString title, author, subject, keywords;
-        if (info.isPdf()) {
-            QPdfDocument doc;
-            if (doc.load(document_path) != QPdfDocument::Error::None) {
-                qWarning() << "ERROR: Could not load pdf" << document_id << document_path;
-                return updateFolderToIndex(folder_id, countForFolder);
-            }
-            title    = doc.metaData(QPdfDocument::MetaDataField::Title).toString();
-            author   = doc.metaData(QPdfDocument::MetaDataField::Author).toString();
-            subject  = doc.metaData(QPdfDocument::MetaDataField::Subject).toString();
-            keywords = doc.metaData(QPdfDocument::MetaDataField::Keywords).toString();
-            // TODO(jared): metadata for Word documents?
-        }
-
         try {
-            m_chunkStreamer.setDocument(info, document_id, embedding_model, title, author, subject, keywords);
+            m_chunkStreamer.setDocument(info, document_id, embedding_model);
         } catch (const std::runtime_error &e) {
             qWarning() << "LocalDocs ERROR:" << e.what();
             goto dequeue;

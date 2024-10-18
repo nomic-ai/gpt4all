@@ -2,7 +2,9 @@
 
 GPT4All v3.4.1 was released on October 11th, and fixes several issues with LocalDocs from the previous release.
 
-* **IMPORTANT NOTE:** If you are coming from v3.4.0, be sure to "Rebuild" your collections at least once after updating!
+GPT4All v3.4.2 was released on October 16th, and fixes more issues with LocalDocs.
+
+**IMPORTANT NOTE:** If you are coming from v3.4.0, be sure to "Rebuild" your collections at least once after updating!
 
 ---
 
