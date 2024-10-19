@@ -1,0 +1,30 @@
+# Gpt4All Updater
+
+## Testing
+
+Testing this updater requires a bit of manual setup and walking through the
+integration with gpt4all's installer, as this process has yet to be fully automated.
+
+There are two modes, offline and online, each is tested differently:
+
+### Online
+
+The online updater workflow takes a url endpoint (for early testing, this will be a file url) that points to a manifest file, a sample of which has been provided under the `tmp` directory relative to this README. The manifest file includes, amount other things specified in the updater RFC, another file URL to a gpt4all installer.
+
+The first thing testing this will require is a manual update of that file url in the manifest xml file to point to the DMG on MacOS or exe on Windows, of an existing online Gpt4All installer, as well as a corresponding sha256 sum of the given installer. The manifest is filled with other stub info for testing, you're welcome to leave it as is or fill it out correctly for each testing iteration.
+
+That is all that is required for configuration. Now simply build this project via CMake, using standard CMake build practices. CMake will build the online installer by default, so no extra arguments are required.
+
+One argument is required for the online installer, the url where the updater should expect the manifest file to be. This can be any url accessible to your system, but for simplicity and testing reasons, its usually best to use a file url.
+This is provided via the cmake command line argument `-DGPT4ALL_MANIFEST_ENDPOINT=<url>`.
+
+Now configure and build the updater with CMake.
+
+To test the installer, query the command line interface using the `--help` argument to determine which actions are available. Then select a given action, and provide the required arguments (there shouldn't be any at the moment), and let the updater drive. The updater will determine the operation requested, fetch the appropriate installer, and drive said installer with the appropriate arguments to effect the requested operation. If the operation is a modification or uninstall, the updater will not fetch a new installer, and instead will execute the older installer, as a new installer is not required.
+
+### Offline
+
+The offline updater is somewhat simpler. To instruct CMake to build the offline updater, specify the `-DBUILD_OFFLINE_UPDATER=ON` argument to CMake on the command line. One additional argument is required to properly configure CMake for the offline updater project, `-DGPT4ALL_INSTALLER_PATH`  which should be set to the path to the DMG file containing an offline version of the GPT4All installer.
+
+Now, after building, simply run the updater. It should remove your current installation of Gpt4All (but not the config or models), and then run the offline installer in install mode. Once that process is complete, you should have an upgraded Gpt4All available on your system.
+

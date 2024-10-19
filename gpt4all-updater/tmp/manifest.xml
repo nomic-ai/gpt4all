@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpt4all-updater>
+    <pkg-description>
+        <name>gpt4all</name>
+        <version>2.0.0</version>
+        <notes>TESTS!</notes>
+        <authors>whoami</authors>
+        <date>10-18-2024</date>
+        <release-type>release</release-type>
+        <last-compatible-version>1.0.0</last-compatible-version>
+        <entity>Nomic</entity>
+        <pkg-manifest>
+            <installer-uri>REPLACE-ME</installer-uri>
+            <sha256>REPLACE-ME</sha256>
+            <signed>False</signed>
+        </pkg-manifest>
+    </pkg-description>
+</gpt4all-updater>
