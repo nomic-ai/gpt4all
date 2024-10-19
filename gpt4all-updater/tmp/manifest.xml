@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pkg-description>
+    <name gpt4all/>
+    <version 2.0.0/>
+    <notes TESTS!/>
+    <authors whoami/>
+    <date 10-18-2024/>
+    <release-type Release/>
+    <last-compatible-version 1.0.0/>
+    <entity Nomic/>
+    <pkg-manifest>
+        <installer-uri REPLACE_ME/>
+        <sha256 REPLACE_ME/>
+        <signed True/>
+    </pkg-manifest>
+</pkg-description>

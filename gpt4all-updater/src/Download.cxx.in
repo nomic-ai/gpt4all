@@ -1,0 +1,216 @@
+#include "Download.h"
+
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QSslConfiguration>
+#include <QSslSocket>
+#include <QGlobalStatic>
+
+using namespace gpt4all::download;
+using namespace Qt::Literals::StringLiterals;
+
+Download * Download::instance()
+{
+    return new Download();
+}
+
+Download::Download()
+    : QObject(nullptr),
+    saver(new HashFile)
+{
+#if defined(Q_OS_WINDOWS)
+    platform_ext = ".exe";
+#else
+    platform_ext = "";
+#endif
+    connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &Download::handleSslErrors);
+}
+
+void Download::driveFetchAndInstall()
+{
+    this->downloadManifest();
+    this->downloadInstaller();
+}
+
+void Download::downloadInstaller()
+{
+    this->downloadLargeFile(this->manifest->getInstallerEndpoint());
+}
+
+void Download::downloadManifest()
+{
+    QUrl manifestEndpoint("@GPT4ALL_MANIFEST_ENDPOINT@");
+    QNetworkReply *manifestResponse = this->downloadInMemory(manifestEndpoint);
+    this->manifest = gpt4all::manifest::ManifestFile::parseManifest(manifestResponse);
+}
+
+void Download::installInstaller(QString &expected, QFile *temp, QNetworkReply *installerResponse)
+{
+    const QString saveFilePath = QCoreApplication::applicationDirPath() + "gpt4all-installer" + platform_ext;
+    this->saver->hashAndInstall(expected,
+        QCryptographicHash::Sha256,
+        temp, saveFilePath, installerResponse);
+    QFile saveFile(saveFilePath);
+    gpt4all::state::Gpt4AllState::getInstance().setInstaller(saveFile);
+}
+
+QNetworkReply * Download::downloadInMemory(QUrl &url)
+{
+    QNetworkRequest request(url);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *reply = m_networkManager.get(request);
+    if (!reply) {
+        return nullptr;
+    }
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Error: network error occured while downloading the release manifest:" << reply->errorString();
+        reply->deleteLater();
+    }
+    return reply;
+}
+
+QNetworkReply * Download::downloadLargeFile(QUrl &url)
+{
+    QFile *tempFile = new QFile("gpt4all-installer" + platform_ext + "-partial");
+    bool success = tempFile->open(QIODevice::WriteOnly | QIODevice::Append);
+    qWarning() << "Opening temp file for writing:" << tempFile->fileName();
+    if (!success) {
+        const QString error = u"ERROR: Could not open temp file: %1 %2"_s.arg(tempFile->fileName());
+        qWarning() << error;
+        return nullptr;
+    }
+    tempFile->flush();
+    size_t incomplete_size = tempFile->size();
+    if (incomplete_size > 0) {
+        bool success = tempFile->seek(incomplete_size);
+        if (!success) {
+            incomplete_size = 0;
+            success = tempFile->seek(incomplete_size);
+            Q_ASSERT(success);
+        }
+    }
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::User, "gpt4all-installer" + platform_ext);
+    request.setRawHeader("range", u"bytes=%1-"_s.arg(tempFile->pos()).toUtf8());
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *installerDownResponse = m_networkManager.get(request);
+    connect(installerDownResponse, &QNetworkReply::errorOccurred, this, &Download::handleErrorOccurred);
+    connect(installerDownResponse, &QNetworkReply::finished, this, &Download::handleInstallerDownloadFinished);
+    connect(installerDownResponse, &QNetworkReply::readyRead, this, &Download::handleReadyRead);
+    download_tracking.insert(installerDownResponse, tempFile);
+}
+
+void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    QUrl url = reply->request().url();
+    for (const auto &e : errors)
+        qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
+}
+
+void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
+{
+    QNetworkReply *installerResponse = qobject_cast<QNetworkReply *>(sender());
+    if (!installerResponse)
+        return;
+    if (code == QNetworkReply::OperationCanceledError)
+        return;
+
+    QString installerfile = installerResponse->request().attribute(QNetworkRequest::User).toString();
+
+    const QString error = u"ERROR: Network error occurred attempting to download %1 code: %2 errorString %3"_s.arg(installerfile).arg(code).arg(installerResponse->errorString());
+    qWarning() << error;
+    disconnect(installerResponse, &QNetworkReply::finished, this, &Download::handleInstallerDownloadFinished);
+    installerResponse->abort();
+    installerResponse->deleteLater();
+    QFile * tempfile = download_tracking.value(installerResponse);
+    tempfile->deleteLater();
+    download_tracking.remove(installerResponse);
+}
+
+void Download::handleReadyRead()
+{
+    QNetworkReply *installerResponse = qobject_cast<QNetworkReply *>(sender());
+    if (!installerResponse)
+        return;
+    QFile * tempfile = download_tracking.value(installerResponse);
+    while(!installerResponse->atEnd()) {
+        tempfile->write(installerResponse->read(8192));
+    }
+    tempfile->flush();
+}
+
+void Download::handleInstallerDownloadFinished()
+{
+    QNetworkReply *installerResponse = qobject_cast<QNetworkReply *>(sender());
+    if (!installerResponse)
+        return;
+
+    QString installerName = installerResponse->request().attribute(QNetworkRequest::User).toString();
+    QFile *tempfile = download_tracking.value(installerResponse);
+    download_tracking.remove(installerResponse);
+
+    if (installerResponse->error()) {
+        const QString errorString
+            = u"ERROR: Downloading failed with code %1 \"%2\""_s.arg(installerResponse->error()).arg(installerResponse->errorString());
+        qWarning() << errorString;
+        installerResponse->deleteLater();
+        tempfile->deleteLater();
+        return;
+    }
+    tempfile->close();
+    QString expected = this->manifest->getExpectedHash();
+    this->installInstaller(expected, tempfile, installerResponse);
+}
+
+void HashFile::hashAndInstall(const QString &expected, QCryptographicHash::Algorithm algo, QFile * temp, const QString &file, QNetworkReply *response)
+{
+    Q_ASSERT(!temp->isOpen());
+    QString installerFile = response->request().attribute(QNetworkRequest::User).toString();
+    if (!temp->open(QIODevice::ReadOnly)) {
+        const QString error = u"ERROR: Could not open temp file for hashing: %1 %2"_s.arg(temp->fileName(), installerFile);
+        qWarning() << error;
+        return;
+    }
+
+    QCryptographicHash hash(algo);
+    while(!temp->atEnd())
+        hash.addData(temp->read(8192));
+    if (hash.result().toHex() != expected.toLatin1()) {
+        temp->close();
+        const QString error = u"ERROR: Download error hash did not match: %1 != %2 for %3"_s.arg(hash.result().toHex(), expected.toLatin1(), installerFile);
+        qWarning() << error;
+        temp->remove();
+        return;
+    }
+
+    temp->close();
+    if (temp->rename(file)) {
+        return;
+    }
+
+    if (!temp->open(QIODevice::ReadOnly)) {
+        const QString error = u"ERROR: Could not open temp file at finish: %1 %2"_s.arg(temp->fileName(), file);
+        qWarning() << error;
+        return;
+    }
+
+    QFile savefile(file);
+    if (savefile.open(QIODevice::WriteOnly)) {
+        QByteArray buffer;
+        while (!temp->atEnd()) {
+            buffer = temp->read(8192);
+            savefile.write(buffer);
+        }
+        savefile.close();
+        temp->close();
+    } else {
+        QFile::FileError error = savefile.error();
+        const QString errorString = u"ERROR: Could not save installer to: %1 failed with code %1"_s.arg(file).arg(error);
+        qWarning() << errorString;
+        temp->close();
+    }
+}
