@@ -506,7 +506,7 @@ MySettingsTab {
         MySettingsLabel {
             id: trayLabel
             text: qsTr("Enable System Tray")
-            helpText: qsTr("he application will minimize to the system tray when the window is closed.")
+            helpText: qsTr("The application will minimize to the system tray when the window is closed.")
             Layout.row: 13
             Layout.column: 0
         }
