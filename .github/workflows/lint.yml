@@ -1,0 +1,36 @@
+---
+name: Lint
+
+on: [push, pull_request]
+
+jobs:
+  codespell:
+    name: Codespell
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.1
+      - name: Codespell
+        uses: codespell-project/actions-codespell@v2.1
+
+  clazy:
+    name: Clazy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.1
+      - name: Configure
+        run: |
+          cmake -S gpt4all-chat -B gpt4all-chat/build \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DLLMODEL_CUDA=OFF \
+            -DLLMODEL_KOMPUTE=OFF
+      - name: Clazy
+        uses: MinyazevR/clazy-standalone-action@v0.2.0
+        with:
+          checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
+          install-stable: true
+          database: gpt4all-chat/build
