@@ -19,6 +19,13 @@ parameters:
     default: false
 
 jobs:
+  # work around CircleCI-Public/path-filtering-orb#20
+  noop:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: "true"
+
   build-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
@@ -37,11 +44,11 @@ jobs:
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Install dependencies
-          command: brew install ccache
+          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
-            curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
             hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
             /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
@@ -175,11 +182,11 @@ jobs:
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Install dependencies
-          command: brew install ccache
+          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
-            curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
             hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
             /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
@@ -312,9 +319,9 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
+            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
               bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
@@ -329,7 +336,7 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
             chmod +x qt-unified-linux-x64-4.6.0-online.run
             ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
@@ -388,9 +395,9 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
+            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
               bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
@@ -405,7 +412,7 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
             chmod +x qt-unified-linux-x64-4.6.0-online.run
             ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
@@ -466,21 +473,21 @@ jobs:
             - ccache-gpt4all-win-amd64-
       - run:
           name: Install dependencies
-          command: choco install -y ccache
+          command: choco install -y ccache wget
       - run:
           name: Installing Qt
           command: |
-            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
             & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            wget.exe "https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe"
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            wget.exe "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
       - run:
           name: "Install Dotnet 8"
@@ -488,7 +495,7 @@ jobs:
             mkdir dotnet
             cd dotnet
             $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            wget "$dotnet_url"
             Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
@@ -550,12 +557,15 @@ jobs:
       - attach_workspace:
           at: build
       - run:
+          name: Install dependencies
+          command: choco install -y wget
+      - run:
           name: "Install Dotnet 8 && Azure Sign Tool"
           command: |
             mkdir dotnet
             cd dotnet
             $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            wget.exe "$dotnet_url"
             Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
@@ -587,21 +597,21 @@ jobs:
             - ccache-gpt4all-win-amd64-
       - run:
           name: Install dependencies
-          command: choco install -y ccache
+          command: choco install -y ccache wget
       - run:
           name: Installing Qt
           command: |
-            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
             & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            wget.exe "https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe"
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            wget.exe "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
       - run:
           name: "Install Dotnet 8"
@@ -609,7 +619,7 @@ jobs:
             mkdir dotnet
             cd dotnet
             $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            wget.exe "$dotnet_url"
             Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
@@ -678,12 +688,15 @@ jobs:
       - attach_workspace:
           at: build
       - run:
+          name: Install dependencies
+          command: choco install -y wget
+      - run:
           name: "Install Dotnet 8"
           command: |
             mkdir dotnet
             cd dotnet
             $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            wget.exe "$dotnet_url"
             Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
@@ -719,9 +732,9 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
+            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
               bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
@@ -736,7 +749,7 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
             chmod +x qt-unified-linux-x64-4.6.0-online.run
             ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
@@ -780,21 +793,21 @@ jobs:
             - ccache-gpt4all-win-amd64-
       - run:
           name: Install dependencies
-          command: choco install -y ccache
+          command: choco install -y ccache wget
       - run:
           name: Installing Qt
           command: |
-            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
             & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            wget.exe "https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe"
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            wget.exe "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
       - run:
           name: Build
@@ -842,11 +855,11 @@ jobs:
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Install dependencies
-          command: brew install ccache
+          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
-            curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
             hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
             /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
@@ -932,9 +945,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
+            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
               build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
@@ -1042,19 +1055,19 @@ jobs:
           keys:
             - ccache-gpt4all-win-amd64-
       - run:
+          name: Install dependencies
+          command:
+            choco install -y ccache cmake ninja wget --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
           name: Install VulkanSDK
           command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            wget.exe "https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe"
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            wget.exe "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
-      - run:
-          name: Install dependencies
-          command:
-            choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Install Python dependencies
           command: pip install setuptools wheel cmake
@@ -1132,9 +1145,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
+            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             packages=(
               build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
@@ -1239,19 +1252,19 @@ jobs:
           keys:
             - ccache-gpt4all-win-amd64-
       - run:
+          name: Install dependencies
+          command: |
+            choco install -y ccache cmake ninja wget --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
           name: Install VulkanSDK
           command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            wget.exe "https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe"
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
           name: Install CUDA Toolkit
           command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            wget.exe "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
-      - run:
-          name: Install dependencies
-          command: |
-            choco install -y ccache cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Build Libraries
           no_output_timeout: 30m
@@ -1361,14 +1374,14 @@ jobs:
           at: /tmp/gpt4all-backend
       - run: choco install wget -y
       - run:
-         command: wget https://nodejs.org/dist/v18.16.0/node-v18.16.0-x86.msi -P C:\Users\circleci\Downloads\
-         shell: cmd.exe
-      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.16.0-x86.msi /qn
+          command: |
+            wget.exe "https://nodejs.org/dist/v18.16.0/node-v18.16.0-x86.msi" -P C:\Users\circleci\Downloads\
+            MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.16.0-x86.msi /qn
       - run:
           command: |
-              Start-Process powershell -verb runAs -Args "-start GeneralProfile"
-              nvm install 18.16.0
-              nvm use 18.16.0
+            Start-Process powershell -verb runAs -Args "-start GeneralProfile"
+            nvm install 18.16.0
+            nvm use 18.16.0
       - run: node --version
       - run: corepack enable
       - run:
@@ -1451,6 +1464,16 @@ jobs:
 
 workflows:
   version: 2
+  noop:
+    when:
+      not:
+        or:
+          - << pipeline.parameters.run-all-workflows >>
+          - << pipeline.parameters.run-python-workflow >>
+          - << pipeline.parameters.run-ts-workflow >>
+          - << pipeline.parameters.run-chat-workflow >>
+    jobs:
+      - noop
   build-chat-offline-installers:
     when:
       or:
