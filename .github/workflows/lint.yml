@@ -21,6 +21,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.1
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev
       - name: Configure
         run: |
           cmake -S gpt4all-chat -B gpt4all-chat/build \
