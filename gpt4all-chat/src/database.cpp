@@ -999,8 +999,9 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     return true;
 }
 
-Database::Database(int chunkSize, QStringList extensions)
+Database::Database(bool automaticUpdate, int chunkSize, QStringList extensions)
     : QObject(nullptr)
+    , m_automaticUpdate(automaticUpdate)
     , m_chunkSize(chunkSize)
     , m_scannedFileExtensions(std::move(extensions))
     , m_scanIntervalTimer(new QTimer(this))
@@ -1085,6 +1086,7 @@ void Database::updateFolderToIndex(int folder_id, size_t countForFolder, bool se
             sendChunkList(); // send any remaining embedding chunks to llm
         item.indexing = false;
         item.installed = true;
+        item.outOfDate = false;
 
         // Set the last update if we are done
         if (item.startUpdate > item.lastUpdate && item.currentEmbeddingsToIndex == 0)
@@ -1595,6 +1597,41 @@ void Database::enqueueDocumentInternal(DocumentInfo &&info, bool prepend)
     queue.insert(prepend ? queue.begin() : queue.end(), std::move(info));
 }
 
+bool Database::isOutOfDate(int folder_id, std::list<DocumentInfo> &&infos) const
+{
+    for (auto &info : infos) {
+        // Update info
+        info.file.stat();
+
+        // If the doc has since been deleted or no longer readable, then we schedule more work and return
+        // leaving the cleanup for the cleanup handler
+        if (!info.file.exists() || !info.file.isReadable())
+            return true;
+
+        const qint64 document_time = info.file.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
+        const QString document_path = info.file.canonicalFilePath();
+        const bool currentlyProcessing = info.currentlyProcessing;
+
+        // Check and see if we already have this document
+        QSqlQuery q(m_db);
+        int existing_id = -1;
+        qint64 existing_time = -1;
+        if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
+            handleDocumentError("ERROR: Cannot select document", existing_id, document_path, q.lastError());
+            continue;
+        }
+
+        // If not, then we are out of date
+        if (existing_id == -1)
+            return true;
+
+        // If we have the document and the time does not match, then we are out of date
+        if (document_time != existing_time)
+            return true;
+    }
+    return false;
+}
+
 void Database::enqueueDocuments(int folder_id, std::list<DocumentInfo> &&infos)
 {
     // enqueue all documents
@@ -1751,7 +1788,7 @@ dequeue:
     return updateFolderToIndex(folder_id, countForFolder);
 }
 
-void Database::scanDocuments(int folder_id, const QString &folder_path)
+void Database::scanDocuments(int folder_id, const QString &folder_path, bool forceIndexing)
 {
 #if defined(DEBUG)
     qDebug() << "scanning folder for documents" << folder_path;
@@ -1776,9 +1813,14 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 
     if (!infos.empty()) {
         CollectionItem item = guiCollectionItem(folder_id);
-        item.indexing = true;
+        const bool shouldIndex = m_automaticUpdate || forceIndexing;
+        if (shouldIndex)
+            item.indexing = true;
+        else
+            item.outOfDate = isOutOfDate(folder_id, std::move(infos));
         updateGuiForCollectionItem(item);
-        enqueueDocuments(folder_id, std::move(infos));
+        if (shouldIndex)
+            enqueueDocuments(folder_id, std::move(infos));
     } else {
         updateFolderToIndex(folder_id, 0, false);
     }
@@ -1833,7 +1875,7 @@ void Database::addCurrentFolders()
     for (const auto &i : collections) {
         if (!i.forceIndexing) {
             addFolderToWatch(i.folder_path);
-            scanDocuments(i.folder_id, i.folder_path);
+            scanDocuments(i.folder_id, i.folder_path, false /*forceIndexing*/);
         }
     }
 
@@ -1968,7 +2010,7 @@ void Database::forceIndexing(const QString &collection, const QString &embedding
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
         addFolderToWatch(folder.second);
-        scanDocuments(folder.first, folder.second);
+        scanDocuments(folder.first, folder.second, true /*forceIndexing*/);
     }
 }
 
@@ -2000,7 +2042,7 @@ void Database::forceRebuildFolder(const QString &path)
     item.currentEmbeddingsToIndex = item.totalEmbeddingsToIndex = 0;
     updateGuiForCollectionItem(item);
 
-    scanDocuments(folder_id, path);
+    scanDocuments(folder_id, path, true /*forceIndexing*/);
 }
 
 bool Database::addFolder(const QString &collection, const QString &path, const QString &embedding_model)
@@ -2044,7 +2086,7 @@ bool Database::addFolder(const QString &collection, const QString &path, const Q
         // note: this is the existing embedding model if the collection was found
         if (!item->embeddingModel.isNull()) {
             addFolderToWatch(path);
-            scanDocuments(folder_id, path);
+            scanDocuments(folder_id, path, true /*forceIndexing*/);
         }
     }
     return true;
@@ -2673,7 +2715,7 @@ void Database::changeFileExtensions(const QStringList &extensions)
 
     for (const auto &i: std::as_const(collections)) {
         if (!i.forceIndexing)
-            scanDocuments(i.folder_id, i.folder_path);
+            scanDocuments(i.folder_id, i.folder_path, false /*forceIndexing*/);
     }
 }
 
@@ -2710,6 +2752,13 @@ void Database::directoryChanged(const QString &path)
         updateCollectionStatistics();
 
     // Rescan the documents associated with the folder
-    if (folder_id != -1)
-        scanDocuments(folder_id, path);
+    if (folder_id != -1) {
+        if (m_automaticUpdate) {
+            scanDocuments(folder_id, path, false /*forceIndexing*/);
+        } else {
+            CollectionItem item = guiCollectionItem(folder_id);
+            item.outOfDate = true;
+            updateGuiForCollectionItem(item);
+        }
+    }
 }
