@@ -19,6 +19,13 @@ parameters:
     default: false
 
 jobs:
+  # work around CircleCI-Public/path-filtering-orb#20
+  noop:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: "true"
+
   build-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
@@ -1451,6 +1458,16 @@ jobs:
 
 workflows:
   version: 2
+  noop:
+    when:
+      not:
+        or:
+          - << pipeline.parameters.run-all-workflows >>
+          - << pipeline.parameters.run-python-workflow >>
+          - << pipeline.parameters.run-ts-workflow >>
+          - << pipeline.parameters.run-chat-workflow >>
+    jobs:
+      - noop
   build-chat-offline-installers:
     when:
       or:
