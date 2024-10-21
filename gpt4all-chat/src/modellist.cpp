@@ -32,7 +32,6 @@
 #include <QTextStream>
 #include <QTimer>
 #include <QUrl>
-#include <QtLogging>
 
 #include <algorithm>
 #include <cstddef>
@@ -40,6 +39,10 @@
 #include <optional>
 #include <string>
 #include <utility>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 

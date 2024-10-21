@@ -29,13 +29,16 @@
 #include <QSysInfo>
 #include <Qt>
 #include <QtGlobal>
-#include <QtLogging>
 #include <QUrl>
 #include <QUuid>
 
 #include <cmath>
 #include <cstring>
 #include <utility>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 #ifdef __GLIBC__
 #   include <gnu/libc-version.h>

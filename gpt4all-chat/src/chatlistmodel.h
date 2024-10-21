@@ -16,7 +16,10 @@
 #include <QVector>
 #include <Qt>
 #include <QtGlobal>
-#include <QtLogging>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 class ChatsRestoreThread : public QThread
 {
