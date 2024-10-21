@@ -37,6 +37,10 @@
 #include <unordered_map>
 #include <utility>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+#   include <QTcpServer>
+#endif
+
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
 
@@ -435,7 +439,6 @@ T &parseRequest(T &request, QJsonObject &&obj)
 Server::Server(Chat *chat)
     : ChatLLM(chat, true /*isServer*/)
     , m_chat(chat)
-    , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
     connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
@@ -457,10 +460,23 @@ static QJsonObject requestFromJson(const QByteArray &request)
 void Server::start()
 {
     m_server = std::make_unique<QHttpServer>(this);
-    if (!m_server->listen(QHostAddress::LocalHost, MySettings::globalInstance()->networkPort())) {
-        qWarning() << "ERROR: Unable to start the server";
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    auto *tcpServer = new QTcpServer(m_server.get());
+#else
+    auto *tcpServer = m_server.get();
+#endif
+
+    auto port = MySettings::globalInstance()->networkPort();
+    if (!tcpServer->listen(QHostAddress::LocalHost, port)) {
+        qWarning() << "Server ERROR: Failed to listen on port" << port;
         return;
     }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    if (!m_server->bind(tcpServer)) {
+        qWarning() << "Server ERROR: Failed to HTTP server to socket" << port;
+        return;
+    }
+#endif
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
         [](const QHttpServerRequest &) {
@@ -600,10 +616,19 @@ void Server::start()
         }
     );
 
-    m_server->afterRequest([] (QHttpServerResponse &&resp) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    m_server->addAfterRequestHandler(this, [](const QHttpServerRequest &req, QHttpServerResponse &resp) {
+        Q_UNUSED(req);
+        auto headers = resp.headers();
+        headers.append("Access-Control-Allow-Origin"_L1, "*"_L1);
+        resp.setHeaders(std::move(headers));
+    });
+#else
+    m_server->afterRequest([](QHttpServerResponse &&resp) {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         return std::move(resp);
     });
+#endif
 
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
         &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
