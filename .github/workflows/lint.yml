@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev qt6-pdf-dev qt6-svg-dev qt6-tools-dev qt6-websockets-dev
+          sudo apt-get install libopengl-dev qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev qt6-pdf-dev qt6-svg-dev qt6-tools-dev qt6-websockets-dev
       - name: Configure
         run: |
           cmake -S gpt4all-chat -B gpt4all-chat/build \
@@ -37,9 +37,19 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ \
             -DLLMODEL_CUDA=OFF \
             -DLLMODEL_KOMPUTE=OFF
+      - name: Path glob
+        id: glob
+        run: |
+          {
+            echo 'GPT4ALL_PATHS<<EOF'
+            find gpt4all-backend/src gpt4all-chat/src -name '*.cpp'
+            echo EOF
+          } >>"$GITHUB_OUTPUT"
       - name: Clazy
         uses: MinyazevR/clazy-standalone-action@v0.2.0
         with:
           checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
           install-stable: true
           database: gpt4all-chat/build
+          extensions: ""
+          extra-arg: ${{ steps.glob.outputs.GPT4ALL_PATHS }}
