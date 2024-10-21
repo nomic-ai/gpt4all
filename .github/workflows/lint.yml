@@ -40,6 +40,7 @@ jobs:
       - name: Clazy
         uses: nomic-ai/clazy-action@009a6378b899ab6d20f26647e624f3038384378e
         with:
+          version: '1.12'
           checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
           database: gpt4all-chat/build
           path-regex: "gpt4all-(chat|backend)/src"
