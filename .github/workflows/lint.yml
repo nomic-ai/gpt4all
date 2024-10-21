@@ -1,7 +1,10 @@
 ---
 name: Lint
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request
 
 jobs:
   codespell:
@@ -24,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev
+          sudo apt-get install qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev qt6-websockets-dev
       - name: Configure
         run: |
           cmake -S gpt4all-chat -B gpt4all-chat/build \
