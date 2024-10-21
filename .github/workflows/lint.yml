@@ -37,19 +37,10 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ \
             -DLLMODEL_CUDA=OFF \
             -DLLMODEL_KOMPUTE=OFF
-      - name: Path glob
-        id: glob
-        run: |
-          {
-            echo 'GPT4ALL_PATHS<<EOF'
-            find gpt4all-backend/src gpt4all-chat/src -name '*.cpp'
-            echo EOF
-          } >>"$GITHUB_OUTPUT"
       - name: Clazy
-        uses: MinyazevR/clazy-standalone-action@v0.2.0
+        uses: nomic-ai/clazy-action@35215f5
         with:
           checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
           install-stable: true
           database: gpt4all-chat/build
-          extensions: ""
-          extra-arg: ${{ steps.glob.outputs.GPT4ALL_PATHS }}
+          path-regex: "gpt4all-(chat|backend)/src"
