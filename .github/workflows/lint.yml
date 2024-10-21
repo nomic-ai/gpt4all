@@ -38,7 +38,7 @@ jobs:
             -DLLMODEL_CUDA=OFF \
             -DLLMODEL_KOMPUTE=OFF
       - name: Clazy
-        uses: nomic-ai/clazy-action@e9b27d411c2c11a646a441290fe19d60d340b1b8
+        uses: nomic-ai/clazy-action@2b954eeecd15b00204a1604297b67bd2c9fea120
         with:
           checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
           install-stable: true
