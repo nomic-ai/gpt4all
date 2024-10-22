@@ -198,7 +198,7 @@ bool ChatLLM::loadDefaultModel()
 {
     ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
     if (defaultModel.filename().isEmpty()) {
-        emit modelLoadingError(u"Could not find any model to load"_qs);
+        emit modelLoadingError(u"Could not find any model to load"_s);
         return false;
     }
     return loadModel(defaultModel);
