@@ -189,6 +189,25 @@ EXPECTED_MODEL_INFO = {
     'root': 'Llama 3.2 1B Instruct'
 }
 
+EXPECTED_COMPLETIONS_RESPONSE = {
+    'choices': [
+        {
+            'finish_reason': 'stop',
+            'index': 0,
+            'logprobs': None,
+            'references': None,
+            'text': ' jumps over the lazy dog.'
+        }
+    ],
+    'id': 'placeholder',
+    'model': 'Llama 3.2 1B Instruct',
+    'object': 'text_completion',
+    'usage': {
+        'completion_tokens': 6,
+        'prompt_tokens': 5,
+        'total_tokens': 11
+    }
+}
 
 def test_with_models(chat_server_with_model: None) -> None:
     response = request.get('models', wait=True)
@@ -200,3 +219,21 @@ def test_with_models(chat_server_with_model: None) -> None:
     # Test the specific model endpoint
     response = request.get('models/Llama 3.2 1B Instruct', wait=True)
     assert response == EXPECTED_MODEL_INFO
+
+    # Test the completions endpoint
+    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+        request.post('completions', data=None, wait=True)
+    assert excinfo.value.response.status_code == 400
+
+    data = {
+        "model": "Llama 3.2 1B Instruct",
+        "prompt": "The quick brown fox",
+        "temperature": 0
+    }
+
+    response = request.post('completions', data=data, wait=True)
+    assert 'choices' in response
+    assert response['choices'][0]['text'] == ' jumps over the lazy dog.'
+    assert 'created' in response
+    response.pop('created')  # Remove the dynamic field for comparison
+    assert response == EXPECTED_COMPLETIONS_RESPONSE
