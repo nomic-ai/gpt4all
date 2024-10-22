@@ -209,6 +209,7 @@ EXPECTED_COMPLETIONS_RESPONSE = {
     }
 }
 
+
 def test_with_models(chat_server_with_model: None) -> None:
     response = request.get('models', wait=True)
     assert response == {
@@ -237,3 +238,9 @@ def test_with_models(chat_server_with_model: None) -> None:
     assert 'created' in response
     response.pop('created')  # Remove the dynamic field for comparison
     assert response == EXPECTED_COMPLETIONS_RESPONSE
+
+    data["temperature"] = 0.5;
+
+    pytest.xfail("This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133")
+    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+        response = request.post('completions', data=data, wait=True)
