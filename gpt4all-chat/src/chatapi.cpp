@@ -16,9 +16,12 @@
 #include <QVariant>
 #include <Qt>
 #include <QtGlobal>
-#include <QtLogging>
 
 #include <iostream>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 

@@ -24,7 +24,6 @@
 #include <QUrl>
 #include <QWaitCondition>
 #include <Qt>
-#include <QtLogging>
 
 #include <algorithm>
 #include <cctype>
@@ -36,6 +35,10 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 

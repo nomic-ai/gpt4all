@@ -14,9 +14,12 @@
 #include <QStringList>
 #include <QVariant>
 #include <Qt>
-#include <QtLogging>
 
 #include <utility>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 Chat::Chat(QObject *parent)
     : QObject(parent)
