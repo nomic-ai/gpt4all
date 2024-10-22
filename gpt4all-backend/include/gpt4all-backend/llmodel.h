@@ -256,7 +256,8 @@ protected:
                       bool allowContextShift,
                       PromptContext &promptCtx,
                       std::vector<Token> embd_inp,
-                      bool isResponse = false);
+                      bool isResponse = false,
+                      bool alwaysDecode = false);
     void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                           bool allowContextShift,
                           PromptContext &promptCtx);

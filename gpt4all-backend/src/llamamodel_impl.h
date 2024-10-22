@@ -63,6 +63,7 @@ protected:
     auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
         -> std::vector<Token>::const_iterator override;
     void appendInputToken(PromptContext &ctx, Token tok) override;
+    std::span<const Token> inputTokens() const override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;
     int32_t maxContextLength(std::string const &modelPath) const override;
@@ -71,9 +72,6 @@ protected:
     void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
                        size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb,
                        const EmbModelSpec *spec);
-
-    // Use only for testing and debugging.
-    std::span<const Token> inputTokens() const override;
 
 private:
     std::unique_ptr<LLamaPrivate> d_ptr;

@@ -116,7 +116,8 @@ void LLModel::prompt(const std::string &prompt,
     }
 
     // decode the user prompt
-    if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
+    if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp, /*isResponse*/ false,
+                      /*alwaysDecode*/ true))
         return; // error
 
     // decode the assistant's reply, either generated or spoofed
@@ -149,7 +150,8 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
                            bool allowContextShift,
                            PromptContext &promptCtx,
                            std::vector<Token> embd_inp,
-                           bool isResponse) {
+                           bool isResponse,
+                           bool alwaysDecode) {
     if ((int) embd_inp.size() > contextLength() - 4) {
         // FIXME: (Adam) We should find a way to bubble these strings to the UI level to allow for
         // translation
@@ -172,7 +174,34 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     // requested n_past.
     // This is used to skip unnecessary work when the prompt shares a common prefix with the previous result.
     auto embd_inp_start = computeModelInputPosition(promptCtx, embd_inp);
-    size_t i = embd_inp_start - embd_inp.begin();
+    size_t start_offset = embd_inp_start - embd_inp.begin();
+
+    // execute the callback even for skipped tokens
+    size_t i = 0;
+    for (; i < start_offset; i++) {
+        Token tok = embd_inp[i];
+        bool res = isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
+        if (!res)
+            return false;
+    }
+
+    // always decode something before generating, even if cached
+    if (alwaysDecode && i >= embd_inp.size()) {
+        auto cache = inputTokens();
+        if (cache.empty())
+            throw std::runtime_error("zero token prompt is not supported");
+
+        // eval last token
+        Token tok = cache.back();
+        promptCtx.n_past--;
+        if (!evalTokens(promptCtx, { &tok, 1 })) {
+            std::cerr << "LLModel ERROR: Failed to process prompt\n";
+            return false;
+        }
+
+        promptCtx.n_past++; // should still be cached
+        return isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
+    }
 
     // process the prompt in batches
     while (i < embd_inp.size()) {

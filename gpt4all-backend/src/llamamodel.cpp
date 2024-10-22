@@ -699,11 +699,7 @@ void LLamaModel::appendInputToken(PromptContext &ctx, Token tok)
 
 auto LLamaModel::inputTokens() const -> std::span<const Token>
 {
-#ifdef NDEBUG
-    throw std::runtime_error("attempt to call debug-only inputTokens() in release build");
-#else
     return d_ptr->inputTokens;
-#endif
 }
 
 const std::vector<LLModel::Token> &LLamaModel::endTokens() const
