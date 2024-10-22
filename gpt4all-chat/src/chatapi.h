@@ -155,6 +155,10 @@ protected:
     { Q_UNUSED(ctx); Q_UNUSED(input); throwNotImplemented(); }
 
     [[noreturn]]
+    void setModelInputPosition(PromptContext &ctx, int32_t pos)
+    { Q_UNUSED(ctx); Q_UNUSED(pos); throwNotImplemented(); }
+
+    [[noreturn]]
     void appendInputToken(PromptContext &ctx, Token tok) override
     { Q_UNUSED(ctx); Q_UNUSED(tok); throwNotImplemented(); }
 

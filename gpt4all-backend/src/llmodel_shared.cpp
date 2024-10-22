@@ -170,11 +170,26 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         return false;
     }
 
+    // always decode something before generating, even if cached
+    if (alwaysDecode && embd_inp.empty()) {
+        auto cache = inputTokens();
+        if (cache.empty())
+            throw std::runtime_error("zero token prompt is not supported");
+        embd_inp.push_back(cache.back());
+        promptCtx.n_past--;
+    }
+
     // Find the greatest n_past where the beginning of embd_inp matches the end of the token cache, starting at the
     // requested n_past.
     // This is used to skip unnecessary work when the prompt shares a common prefix with the previous result.
     auto embd_inp_start = computeModelInputPosition(promptCtx, embd_inp);
     size_t start_offset = embd_inp_start - embd_inp.begin();
+
+    // always decode up to a full batch before generating, even if cached
+    if (alwaysDecode)
+        start_offset -= std::min(promptCtx.n_batch, int32_t(start_offset));
+
+    setModelInputPosition(promptCtx, promptCtx.n_past - start_offset);
 
     // execute the callback even for skipped tokens
     size_t i = 0;
@@ -183,24 +198,6 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         bool res = isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
         if (!res)
             return false;
-    }
-
-    // always decode something before generating, even if cached
-    if (alwaysDecode && i >= embd_inp.size()) {
-        auto cache = inputTokens();
-        if (cache.empty())
-            throw std::runtime_error("zero token prompt is not supported");
-
-        // eval last token
-        Token tok = cache.back();
-        promptCtx.n_past--;
-        if (!evalTokens(promptCtx, { &tok, 1 })) {
-            std::cerr << "LLModel ERROR: Failed to process prompt\n";
-            return false;
-        }
-
-        promptCtx.n_past++; // should still be cached
-        return isResponse ? responseCallback(tok, tokenToString(tok)) : promptCallback(tok);
     }
 
     // process the prompt in batches

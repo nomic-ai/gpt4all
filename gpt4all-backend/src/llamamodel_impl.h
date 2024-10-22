@@ -62,6 +62,7 @@ protected:
     void setTokenizeInputPosition(int32_t pos) override;
     auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
         -> std::vector<Token>::const_iterator override;
+    void setModelInputPosition(PromptContext &ctx, int32_t pos) override;
     void appendInputToken(PromptContext &ctx, Token tok) override;
     std::span<const Token> inputTokens() const override;
     const std::vector<Token> &endTokens() const override;

@@ -224,6 +224,7 @@ protected:
     virtual void setTokenizeInputPosition(int32_t pos) = 0;
     virtual auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
         -> std::vector<Token>::const_iterator = 0;
+    virtual void setModelInputPosition(PromptContext &ctx, int32_t pos) = 0;
     virtual void appendInputToken(PromptContext &ctx, Token tok) = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;

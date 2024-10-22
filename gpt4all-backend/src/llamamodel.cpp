@@ -683,12 +683,18 @@ auto LLamaModel::computeModelInputPosition(PromptContext &ctx, const std::vector
     while (cacheIt < d_ptr->inputTokens.end() && inputIt < input.end() && *cacheIt == *inputIt) {
         ++cacheIt; ++inputIt; ++pos;
     }
-    // truncate token cache to end at n_past
+    // tell the caller to ignore the tokens between [begin, inputIt)
+    return inputIt;
+}
+
+void LLamaModel::setModelInputPosition(PromptContext &ctx, int32_t pos)
+{
+    assert(pos >= 0);
+    assert(pos <= ctx.n_past);
+    // truncate token cache to end at the new n_past
     if (pos < d_ptr->inputTokens.size())
         d_ptr->inputTokens.resize(pos);
-    // tell the caller to ignore the tokens between [begin, inputIt)
-    ctx.n_past = int32_t(pos);
-    return inputIt;
+    ctx.n_past = pos;
 }
 
 void LLamaModel::appendInputToken(PromptContext &ctx, Token tok)
