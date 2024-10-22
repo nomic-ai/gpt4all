@@ -24,26 +24,29 @@ Window {
     title: qsTr("GPT4All v%1").arg(Qt.application.version)
 
     SystemTrayIcon {
-        visible: MySettings.systemTray
+        id: systemTrayIcon
+        property bool shouldClose: false
+        visible: MySettings.systemTray && !shouldClose
         icon.source: "qrc:/gpt4all/icons/gpt4all.svg"
+
+        function restore() {
+            window.show();
+            window.raise();
+            window.requestActivate();
+        }
+        onActivated: restore();
 
         menu: Menu {
             MenuItem {
                 text: qsTr("Restore")
-                onTriggered: {
-                    window.hasSaved = false;
-                    window.visible = true;
-                }
+                onTriggered: systemTrayIcon.restore()
             }
             MenuItem {
                 text: qsTr("Quit")
                 onTriggered: {
-                    window.shouldClose = true;
-                    // Window should be visible to trigger the close call
-                    window.visible = true;
-                    savingPopup.open();
-                    // SaveChats will trigger the close
-                    ChatListModel.saveChats();
+                    systemTrayIcon.restore();
+                    systemTrayIcon.shouldClose = true;
+                    window.close();
                 }
             }
         }
@@ -184,7 +187,6 @@ Window {
     }
 
     property bool hasSaved: false
-    property bool shouldClose: false
 
     PopupDialog {
         id: savingPopup
@@ -208,19 +210,18 @@ Window {
     }
 
     onClosing: function(close) {
-
-        if (window.hasSaved && (window.shouldClose || !MySettings.systemTray)) {
-            close.accepted = true;
-        }
-        else {
+        if (systemTrayIcon.visible) {
+            window.visible = false;
             close.accepted = false;
-
-            if (!window.hasSaved) {
-                savingPopup.open();
-                ChatListModel.saveChats();
-                window.visible = false;
-            }
+            return;
         }
+
+        if (window.hasSaved)
+            return;
+
+        savingPopup.open();
+        ChatListModel.saveChats();
+        close.accepted = false
     }
 
     Connections {
