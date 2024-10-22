@@ -189,7 +189,7 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     if (alwaysDecode)
         start_offset -= std::min(promptCtx.n_batch, int32_t(start_offset));
 
-    setModelInputPosition(promptCtx, promptCtx.n_past - start_offset);
+    setModelInputPosition(promptCtx, promptCtx.n_past + start_offset);
 
     // execute the callback even for skipped tokens
     size_t i = 0;

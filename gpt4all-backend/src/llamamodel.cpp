@@ -689,11 +689,12 @@ auto LLamaModel::computeModelInputPosition(PromptContext &ctx, const std::vector
 
 void LLamaModel::setModelInputPosition(PromptContext &ctx, int32_t pos)
 {
+    auto &inp = d_ptr->inputTokens;
     assert(pos >= 0);
-    assert(pos <= ctx.n_past);
+    assert(pos <= inp.size());
     // truncate token cache to end at the new n_past
-    if (pos < d_ptr->inputTokens.size())
-        d_ptr->inputTokens.resize(pos);
+    if (pos < inp.size())
+        inp.resize(pos);
     ctx.n_past = pos;
 }
 
