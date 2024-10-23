@@ -34,7 +34,10 @@ Window {
             window.raise();
             window.requestActivate();
         }
-        onActivated: restore();
+        onActivated: function(reason) {
+            if (reason === SystemTrayIcon.Trigger)
+                restore();
+        }
 
         menu: Menu {
             MenuItem {
@@ -186,7 +189,7 @@ Window {
         font.pixelSize: theme.fontSizeLarge
     }
 
-    property bool hasSaved: false
+    property bool shouldClose: false
 
     PopupDialog {
         id: savingPopup
@@ -212,13 +215,15 @@ Window {
     onClosing: function(close) {
         if (systemTrayIcon.visible) {
             window.visible = false;
+            ChatListModel.saveChats();
             close.accepted = false;
             return;
         }
 
-        if (window.hasSaved)
+        if (window.shouldClose)
             return;
 
+        window.shouldClose = true;
         savingPopup.open();
         ChatListModel.saveChats();
         close.accepted = false
@@ -227,9 +232,9 @@ Window {
     Connections {
         target: ChatListModel
         function onSaveChatsFinished() {
-            window.hasSaved = true;
             savingPopup.close();
-            window.close()
+            if (window.shouldClose)
+                window.close()
         }
     }
 
