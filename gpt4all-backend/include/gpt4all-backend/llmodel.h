@@ -226,6 +226,7 @@ protected:
         -> std::vector<Token>::const_iterator = 0;
     virtual void setModelInputPosition(PromptContext &ctx, int32_t pos) = 0;
     virtual void appendInputToken(PromptContext &ctx, Token tok) = 0;
+    virtual std::span<const Token> inputTokens() const = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;
 
@@ -262,9 +263,6 @@ protected:
     void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                           bool allowContextShift,
                           PromptContext &promptCtx);
-
-    // Use only for testing and debugging. Throws if the backend was built with -DNDEBUG.
-    virtual std::span<const Token> inputTokens() const = 0;
 
 protected:
     Token m_tokenize_last_token = -1; // not serialized
