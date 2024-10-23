@@ -915,30 +915,12 @@ Rectangle {
                                                     anchors.fill: parent
                                                     anchors.margins: 5
 
-                                                    Item {
-                                                        id: attachmentFileIcon
-                                                        width: 40
-                                                        height: 40
-                                                        Image {
-                                                            id: fileIcon
-                                                            anchors.fill: parent
-                                                            visible: false
-                                                            sourceSize.width: 40
-                                                            sourceSize.height: 40
-                                                            mipmap: true
-                                                            source: {
-                                                                return "qrc:/gpt4all/icons/file-xls.svg"
-                                                            }
-                                                        }
-                                                        ColorOverlay {
-                                                            anchors.fill: fileIcon
-                                                            source: fileIcon
-                                                            color: theme.textColor
-                                                        }
+                                                    MyFileIcon {
+                                                        iconSize: 40
+                                                        fileName: modelData.file
                                                     }
 
                                                     Text {
-                                                        id: attachmentFileText
                                                         width: 295
                                                         height: 40
                                                         text: modelData.file
@@ -1343,32 +1325,11 @@ Rectangle {
                                                         id: title
                                                         spacing: 5
                                                         Layout.maximumWidth: 180
-                                                        Item {
-                                                            Layout.preferredWidth: 24
-                                                            Layout.preferredHeight: 24
-                                                            Image {
-                                                                id: fileIcon
-                                                                anchors.fill: parent
-                                                                visible: false
-                                                                sourceSize.width: 24
-                                                                sourceSize.height: 24
-                                                                mipmap: true
-                                                                source: {
-                                                                    if (modelData.file.toLowerCase().endsWith(".txt"))
-                                                                        return "qrc:/gpt4all/icons/file-txt.svg"
-                                                                    else if (modelData.file.toLowerCase().endsWith(".pdf"))
-                                                                        return "qrc:/gpt4all/icons/file-pdf.svg"
-                                                                    else if (modelData.file.toLowerCase().endsWith(".md"))
-                                                                        return "qrc:/gpt4all/icons/file-md.svg"
-                                                                    else
-                                                                        return "qrc:/gpt4all/icons/file.svg"
-                                                                }
-                                                            }
-                                                            ColorOverlay {
-                                                                anchors.fill: fileIcon
-                                                                source: fileIcon
-                                                                color: theme.textColor
-                                                            }
+                                                        MyFileIcon {
+                                                            iconSize: 24
+                                                            fileName: modelData.file
+                                                            Layout.preferredWidth: iconSize
+                                                            Layout.preferredHeight: iconSize
                                                         }
                                                         Text {
                                                             Layout.maximumWidth: 156
@@ -1949,30 +1910,12 @@ Rectangle {
                                     anchors.fill: parent
                                     anchors.margins: 5
 
-                                    Item {
-                                        id: attachmentFileIcon2
-                                        width: 40
-                                        height: 40
-                                        Image {
-                                            id: fileIcon2
-                                            anchors.fill: parent
-                                            visible: false
-                                            sourceSize.width: 40
-                                            sourceSize.height: 40
-                                            mipmap: true
-                                            source: {
-                                                return "qrc:/gpt4all/icons/file-xls.svg"
-                                            }
-                                        }
-                                        ColorOverlay {
-                                            anchors.fill: fileIcon2
-                                            source: fileIcon2
-                                            color: theme.textColor
-                                        }
+                                    MyFileIcon {
+                                        iconSize: 40
+                                        fileName: model.file
                                     }
 
                                     Text {
-                                        id: attachmentFileText2
                                         width: 265
                                         height: 40
                                         text: model.file
@@ -2188,7 +2131,7 @@ Rectangle {
 
             MyFileDialog {
                 id: fileDialog
-                nameFilters: ["Excel files (*.xlsx)"]
+                nameFilters: ["Excel files (*.xlsx)", "Text files (*.txt)", "Markdown files (*.md)"]
             }
 
             MyMenu {
