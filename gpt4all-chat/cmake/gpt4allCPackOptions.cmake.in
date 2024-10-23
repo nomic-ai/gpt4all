@@ -1,0 +1,37 @@
+
+
+# Configure Windows Installer Options
+
+#Setup innosetup
+if(CPACK_GENERATOR )
+    # Should be one of x86, x64, arm64, ia64
+    set(CPACK_INNOSETUP_ARCHITECTURE @GPT4ALL_INSTALLER_ARCH@)
+
+    # TODO (john): ask adam about this
+    set(CPACK_INNOSETUP_INSTALL_ROOT {%USERPROFILE})
+    set(CPACK_INNOSETUP_ALLOW_CUSTOM_DIRECTORY ON)
+    set(CPACK_INNOSETUP_PROGRAM_MENU_FOLDER "gpt4all")
+    # ask adam if we want to support all options gpt4all supports
+    set(CPACK_INNOSETUP_LANGUAGES @GPT4ALL_DIST_LANGUAGES@)
+    set(CPACK_INNOSETUP_IGNORE_LICENSE_PAGE OFF)
+    set(CPACK_INNOSETUP_USE_MODERN_WIZARD ON)
+    set(CPACK_INNOSETUP_ICON_FILE @GPT4ALL_ICON_FILE@)
+    set(CPACK_INNOSETUP_CREATE_UNINSTALL_LINK ON)
+    set(CPACK_INNOSETUP_RUN_EXECUTABLES gpt4all)
+    set(CPACK_INNOSETUP_VERIFY_DOWNLOADS ON)
+endif()
+
+# Configure MacOs installer Options
+
+# Setup DragNDrop (preferred)
+if(CPACK_GENERATOR MATCHES "DragNDrop")
+  set(CPACK_DMG_FORMAT "UDBZ")
+  set(VERSION "${CPACK_PACKAGE_VERSION}")
+  # this also sets the volume name
+  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-installer-darwin")
+  # set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+  # TODO: uncomment the line below when we have an image
+  # maybe we want an applescript to mange ths instead?
+  # set(CPACK_DMG_BACKGROUND_IMAGE @CMAKE_SOURCE_DIR@/icons/<need background image>)
+endif()
+
