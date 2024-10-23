@@ -75,6 +75,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 find_package(Qt6 6.5 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
 
 if (QT_KNOWN_POLICY_QTP0004)
