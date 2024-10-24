@@ -390,7 +390,6 @@ class LLModel:
     ):
         if self.context is None:
             context = LLModelPromptContext(
-                tokens_size=0,
                 n_past=0,
                 n_predict=n_predict,
                 top_k=top_k,
