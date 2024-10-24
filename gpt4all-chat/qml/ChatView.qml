@@ -2131,7 +2131,7 @@ Rectangle {
 
             MyFileDialog {
                 id: fileDialog
-                nameFilters: ["All Supported Files (*.txt *.md *.xlsx)", "Text Files (*.txt *.md)", "Excel Worksheets (*.xlsx)"]
+                nameFilters: ["All Supported Files (*.txt *.md *.rst *.xlsx)", "Text Files (*.txt *.md *.rst)", "Excel Worksheets (*.xlsx)"]
             }
 
             MyMenu {

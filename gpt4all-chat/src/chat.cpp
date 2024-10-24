@@ -136,7 +136,8 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
         Q_ASSERT(
             info.suffix().toLower() == "xlsx" ||
             info.suffix().toLower() == "txt" ||
-            info.suffix().toLower() == "md"
+            info.suffix().toLower() == "md" ||
+            info.suffix().toLower() == "rst"
         );
 
         PromptAttachment attached;
