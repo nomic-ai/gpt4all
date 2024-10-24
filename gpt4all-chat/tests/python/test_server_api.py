@@ -5,9 +5,9 @@ import sys
 import tempfile
 import textwrap
 from pathlib import Path
+from shutil import copy
 from subprocess import CalledProcessError
 from typing import Any, Iterator
-from shutil import copy
 
 import pytest
 import requests
@@ -24,10 +24,10 @@ class Requestor:
     def get(self, path: str, *, wait: bool = False) -> Any:
         return self._request('GET', path, wait)
 
-    def post(self, path: str, data: dict, *, wait: bool = False) -> Any:
+    def post(self, path: str, data: dict[str, Any] | None, *, wait: bool = False) -> Any:
         return self._request('POST', path, wait, data)
 
-    def _request(self, method: str, path: str, wait: bool, data: dict = None) -> Any:
+    def _request(self, method: str, path: str, wait: bool, data: dict[str, Any] | None = None) -> Any:
         if wait:
             retry = Retry(total=None, connect=10, read=False, status=0, other=0, backoff_factor=.01)
         else:
@@ -62,9 +62,9 @@ def create_chat_server_config(tmpdir: Path, model_copied: bool = False) -> dict[
     if model_copied:
         app_data_dir = tmpdir / 'share' / 'nomic.ai' / 'GPT4All'
         app_data_dir.mkdir(parents=True)
-        local_file_path = os.getenv('TEST_MODEL_PATH')
-        if local_file_path:
-            local_file_path = Path(local_file_path)
+        local_file_path_env = os.getenv('TEST_MODEL_PATH')
+        if local_file_path_env:
+            local_file_path = Path(local_file_path_env)
             if local_file_path.exists():
                 copy(local_file_path, app_data_dir / local_file_path.name)
             else:
