@@ -132,7 +132,13 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
         Q_ASSERT(url.isLocalFile());
         const QString localFilePath = url.toLocalFile();
         const QFileInfo info(localFilePath);
-        Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
+
+        Q_ASSERT(
+            info.suffix().toLower() == "xlsx" ||
+            info.suffix().toLower() == "txt" ||
+            info.suffix().toLower() == "md" ||
+            info.suffix().toLower() == "rst"
+        );
 
         PromptAttachment attached;
         attached.url = url;

@@ -210,6 +210,7 @@ qt_add_qml_module(chat
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyFileDialog.qml
+      qml/MyFileIcon.qml
       qml/MyFolderDialog.qml
       qml/MyFancyLink.qml
       qml/MyMenu.qml
