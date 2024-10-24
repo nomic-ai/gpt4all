@@ -42,7 +42,7 @@ public:
     {
         const QString localFilePath = url.toLocalFile();
         const QFileInfo info(localFilePath);
-        if (info.suffix() != "xlsx")
+        if (info.suffix().toLower() != "xlsx")
             return u"## Attached: %1\n\n%2"_s.arg(file(), content);
 
         QBuffer buffer;
