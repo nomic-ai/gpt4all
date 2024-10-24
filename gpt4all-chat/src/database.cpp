@@ -1355,7 +1355,8 @@ ChunkStreamer::Status ChunkStreamer::step()
     for (;;) {
         if (auto error = m_reader->getError()) {
             m_docKey.reset(); // done processing
-            return *error;
+            retval = *error;
+            break;
         }
 
         // get a word, if needed
@@ -1515,8 +1516,22 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     for (const auto &[key, stat]: std::as_const(stats).asKeyValueRange()) {
         if (!m_collectionMap.contains(key.folder_id)) continue;
         CollectionItem item = guiCollectionItem(key.folder_id);
-        item.currentEmbeddingsToIndex -= stat.nAdded + stat.nSkipped;
-        item.totalEmbeddingsToIndex -= stat.nSkipped;
+        Q_ASSERT(item.currentEmbeddingsToIndex >= stat.nAdded + stat.nSkipped);
+        if (item.currentEmbeddingsToIndex < stat.nAdded + stat.nSkipped) {
+            qWarning() << "Database ERROR: underflow in current embeddings to index statistics";
+            item.currentEmbeddingsToIndex = 0;
+        } else {
+            item.currentEmbeddingsToIndex -= stat.nAdded + stat.nSkipped;
+        }
+
+        Q_ASSERT(item.totalEmbeddingsToIndex >= stat.nSkipped);
+        if (item.totalEmbeddingsToIndex < stat.nSkipped) {
+            qWarning() << "Database ERROR: underflow in total embeddings to index statistics";
+            item.totalEmbeddingsToIndex = 0;
+        } else {
+            item.totalEmbeddingsToIndex -= stat.nSkipped;
+        }
+
         if (!stat.lastFile.isNull())
             item.fileCurrentlyProcessing = stat.lastFile;
 
@@ -1746,7 +1761,13 @@ void Database::scanQueue()
 
 dequeue:
     auto item = guiCollectionItem(folder_id);
-    item.currentBytesToIndex -= info.file.size();
+    Q_ASSERT(item.currentBytesToIndex >= info.file.size());
+    if (item.currentBytesToIndex < info.file.size()) {
+        qWarning() << "Database ERROR: underflow in current bytes to index statistics";
+        item.currentBytesToIndex = 0;
+    } else {
+        item.currentBytesToIndex -= info.file.size();
+    }
     updateGuiForCollectionItem(item);
     return updateFolderToIndex(folder_id, countForFolder);
 }
