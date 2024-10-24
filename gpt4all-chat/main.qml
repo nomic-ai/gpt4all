@@ -49,7 +49,9 @@ Window {
                 onTriggered: {
                     systemTrayIcon.restore();
                     systemTrayIcon.shouldClose = true;
-                    window.close();
+                    window.shouldClose = true;
+                    savingPopup.open();
+                    ChatListModel.saveChats();
                 }
             }
         }
