@@ -68,9 +68,9 @@ def create_chat_server_config(tmpdir: Path, model_copied: bool = False) -> dict[
             if local_file_path.exists():
                 copy(local_file_path, app_data_dir / local_file_path.name)
             else:
-                pytest.fail(f"Model file specified in TEST_MODEL_PATH does not exist: {local_file_path}")
+                pytest.fail(f'Model file specified in TEST_MODEL_PATH does not exist: {local_file_path}')
         else:
-            pytest.fail("Environment variable TEST_MODEL_PATH is not set")
+            pytest.fail('Environment variable TEST_MODEL_PATH is not set')
 
     return dict(
         os.environ,
@@ -183,10 +183,10 @@ EXPECTED_MODEL_INFO = {
             'id': 'placeholder',
             'is_blocking': False,
             'object': 'model_permission',
-            'organization': '*'
-        }
+            'organization': '*',
+        },
     ],
-    'root': 'Llama 3.2 1B Instruct'
+    'root': 'Llama 3.2 1B Instruct',
 }
 
 EXPECTED_COMPLETIONS_RESPONSE = {
@@ -196,8 +196,8 @@ EXPECTED_COMPLETIONS_RESPONSE = {
             'index': 0,
             'logprobs': None,
             'references': None,
-            'text': ' jumps over the lazy dog.'
-        }
+            'text': ' jumps over the lazy dog.',
+        },
     ],
     'id': 'placeholder',
     'model': 'Llama 3.2 1B Instruct',
@@ -205,8 +205,8 @@ EXPECTED_COMPLETIONS_RESPONSE = {
     'usage': {
         'completion_tokens': 6,
         'prompt_tokens': 5,
-        'total_tokens': 11
-    }
+        'total_tokens': 11,
+    },
 }
 
 
@@ -214,7 +214,7 @@ def test_with_models(chat_server_with_model: None) -> None:
     response = request.get('models', wait=True)
     assert response == {
         'data': [EXPECTED_MODEL_INFO],
-        'object': 'list'
+        'object': 'list',
     }
 
     # Test the specific model endpoint
@@ -227,9 +227,9 @@ def test_with_models(chat_server_with_model: None) -> None:
     assert excinfo.value.response.status_code == 400
 
     data = {
-        "model": "Llama 3.2 1B Instruct",
-        "prompt": "The quick brown fox",
-        "temperature": 0
+        'model': 'Llama 3.2 1B Instruct',
+        'prompt': 'The quick brown fox',
+        'temperature': 0,
     }
 
     response = request.post('completions', data=data, wait=True)
@@ -239,8 +239,8 @@ def test_with_models(chat_server_with_model: None) -> None:
     response.pop('created')  # Remove the dynamic field for comparison
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
-    data["temperature"] = 0.5;
+    data['temperature'] = 0.5
 
-    pytest.xfail("This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133")
+    pytest.xfail('This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133')
     with pytest.raises(requests.exceptions.HTTPError) as excinfo:
         response = request.post('completions', data=data, wait=True)
