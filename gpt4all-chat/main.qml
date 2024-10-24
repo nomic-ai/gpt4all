@@ -35,7 +35,7 @@ Window {
             window.requestActivate();
         }
         onActivated: function(reason) {
-            if (reason === SystemTrayIcon.Context && !menu.visible)
+            if (reason === SystemTrayIcon.Context && Qt.platform.os !== "osx")
                 menu.open();
             else if (reason === SystemTrayIcon.Trigger)
                 restore();
