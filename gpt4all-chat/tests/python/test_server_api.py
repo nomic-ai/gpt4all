@@ -1,11 +1,12 @@
 import os
+import shutil
 import signal
 import subprocess
 import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from shutil import copy
+from requests.exceptions import HTTPError
 from subprocess import CalledProcessError
 from typing import Any, Iterator
 
@@ -66,7 +67,7 @@ def create_chat_server_config(tmpdir: Path, model_copied: bool = False) -> dict[
         if local_file_path_env:
             local_file_path = Path(local_file_path_env)
             if local_file_path.exists():
-                copy(local_file_path, app_data_dir / local_file_path.name)
+                shutil.copy(local_file_path, app_data_dir / local_file_path.name)
             else:
                 pytest.fail(f'Model file specified in TEST_MODEL_PATH does not exist: {local_file_path}')
         else:
@@ -131,7 +132,7 @@ def chat_server_with_model(chat_server_with_model_config: dict[str, str]) -> Ite
 
 def test_with_models_empty(chat_server: None) -> None:
     # non-sense endpoint
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         request.get('foobarbaz', wait=True)
     assert excinfo.value.response.status_code == 404
 
@@ -144,22 +145,22 @@ def test_with_models_empty(chat_server: None) -> None:
     assert response == {}
 
     # POST for model list
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         response = request.post('models', data=None, wait=True)
     assert excinfo.value.response.status_code == 405
 
     # POST for model info
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         response = request.post('models/foo', data=None, wait=True)
     assert excinfo.value.response.status_code == 405
 
     # GET for completions
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         response = request.get('completions', wait=True)
     assert excinfo.value.response.status_code == 405
 
     # GET for chat completions
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         response = request.get('chat/completions', wait=True)
     assert excinfo.value.response.status_code == 405
 
@@ -222,7 +223,7 @@ def test_with_models(chat_server_with_model: None) -> None:
     assert response == EXPECTED_MODEL_INFO
 
     # Test the completions endpoint
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         request.post('completions', data=None, wait=True)
     assert excinfo.value.response.status_code == 400
 
@@ -242,5 +243,5 @@ def test_with_models(chat_server_with_model: None) -> None:
     data['temperature'] = 0.5
 
     pytest.xfail('This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133')
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+    with pytest.raises(HTTPError) as excinfo:
         response = request.post('completions', data=data, wait=True)
