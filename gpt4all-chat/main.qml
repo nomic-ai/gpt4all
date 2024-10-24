@@ -35,7 +35,9 @@ Window {
             window.requestActivate();
         }
         onActivated: function(reason) {
-            if (reason === SystemTrayIcon.Trigger)
+            if (reason === SystemTrayIcon.Context)
+                menu.open();
+            else if (reason === SystemTrayIcon.Trigger)
                 restore();
         }
 
