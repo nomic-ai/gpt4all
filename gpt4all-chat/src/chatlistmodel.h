@@ -33,7 +33,6 @@ class ChatSaver : public QObject
     Q_OBJECT
 public:
     explicit ChatSaver();
-    void stop();
 
 Q_SIGNALS:
     void saveChatsFinished();
@@ -238,7 +237,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged();
     void currentChatChanged();
-    void chatsSavedFinished();
     void requestSaveChats(const QVector<Chat*> &);
     void saveChatsFinished();
 

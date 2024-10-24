@@ -51,6 +51,10 @@ void ChatListModel::loadChats()
     connect(thread, &ChatsRestoreThread::finished, thread, &QObject::deleteLater);
     thread->start();
 
+    ChatSaver *saver = new ChatSaver;
+    connect(this, &ChatListModel::requestSaveChats, saver, &ChatSaver::saveChats, Qt::QueuedConnection);
+    connect(saver, &ChatSaver::saveChatsFinished, this, &ChatListModel::saveChatsFinished, Qt::QueuedConnection);
+
     connect(MySettings::globalInstance(), &MySettings::serverChatChanged, this, &ChatListModel::handleServerEnabledChanged);
 }
 
@@ -88,9 +92,6 @@ void ChatListModel::saveChats()
         return;
     }
 
-    ChatSaver *saver = new ChatSaver;
-    connect(this, &ChatListModel::requestSaveChats, saver, &ChatSaver::saveChats, Qt::QueuedConnection);
-    connect(saver, &ChatSaver::saveChatsFinished, this, &ChatListModel::saveChatsFinished, Qt::QueuedConnection);
     emit requestSaveChats(toSave);
 }
 
@@ -128,6 +129,7 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
             continue;
         }
 
+        chat->setNeedsSave(false);
         if (originalFile.exists())
             originalFile.remove();
         tempFile.rename(filePath);
