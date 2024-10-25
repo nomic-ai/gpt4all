@@ -19,6 +19,10 @@
 #   include "network.h"
 #endif
 
+#ifdef Q_OS_MAC
+#include "macosdock.h"
+#endif
+
 using namespace Qt::Literals::StringLiterals;
 
 class MyLLM: public LLM { };
@@ -104,4 +108,22 @@ bool LLM::isNetworkOnline() const
 {
     auto * netinfo = QNetworkInformation::instance();
     return !netinfo || netinfo->reachability() == QNetworkInformation::Reachability::Online;
+}
+
+void LLM::showDockIcon() const
+{
+#ifdef Q_OS_MAC
+    MacOSDock::showIcon();
+#else
+    qt_noop();
+#endif
+}
+
+void LLM::hideDockIcon() const
+{
+#ifdef Q_OS_MAC
+    MacOSDock::hideIcon();
+#else
+    qt_noop();
+#endif
 }
