@@ -130,6 +130,7 @@ public:
     QList<QString> generatedQuestions() const { return m_generatedQuestions; }
 
     bool needsSave() const { return m_needsSave; }
+    void setNeedsSave(bool n) { m_needsSave = n; }
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});

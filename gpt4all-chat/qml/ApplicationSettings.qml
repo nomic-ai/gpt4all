@@ -504,15 +504,32 @@ MySettingsTab {
             }
         }
         MySettingsLabel {
-            id: serverChatLabel
-            text: qsTr("Enable Local API Server")
-            helpText: qsTr("Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.")
+            id: trayLabel
+            text: qsTr("Enable System Tray")
+            helpText: qsTr("The application will minimize to the system tray when the window is closed.")
             Layout.row: 13
             Layout.column: 0
         }
         MyCheckBox {
-            id: serverChatBox
+            id: trayBox
             Layout.row: 13
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            checked: MySettings.systemTray
+            onClicked: {
+                MySettings.systemTray = !MySettings.systemTray
+            }
+        }
+        MySettingsLabel {
+            id: serverChatLabel
+            text: qsTr("Enable Local API Server")
+            helpText: qsTr("Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.")
+            Layout.row: 14
+            Layout.column: 0
+        }
+        MyCheckBox {
+            id: serverChatBox
+            Layout.row: 14
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
@@ -524,7 +541,7 @@ MySettingsTab {
             id: serverPortLabel
             text: qsTr("API Server Port")
             helpText: qsTr("The port to use for the local server. Requires restart.")
-            Layout.row: 14
+            Layout.row: 15
             Layout.column: 0
         }
         MyTextField {
@@ -532,7 +549,7 @@ MySettingsTab {
             text: MySettings.networkPort
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
-            Layout.row: 14
+            Layout.row: 15
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -577,12 +594,12 @@ MySettingsTab {
             id: updatesLabel
             text: qsTr("Check For Updates")
             helpText: qsTr("Manually check for an update to GPT4All.");
-            Layout.row: 15
+            Layout.row: 16
             Layout.column: 0
         }
 
         MySettingsButton {
-            Layout.row: 15
+            Layout.row: 16
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             text: qsTr("Updates");
@@ -593,7 +610,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 16
+            Layout.row: 17
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
