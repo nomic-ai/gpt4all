@@ -110,7 +110,7 @@ bool LLM::isNetworkOnline() const
     return !netinfo || netinfo->reachability() == QNetworkInformation::Reachability::Online;
 }
 
-bool LLM::showDockIcon() const
+void LLM::showDockIcon() const
 {
 #ifdef Q_OS_MAC
     MacOSDock::showIcon();
@@ -119,7 +119,7 @@ bool LLM::showDockIcon() const
 #endif
 }
 
-bool LLM::hideDockIcon() const
+void LLM::hideDockIcon() const
 {
 #ifdef Q_OS_MAC
     MacOSDock::hideIcon();
