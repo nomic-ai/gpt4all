@@ -1208,10 +1208,13 @@ protected:
         qsizetype wordEnd = wordStart + 1;
         while (wordEnd >= m_buffer.size() || !m_buffer[wordEnd].isSpace()) {
             if (wordEnd >= m_buffer.size() && !fillBuffer())
-                return std::nullopt;
+                break;
             if (!m_buffer[wordEnd].isSpace())
                 ++wordEnd;
         }
+
+        if (wordStart == wordEnd)
+            return std::nullopt;
 
         auto size = wordEnd - wordStart;
         QString word = std::move(m_buffer);
@@ -1220,7 +1223,6 @@ protected:
             word.resize(size);
         else
             word = word.sliced(wordStart, size);
-
         return word;
     }
 
