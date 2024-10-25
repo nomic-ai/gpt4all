@@ -173,8 +173,9 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     // always decode something before generating, even if cached
     if (alwaysDecode && embd_inp.empty()) {
         auto cache = inputTokens();
-        if (cache.empty())
+        if (!promptCtx.n_past)
             throw std::runtime_error("zero token prompt is not supported");
+        assert(!cache.empty());
         embd_inp.push_back(cache.back());
         promptCtx.n_past--;
     }
