@@ -30,6 +30,7 @@ Window {
         icon.source: "qrc:/gpt4all/icons/gpt4all.svg"
 
         function restore() {
+            LLM.showDockIcon();
             window.show();
             window.raise();
             window.requestActivate();
@@ -218,6 +219,7 @@ Window {
 
     onClosing: function(close) {
         if (systemTrayIcon.visible) {
+            LLM.hideDockIcon();
             window.visible = false;
             ChatListModel.saveChats();
             close.accepted = false;

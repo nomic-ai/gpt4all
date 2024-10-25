@@ -44,6 +44,7 @@ static void raiseWindow(QWindow *window)
 
     SetForegroundWindow(hwnd);
 #else
+    LLM::globalInstance()->showDockIcon();
     window->show();
     window->raise();
     window->requestActivate();

@@ -153,6 +153,12 @@ if (APPLE)
     set_source_files_properties(${CHAT_EXE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
+set(MACOS_SOURCES)
+if (APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    list(APPEND MACOS_SOURCES src/macosdock.mm src/macosdock.h)
+endif()
+
 qt_add_executable(chat
     src/main.cpp
     src/chat.cpp                  src/chat.h
@@ -174,6 +180,7 @@ qt_add_executable(chat
     src/server.cpp                src/server.h
     src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
+    ${MACOS_SOURCES}
 )
 gpt4all_add_warning_options(chat)
 
@@ -358,6 +365,9 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
 
+if (APPLE)
+    target_link_libraries(chat PRIVATE ${COCOA_LIBRARY})
+endif()
 
 # -- install --
 
