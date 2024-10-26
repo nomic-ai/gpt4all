@@ -214,6 +214,7 @@ qt_add_qml_module(chat
       qml/AddModelView.qml
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
+      qml/ChatItemView.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
       qml/HomeView.qml
