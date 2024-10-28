@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Implement Qt 6.8 compatibility ([#3121](https://github.com/nomic-ai/gpt4all/pull/3121))
 
+### Fixed
+- Fix bug in GUI when localdocs encounters binary data ([#3137](https://github.com/nomic-ai/gpt4all/pull/3137))
+
 ## [3.4.2] - 2024-10-16
 
 ### Fixed
