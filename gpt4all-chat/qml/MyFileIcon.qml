@@ -27,7 +27,7 @@ Item {
                 return "qrc:/gpt4all/icons/file-md.svg"
             else if (fileIcon.fileName.toLowerCase().endsWith(".xlsx"))
                 return "qrc:/gpt4all/icons/file-xls.svg"
-            else if (fileIcon.fileName.toLowerCase().endsWith(".doc"))
+            else if (fileIcon.fileName.toLowerCase().endsWith(".docx"))
                 return "qrc:/gpt4all/icons/file-docx.svg"
             else
                 return "qrc:/gpt4all/icons/file.svg"
