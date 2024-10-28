@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Fix bug in GUI when localdocs encounters binary data ([#3137](https://github.com/nomic-ai/gpt4all/pull/3137))
+- Fix LocalDocs bugs that prevented some docx files from fully chunking ([#3140](https://github.com/nomic-ai/gpt4all/pull/3140))
 
 ## [3.4.2] - 2024-10-16
 

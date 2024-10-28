@@ -1208,10 +1208,13 @@ protected:
         qsizetype wordEnd = wordStart + 1;
         while (wordEnd >= m_buffer.size() || !m_buffer[wordEnd].isSpace()) {
             if (wordEnd >= m_buffer.size() && !fillBuffer())
-                return std::nullopt;
+                break;
             if (!m_buffer[wordEnd].isSpace())
                 ++wordEnd;
         }
+
+        if (wordStart == wordEnd)
+            return std::nullopt;
 
         auto size = wordEnd - wordStart;
         QString word = std::move(m_buffer);
@@ -1220,7 +1223,6 @@ protected:
             word.resize(size);
         else
             word = word.sliced(wordStart, size);
-
         return word;
     }
 
@@ -1232,18 +1234,30 @@ protected:
                 // try next paragraph
                 if (!m_paragraph->has_next())
                     return false;
+
                 m_paragraph->next();
                 m_buffer += u'\n';
             }
+
+            bool foundText = false;
             auto &run = m_run->get_node();
-            const char *text = run.child("w:t").text().get();
-            if (!*text && run.child("w:tab"))
-                text = "\t";
-            m_run->next();
-            if (*text) {
-                m_buffer += QUtf8StringView(text);
-                return true;
+            for (auto node = run.first_child(); node; node = node.next_sibling()) {
+                std::string node_name = node.name();
+                if (node_name == "w:t") {
+                    const char *text = node.text().get();
+                    if (*text) {
+                        foundText = true;
+                        m_buffer += QUtf8StringView(text);
+                    }
+                } else if (node_name == "w:br") {
+                    m_buffer += u'\n';
+                } else if (node_name == "w:tab") {
+                    m_buffer += u'\t';
+                }
             }
+
+            m_run->next();
+            if (foundText) return true;
         }
     }
 
