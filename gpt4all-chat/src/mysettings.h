@@ -48,7 +48,6 @@ class MySettings : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
-    Q_PROPERTY(bool saveChatsContext READ saveChatsContext WRITE setSaveChatsContext NOTIFY saveChatsContextChanged)
     Q_PROPERTY(bool systemTray READ systemTray WRITE setSystemTray NOTIFY systemTrayChanged)
     Q_PROPERTY(bool serverChat READ serverChat WRITE setServerChat NOTIFY serverChatChanged)
     Q_PROPERTY(QString modelPath READ modelPath WRITE setModelPath NOTIFY modelPathChanged)
@@ -141,8 +140,6 @@ public:
     // Application settings
     int threadCount() const;
     void setThreadCount(int value);
-    bool saveChatsContext() const;
-    void setSaveChatsContext(bool value);
     bool systemTray() const;
     void setSystemTray(bool value);
     bool serverChat() const;
@@ -220,7 +217,6 @@ Q_SIGNALS:
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);
     void threadCountChanged();
-    void saveChatsContextChanged();
     void systemTrayChanged();
     void serverChatChanged();
     void modelPathChanged();

@@ -12,8 +12,9 @@ import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Protocol, overload
+from typing import TYPE_CHECKING, Any, Iterable, Literal, Protocol, TypedDict, overload
 
+import jinja2
 import requests
 from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
@@ -25,16 +26,24 @@ from ._pyllmodel import (CancellationError as CancellationError, EmbCancelCallba
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
 
-if sys.platform == 'darwin':
+if sys.platform == "darwin":
     import fcntl
 
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
-DEFAULT_PROMPT_TEMPLATE = "### Human:\n{0}\n\n### Assistant:\n"
+ConfigType: TypeAlias = "dict[str, Any]"
 
-ConfigType: TypeAlias = 'dict[str, Any]'
-MessageType: TypeAlias = 'dict[str, str]'
+_jinja_env = jinja2.Environment(
+    loader=jinja2.BaseLoader(),
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
+
+
+class MessageType(TypedDict):
+    role: str
+    content: str
 
 
 class Embed4All:
@@ -54,7 +63,7 @@ class Embed4All:
             kwargs: Remaining keyword arguments are passed to the `GPT4All` constructor.
         """
         if model_name is None:
-            model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
+            model_name = "all-MiniLM-L6-v2.gguf2.f16.gguf"
         self.gpt4all = GPT4All(model_name, n_threads=n_threads, device=device, **kwargs)
 
     def __enter__(self) -> Self:
@@ -145,18 +154,18 @@ class Embed4All:
             dimensionality = -1
         else:
             if dimensionality <= 0:
-                raise ValueError(f'Dimensionality must be None or a positive integer, got {dimensionality}')
+                raise ValueError(f"Dimensionality must be None or a positive integer, got {dimensionality}")
             if dimensionality < self.MIN_DIMENSIONALITY:
                 warnings.warn(
-                    f'Dimensionality {dimensionality} is less than the suggested minimum of {self.MIN_DIMENSIONALITY}.'
-                    ' Performance may be degraded.'
+                    f"Dimensionality {dimensionality} is less than the suggested minimum of {self.MIN_DIMENSIONALITY}."
+                    " Performance may be degraded."
                 )
         try:
             do_mean = {"mean": True, "truncate": False}[long_text_mode]
         except KeyError:
             raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
         result = self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas, cancel_cb)
-        return result if return_dict else result['embeddings']
+        return result if return_dict else result["embeddings"]
 
 
 class GPT4All:
@@ -205,7 +214,7 @@ class GPT4All:
 
         self.model_type = model_type
         self._history: list[MessageType] | None = None
-        self._current_prompt_template: str = "{0}"
+        self._current_prompt_template: jinja2.Template | None = None
 
         device_init = None
         if sys.platform == "darwin":
@@ -264,7 +273,13 @@ class GPT4All:
 
     @property
     def current_chat_session(self) -> list[MessageType] | None:
-        return None if self._history is None else list(self._history)
+        return self._history
+
+    @current_chat_session.setter
+    def current_chat_session(self, history: list[MessageType]) -> None:
+        if self._history is None:
+            raise ValueError("current_chat_session may only be set when there is an active chat session")
+        self._history = history
 
     @staticmethod
     def list_models() -> list[ConfigType]:
@@ -276,7 +291,7 @@ class GPT4All:
         """
         resp = requests.get("https://gpt4all.io/models/models3.json")
         if resp.status_code != 200:
-            raise ValueError(f'Request failed: HTTP {resp.status_code} {resp.reason}')
+            raise ValueError(f"Request failed: HTTP {resp.status_code} {resp.reason}")
         return resp.json()
 
     @classmethod
@@ -306,15 +321,9 @@ class GPT4All:
         # get the config for the model
         config: ConfigType = {}
         if allow_download:
-            available_models = cls.list_models()
-
-            for m in available_models:
-                if model_filename == m["filename"]:
-                    tmpl = m.get("promptTemplate", DEFAULT_PROMPT_TEMPLATE)
-                    # change to Python-style formatting
-                    m["promptTemplate"] = tmpl.replace("%1", "{0}", 1).replace("%2", "{1}", 1)
-                    config.update(m)
-                    break
+            models = cls.list_models()
+            if (model := next((m for m in models if m["filename"] == model_filename), None)) is not None:
+                config.update(model)
 
         # Validate download directory
         if model_path is None:
@@ -378,13 +387,13 @@ class GPT4All:
             headers = {}
             if offset:
                 print(f"\nDownload interrupted, resuming from byte position {offset}", file=sys.stderr)
-                headers['Range'] = f'bytes={offset}-'  # resume incomplete response
+                headers["Range"] = f"bytes={offset}-"  # resume incomplete response
                 headers["Accept-Encoding"] = "identity"  # Content-Encoding changes meaning of ranges
             response = requests.get(url, stream=True, headers=headers)
             if response.status_code not in (200, 206):
-                raise ValueError(f'Request failed: HTTP {response.status_code} {response.reason}')
-            if offset and (response.status_code != 206 or str(offset) not in response.headers.get('Content-Range', '')):
-                raise ValueError('Connection was interrupted and server does not support range requests')
+                raise ValueError(f"Request failed: HTTP {response.status_code} {response.reason}")
+            if offset and (response.status_code != 206 or str(offset) not in response.headers.get("Content-Range", "")):
+                raise ValueError("Connection was interrupted and server does not support range requests")
             if (enc := response.headers.get("Content-Encoding")) is not None:
                 raise ValueError(f"Expected identity Content-Encoding, got {enc}")
             return response
@@ -483,19 +492,19 @@ class GPT4All:
 
     def generate(
         self,
-        prompt: str,
+        prompt         : str,
         *,
-        max_tokens: int = 200,
-        temp: float = 0.7,
-        top_k: int = 40,
-        top_p: float = 0.4,
-        min_p: float = 0.0,
-        repeat_penalty: float = 1.18,
-        repeat_last_n: int = 64,
-        n_batch: int = 8,
-        n_predict: int | None = None,
-        streaming: bool = False,
-        callback: ResponseCallbackType = empty_response_callback,
+        max_tokens     : int                  = 200,
+        temp           : float                = 0.7,
+        top_k          : int                  = 40,
+        top_p          : float                = 0.4,
+        min_p          : float                = 0.0,
+        repeat_penalty : float                = 1.18,
+        repeat_last_n  : int                  = 64,
+        n_batch        : int                  = 8,
+        n_predict      : int | None           = None,
+        streaming      : bool                 = False,
+        callback       : ResponseCallbackType = empty_response_callback,
     ) -> Any:
         """
         Generate outputs from any GPT4All model.
@@ -520,122 +529,79 @@ class GPT4All:
 
         # Preparing the model request
         generate_kwargs: dict[str, Any] = dict(
-            temp=temp,
-            top_k=top_k,
-            top_p=top_p,
-            min_p=min_p,
-            repeat_penalty=repeat_penalty,
-            repeat_last_n=repeat_last_n,
-            n_batch=n_batch,
-            n_predict=n_predict if n_predict is not None else max_tokens,
+            temp           = temp,
+            top_k          = top_k,
+            top_p          = top_p,
+            min_p          = min_p,
+            repeat_penalty = repeat_penalty,
+            repeat_last_n  = repeat_last_n,
+            n_batch        = n_batch,
+            n_predict      = n_predict if n_predict is not None else max_tokens,
         )
 
-        if self._history is not None:
-            # check if there is only one message, i.e. system prompt:
-            reset = len(self._history) == 1
-            self._history.append({"role": "user", "content": prompt})
-
-            fct_func = self._format_chat_prompt_template.__func__  # type: ignore[attr-defined]
-            if fct_func is GPT4All._format_chat_prompt_template:
-                if reset:
-                    # ingest system prompt
-                    # use "%1%2" and not "%1" to avoid implicit whitespace
-                    self.model.prompt_model(self._history[0]["content"], "%1%2",
-                                            empty_response_callback,
-                                            n_batch=n_batch, n_predict=0, reset_context=True, special=True)
-                prompt_template = self._current_prompt_template.format("%1", "%2")
-            else:
-                warnings.warn(
-                    "_format_chat_prompt_template is deprecated. Please use a chat session with a prompt template.",
-                    DeprecationWarning,
-                )
-                # special tokens won't be processed
-                prompt = self._format_chat_prompt_template(
-                    self._history[-1:],
-                    self._history[0]["content"] if reset else "",
-                )
-                prompt_template = "%1"
-                generate_kwargs["reset_context"] = reset
-        else:
-            prompt_template = "%1"
-            generate_kwargs["reset_context"] = True
-
         # Prepare the callback, process the model response
-        output_collector: list[MessageType]
-        output_collector = [
-            {"content": ""}
-        ]  # placeholder for the self._history if chat session is not activated
+        full_response = ""
+
+        def _callback_wrapper(token_id: int, response: str) -> bool:
+            nonlocal full_response
+            full_response += response
+            return callback(token_id, response)
 
         if self._history is not None:
-            self._history.append({"role": "assistant", "content": ""})
-            output_collector = self._history
+            self._history.append(MessageType(role="user", content=prompt))
+            prompt = self._current_prompt_template.render(messages=self._history)
 
-        def _callback_wrapper(
-            callback: ResponseCallbackType,
-            output_collector: list[MessageType],
-        ) -> ResponseCallbackType:
-            def _callback(token_id: int, response: str) -> bool:
-                nonlocal callback, output_collector
-
-                output_collector[-1]["content"] += response
-
-                return callback(token_id, response)
-
-            return _callback
+        # Check request length
+        last_msg_rendered = (self._current_prompt_template.render(messages=self._history[-1])
+                             if len(self._history) > 1 else conversation)
+        last_msg_len = self.model.count_prompt_tokens(last_msg_rendered)
+        if last_msg_len > (limit := self.model.n_ctx - 4):
+            raise ValueError(f"Your message was too long and could not be processed ({last_msg_len} > {limit}).")
 
         # Send the request to the model
         if streaming:
-            return self.model.prompt_model_streaming(
-                prompt,
-                prompt_template,
-                _callback_wrapper(callback, output_collector),
-                **generate_kwargs,
-            )
+            def stream() -> Iterator[str]:
+                yield from self.model.prompt_model_streaming(prompt, _callback_wrapper, **generate_kwargs)
+                if self._history is not None:
+                    self._history.append(MessageType(role="assistant", content=full_response))
+            return stream()
 
-        self.model.prompt_model(
-            prompt,
-            prompt_template,
-            _callback_wrapper(callback, output_collector),
-            **generate_kwargs,
-        )
-
-        return output_collector[-1]["content"]
+        self.model.prompt_model(prompt, _callback_wrapper, **generate_kwargs)
+        if self._history is not None:
+            self._history.append(MessageType(role="assistant", content=full_response))
+        return full_response
 
     @contextmanager
     def chat_session(
         self,
-        system_prompt: str | None = None,
+        system_prompt: str | Literal[False] | None = None,
         prompt_template: str | None = None,
     ):
         """
         Context manager to hold an inference optimized chat session with a GPT4All model.
 
         Args:
-            system_prompt: An initial instruction for the model.
-            prompt_template: Template for the prompts with {0} being replaced by the user message.
+            system_prompt: An initial instruction for the model, None to use the model default, or False to disable. Defaults to None.
+            prompt_template: Jinja template for the conversation, or None to use the model default. Defaults to None.
         """
 
         if system_prompt is None:
-            system_prompt = self.config.get("systemPrompt", "")
+            system_prompt = self.config.get("systemPrompt", False)
 
         if prompt_template is None:
             if (tmpl := self.config.get("promptTemplate")) is None:
-                warnings.warn("Use of a sideloaded model or allow_download=False without specifying a prompt template "
-                              "is deprecated. Defaulting to Alpaca.", DeprecationWarning)
-                tmpl = DEFAULT_PROMPT_TEMPLATE
+                raise ValueError("For sideloaded models or with allow_download=False, you must specify a prompt template.")
             prompt_template = tmpl
 
-        if re.search(r"%1(?![0-9])", prompt_template):
-            raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
-                             "placeholder, please use '{0}' instead.")
-
-        self._history = [{"role": "system", "content": system_prompt}]
-        self._current_prompt_template = prompt_template
+        self._history = []
+        if system_prompt is not False:
+            self._history.append(MessageType(role="system", content=system_prompt))
+        self._current_prompt_template = _jinja_env.from_string(prompt_template)
         try:
             yield self
         finally:
             self._history = None
-            self._current_prompt_template = "{0}"
+            self._current_prompt_template = None
 
     @staticmethod
     def list_gpus() -> list[str]:
@@ -646,43 +612,6 @@ class GPT4All:
             A list of strings representing the names of the available GPU devices.
         """
         return LLModel.list_gpus()
-
-    def _format_chat_prompt_template(
-        self,
-        messages: list[MessageType],
-        default_prompt_header: str = "",
-        default_prompt_footer: str = "",
-    ) -> str:
-        """
-        Helper method for building a prompt from list of messages using the self._current_prompt_template as a template for each message.
-
-        Warning:
-            This function was deprecated in version 2.3.0, and will be removed in a future release.
-
-        Args:
-            messages:  List of dictionaries. Each dictionary should have a "role" key
-                with value of "system", "assistant", or "user" and a "content" key with a
-                string value. Messages are organized such that "system" messages are at top of prompt,
-                and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
-                "Response: {content}".
-
-        Returns:
-            Formatted prompt.
-        """
-
-        full_prompt = default_prompt_header + "\n\n" if default_prompt_header != "" else ""
-
-        for message in messages:
-            if message["role"] == "user":
-                user_message = self._current_prompt_template.format(message["content"])
-                full_prompt += user_message
-            if message["role"] == "assistant":
-                assistant_message = message["content"] + "\n"
-                full_prompt += assistant_message
-
-        full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
-
-        return full_prompt
 
 
 def append_extension_if_missing(model_name):
@@ -696,7 +625,7 @@ class _HasFileno(Protocol):
 
 
 def _fsync(fd: int | _HasFileno) -> None:
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         # Apple's fsync does not flush the drive write cache
         try:
             fcntl.fcntl(fd, fcntl.F_FULLFSYNC)

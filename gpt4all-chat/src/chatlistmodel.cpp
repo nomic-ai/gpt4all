@@ -18,8 +18,8 @@
 
 #include <algorithm>
 
-#define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 10
+static constexpr quint32 CHAT_FORMAT_MAGIC   = 0xF5D553CC;
+static constexpr qint32  CHAT_FORMAT_VERSION = 11;
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
@@ -118,8 +118,8 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
         }
         QDataStream out(&tempFile);
 
-        out << (quint32)CHAT_FORMAT_MAGIC;
-        out << (qint32)CHAT_FORMAT_VERSION;
+        out << CHAT_FORMAT_MAGIC;
+        out << CHAT_FORMAT_VERSION;
         out.setVersion(QDataStream::Qt_6_2);
 
         qDebug() << "serializing chat" << fileName;
@@ -259,7 +259,11 @@ void ChatsRestoreThread::run()
 
         Chat *chat = new Chat;
         chat->moveToThread(qGuiApp->thread());
-        if (!chat->deserialize(in, version)) {
+        bool ok = !chat->deserialize(in, version);
+        if (ok && !in.atEnd()) {
+            qWarning().nospace() << "error loading chat from " << file.fileName() << ": extra data at end of file";
+        }
+        if (!ok) {
             qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
         } else {
             emit chatRestored(chat);
@@ -285,7 +289,8 @@ void ChatListModel::restoreChat(Chat *chat)
 
 void ChatListModel::chatsRestoredFinished()
 {
-    addServerChat();
+    // TODO(jared): add this back with Jinja support
+    // addServerChat();
 }
 
 void ChatListModel::handleServerEnabledChanged()

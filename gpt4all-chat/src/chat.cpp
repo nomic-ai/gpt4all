@@ -1,7 +1,6 @@
 #include "chat.h"
 
 #include "chatlistmodel.h"
-#include "mysettings.h"
 #include "network.h"
 #include "server.h"
 
@@ -11,7 +10,6 @@
 #include <QLatin1String>
 #include <QMap>
 #include <QString>
-#include <QStringList>
 #include <QVariant>
 #include <Qt>
 #include <QtLogging>
@@ -38,7 +36,7 @@ Chat::Chat(server_tag_t, QObject *parent)
     , m_chatModel(new ChatModel(this))
     , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
-    , m_llmodel(new Server(this))
+    , m_llmodel(nullptr) // TODO(jared): new Server(this)
     , m_isServer(true)
     , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
@@ -61,7 +59,6 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
@@ -75,9 +72,6 @@ void Chat::connectLLM()
     connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &ChatLLM::loadDefaultModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
-    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
 }
@@ -87,26 +81,15 @@ void Chat::reset()
     stopGenerating();
     // Erase our current on disk representation as we're completely resetting the chat along with id
     ChatListModel::globalInstance()->removeChatFile(this);
-    emit resetContextRequested();
     m_id = Network::globalInstance()->generateUniqueId();
     emit idChanged(m_id);
     // NOTE: We deliberately do no reset the name or creation date to indicate that this was originally
     // an older chat that was reset for another purpose. Resetting this data will lead to the chat
     // name label changing back to 'New Chat' and showing up in the chat model list as a 'New Chat'
     // further down in the list. This might surprise the user. In the future, we might get rid of
-    // the "reset context" button in the UI. Right now, by changing the model in the combobox dropdown
-    // we effectively do a reset context. We *have* to do this right now when switching between different
-    // types of models. The only way to get rid of that would be a very long recalculate where we rebuild
-    // the context if we switch between different types of models. Probably the right way to fix this
-    // is to allow switching models but throwing up a dialog warning users if we switch between types
-    // of models that a long recalculation will ensue.
+    // the "reset context" button in the UI.
     m_chatModel->clear();
     m_needsSave = true;
-}
-
-void Chat::processSystemPrompt()
-{
-    emit processSystemPromptRequested();
 }
 
 void Chat::resetResponseState()
@@ -161,22 +144,14 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
         promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt;
 
     newPromptResponsePairInternal(prompt, attachments);
-    emit resetResponseRequested();
 
-    this->prompt(promptPlusAttached);
-}
-
-void Chat::prompt(const QString &prompt)
-{
-    resetResponseState();
-    emit promptRequested(m_collections, prompt);
+    emit promptRequested(m_collections);
     m_needsSave = true;
 }
 
 void Chat::regenerateResponse()
 {
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateSources(index, QList<ResultInfo>());
+    resetResponseState();
     emit regenerateResponseRequested();
     m_needsSave = true;
 }
@@ -286,11 +261,6 @@ void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<Prom
     m_chatModel->appendResponse("Response: ");
 }
 
-bool Chat::restoringFromText() const
-{
-    return m_llmodel->restoringFromText();
-}
-
 void Chat::unloadAndDeleteLater()
 {
     if (!isModelLoaded()) {
@@ -354,12 +324,6 @@ void Chat::generatedQuestionFinished(const QString &question)
     m_generatedQuestions << question;
     emit generatedQuestionsChanged();
     m_needsSave = true;
-}
-
-void Chat::handleRestoringFromText()
-{
-    Network::globalInstance()->trackChatEvent("recalc_context", { {"length", m_chatModel->count()} });
-    emit restoringFromTextChanged();
 }
 
 void Chat::handleModelLoadingError(const QString &error)
@@ -430,10 +394,9 @@ bool Chat::serialize(QDataStream &stream, int version) const
     if (version >= 3)
         stream << m_collections;
 
-    const bool serializeKV = MySettings::globalInstance()->saveChatsContext();
     if (version >= 6)
-        stream << serializeKV;
-    if (!m_llmodel->serialize(stream, version, serializeKV))
+        stream << false; // serializeKV
+    if (!m_llmodel->serialize(stream, version))
         return false;
     if (!m_chatModel->serialize(stream, version))
         return false;
@@ -462,19 +425,13 @@ bool Chat::deserialize(QDataStream &stream, int version)
     if (!m_modelInfo.id().isEmpty())
         emit modelInfoChanged();
 
-    bool discardKV = m_modelInfo.id().isEmpty();
-
     if (version >= 3) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
 
-    bool deserializeKV = true;
-    if (version >= 6)
-        stream >> deserializeKV;
-
     m_llmodel->setModelInfo(m_modelInfo);
-    if (!m_llmodel->deserialize(stream, version, deserializeKV, discardKV))
+    if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))
         return false;

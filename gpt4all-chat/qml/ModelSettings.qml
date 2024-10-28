@@ -205,13 +205,14 @@ MySettingsTab {
                 text: qsTr("Prompt Template")
                 helpText: qsTr("The template that wraps every prompt.")
             }
-            MySettingsLabel {
+            // FIXME(jared): we should attempt to load the Jinja template here to check if it's valid
+            /* MySettingsLabel {
                 id: promptTemplateLabelHelp
                 text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
                 color: theme.textErrorColor
                 visible: templateTextArea.text.indexOf("%1") === -1
                 wrapMode: TextArea.Wrap
-            }
+            } */
         }
 
         Rectangle {
@@ -227,6 +228,7 @@ MySettingsTab {
                 id: templateTextArea
                 anchors.fill: parent
                 text: root.currentModelInfo.promptTemplate
+                font: fixedFont
                 Connections {
                     target: MySettings
                     function onPromptTemplateChanged() {
@@ -240,13 +242,15 @@ MySettingsTab {
                     }
                 }
                 onTextChanged: {
-                    if (templateTextArea.text.indexOf("%1") !== -1) {
+                    // FIXME(jared): see comment on promptTemplateLabelHelp
+                    if (true /*templateTextArea.text.indexOf("%1") !== -1*/) {
                         MySettings.setModelPromptTemplate(root.currentModelInfo, text)
                     }
                 }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: promptTemplateLabel.text
-                Accessible.description: promptTemplateLabelHelp.text
+                // FIXME(jared): see comment on promptTemplateLabelHelp
+                // Accessible.description: promptTemplateLabelHelp.text
             }
         }
 

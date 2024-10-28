@@ -895,7 +895,6 @@ Rectangle {
                         onClicked: {
                             Network.trackChatEvent("reset_context", { "length": chatModel.count })
                             currentChat.reset();
-                            currentChat.processSystemPrompt();
                         }
                         ToolTip.visible: resetContextButton.hovered
                         ToolTip.text: qsTr("Erase and reset chat session")
@@ -928,24 +927,8 @@ Rectangle {
                         source: "qrc:/gpt4all/icons/regenerate.svg"
                         imageWidth: 20
                         imageHeight: 20
-                        visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
-                        onClicked: {
-                            if (chatModel.count < 2)
-                                return
-                            var promptIndex = chatModel.count - 2
-                            var promptElement = chatModel.get(promptIndex)
-                            var responseIndex = chatModel.count - 1
-                            var responseElement = chatModel.get(responseIndex)
-                            if (promptElement.name !== "Prompt: " || responseElement.name !== "Response: ")
-                                return
-                            currentChat.regenerateResponse()
-                            chatModel.updateCurrentResponse(responseIndex, true)
-                            chatModel.updateStopped(responseIndex, false)
-                            chatModel.updateThumbsUpState(responseIndex, false)
-                            chatModel.updateThumbsDownState(responseIndex, false)
-                            chatModel.updateNewResponse(responseIndex, "")
-                            currentChat.prompt(promptElement.promptPlusAttachments)
-                        }
+                        visible: chatModel.count >= 2 && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
+                        onClicked: currentChat.regenerateResponse()
                         ToolTip.visible: regenerateButton.hovered
                         ToolTip.text: qsTr("Redo last chat response")
                     }
@@ -1223,7 +1206,7 @@ Rectangle {
                                                       }
                                                   }
                             function sendMessage() {
-                                if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress || currentChat.restoringFromText)
+                                if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress)
                                     return
 
                                 currentChat.stopGenerating()

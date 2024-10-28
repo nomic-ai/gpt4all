@@ -48,7 +48,6 @@ static const QVariantMap basicDefaults {
     { "fontSize",                 QVariant::fromValue(FontSize::Small) },
     { "lastVersionStarted",       "" },
     { "networkPort",              4891, },
-    { "saveChatsContext",         false },
     { "systemTray",               false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
@@ -206,7 +205,6 @@ void MySettings::restoreApplicationDefaults()
     setFontSize(basicDefaults.value("fontSize").value<FontSize>());
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
-    setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
     setSystemTray(basicDefaults.value("systemTray").toBool());
     setServerChat(basicDefaults.value("serverChat").toBool());
     setNetworkPort(basicDefaults.value("networkPort").toInt());
@@ -445,7 +443,6 @@ void MySettings::setThreadCount(int value)
     emit threadCountChanged();
 }
 
-bool        MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
 bool        MySettings::systemTray() const              { return getBasicSetting("systemTray"              ).toBool(); }
 bool        MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
 int         MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
@@ -464,7 +461,6 @@ ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnu
 FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
 SuggestionMode MySettings::suggestionMode() const { return SuggestionMode(getEnumSetting("suggestionMode", suggestionModeNames)); }
 
-void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
 void MySettings::setSystemTray(bool value)                            { setBasicSetting("systemTray",               value); }
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
 void MySettings::setNetworkPort(int value)                            { setBasicSetting("networkPort",              value); }

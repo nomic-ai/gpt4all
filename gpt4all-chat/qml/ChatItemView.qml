@@ -40,7 +40,7 @@ GridLayout {
                 to: 360
                 duration: 1000
                 loops: Animation.Infinite
-                running: currentResponse && (currentChat.responseInProgress || currentChat.restoringFromText)
+                running: currentResponse && currentChat.responseInProgress
             }
         }
     }
@@ -73,13 +73,11 @@ GridLayout {
                 color: theme.mutedTextColor
             }
             RowLayout {
-                visible: currentResponse && ((value === "" && currentChat.responseInProgress) || currentChat.restoringFromText)
+                visible: currentResponse && (value === "" && currentChat.responseInProgress)
                 Text {
                     color: theme.mutedTextColor
                     font.pixelSize: theme.fontSizeLarger
                     text: {
-                        if (currentChat.restoringFromText)
-                            return qsTr("restoring from text ...");
                         switch (currentChat.responseState) {
                         case Chat.ResponseStopped: return qsTr("response stopped ...");
                         case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: %1 ...").arg(currentChat.collectionList.join(", "));

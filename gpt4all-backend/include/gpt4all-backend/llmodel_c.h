@@ -35,16 +35,15 @@ typedef int32_t token_t;
  * behavior.
  */
 struct llmodel_prompt_context {
-    int32_t n_past;         // number of tokens in past conversation
     int32_t n_predict;      // number of tokens to predict
     int32_t top_k;          // top k logits to sample from
-    float top_p;            // nucleus sampling probability threshold
-    float min_p;            // Min P sampling
-    float temp;             // temperature to adjust model's output distribution
+    float   top_p;          // nucleus sampling probability threshold
+    float   min_p;          // Min P sampling
+    float   temp;           // temperature to adjust model's output distribution
     int32_t n_batch;        // number of predictions to generate in parallel
-    float repeat_penalty;   // penalty factor for repeated tokens
+    float   repeat_penalty; // penalty factor for repeated tokens
     int32_t repeat_last_n;  // last n tokens to penalize
-    float context_erase;    // percent of context to erase if we exceed the context window
+    float   context_erase;  // percent of context to erase if we exceed the context window
 };
 
 struct llmodel_gpu_device {
@@ -63,10 +62,12 @@ typedef struct llmodel_gpu_device llmodel_gpu_device;
 
 /**
  * Callback type for prompt processing.
- * @param token_id The token id of the prompt.
+ * @param token_ids An array of token ids of the prompt.
+ * @param n_token_ids The number of tokens in the array.
+ * @param cached Whether the tokens were already in cache.
  * @return a bool indicating whether the model should keep processing.
  */
-typedef bool (*llmodel_prompt_callback)(int32_t token_id);
+typedef bool (*llmodel_prompt_callback)(const token_t *token_ids, size_t n_token_ids, bool cached);
 
 /**
  * Callback type for response.
@@ -74,7 +75,7 @@ typedef bool (*llmodel_prompt_callback)(int32_t token_id);
  * @param response The response string. NOTE: a token_id of -1 indicates the string is an error string.
  * @return a bool indicating whether the model should keep generating.
  */
-typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response);
+typedef bool (*llmodel_response_callback)(token_t token_id, const char *response);
 
 /**
  * Embedding cancellation callback for use with llmodel_embed.
@@ -183,22 +184,19 @@ uint64_t llmodel_state_set_data(llmodel_model model, const uint8_t *state, uint6
  * Generate a response using the model.
  * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.
- * @param prompt_template A string representing the input prompt template.
  * @param prompt_callback A callback function for handling the processing of prompt.
  * @param response_callback A callback function for handling the generated response.
- * @param allow_context_shift Whether to allow shifting of context to make room for more input.
- * @param special True if special tokens in the prompt should be processed, false otherwise.
- * @param fake_reply A string to insert into context as the model's reply, or NULL to generate one.
  * @param ctx A pointer to the llmodel_prompt_context structure.
+ * @param allow_context_shift Whether to allow shifting of context to make room for more input.
+ * @param error A pointer to a string; will only be set on error.
  */
-void llmodel_prompt(llmodel_model model, const char *prompt,
-                    const char *prompt_template,
-                    llmodel_prompt_callback prompt_callback,
-                    llmodel_response_callback response_callback,
-                    bool allow_context_shift,
-                    llmodel_prompt_context *ctx,
-                    bool special,
-                    const char *fake_reply);
+bool llmodel_prompt(llmodel_model               model,
+                    const char                 *prompt,
+                    llmodel_prompt_callback     prompt_callback,
+                    llmodel_response_callback   response_callback,
+                    llmodel_prompt_context     *ctx,
+                    bool                        allow_context_shift,
+                    const char                **error);
 
 /**
  * Generate an embedding using the model.
@@ -309,6 +307,8 @@ const char *llmodel_model_backend_name(llmodel_model model);
  * @return The name of the GPU device currently in use, or NULL for backends other than Kompute.
  */
 const char *llmodel_model_gpu_device_name(llmodel_model model);
+
+int32_t llmodel_count_prompt_tokens(const llmodel_model model, const char *prompt, const char **error);
 
 #ifdef __cplusplus
 }

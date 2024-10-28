@@ -487,23 +487,6 @@ MySettingsTab {
             Accessible.description: ToolTip.text
         }
         MySettingsLabel {
-            id: saveChatsContextLabel
-            text: qsTr("Save Chat Context")
-            helpText: qsTr("Save the chat model's state to disk for faster loading. WARNING: Uses ~2GB per chat.")
-            Layout.row: 12
-            Layout.column: 0
-        }
-        MyCheckBox {
-            id: saveChatsContextBox
-            Layout.row: 12
-            Layout.column: 2
-            Layout.alignment: Qt.AlignRight
-            checked: MySettings.saveChatsContext
-            onClicked: {
-                MySettings.saveChatsContext = !MySettings.saveChatsContext
-            }
-        }
-        MySettingsLabel {
             id: trayLabel
             text: qsTr("Enable System Tray")
             helpText: qsTr("The application will minimize to the system tray when the window is closed.")

@@ -1,10 +1,8 @@
 #include "chatapi.h"
 
-#include <gpt4all-backend/llmodel.h>
-
 #include <QCoreApplication>
-#include <QGuiApplication>
 #include <QDebug>
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -13,12 +11,15 @@
 #include <QNetworkRequest>
 #include <QThread>
 #include <QUrl>
+#include <QUtf8StringView>
 #include <QVariant>
 #include <Qt>
 #include <QtGlobal>
 #include <QtLogging>
 
+#include <functional>
 #include <iostream>
+#include <utility>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -67,69 +68,44 @@ bool ChatAPI::isModelLoaded() const
     return true;
 }
 
-void ChatAPI::prompt(const std::string &prompt,
-                     const std::string &promptTemplate,
-                     std::function<bool(int32_t)> promptCallback,
-                     std::function<bool(int32_t, const std::string&)> responseCallback,
-                     bool allowContextShift,
-                     PromptContext &promptCtx,
-                     bool special,
-                     std::optional<std::string_view> fakeReply) {
-
+void ChatAPI::prompt(
+    std::string_view        prompt,
+    const PromptCallback   &promptCallback,
+    const ResponseCallback &responseCallback,
+    const PromptContext    &promptCtx,
+    bool                    allowContextShift
+) {
     Q_UNUSED(promptCallback);
     Q_UNUSED(allowContextShift);
-    Q_UNUSED(special);
 
-    if (!isModelLoaded()) {
-        std::cerr << "ChatAPI ERROR: prompt won't work with an unloaded model!\n";
-        return;
-    }
+    if (!isModelLoaded())
+        throw std::invalid_argument("Attempted to prompt an unloaded model.");
+    if (!promptCtx.n_predict)
+        return; // nothing requested
 
-    if (!promptCtx.n_past) { m_queuedPrompts.clear(); }
-    Q_ASSERT(promptCtx.n_past <= m_context.size());
-    m_context.resize(promptCtx.n_past);
-
-    // FIXME(cebtenzzre): We're assuming people don't try to use %2 with ChatGPT. What would that even mean?
-    m_queuedPrompts << QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt));
-
-    if (!promptCtx.n_predict && !fakeReply) {
-        return; // response explicitly suppressed, queue prompt for later
-    }
-
-    QString formattedPrompt = m_queuedPrompts.join("");
-    m_queuedPrompts.clear();
-
-    if (fakeReply) {
-        promptCtx.n_past += 1;
-        m_context.append(formattedPrompt);
-        m_context.append(QString::fromUtf8(fakeReply->data(), fakeReply->size()));
-        return;
-    }
+    QString formattedPrompt = QUtf8StringView(prompt).toString();
 
     // FIXME: We don't set the max_tokens on purpose because in order to do so safely without encountering
     // an error we need to be able to count the tokens in our prompt. The only way to do this is to use
-    // the OpenAI tiktokken library or to implement our own tokenization function that matches precisely
+    // the OpenAI tiktoken library or to implement our own tokenization function that matches precisely
     // the tokenization used by the OpenAI model we're calling. OpenAI has not introduced any means of
     // using the REST API to count tokens in a prompt.
-    QJsonObject root;
-    root.insert("model", m_modelName);
-    root.insert("stream", true);
-    root.insert("temperature", promptCtx.temp);
-    root.insert("top_p", promptCtx.top_p);
+    QJsonObject root {
+        { "model",       m_modelName     },
+        { "stream",      true            },
+        { "temperature", promptCtx.temp  },
+        { "top_p",       promptCtx.top_p },
+    };
 
     // conversation history
+    // TODO(jared): Use QXmlStreamReader to break XML-encoded message pairs into role/content pairs
     QJsonArray messages;
-    for (int i = 0; i < m_context.count(); ++i) {
-        QJsonObject message;
-        message.insert("role", i % 2 == 0 ? "user" : "assistant");
-        message.insert("content", m_context.at(i));
-        messages.append(message);
+    for (int i = 0; i < 1; ++i) {
+        messages.append(QJsonObject {
+            { "role",    i % 2 == 0 ? "user" : "assistant" },
+            { "content", "TODO"                            },
+        });
     }
-
-    QJsonObject promptObject;
-    promptObject.insert("role", "user");
-    promptObject.insert("content", formattedPrompt);
-    messages.append(promptObject);
     root.insert("messages", messages);
 
     QJsonDocument doc(root);
@@ -148,12 +124,9 @@ void ChatAPI::prompt(const std::string &prompt,
     connect(&worker, &ChatAPIWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
     connect(this, &ChatAPI::request, &worker, &ChatAPIWorker::request, Qt::QueuedConnection);
     workerThread.start();
-    emit request(m_apiKey, &promptCtx, doc.toJson(QJsonDocument::Compact));
+    emit request(m_apiKey, doc.toJson(QJsonDocument::Compact));
     workerThread.wait();
 
-    promptCtx.n_past += 1;
-    m_context.append(formattedPrompt);
-    m_context.append(worker.currentResponse());
     m_responseCallback = nullptr;
 
 #if defined(DEBUG)
@@ -171,12 +144,8 @@ bool ChatAPI::callResponse(int32_t token, const std::string& string)
     return m_responseCallback(token, string);
 }
 
-void ChatAPIWorker::request(const QString &apiKey,
-                            LLModel::PromptContext *promptCtx,
-                            const QByteArray &array)
+void ChatAPIWorker::request(const QString &apiKey, const QByteArray &array)
 {
-    m_ctx = promptCtx;
-
     QUrl apiUrl(m_chat->url());
     const QString authorization = u"Bearer %1"_s.arg(apiKey).trimmed();
     QNetworkRequest request(apiUrl);
@@ -283,7 +252,6 @@ void ChatAPIWorker::handleReadyRead()
         const QJsonObject choice = choices.first().toObject();
         const QJsonObject delta = choice.value("delta").toObject();
         const QString content = delta.value("content").toString();
-        Q_ASSERT(m_ctx);
         m_currentResponse += content;
         if (!m_chat->callResponse(0, content.toStdString())) {
             reply->abort();
