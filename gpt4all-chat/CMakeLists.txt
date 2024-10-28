@@ -103,11 +103,39 @@ add_subdirectory(../gpt4all-backend llmodel)
 
 if (GPT4ALL_TEST)
     enable_testing()
+
+    # Llama-3.2-1B model
+    set(TEST_MODEL "Llama-3.2-1B-Instruct-Q4_0.gguf")
+    set(TEST_MODEL_MD5 "48ff0243978606fdba19d899b77802fc")
+    set(TEST_MODEL_PATH "${CMAKE_BINARY_DIR}/resources/${TEST_MODEL}")
+    set(TEST_MODEL_URL "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/${TEST_MODEL}")
+
+    # Create a custom command to download the file if it does not exist or if the checksum does not match
+    add_custom_command(
+        OUTPUT "${TEST_MODEL_PATH}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Downloading test model from ${TEST_MODEL_URL} ..."
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/download_model.cmake
+        DEPENDS "${CMAKE_BINARY_DIR}/download_model.cmake"
+    )
+
+    # Generate a script to handle the download using file(DOWNLOAD)
+    file(WRITE ${CMAKE_BINARY_DIR}/download_model.cmake
+        "file(DOWNLOAD \"${TEST_MODEL_URL}\" \"${TEST_MODEL_PATH}\" EXPECTED_MD5 \"${TEST_MODEL_MD5}\" STATUS status)\n"
+        "list(GET status 0 status_code)\n"
+        "if(NOT status_code EQUAL 0)\n"
+        "  message(FATAL_ERROR \"Failed to download model: \${status}\")\n"
+        "endif()\n"
+    )
+
+    add_custom_target(download_test_model
+        DEPENDS "${TEST_MODEL_PATH}"
+    )
+
     add_subdirectory(tests)
 
     # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS chat gpt4all_tests)
-endif()
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS download_test_model chat gpt4all_tests)
+endif ()
 
 set(CHAT_EXE_RESOURCES)
 
