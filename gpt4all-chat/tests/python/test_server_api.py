@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+from contextlib import contextmanager
 from pathlib import Path
 from requests.exceptions import HTTPError
 from subprocess import CalledProcessError
@@ -22,13 +23,13 @@ class Requestor:
         self.session = requests.Session()
         self.http_adapter = self.session.adapters['http://']
 
-    def get(self, path: str, *, wait: bool = False) -> Any:
-        return self._request('GET', path, wait)
+    def get(self, path: str, *, raise_for_status: bool = True, wait: bool = False) -> Any:
+        return self._request('GET', path, wait, raise_for_status=raise_for_status)
 
-    def post(self, path: str, data: dict[str, Any] | None, *, wait: bool = False) -> Any:
-        return self._request('POST', path, wait, data)
+    def post(self, path: str, data: dict[str, Any] | None, *, raise_for_status: bool = True, wait: bool = False) -> Any:
+        return self._request('POST', path, wait, data, raise_for_status=raise_for_status)
 
-    def _request(self, method: str, path: str, wait: bool, data: dict[str, Any] | None = None) -> Any:
+    def _request(self, method: str, path: str, wait: bool, data: dict[str, Any] | None = None, *, raise_for_status: bool = True) -> Any:
         if wait:
             retry = Retry(total=None, connect=10, read=False, status=0, other=0, backoff_factor=.01)
         else:
@@ -36,8 +37,15 @@ class Requestor:
         self.http_adapter.max_retries = retry  # type: ignore[attr-defined]
 
         resp = self.session.request(method, f'http://localhost:4891/v1/{path}', json=data)
-        resp.raise_for_status()
-        return resp.json()
+        if raise_for_status:
+            resp.raise_for_status()
+            return resp.json()
+        else:
+            try:
+                json_data = resp.json()
+            except ValueError:
+                json_data = None
+            return resp.status_code, json_data
 
 
 request = Requestor()
@@ -63,15 +71,8 @@ def create_chat_server_config(tmpdir: Path, model_copied: bool = False) -> dict[
     if model_copied:
         app_data_dir = tmpdir / 'share' / 'nomic.ai' / 'GPT4All'
         app_data_dir.mkdir(parents=True)
-        local_file_path_env = os.getenv('TEST_MODEL_PATH')
-        if local_file_path_env:
-            local_file_path = Path(local_file_path_env)
-            if local_file_path.exists():
-                shutil.copy(local_file_path, app_data_dir / local_file_path.name)
-            else:
-                pytest.fail(f'Model file specified in TEST_MODEL_PATH does not exist: {local_file_path}')
-        else:
-            pytest.fail('Environment variable TEST_MODEL_PATH is not set')
+        local_env_file_path = Path(os.environ['TEST_MODEL_PATH'])
+        shutil.copy(local_env_file_path, app_data_dir / local_env_file_path.name)
 
     return dict(
         os.environ,
@@ -82,30 +83,20 @@ def create_chat_server_config(tmpdir: Path, model_copied: bool = False) -> dict[
     )
 
 
-@pytest.fixture
-def chat_server_config() -> Iterator[dict[str, str]]:
+@contextmanager
+def prepare_chat_server(model_copied: bool = False) -> Iterator[dict[str, str]]:
     if os.name != 'posix' or sys.platform == 'darwin':
         pytest.skip('Need non-Apple Unix to use alternate config path')
 
     with tempfile.TemporaryDirectory(prefix='gpt4all-test') as td:
         tmpdir = Path(td)
-        yield create_chat_server_config(tmpdir, model_copied=False)
+        config = create_chat_server_config(tmpdir, model_copied=model_copied)
+        yield config
 
 
-@pytest.fixture
-def chat_server_with_model_config() -> Iterator[dict[str, str]]:
-    if os.name != 'posix' or sys.platform == 'darwin':
-        pytest.skip('Need non-Apple Unix to use alternate config path')
-
-    with tempfile.TemporaryDirectory(prefix='gpt4all-test') as td:
-        tmpdir = Path(td)
-        yield create_chat_server_config(tmpdir, model_copied=True)
-
-
-@pytest.fixture
-def chat_server(chat_server_config: dict[str, str]) -> Iterator[None]:
+def start_chat_server(config: dict[str, str]) -> Iterator[None]:
     chat_executable = Path(os.environ['CHAT_EXECUTABLE']).absolute()
-    with subprocess.Popen(chat_executable, env=chat_server_config) as process:
+    with subprocess.Popen(chat_executable, env=config) as process:
         try:
             yield
         except:
@@ -117,52 +108,50 @@ def chat_server(chat_server_config: dict[str, str]) -> Iterator[None]:
 
 
 @pytest.fixture
-def chat_server_with_model(chat_server_with_model_config: dict[str, str]) -> Iterator[None]:
-    chat_executable = Path(os.environ['CHAT_EXECUTABLE']).absolute()
-    with subprocess.Popen(chat_executable, env=chat_server_with_model_config) as process:
-        try:
-            yield
-        except:
-            process.kill()
-            raise
-        process.send_signal(signal.SIGINT)
-        if retcode := process.wait():
-            raise CalledProcessError(retcode, process.args)
+def chat_server() -> Iterator[None]:
+    with prepare_chat_server(model_copied=False) as config:
+        yield from start_chat_server(config)
+
+
+@pytest.fixture
+def chat_server_with_model() -> Iterator[None]:
+    with prepare_chat_server(model_copied=True) as config:
+        yield from start_chat_server(config)
 
 
 def test_with_models_empty(chat_server: None) -> None:
     # non-sense endpoint
-    with pytest.raises(HTTPError) as excinfo:
-        request.get('foobarbaz', wait=True)
-    assert excinfo.value.response.status_code == 404
+    status_code, response = request.get('foobarbaz', wait=True, raise_for_status=False)
+    assert status_code == 404
+    assert response == None
 
     # empty model list
-    response = request.get('models', wait=True)
+    response = request.get('models')
     assert response == {'object': 'list', 'data': []}
 
     # empty model info
-    response = request.get('models/foo', wait=True)
+    response = request.get('models/foo')
     assert response == {}
 
     # POST for model list
-    with pytest.raises(HTTPError) as excinfo:
-        response = request.post('models', data=None, wait=True)
-    assert excinfo.value.response.status_code == 405
+    status_code, response = request.post('models', data=None, raise_for_status=False)
+    assert status_code == 405
+    assert response == {'error': {'code': None, 'message': 'Not allowed to POST on /v1/models. (HINT: Perhaps you meant to use a different HTTP method?)', 'param': None, 'type': 'invalid_request_error'}}
 
     # POST for model info
-    with pytest.raises(HTTPError) as excinfo:
-        response = request.post('models/foo', data=None, wait=True)
-    assert excinfo.value.response.status_code == 405
+    status_code, response = request.post('models/foo', data=None, raise_for_status=False)
+    assert status_code == 405
+    assert response == {'error': {'code': None, 'message': 'Not allowed to POST on /v1/models/*. (HINT: Perhaps you meant to use a different HTTP method?)', 'param': None, 'type': 'invalid_request_error'}}
 
     # GET for completions
-    with pytest.raises(HTTPError) as excinfo:
-        response = request.get('completions', wait=True)
-    assert excinfo.value.response.status_code == 405
+    status_code, response = request.get('completions', raise_for_status=False)
+    assert status_code == 405
+    assert response == {'error': {'code': 'method_not_supported', 'message': 'Only POST requests are accepted.', 'param': None, 'type': 'invalid_request_error'}}
 
     # GET for chat completions
-    with pytest.raises(HTTPError) as excinfo:
-        response = request.get('chat/completions', wait=True)
-    assert excinfo.value.response.status_code == 405
+    status_code, response = request.get('chat/completions', raise_for_status=False)
+    assert status_code == 405
+    assert response == {'error': {'code': 'method_not_supported', 'message': 'Only POST requests are accepted.', 'param': None, 'type': 'invalid_request_error'}}
 
 
 EXPECTED_MODEL_INFO = {
@@ -219,13 +208,13 @@ def test_with_models(chat_server_with_model: None) -> None:
     }
 
     # Test the specific model endpoint
-    response = request.get('models/Llama 3.2 1B Instruct', wait=True)
+    response = request.get('models/Llama 3.2 1B Instruct')
     assert response == EXPECTED_MODEL_INFO
 
     # Test the completions endpoint
-    with pytest.raises(HTTPError) as excinfo:
-        request.post('completions', data=None, wait=True)
-    assert excinfo.value.response.status_code == 400
+    status_code, response = request.post('completions', data=None, raise_for_status=False)
+    assert status_code == 400
+    assert response == {'error': {'code': None, 'message': 'error parsing request JSON: illegal value', 'param': None, 'type': 'invalid_request_error'}}
 
     data = {
         'model': 'Llama 3.2 1B Instruct',
@@ -233,15 +222,21 @@ def test_with_models(chat_server_with_model: None) -> None:
         'temperature': 0,
     }
 
-    response = request.post('completions', data=data, wait=True)
-    assert 'choices' in response
+    response = request.post('completions', data=data)
+    assert len(response['choices']) == 1
+    assert response['choices'][0].keys() == {'text', 'index', 'logprobs', 'references', 'finish_reason'}
     assert response['choices'][0]['text'] == ' jumps over the lazy dog.'
     assert 'created' in response
     response.pop('created')  # Remove the dynamic field for comparison
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
-    data['temperature'] = 0.5
 
-    pytest.xfail('This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133')
-    with pytest.raises(HTTPError) as excinfo:
-        response = request.post('completions', data=data, wait=True)
+@pytest.mark.xfail(reason='This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133')
+def test_with_models_temperature(chat_server_with_model: None) -> None:
+    data = {
+        'model': 'Llama 3.2 1B Instruct',
+        'prompt': 'The quick brown fox',
+        'temperature': 0.5,
+    }
+
+    request.post('completions', data=data, wait=True, raise_for_status=True)
