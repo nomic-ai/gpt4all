@@ -253,6 +253,7 @@ qt_add_qml_module(chat
       icons/eject.svg
       icons/email.svg
       icons/file-doc.svg
+      icons/file-docx.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
