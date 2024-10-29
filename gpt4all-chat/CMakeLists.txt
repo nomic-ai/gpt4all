@@ -114,19 +114,11 @@ if (GPT4ALL_TEST)
     add_custom_command(
         OUTPUT "${TEST_MODEL_PATH}"
         COMMAND ${CMAKE_COMMAND} -E echo "Downloading test model from ${TEST_MODEL_URL} ..."
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/download_model.cmake
-        DEPENDS "${CMAKE_BINARY_DIR}/download_model.cmake"
+        COMMAND ${CMAKE_COMMAND} -DURL="${TEST_MODEL_URL}" -DOUTPUT_PATH="${TEST_MODEL_PATH}" -DEXPECTED_MD5="${TEST_MODEL_MD5}" -P "${CMAKE_SOURCE_DIR}/cmake/download_model.cmake"
+        DEPENDS "${CMAKE_SOURCE_DIR}/cmake/download_model.cmake"
     )
 
-    # Generate a script to handle the download using file(DOWNLOAD)
-    file(WRITE ${CMAKE_BINARY_DIR}/download_model.cmake
-        "file(DOWNLOAD \"${TEST_MODEL_URL}\" \"${TEST_MODEL_PATH}\" EXPECTED_MD5 \"${TEST_MODEL_MD5}\" STATUS status)\n"
-        "list(GET status 0 status_code)\n"
-        "if(NOT status_code EQUAL 0)\n"
-        "  message(FATAL_ERROR \"Failed to download model: \${status}\")\n"
-        "endif()\n"
-    )
-
+    # Define a custom target that depends on the downloaded model
     add_custom_target(download_test_model
         DEPENDS "${TEST_MODEL_PATH}"
     )
