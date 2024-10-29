@@ -7,7 +7,6 @@ import tempfile
 import textwrap
 from contextlib import contextmanager
 from pathlib import Path
-from requests.exceptions import HTTPError
 from subprocess import CalledProcessError
 from typing import Any, Iterator
 
@@ -24,12 +23,14 @@ class Requestor:
         self.http_adapter = self.session.adapters['http://']
 
     def get(self, path: str, *, raise_for_status: bool = True, wait: bool = False) -> Any:
-        return self._request('GET', path, wait, raise_for_status=raise_for_status)
+        return self._request('GET', path, raise_for_status=raise_for_status, wait=wait)
 
     def post(self, path: str, data: dict[str, Any] | None, *, raise_for_status: bool = True, wait: bool = False) -> Any:
-        return self._request('POST', path, wait, data, raise_for_status=raise_for_status)
+        return self._request('POST', path, data, raise_for_status=raise_for_status, wait=wait)
 
-    def _request(self, method: str, path: str, wait: bool, data: dict[str, Any] | None = None, *, raise_for_status: bool = True) -> Any:
+    def _request(
+        self, method: str, path: str, data: dict[str, Any] | None = None, *, raise_for_status: bool, wait: bool,
+    ) -> Any:
         if wait:
             retry = Retry(total=None, connect=10, read=False, status=0, other=0, backoff_factor=.01)
         else:
@@ -40,12 +41,12 @@ class Requestor:
         if raise_for_status:
             resp.raise_for_status()
             return resp.json()
-        else:
-            try:
-                json_data = resp.json()
-            except ValueError:
-                json_data = None
-            return resp.status_code, json_data
+
+        try:
+            json_data = resp.json()
+        except ValueError:
+            json_data = None
+        return resp.status_code, json_data
 
 
 request = Requestor()
@@ -123,7 +124,7 @@ def test_with_models_empty(chat_server: None) -> None:
     # non-sense endpoint
     status_code, response = request.get('foobarbaz', wait=True, raise_for_status=False)
     assert status_code == 404
-    assert response == None
+    assert response is None
 
     # empty model list
     response = request.get('models')
@@ -136,22 +137,42 @@ def test_with_models_empty(chat_server: None) -> None:
     # POST for model list
     status_code, response = request.post('models', data=None, raise_for_status=False)
     assert status_code == 405
-    assert response == {'error': {'code': None, 'message': 'Not allowed to POST on /v1/models. (HINT: Perhaps you meant to use a different HTTP method?)', 'param': None, 'type': 'invalid_request_error'}}
+    assert response == {'error': {
+        'code': None,
+        'message': 'Not allowed to POST on /v1/models. (HINT: Perhaps you meant to use a different HTTP method?)',
+        'param': None,
+        'type': 'invalid_request_error',
+    }}
 
     # POST for model info
     status_code, response = request.post('models/foo', data=None, raise_for_status=False)
     assert status_code == 405
-    assert response == {'error': {'code': None, 'message': 'Not allowed to POST on /v1/models/*. (HINT: Perhaps you meant to use a different HTTP method?)', 'param': None, 'type': 'invalid_request_error'}}
+    assert response == {'error': {
+        'code': None,
+        'message': 'Not allowed to POST on /v1/models/*. (HINT: Perhaps you meant to use a different HTTP method?)',
+        'param': None,
+        'type': 'invalid_request_error',
+    }}
 
     # GET for completions
     status_code, response = request.get('completions', raise_for_status=False)
     assert status_code == 405
-    assert response == {'error': {'code': 'method_not_supported', 'message': 'Only POST requests are accepted.', 'param': None, 'type': 'invalid_request_error'}}
+    assert response == {'error': {
+        'code': 'method_not_supported',
+        'message': 'Only POST requests are accepted.',
+        'param': None,
+        'type': 'invalid_request_error',
+    }}
 
     # GET for chat completions
     status_code, response = request.get('chat/completions', raise_for_status=False)
     assert status_code == 405
-    assert response == {'error': {'code': 'method_not_supported', 'message': 'Only POST requests are accepted.', 'param': None, 'type': 'invalid_request_error'}}
+    assert response == {'error': {
+        'code': 'method_not_supported',
+        'message': 'Only POST requests are accepted.',
+        'param': None,
+        'type': 'invalid_request_error',
+    }}
 
 
 EXPECTED_MODEL_INFO = {
@@ -214,7 +235,12 @@ def test_with_models(chat_server_with_model: None) -> None:
     # Test the completions endpoint
     status_code, response = request.post('completions', data=None, raise_for_status=False)
     assert status_code == 400
-    assert response == {'error': {'code': None, 'message': 'error parsing request JSON: illegal value', 'param': None, 'type': 'invalid_request_error'}}
+    assert response == {'error': {
+        'code': None,
+        'message': 'error parsing request JSON: illegal value',
+        'param': None,
+        'type': 'invalid_request_error',
+    }}
 
     data = {
         'model': 'Llama 3.2 1B Instruct',
@@ -231,7 +257,7 @@ def test_with_models(chat_server_with_model: None) -> None:
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
 
-@pytest.mark.xfail(reason='This causes an assertion failure in the app. See https://github.com/nomic-ai/gpt4all/issues/3133')
+@pytest.mark.xfail(reason='Assertion failure in GPT4All. See nomic-ai/gpt4all#3133')
 def test_with_models_temperature(chat_server_with_model: None) -> None:
     data = {
         'model': 'Llama 3.2 1B Instruct',
