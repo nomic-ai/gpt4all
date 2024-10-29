@@ -427,6 +427,10 @@ if (LLMODEL_CUDA)
         LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
         RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
     )
+    if (APPLE AND GPT4ALL_SIGN_INSTALL)
+        sign_target_osx(llamamodel-mainline-cuda)
+        sign_target_osx(llamamodel-mainline-cuda-avxonly)
+    endif()
     if (WIN32)
         install(
             RUNTIME_DEPENDENCY_SET llama-cuda-deps
@@ -435,6 +439,11 @@ if (LLMODEL_CUDA)
             DIRECTORIES "${CUDAToolkit_BIN_DIR}"
             DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
         )
+        if (GPT4ALL_SIGN_INSTALL)
+            sign_target_windows(llamamodel-mainline-cuda)
+            sign_target_windows(llamamodel-mainline-avxonly)
+            sign_target_windows(llama-cuda-deps)
+        endif()
     endif()
 endif()
 
@@ -444,4 +453,4 @@ if (NOT APPLE)
             COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
 
-include(Gpt4allCPack)
+include(${CMAKE_SOURCE_DIR}/cmake/Gpt4allCPack.cmake)

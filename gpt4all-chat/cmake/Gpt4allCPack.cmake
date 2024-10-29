@@ -18,8 +18,8 @@ set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.nomic.ai/gpt4all")
 set(CPACK_PACKAGE_EXECUTABLES "gpt4all")
 set(CPACK_CREATE_DESKTOP_LINKS "gpt4all")
 # TODO: Is there another intro message we want?
-set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/../README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/../LICENSE.txt")
 # TODO: ask Adam if there's a better email to use here
 set(CPACK_PACKAGE_CONTACT "adam@nomic.ai")
 
@@ -68,21 +68,23 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-mac.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake" @ONLY)
-    set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake)
+    # set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake)
+    set(CPACK_PRE_BUILD_SCRIPTS "")
     set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-darwin")
     set(CPACK_BUNDLE_NAME ${COMPONENT_NAME_MAIN})
     set(CPACK_GENERATOR "DragNDrop")
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
     set(CPACK_BUNDLE_ICON ${CPACK_PACKAGE_ICON})
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/Applications/gpt4all")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "gpt4all")
     set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
-    set(CPACK_DMG_DISABLE_APPLICATIONS_SYMLINK OFF)
+    set(CPACK_DMG_DISABLE_APPLICATIONS_SYMLINK ON)
+    set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE ON)
 endif()
 
 # Setup vars for CPack option config
 
 # Configure CPack options file (this sets up generator specfic behavior)
-configure_file(gpt4allCPackOptions.cmake.in ${CMAKE_BINARY_DIR}/gpt4allCPackOptions.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/gpt4allCPackOptions.cmake.in ${CMAKE_BINARY_DIR}/gpt4allCPackOptions.cmake)
 set(CPACK_PROJECT_CONFIG_FILE ${CMAKE_BINARY_DIR}/gpt4allCPackOPtions.cmake)
 
 # Setup Cpack
