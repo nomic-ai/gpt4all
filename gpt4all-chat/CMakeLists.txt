@@ -135,7 +135,7 @@ if (GPT4ALL_TEST)
 
     # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS download_test_model chat gpt4all_tests)
-endif ()
+endif()
 
 set(CHAT_EXE_RESOURCES)
 
