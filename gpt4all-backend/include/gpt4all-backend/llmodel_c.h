@@ -24,16 +24,18 @@ extern "C" {
 typedef void *llmodel_model;
 
 /**
+ * A token.
+ */
+typedef int32_t token_t;
+
+/**
  * llmodel_prompt_context structure for holding the prompt context.
  * NOTE: The implementation takes care of all the memory handling of the raw logits pointer and the
  * raw tokens pointer. Attempting to resize them or modify them in any way can lead to undefined
  * behavior.
  */
 struct llmodel_prompt_context {
-    int32_t *tokens;        // current tokens in the context window
-    size_t tokens_size;     // the size of the raw tokens vector
     int32_t n_past;         // number of tokens in past conversation
-    int32_t n_ctx;          // number of tokens possible in context window
     int32_t n_predict;      // number of tokens to predict
     int32_t top_k;          // top k logits to sample from
     float top_p;            // nucleus sampling probability threshold
@@ -141,27 +143,41 @@ bool llmodel_isModelLoaded(llmodel_model model);
  * @param model A pointer to the llmodel_model instance.
  * @return the size in bytes of the internal state of the model
  */
-uint64_t llmodel_get_state_size(llmodel_model model);
+uint64_t llmodel_state_get_size(llmodel_model model);
 
 /**
- * Saves the internal state of the model to the specified destination address.
+ * Saves the internal state of the model.
  * NOTE: This state data is specific to the type of model you have created.
  * @param model A pointer to the llmodel_model instance.
- * @param dest A pointer to the destination.
- * @param size The size of the destination buffer.
- * @return the number of bytes copied, or zero on error.
+ * @param state Where to store the state. This must be a buffer of at least llmodel_state_get_size() bytes.
+ * @param state_size The size of the destination for the state.
+ * @param input_tokens_out Where to store the address of the token cache state. This is dynamically allocated and must
+ * be freed with llmodel_state_free_input_tokens.
+ * @param n_input_tokens Where to store the size of the token cache state.
+ * @return The number of bytes copied. On error, zero is returned, the token cache is set to NULL, and the token cache
+ * size is set to zero.
  */
-uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest, uint64_t size);
+uint64_t llmodel_state_get_data(llmodel_model model, uint8_t *state_out, uint64_t state_size,
+                                token_t **input_tokens_out, uint64_t *n_input_tokens);
+
+/**
+ * Frees the temporary token cache buffer created by a call to llmodel_state_get_data().
+ * @param input_tokens The token cache buffer.
+ */
+void llmodel_state_free_input_tokens(token_t *input_tokens);
 
 /**
  * Restores the internal state of the model using data from the specified address.
  * NOTE: This state data is specific to the type of model you have created.
  * @param model A pointer to the llmodel_model instance.
- * @param src A pointer to the state data.
- * @param size The size of the source data.
+ * @param state A pointer to the state data.
+ * @param state_size The size of the state data.
+ * @param input_tokens The token cache associated with the saved state.
+ * @param n_input_tokens The number of tokens in input_tokens.
  * @return The number of bytes read, or zero on error.
  */
-uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src, size_t size);
+uint64_t llmodel_state_set_data(llmodel_model model, const uint8_t *state, uint64_t state_size,
+                                const token_t *input_tokens, uint64_t n_input_tokens);
 
 /**
  * Generate a response using the model.

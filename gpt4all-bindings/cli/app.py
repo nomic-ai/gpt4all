@@ -113,10 +113,7 @@ def _old_loop(gpt4all_instance):
         full_response = gpt4all_instance.chat_completion(
             MESSAGES,
             # preferential kwargs for chat ux
-            logits_size=0,
-            tokens_size=0,
             n_past=0,
-            n_ctx=0,
             n_predict=200,
             top_k=40,
             top_p=0.9,

@@ -12,6 +12,7 @@ function(gpt4all_add_warning_options target)
         -Wformat=2
         -Wmissing-include-dirs
         -Wstrict-overflow=2
+        -Wsuggest-override
         -Wvla
         # errors
         -Werror=format-security

@@ -3,7 +3,7 @@
 
 #include <gpt4all-backend/llmodel.h>
 
-#include <QByteArray>
+#include <QByteArray> // IWYU pragma: keep
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
@@ -13,6 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -63,9 +65,15 @@ public:
     bool loadModel(const std::string &modelPath, int n_ctx, int ngl) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
-    size_t stateSize() const override;
-    size_t saveState(std::span<uint8_t> dest) const override;
-    size_t restoreState(std::span<const uint8_t> src) override;
+
+    // All three of the state virtual functions are handled custom inside of chatllm save/restore
+    size_t stateSize() const override
+    { throwNotImplemented(); }
+    size_t saveState(std::span<uint8_t> stateOut, std::vector<Token> &inputTokensOut) const override
+    { Q_UNUSED(stateOut); Q_UNUSED(inputTokensOut); throwNotImplemented(); }
+    size_t restoreState(std::span<const uint8_t> state, std::span<const Token> inputTokens) override
+    { Q_UNUSED(state); Q_UNUSED(inputTokens); throwNotImplemented(); }
+
     void prompt(const std::string &prompt,
                 const std::string &promptTemplate,
                 std::function<bool(int32_t)> promptCallback,
@@ -88,6 +96,10 @@ public:
 
     bool callResponse(int32_t token, const std::string &string);
 
+    [[noreturn]]
+    int32_t contextLength() const override
+    { throwNotImplemented(); }
+
 Q_SIGNALS:
     void request(const QString &apiKey,
                  LLModel::PromptContext *ctx,
@@ -98,60 +110,69 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
+    [[noreturn]]
+    static void throwNotImplemented() { throw std::logic_error("not implemented"); }
+
+    [[noreturn]]
     std::vector<Token> tokenize(std::string_view str, bool special) override
-    {
-        (void)str;
-        (void)special;
-        throw std::logic_error("not implemented");
-    }
+    { Q_UNUSED(str); Q_UNUSED(special); throwNotImplemented(); }
 
+    [[noreturn]]
     bool isSpecialToken(Token id) const override
-    {
-        (void)id;
-        throw std::logic_error("not implemented");
-    }
+    { Q_UNUSED(id); throwNotImplemented(); }
 
+    [[noreturn]]
     std::string tokenToString(Token id) const override
-    {
-        (void)id;
-        throw std::logic_error("not implemented");
-    }
+    { Q_UNUSED(id); throwNotImplemented(); }
 
+    [[noreturn]]
     void initSampler(PromptContext &ctx) override
-    {
-        (void)ctx;
-        throw std::logic_error("not implemented");
-    }
+    { Q_UNUSED(ctx); throwNotImplemented(); }
 
-    Token sampleToken() const override { throw std::logic_error("not implemented"); }
+    [[noreturn]]
+    Token sampleToken() const override
+    { throwNotImplemented(); }
 
-    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override
-    {
-        (void)ctx;
-        (void)tokens;
-        throw std::logic_error("not implemented");
-    }
+    [[noreturn]]
+    bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const override
+    { Q_UNUSED(ctx); Q_UNUSED(tokens); throwNotImplemented(); }
 
+    [[noreturn]]
     void shiftContext(PromptContext &promptCtx) override
-    {
-        (void)promptCtx;
-        throw std::logic_error("not implemented");
-    }
+    { Q_UNUSED(promptCtx); throwNotImplemented(); }
 
-    int32_t contextLength() const override
-    {
-        throw std::logic_error("not implemented");
-    }
+    [[noreturn]]
+    int32_t inputLength() const override
+    { throwNotImplemented(); }
 
+    [[noreturn]]
+    void setTokenizeInputPosition(int32_t pos) override
+    { Q_UNUSED(pos); throwNotImplemented(); }
+
+    [[noreturn]]
+    auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
+        -> std::vector<Token>::const_iterator override
+    { Q_UNUSED(ctx); Q_UNUSED(input); throwNotImplemented(); }
+
+    [[noreturn]]
+    void setModelInputPosition(PromptContext &ctx, int32_t pos) override
+    { Q_UNUSED(ctx); Q_UNUSED(pos); throwNotImplemented(); }
+
+    [[noreturn]]
+    void appendInputToken(PromptContext &ctx, Token tok) override
+    { Q_UNUSED(ctx); Q_UNUSED(tok); throwNotImplemented(); }
+
+    [[noreturn]]
     const std::vector<Token> &endTokens() const override
-    {
-        throw std::logic_error("not implemented");
-    }
+    { throwNotImplemented(); }
 
+    [[noreturn]]
     bool shouldAddBOS() const override
-    {
-        throw std::logic_error("not implemented");
-    }
+    { throwNotImplemented(); }
+
+    [[noreturn]]
+    std::span<const Token> inputTokens() const override
+    { throwNotImplemented(); }
 
 private:
     std::function<bool(int32_t, const std::string&)> m_responseCallback;

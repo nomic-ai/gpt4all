@@ -218,6 +218,7 @@ struct LLamaPrivate {
     int64_t                      n_threads    = 0;
     std::vector<LLModel::Token>  end_tokens;
     const char                  *backend_name = nullptr;
+    std::vector<LLModel::Token>  inputTokens;
 
     llama_model          *model        = nullptr;
     llama_context        *ctx          = nullptr;
@@ -501,14 +502,20 @@ size_t LLamaModel::stateSize() const
     return llama_state_get_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(std::span<uint8_t> dest) const
+size_t LLamaModel::saveState(std::span<uint8_t> stateOut, std::vector<Token> &inputTokensOut) const
 {
-    return llama_state_get_data(d_ptr->ctx, dest.data(), dest.size());
+    size_t bytesWritten = llama_state_get_data(d_ptr->ctx, stateOut.data(), stateOut.size());
+    if (bytesWritten)
+        inputTokensOut.assign(d_ptr->inputTokens.begin(), d_ptr->inputTokens.end());
+    return bytesWritten;
 }
 
-size_t LLamaModel::restoreState(std::span<const uint8_t> src)
+size_t LLamaModel::restoreState(std::span<const uint8_t> state, std::span<const Token> inputTokens)
 {
-    return llama_state_set_data(d_ptr->ctx, src.data(), src.size());
+    size_t bytesRead = llama_state_set_data(d_ptr->ctx, state.data(), state.size());
+    if (bytesRead)
+        d_ptr->inputTokens.assign(inputTokens.begin(), inputTokens.end());
+    return bytesRead;
 }
 
 std::vector<LLModel::Token> LLamaModel::tokenize(std::string_view str, bool special)
@@ -594,7 +601,7 @@ LLModel::Token LLamaModel::sampleToken() const
     return llama_sampler_sample(d_ptr->sampler_chain, d_ptr->ctx, -1);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
+bool LLamaModel::evalTokens(PromptContext &ctx, std::span<const Token> tokens) const
 {
     llama_kv_cache_seq_rm(d_ptr->ctx, 0, ctx.n_past, -1);
 
@@ -625,7 +632,7 @@ void LLamaModel::shiftContext(PromptContext &promptCtx)
     // erase up to n_ctx*contextErase tokens
     int n_keep = shouldAddBOS();
     int n_past = promptCtx.n_past;
-    int n_discard = std::min(n_past - n_keep, int(promptCtx.n_ctx * promptCtx.contextErase));
+    int n_discard = std::min(n_past - n_keep, int(contextLength() * promptCtx.contextErase));
 
     assert(n_discard > 0);
     if (n_discard <= 0)
@@ -638,13 +645,68 @@ void LLamaModel::shiftContext(PromptContext &promptCtx)
     llama_kv_cache_seq_rm (d_ptr->ctx, 0, n_keep,             n_keep + n_discard);
     llama_kv_cache_seq_add(d_ptr->ctx, 0, n_keep + n_discard, n_past,             -n_discard);
 
-    promptCtx.tokens.erase(promptCtx.tokens.begin() + n_keep, promptCtx.tokens.begin() + n_keep + n_discard);
-    promptCtx.n_past = promptCtx.tokens.size();
+    auto &inp = d_ptr->inputTokens;
+    inp.erase(inp.begin() + n_keep, inp.begin() + n_keep + n_discard);
+    promptCtx.n_past = inp.size();
 }
 
 int32_t LLamaModel::contextLength() const
 {
     return llama_n_ctx(d_ptr->ctx);
+}
+
+int32_t LLamaModel::inputLength() const
+{
+    return d_ptr->inputTokens.size();
+}
+
+void LLamaModel::setTokenizeInputPosition(int32_t pos)
+{
+    assert(pos >= 0);
+    m_tokenize_last_token = pos ? d_ptr->inputTokens.at(size_t(pos) - 1) : -1; // not serialized
+}
+
+auto LLamaModel::computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
+    -> std::vector<Token>::const_iterator
+{
+    assert(ctx.n_past >= 0);
+    auto pos = size_t(ctx.n_past);
+    if (pos > d_ptr->inputTokens.size()) {
+        std::ostringstream ss;
+        ss << "n_past=" << pos << " is past end of token cache length=" << d_ptr->inputTokens.size();
+        throw std::out_of_range(ss.str());
+    }
+
+    // find common prefix
+    auto cacheIt = d_ptr->inputTokens.begin();
+    auto inputIt = input.begin();
+    while (cacheIt < d_ptr->inputTokens.end() && inputIt < input.end() && *cacheIt == *inputIt) {
+        ++cacheIt; ++inputIt; ++pos;
+    }
+    // tell the caller to ignore the tokens between [begin, inputIt)
+    return inputIt;
+}
+
+void LLamaModel::setModelInputPosition(PromptContext &ctx, int32_t pos)
+{
+    auto &inp = d_ptr->inputTokens;
+    assert(pos >= 0);
+    assert(pos <= inp.size());
+    // truncate token cache to end at the new n_past
+    if (pos < inp.size())
+        inp.resize(pos);
+    ctx.n_past = pos;
+}
+
+void LLamaModel::appendInputToken(PromptContext &ctx, Token tok)
+{
+    d_ptr->inputTokens.push_back(tok);
+    ctx.n_past += 1;
+}
+
+auto LLamaModel::inputTokens() const -> std::span<const Token>
+{
+    return d_ptr->inputTokens;
 }
 
 const std::vector<LLModel::Token> &LLamaModel::endTokens() const
