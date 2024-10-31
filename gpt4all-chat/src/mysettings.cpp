@@ -207,7 +207,7 @@ void MySettings::restoreApplicationDefaults()
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
     setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
-    setSystemTray(basicDefaults.value("saveTrayContext").toBool());
+    setSystemTray(basicDefaults.value("systemTray").toBool());
     setServerChat(basicDefaults.value("serverChat").toBool());
     setNetworkPort(basicDefaults.value("networkPort").toInt());
     setModelPath(defaultLocalModelsPath());
