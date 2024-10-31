@@ -23,6 +23,9 @@ public:
     Q_INVOKABLE QString systemTotalRAMInGBString() const;
     Q_INVOKABLE bool isNetworkOnline() const;
 
+    Q_INVOKABLE void showDockIcon() const;
+    Q_INVOKABLE void hideDockIcon() const;
+
 Q_SIGNALS:
     void isNetworkOnlineChanged();
 

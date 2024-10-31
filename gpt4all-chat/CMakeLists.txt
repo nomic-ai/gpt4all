@@ -75,6 +75,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 find_package(Qt6 6.5 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
 
 if (QT_KNOWN_POLICY_QTP0004)
@@ -102,10 +103,30 @@ add_subdirectory(../gpt4all-backend llmodel)
 
 if (GPT4ALL_TEST)
     enable_testing()
+
+    # Llama-3.2-1B model
+    set(TEST_MODEL "Llama-3.2-1B-Instruct-Q4_0.gguf")
+    set(TEST_MODEL_MD5 "48ff0243978606fdba19d899b77802fc")
+    set(TEST_MODEL_PATH "${CMAKE_BINARY_DIR}/resources/${TEST_MODEL}")
+    set(TEST_MODEL_URL "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/${TEST_MODEL}")
+
+    # Create a custom command to download the file if it does not exist or if the checksum does not match
+    add_custom_command(
+        OUTPUT "${TEST_MODEL_PATH}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Downloading test model from ${TEST_MODEL_URL} ..."
+        COMMAND ${CMAKE_COMMAND} -DURL="${TEST_MODEL_URL}" -DOUTPUT_PATH="${TEST_MODEL_PATH}" -DEXPECTED_MD5="${TEST_MODEL_MD5}" -P "${CMAKE_SOURCE_DIR}/cmake/download_model.cmake"
+        DEPENDS "${CMAKE_SOURCE_DIR}/cmake/download_model.cmake"
+    )
+
+    # Define a custom target that depends on the downloaded model
+    add_custom_target(download_test_model
+        DEPENDS "${TEST_MODEL_PATH}"
+    )
+
     add_subdirectory(tests)
 
     # The 'check' target makes sure the tests and their dependencies are up-to-date before running them
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS chat gpt4all_tests)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS download_test_model chat gpt4all_tests)
 endif()
 
 set(CHAT_EXE_RESOURCES)
@@ -152,6 +173,12 @@ if (APPLE)
     set_source_files_properties(${CHAT_EXE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
+set(MACOS_SOURCES)
+if (APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    list(APPEND MACOS_SOURCES src/macosdock.mm src/macosdock.h)
+endif()
+
 qt_add_executable(chat
     src/main.cpp
     src/chat.cpp                  src/chat.h
@@ -173,6 +200,7 @@ qt_add_executable(chat
     src/server.cpp                src/server.h
     src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
+    ${MACOS_SOURCES}
 )
 gpt4all_add_warning_options(chat)
 
@@ -210,6 +238,7 @@ qt_add_qml_module(chat
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyFileDialog.qml
+      qml/MyFileIcon.qml
       qml/MyFolderDialog.qml
       qml/MyFancyLink.qml
       qml/MyMenu.qml
@@ -244,6 +273,7 @@ qt_add_qml_module(chat
       icons/eject.svg
       icons/email.svg
       icons/file-doc.svg
+      icons/file-docx.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
@@ -357,6 +387,9 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
 
+if (APPLE)
+    target_link_libraries(chat PRIVATE ${COCOA_LIBRARY})
+endif()
 
 # -- install --
 

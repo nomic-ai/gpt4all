@@ -1208,10 +1208,13 @@ protected:
         qsizetype wordEnd = wordStart + 1;
         while (wordEnd >= m_buffer.size() || !m_buffer[wordEnd].isSpace()) {
             if (wordEnd >= m_buffer.size() && !fillBuffer())
-                return std::nullopt;
+                break;
             if (!m_buffer[wordEnd].isSpace())
                 ++wordEnd;
         }
+
+        if (wordStart == wordEnd)
+            return std::nullopt;
 
         auto size = wordEnd - wordStart;
         QString word = std::move(m_buffer);
@@ -1220,7 +1223,6 @@ protected:
             word.resize(size);
         else
             word = word.sliced(wordStart, size);
-
         return word;
     }
 
@@ -1232,18 +1234,30 @@ protected:
                 // try next paragraph
                 if (!m_paragraph->has_next())
                     return false;
+
                 m_paragraph->next();
                 m_buffer += u'\n';
             }
+
+            bool foundText = false;
             auto &run = m_run->get_node();
-            const char *text = run.child("w:t").text().get();
-            if (!*text && run.child("w:tab"))
-                text = "\t";
-            m_run->next();
-            if (*text) {
-                m_buffer += QUtf8StringView(text);
-                return true;
+            for (auto node = run.first_child(); node; node = node.next_sibling()) {
+                std::string node_name = node.name();
+                if (node_name == "w:t") {
+                    const char *text = node.text().get();
+                    if (*text) {
+                        foundText = true;
+                        m_buffer += QUtf8StringView(text);
+                    }
+                } else if (node_name == "w:br") {
+                    m_buffer += u'\n';
+                } else if (node_name == "w:tab") {
+                    m_buffer += u'\t';
+                }
             }
+
+            m_run->next();
+            if (foundText) return true;
         }
     }
 
@@ -1355,7 +1369,8 @@ ChunkStreamer::Status ChunkStreamer::step()
     for (;;) {
         if (auto error = m_reader->getError()) {
             m_docKey.reset(); // done processing
-            return *error;
+            retval = *error;
+            break;
         }
 
         // get a word, if needed
@@ -1515,8 +1530,22 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     for (const auto &[key, stat]: std::as_const(stats).asKeyValueRange()) {
         if (!m_collectionMap.contains(key.folder_id)) continue;
         CollectionItem item = guiCollectionItem(key.folder_id);
-        item.currentEmbeddingsToIndex -= stat.nAdded + stat.nSkipped;
-        item.totalEmbeddingsToIndex -= stat.nSkipped;
+        Q_ASSERT(item.currentEmbeddingsToIndex >= stat.nAdded + stat.nSkipped);
+        if (item.currentEmbeddingsToIndex < stat.nAdded + stat.nSkipped) {
+            qWarning() << "Database ERROR: underflow in current embeddings to index statistics";
+            item.currentEmbeddingsToIndex = 0;
+        } else {
+            item.currentEmbeddingsToIndex -= stat.nAdded + stat.nSkipped;
+        }
+
+        Q_ASSERT(item.totalEmbeddingsToIndex >= stat.nSkipped);
+        if (item.totalEmbeddingsToIndex < stat.nSkipped) {
+            qWarning() << "Database ERROR: underflow in total embeddings to index statistics";
+            item.totalEmbeddingsToIndex = 0;
+        } else {
+            item.totalEmbeddingsToIndex -= stat.nSkipped;
+        }
+
         if (!stat.lastFile.isNull())
             item.fileCurrentlyProcessing = stat.lastFile;
 
@@ -1746,7 +1775,13 @@ void Database::scanQueue()
 
 dequeue:
     auto item = guiCollectionItem(folder_id);
-    item.currentBytesToIndex -= info.file.size();
+    Q_ASSERT(item.currentBytesToIndex >= info.file.size());
+    if (item.currentBytesToIndex < info.file.size()) {
+        qWarning() << "Database ERROR: underflow in current bytes to index statistics";
+        item.currentBytesToIndex = 0;
+    } else {
+        item.currentBytesToIndex -= info.file.size();
+    }
     updateGuiForCollectionItem(item);
     return updateFolderToIndex(folder_id, countForFolder);
 }
