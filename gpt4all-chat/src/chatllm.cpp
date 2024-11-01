@@ -728,6 +728,7 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
         messages.emplace_back(makeMap(item));
 
     // TODO(jared): system prompt
+    // TODO(jared): don't hardcode the bos/eos
     jinja2::ValuesMap params {
         { "messages",              std::move(messages) },
         { "bos_token",             "<|begin_of_text|>" },
