@@ -828,6 +828,11 @@ auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLMode
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
+    // trim trailing whitespace
+    auto respStr = QString::fromUtf8(result.response);
+    if (!respStr.isEmpty() && std::as_const(respStr).back().isSpace())
+        emit responseChanged(respStr.trimmed());
+
     SuggestionMode mode = mySettings->suggestionMode();
     if (mode == SuggestionMode::On || (!databaseResults.isEmpty() && mode == SuggestionMode::LocalDocsOnly))
         generateQuestions(elapsed);
