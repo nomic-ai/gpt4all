@@ -394,8 +394,6 @@ bool Chat::serialize(QDataStream &stream, int version) const
     if (version >= 3)
         stream << m_collections;
 
-    if (version >= 6)
-        stream << false; // serializeKV
     if (!m_llmodel->serialize(stream, version))
         return false;
     if (!m_chatModel->serialize(stream, version))

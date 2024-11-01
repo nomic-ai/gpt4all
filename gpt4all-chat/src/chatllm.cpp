@@ -1035,6 +1035,9 @@ void ChatLLM::generateQuestions(qint64 elapsed)
 bool ChatLLM::serialize(QDataStream &stream, int version)
 {
     if (version < 11) {
+        if (version >= 6) {
+            stream << false; // serializeKV
+        }
         if (version >= 2) {
             if (m_llModelType == LLModelTypeV1::NONE) {
                 qWarning() << "ChatLLM ERROR: attempted to serialize a null model for chat id" << m_chat->id()

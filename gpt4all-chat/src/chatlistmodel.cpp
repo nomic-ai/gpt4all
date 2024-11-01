@@ -17,6 +17,7 @@
 #include <Qt>
 
 #include <algorithm>
+#include <memory>
 
 static constexpr quint32 CHAT_FORMAT_MAGIC   = 0xF5D553CC;
 static constexpr qint32  CHAT_FORMAT_VERSION = 11;
@@ -257,16 +258,15 @@ void ChatsRestoreThread::run()
 
         qDebug() << "deserializing chat" << f.file;
 
-        Chat *chat = new Chat;
+        auto chat = std::make_unique<Chat>();
         chat->moveToThread(qGuiApp->thread());
-        bool ok = !chat->deserialize(in, version);
-        if (ok && !in.atEnd()) {
-            qWarning().nospace() << "error loading chat from " << file.fileName() << ": extra data at end of file";
-        }
+        bool ok = chat->deserialize(in, version);
         if (!ok) {
             qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
+        } else if (!in.atEnd()) {
+            qWarning().nospace() << "error loading chat from " << file.fileName() << ": extra data at end of file";
         } else {
-            emit chatRestored(chat);
+            emit chatRestored(chat.release());
         }
         if (f.oldFile)
            file.remove(); // No longer storing in this directory
