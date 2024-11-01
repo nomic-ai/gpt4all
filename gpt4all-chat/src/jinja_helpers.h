@@ -53,7 +53,8 @@ public:
 
     const ResultInfo &value() const { return *m_source; }
 
-    friend bool operator==(const JinjaResultInfo &a, const JinjaResultInfo &b) { return a.m_source == b.m_source; }
+    friend bool operator==(const JinjaResultInfo &a, const JinjaResultInfo &b)
+    { return a.m_source == b.m_source || *a.m_source == *b.m_source; }
 
 private:
     static const JinjaFieldMap<ResultInfo> s_fields;
@@ -72,7 +73,7 @@ public:
     const PromptAttachment &value() const { return *m_attachment; }
 
     friend bool operator==(const JinjaPromptAttachment &a, const JinjaPromptAttachment &b)
-    { return a.m_attachment == b.m_attachment; }
+    { return a.m_attachment == b.m_attachment || *a.m_attachment == *b.m_attachment; }
 
 private:
     static const JinjaFieldMap<PromptAttachment> s_fields;
@@ -82,15 +83,11 @@ private:
 };
 
 class JinjaMessage : public JinjaHelper<JinjaMessage> {
-private:
-    enum class Role { User, Assistant };
-
 public:
     explicit JinjaMessage(const ChatItem &item) noexcept
         : m_item(&item) {}
 
-    const ChatItem     &item () const { return *m_item; }
-    const JinjaMessage &value() const { return *this;   }
+    const ChatItem &value() const { return *m_item; }
 
     size_t GetSize() const override { return keys().size(); }
     bool HasValue(const std::string &name) const override { return keys().contains(name); }
@@ -100,17 +97,15 @@ public:
 
     std::vector<std::string> GetKeys() const override;
 
-    friend bool operator==(const JinjaMessage &a, const JinjaMessage &b) { return a.m_item == b.m_item; }
-
 private:
-    Role role() const;
     auto keys() const -> const std::unordered_set<std::string_view> &;
 
 private:
-    static const JinjaFieldMap<JinjaMessage> s_fields;
+    static const JinjaFieldMap<ChatItem> s_fields;
     const ChatItem *m_item;
 
     friend class JinjaHelper<JinjaMessage>;
+    friend bool operator==(const JinjaMessage &a, const JinjaMessage &b);
 };
 
 #include "jinja_helpers.inl"

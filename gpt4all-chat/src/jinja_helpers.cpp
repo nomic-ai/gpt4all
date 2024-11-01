@@ -45,43 +45,62 @@ std::vector<std::string> JinjaMessage::GetKeys() const
     return result;
 }
 
-auto JinjaMessage::role() const -> Role
-{
-    if (m_item->name == "Prompt: "_L1)   return Role::User;
-    if (m_item->name == "Response: "_L1) return Role::Assistant;
-    throw std::invalid_argument(fmt::format("unrecognized ChatItem name: {}", m_item->name));
-}
-
 auto JinjaMessage::keys() const -> const std::unordered_set<std::string_view> &
 {
+    static const std::unordered_set<std::string_view> baseKeys
+        { "role", "content" };
     static const std::unordered_set<std::string_view> userKeys
         { "role", "content", "sources", "prompt_attachments" };
-    static const std::unordered_set<std::string_view> assistantKeys
-        { "role", "content" };
-    switch (role()) {
-        case Role::User:      return userKeys;
-        case Role::Assistant: return assistantKeys;
+    switch (m_item->type()) {
+        using enum ChatItem::Type;
+    case System:
+    case Response:
+        return baseKeys;
+    case Prompt:
+        return userKeys;
     }
     Q_UNREACHABLE();
 }
 
-const JinjaFieldMap<JinjaMessage> JinjaMessage::s_fields = {
-    { "role", [](auto &m) {
-        switch (m.role()) {
-            case Role::User:      return "user"sv;
-            case Role::Assistant: return "assistant"sv;
+bool operator==(const JinjaMessage &a, const JinjaMessage &b)
+{
+    if (a.m_item == b.m_item)
+        return true;
+    const auto &[ia, ib] = std::tie(*a.m_item, *b.m_item);
+    auto type = ia.type();
+    if (type != ib.type() || ia.value != ib.value)
+        return false;
+
+    switch (type) {
+        using enum ChatItem::Type;
+    case System:
+    case Response:
+        return true;
+    case Prompt:
+        return ia.sources == ib.sources && ia.promptAttachments == ib.promptAttachments;
+    }
+    Q_UNREACHABLE();
+}
+
+const JinjaFieldMap<ChatItem> JinjaMessage::s_fields = {
+    { "role", [](auto &i) {
+        switch (i.type()) {
+            using enum ChatItem::Type;
+            case System:   return "system"sv;
+            case Prompt:   return "user"sv;
+            case Response: return "assistant"sv;
         }
         Q_UNREACHABLE();
     } },
-    { "content", [](auto &m) { return m.item().value.toStdString(); } },
-    { "sources", [](auto &m) {
-        auto sources = m.item().sources | views::transform([](auto &r) {
+    { "content", [](auto &i) { return i.value.toStdString(); } },
+    { "sources", [](auto &i) {
+        auto sources = i.sources | views::transform([](auto &r) {
             return jinja2::GenericMap([map = std::make_shared<JinjaResultInfo>(r)] { return map.get(); });
         });
         return jinja2::ValuesList(sources.begin(), sources.end());
     } },
-    { "prompt_attachments", [](auto &m) {
-        auto attachments = m.item().promptAttachments | views::transform([](auto &pa) {
+    { "prompt_attachments", [](auto &i) {
+        auto attachments = i.promptAttachments | views::transform([](auto &pa) {
             return jinja2::GenericMap([map = std::make_shared<JinjaPromptAttachment>(pa)] { return map.get(); });
         });
         return jinja2::ValuesList(attachments.begin(), attachments.end());

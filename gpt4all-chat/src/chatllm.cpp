@@ -603,6 +603,13 @@ static QString &removeLeadingWhitespace(QString &s)
     return s;
 }
 
+template <ranges::input_range R>
+    requires std::convertible_to<ranges::range_reference_t<R>, QChar>
+bool isAllSpace(R &&r)
+{
+    return ranges::all_of(std::forward<R>(r), [](QChar c) { return c.isSpace(); });
+}
+
 void ChatLLM::regenerateResponse()
 {
     Q_ASSERT(m_chatModel);
@@ -720,10 +727,19 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(item)] { return msg.get(); });
     };
 
-    jinja2::ValuesList messages;
+    std::unique_ptr<ChatItem> systemItem;
+    QString systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo);
+    bool useSystem = !isAllSpace(systemPrompt);
+
     // query and length check modes use only the last user message
     std::span promptItems(onlyLastMsg ? items.end() - 1 : items.begin(), items.end());
-    messages.reserve(promptItems.size());
+
+    jinja2::ValuesList messages;
+    messages.reserve(useSystem + promptItems.size());
+    if (useSystem) {
+        systemItem = std::make_unique<ChatItem>(ChatItem::system_tag, systemPrompt);
+        messages.emplace_back(makeMap(*systemItem));
+    }
     for (auto &item : promptItems)
         messages.emplace_back(makeMap(item));
 
@@ -928,7 +944,7 @@ void ChatLLM::generateName()
     auto *mySettings = MySettings::globalInstance();
 
     const QString chatNamePrompt = mySettings->modelChatNamePrompt(m_modelInfo);
-    if (ranges::all_of(chatNamePrompt, [](auto c) { return c.isSpace(); })) {
+    if (isAllSpace(chatNamePrompt)) {
         qWarning() << "ChatLLM: not generating chat name because prompt is empty";
         return;
     }
@@ -974,7 +990,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     auto *mySettings = MySettings::globalInstance();
 
     QString suggestedFollowUpPrompt = mySettings->modelSuggestedFollowUpPrompt(m_modelInfo);
-    if (ranges::all_of(suggestedFollowUpPrompt, [](auto c) { return c.isSpace(); })) {
+    if (isAllSpace(suggestedFollowUpPrompt)) {
         qWarning() << "ChatLLM: not generating follow-up questions because prompt is empty";
         emit responseStopped(elapsed);
         return;

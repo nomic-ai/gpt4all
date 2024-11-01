@@ -83,17 +83,23 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
 
 public:
-    enum class Type { Prompt, Response };
+    enum class Type { System, Prompt, Response };
 
     // tags for constructing ChatItems
     struct prompt_tag_t { explicit prompt_tag_t() = default; };
     static inline constexpr prompt_tag_t prompt_tag = prompt_tag_t();
     struct response_tag_t { explicit response_tag_t() = default; };
     static inline constexpr response_tag_t response_tag = response_tag_t();
+    struct system_tag_t { explicit system_tag_t() = default; };
+    static inline constexpr system_tag_t system_tag = system_tag_t();
 
     // FIXME(jared): This should not be necessary. QML should see null or undefined if it
     // tries to access something invalid.
     ChatItem() = default;
+
+    // NOTE: system messages are currently never stored in the model or serialized
+    ChatItem(system_tag_t, const QString &value)
+        : name(u"System: "_s), value(value) {}
 
     ChatItem(prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
         : name(u"Prompt: "_s), value(value), promptAttachments(attachments) {}
@@ -103,6 +109,8 @@ public:
 
     Type type() const
     {
+        if (name == u"System: "_s)
+            return Type::System;
         if (name == u"Prompt: "_s)
             return Type::Prompt;
         if (name == u"Response: "_s)
