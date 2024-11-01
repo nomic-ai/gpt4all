@@ -722,7 +722,7 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
 
     jinja2::ValuesList messages;
     // query and length check modes use only the last user message
-    std::span promptItems(onlyLastMsg ? items.end() - 2 : items.begin(), items.end());
+    std::span promptItems(onlyLastMsg ? items.end() - 1 : items.begin(), items.end());
     messages.reserve(promptItems.size());
     for (auto &item : promptItems)
         messages.emplace_back(makeMap(item));
