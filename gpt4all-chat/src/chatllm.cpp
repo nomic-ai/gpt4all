@@ -603,36 +603,25 @@ static QString &removeLeadingWhitespace(QString &s)
     return s;
 }
 
-// FIXME(jared): we don't actually have to re-decode the prompt to generate a new response
 void ChatLLM::regenerateResponse()
 {
-    // TODO(jared): implement this
-#if 0
-    auto &chatModel = *m_chatModel;
-    int totalItems = chatModel.count();
-    if (totalItems < 2)
-        return;
+    Q_ASSERT(m_chatModel);
+    int responseIdx;
+    {
+        auto items = m_chatModel->chatItems(); // holds lock
+        if (items.size() < 2 || items.cend()[-1].type() != ChatItem::Type::Response)
+            return;
+        responseIdx = items.size() - 1;
+    }
 
-    int responseIndex = totalItems - 1;
-    auto responseItem = chatModel.get(responseIndex);
-    if (responseItem.name != "Response: ")
-        return;
+    emit responseChanged({});
+    m_chatModel->updateCurrentResponse(responseIdx, true );
+    m_chatModel->updateNewResponse    (responseIdx, {}   );
+    m_chatModel->updateStopped        (responseIdx, false);
+    m_chatModel->updateThumbsUpState  (responseIdx, false);
+    m_chatModel->updateThumbsDownState(responseIdx, false);
 
-    m_ctx.n_past -= m_promptResponseTokens;
-    m_promptResponseTokens = 0;
-    m_promptTokens = 0;
-    m_response.clear();
-    m_trimmedResponse.clear();
-    emit responseChanged(m_trimmedResponse);
-
-    chatModel.updateSources        (responseIndex, {});
-    chatModel.updateCurrentResponse(responseIndex, true);
-    chatModel.updateStopped        (responseIndex, false);
-    chatModel.updateThumbsUpState  (responseIndex, false);
-    chatModel.updateThumbsDownState(responseIndex, false);
-    chatModel.updateNewResponse    (responseIndex, "");
-    currentChat.prompt(promptElement.promptPlusAttachments); // TODO: this isn't really what we want to do
-#endif
+    prompt(m_chat->collectionList());
 }
 
 ModelInfo ChatLLM::modelInfo() const
