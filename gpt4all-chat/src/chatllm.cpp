@@ -698,16 +698,34 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
     }
 }
 
+// FIXME(jared): We can avoid this potentially expensive copy if we use ChatItem pointers, but this is only safe if we
+// hold the lock while generating. We can't do that now because Chat is actually in charge of updating the response, not
+// ChatLLM.
+std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
+{
+    Q_ASSERT(m_chatModel);
+    std::vector<ChatItem> conversation;
+    {
+        auto items = m_chatModel->chatItems(); // holds lock
+        Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
+        conversation.reserve(items.size() + 1);
+        conversation.assign(items.begin(), items.end());
+    }
+    conversation.emplace_back(ChatItem::prompt_tag, prompt);
+    return conversation;
+}
+
 auto ChatLLM::applyJinjaTemplate(bool onlyLastMsg) const -> JinjaTemplateResult
 {
     Q_ASSERT(m_chatModel);
     auto items = m_chatModel->chatItems(); // holds lock
-    return applyJinjaTemplate(items, onlyLastMsg);
+    Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
+    return applyJinjaTemplate({ items.begin(), items.end() - 1 }, onlyLastMsg);
 }
 
 auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg) const -> JinjaTemplateResult
 {
-    Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
+    Q_ASSERT(items.size() >= 1);
 
     auto makeMap = [](const ChatItem &item) {
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(item)] { return msg.get(); });
@@ -715,7 +733,7 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
 
     jinja2::ValuesList messages;
     // query and length check modes use only the last user message
-    std::span promptItems(onlyLastMsg ? items.end() - 2 : items.begin(), items.end() - 1);
+    std::span promptItems(onlyLastMsg ? items.end() - 2 : items.begin(), items.end());
     messages.reserve(promptItems.size());
     for (auto &item : promptItems)
         messages.emplace_back(makeMap(item));
@@ -915,10 +933,12 @@ void ChatLLM::generateName()
     if (!isModelLoaded())
         return;
 
+    Q_ASSERT(m_chatModel);
+
     auto *mySettings = MySettings::globalInstance();
 
     const QString chatNamePrompt = mySettings->modelChatNamePrompt(m_modelInfo);
-    if (chatNamePrompt.trimmed().isEmpty()) {
+    if (ranges::all_of(chatNamePrompt, [](auto c) { return c.isSpace(); })) {
         qWarning() << "ChatLLM: not generating chat name because prompt is empty";
         return;
     }
@@ -929,17 +949,13 @@ void ChatLLM::generateName()
         Q_UNUSED(token)
 
         response.append(piece.data(), piece.size());
-        auto respStr = QString::fromUtf8(response);
-        emit generatedNameChanged(respStr);
-        QStringList words = respStr.simplified().split(' ', Qt::SkipEmptyParts);
+        QStringList words = QString::fromUtf8(response).simplified().split(u' ', Qt::SkipEmptyParts);
+        emit generatedNameChanged(words.join(u' '));
         return words.size() <= 3;
     };
 
-    // TODO(jared): use Jinja template
-    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
-    auto promptUtf8 = chatNamePrompt.toUtf8();
     m_llModelInfo.model->prompt(
-        { promptUtf8.data(), size_t(promptUtf8.size()) },
+        applyJinjaTemplate(forkConversation(chatNamePrompt)).rendered,
         [this](auto &&...) { return !m_stopGenerating; },
         handleResponse,
         promptContextFromSettings(m_modelInfo),
@@ -968,13 +984,13 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     auto *mySettings = MySettings::globalInstance();
 
     QString suggestedFollowUpPrompt = mySettings->modelSuggestedFollowUpPrompt(m_modelInfo);
-    if (suggestedFollowUpPrompt.trimmed().isEmpty()) {
+    if (ranges::all_of(suggestedFollowUpPrompt, [](auto c) { return c.isSpace(); })) {
+        qWarning() << "ChatLLM: not generating follow-up questions because prompt is empty";
         emit responseStopped(elapsed);
         return;
     }
 
     emit generatingQuestions();
-    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
 
     std::string response; // raw UTF-8
 
@@ -1003,10 +1019,8 @@ void ChatLLM::generateQuestions(qint64 elapsed)
 
     QElapsedTimer totalTime;
     totalTime.start();
-    // TODO(jared): use Jinja template
-    auto promptUtf8 = suggestedFollowUpPrompt.toUtf8();
     m_llModelInfo.model->prompt(
-        { promptUtf8.data(), size_t(promptUtf8.size()) },
+        applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)).rendered,
         [this](auto &&...) { return !m_stopGenerating; },
         handleResponse,
         promptContextFromSettings(m_modelInfo),

@@ -80,6 +80,22 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
 
 public:
+    // tags for constructing ChatItems
+    struct prompt_tag_t { explicit prompt_tag_t() = default; };
+    static inline constexpr prompt_tag_t prompt_tag = prompt_tag_t();
+    struct response_tag_t { explicit response_tag_t() = default; };
+    static inline constexpr response_tag_t response_tag = response_tag_t();
+
+    // FIXME(jared): This should not be necessary. QML should see null or undefined if it
+    // tries to access something invalid.
+    ChatItem() = default;
+
+    ChatItem(prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
+        : name(u"Prompt: "_s), value(value), promptAttachments(attachments) {}
+
+    ChatItem(response_tag_t, bool currentResponse = true)
+        : name(u"Response: "_s), currentResponse(currentResponse) {}
+
     QString promptPlusAttachments() const
     {
         if (!promptAttachments.isEmpty()) {
@@ -198,12 +214,9 @@ public:
         return roles;
     }
 
-    void appendPrompt(const QString &name, const QString &value, const QList<PromptAttachment> &attachments)
+    void appendPrompt(const QString &value, const QList<PromptAttachment> &attachments)
     {
-        ChatItem item;
-        item.name = name;
-        item.value = value;
-        item.promptAttachments << attachments;
+        ChatItem item(ChatItem::prompt_tag, value, attachments);
 
         m_mutex.lock();
         const int count = m_chatItems.count();
@@ -217,14 +230,12 @@ public:
         emit countChanged();
     }
 
-    void appendResponse(const QString &name)
+    void appendResponse()
     {
         m_mutex.lock();
         const int count = m_chatItems.count();
         m_mutex.unlock();
-        ChatItem item;
-        item.name = name;
-        item.currentResponse = true;
+        ChatItem item(ChatItem::response_tag);
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);

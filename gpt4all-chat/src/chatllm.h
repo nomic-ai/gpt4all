@@ -244,12 +244,15 @@ protected:
     PromptResult promptInternal(const QStringList &enabledCollections, const LLModel::PromptContext &ctx);
 
 private:
+    std::vector<ChatItem> forkConversation(const QString &prompt) const;
+
     struct JinjaTemplateResult { size_t nMessages; std::string rendered; };
 
     // Applies the Jinja template. Query mode returns only the last message without special tokens.
     // Returns a (# of messages, rendered prompt) pair.
     JinjaTemplateResult applyJinjaTemplate(bool onlyLastMsg = false) const;
-    JinjaTemplateResult applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg) const;
+    // Pass the list of messages directly, excluding the response being generated.
+    JinjaTemplateResult applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg = false) const;
 
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 

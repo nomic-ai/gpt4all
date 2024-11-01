@@ -257,8 +257,8 @@ void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<Prom
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt("Prompt: ", prompt, attachments);
-    m_chatModel->appendResponse("Response: ");
+    m_chatModel->appendPrompt(prompt, attachments);
+    m_chatModel->appendResponse();
 }
 
 void Chat::unloadAndDeleteLater()
