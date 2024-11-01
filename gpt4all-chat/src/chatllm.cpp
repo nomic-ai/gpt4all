@@ -701,13 +701,17 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
 auto ChatLLM::applyJinjaTemplate(bool onlyLastMsg) const -> JinjaTemplateResult
 {
     Q_ASSERT(m_chatModel);
+    auto items = m_chatModel->chatItems(); // holds lock
+    return applyJinjaTemplate(items, onlyLastMsg);
+}
+
+auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg) const -> JinjaTemplateResult
+{
+    Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
 
     auto makeMap = [](const ChatItem &item) {
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(item)] { return msg.get(); });
     };
-
-    auto items = m_chatModel->chatItems(); // holds lock
-    Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
 
     jinja2::ValuesList messages;
     // query and length check modes use only the last user message

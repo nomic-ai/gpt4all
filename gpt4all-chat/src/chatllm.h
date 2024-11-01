@@ -23,11 +23,13 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 
 using namespace Qt::Literals::StringLiterals;
 
 class QDataStream;
+struct ChatItem;
 
 // NOTE: values serialized to disk, do not change or reuse
 enum class LLModelTypeV0 { // chat versions 2-5
@@ -247,6 +249,7 @@ private:
     // Applies the Jinja template. Query mode returns only the last message without special tokens.
     // Returns a (# of messages, rendered prompt) pair.
     JinjaTemplateResult applyJinjaTemplate(bool onlyLastMsg = false) const;
+    JinjaTemplateResult applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg) const;
 
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
