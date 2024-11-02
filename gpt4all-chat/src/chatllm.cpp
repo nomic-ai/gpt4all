@@ -616,7 +616,7 @@ void ChatLLM::regenerateResponse()
     int responseIdx;
     {
         auto items = m_chatModel->chatItems(); // holds lock
-        if (items.size() < 2 || items.cend()[-1].type() != ChatItem::Type::Response)
+        if (items.size() < 2 || items.back().type() != ChatItem::Type::Response)
             return;
         responseIdx = items.size() - 1;
     }
