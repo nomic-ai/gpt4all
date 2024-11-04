@@ -14,6 +14,7 @@
 
 namespace views = std::views;
 
+
 template <typename T>
 using JinjaFieldMap = std::unordered_map<std::string_view, std::function<jinja2::Value (const T &)>>;
 
@@ -60,6 +61,25 @@ private:
     const ResultInfo *m_source;
 
     friend class JinjaHelper<JinjaResultInfo>;
+};
+
+class JinjaPromptAttachment : public JinjaHelper<JinjaPromptAttachment> {
+public:
+    explicit JinjaPromptAttachment(const PromptAttachment &attachment) noexcept
+        : m_attachment(&attachment) {}
+
+    ~JinjaPromptAttachment() override;
+
+    const PromptAttachment &value() const { return *m_attachment; }
+
+    friend bool operator==(const JinjaPromptAttachment &a, const JinjaPromptAttachment &b)
+    { return a.m_attachment == b.m_attachment || *a.m_attachment == *b.m_attachment; }
+
+private:
+    static const JinjaFieldMap<PromptAttachment> s_fields;
+    const PromptAttachment *m_attachment;
+
+    friend class JinjaHelper<JinjaPromptAttachment>;
 };
 
 class JinjaMessage : public JinjaHelper<JinjaMessage> {
