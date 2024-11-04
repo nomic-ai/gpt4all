@@ -758,6 +758,8 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
     auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {
         return tmpl.RenderAsString(params);
     });
+    // FIXME: This can cause a crash right now that can be reproduced by adding an {%- endif -%} not
+    // paired with an if stmt
     if (!maybeRendered)
         throw std::runtime_error(fmt::format("Failed to parse prompt template: {}", maybeRendered.error().ToString()));
     return {promptItems.size(), *maybeRendered};
