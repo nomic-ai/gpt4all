@@ -360,8 +360,6 @@ QString Chat::fallbackReason() const
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
 {
     m_databaseResults = results;
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateSources(index, m_databaseResults);
     m_needsSave = true;
 }
 

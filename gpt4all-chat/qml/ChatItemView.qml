@@ -351,6 +351,8 @@ GridLayout {
         Layout.preferredWidth: childrenRect.width
         Layout.preferredHeight: childrenRect.height
         visible: {
+            if (name !== "Response: ")
+                return false
             if (consolidatedSources.length === 0)
                 return false
             if (!MySettings.localDocsShowReferences)

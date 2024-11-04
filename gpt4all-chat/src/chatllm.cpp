@@ -776,35 +776,15 @@ auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLMode
         QString query;
         {
             auto items = m_chatModel->chatItems(); // holds lock
+            Q_ASSERT(items.size() > 1);
             auto prompt = items.end()[-2];
             Q_ASSERT(prompt.name == "Prompt: "_L1);
             query = prompt.value;
         }
         emit requestRetrieveFromDB(enabledCollections, query, retrievalSize, &databaseResults); // blocks
+        m_chatModel->updateSources(databaseResults);
         emit databaseResultsChanged(databaseResults);
     }
-
-    // Augment the prompt template with the results if any
-    QString docsContext;
-    if (!databaseResults.isEmpty()) {
-        QStringList results;
-        results.reserve(databaseResults.size());
-        for (const ResultInfo &info : databaseResults)
-            results << u"Collection: %1\nPath: %2\nExcerpt: %3"_s.arg(info.collection, info.path, info.text);
-
-        // FIXME(jared): use a Jinja prompt template instead of hardcoded Alpaca-style localdocs template
-        docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
-    }
-
-    // TODO(jared): pass this as a Jinja arg
-#if 0
-    if (!docsContext.isEmpty()) {
-        auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode localdocs context without a response
-        m_llModelInfo.model->prompt(docsContext.toStdString(), "%1", promptFunc, responseFunc,
-                                    /*allowContextShift*/ true, m_ctx);
-        m_ctx.n_predict = old_n_predict; // now we are ready for a response
-    }
-#endif
 
     auto [nMessages, conversation] = applyJinjaTemplate();
 

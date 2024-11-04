@@ -355,16 +355,22 @@ public:
         return consolidatedSources;
     }
 
-    Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
+    Q_INVOKABLE void updateSources(const QList<ResultInfo> &sources)
     {
         {
             QMutexLocker locker(&m_mutex);
-            if (index < 0 || index >= m_chatItems.size()) return;
-
-            ChatItem &item = m_chatItems[index];
-            item.sources = sources;
-            item.consolidatedSources = consolidateSources(sources);
+            Q_ASSERT(m_chatItems.size() > 1);
+            if (m_chatItems.size() < 2) return;
+            ChatItem &r = m_chatItems.back();
+            Q_ASSERT(r.type() == ChatItem::Type::Response);
+            r.sources = sources;
+            r.consolidatedSources = consolidateSources(sources);
+            ChatItem &p = m_chatItems.end()[-2];
+            Q_ASSERT(p.type() == ChatItem::Type::Prompt);
+            p.sources = sources;
+            p.consolidatedSources = consolidateSources(sources);
         }
+        const int index = m_chatItems.size() - 1;
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
     }
