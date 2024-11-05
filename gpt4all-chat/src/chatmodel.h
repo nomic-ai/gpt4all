@@ -377,7 +377,6 @@ public:
         stream << int(m_chatItems.size());
         for (const auto &c : m_chatItems) {
             // FIXME: This 'id' should be eliminated the next time we bump serialization version
-            // as it is no longer used
             int id = 0;
             stream << id;
             stream << c.name;
