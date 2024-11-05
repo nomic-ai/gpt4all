@@ -60,7 +60,6 @@ Q_DECLARE_METATYPE(PromptAttachment)
 struct ChatItem
 {
     Q_GADGET
-    Q_PROPERTY(int id MEMBER id)
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString value MEMBER value)
     Q_PROPERTY(QString newResponse MEMBER newResponse)
@@ -87,7 +86,6 @@ public:
     }
 
     // TODO: Maybe we should include the model name here as well as timestamp?
-    int id = 0;
     QString name;
     QString value;
     QString newResponse;
@@ -112,8 +110,7 @@ public:
     explicit ChatModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
 
     enum Roles {
-        IdRole = Qt::UserRole + 1,
-        NameRole,
+        NameRole = Qt::UserRole + 1,
         ValueRole,
         NewResponseRole,
         CurrentResponseRole,
@@ -140,8 +137,6 @@ public:
 
         const ChatItem &item = m_chatItems.at(index.row());
         switch (role) {
-            case IdRole:
-                return item.id;
             case NameRole:
                 return item.name;
             case ValueRole:
@@ -170,7 +165,6 @@ public:
     QHash<int, QByteArray> roleNames() const override
     {
         QHash<int, QByteArray> roles;
-        roles[IdRole] = "id";
         roles[NameRole] = "name";
         roles[ValueRole] = "value";
         roles[NewResponseRole] = "newResponse";
@@ -209,7 +203,6 @@ public:
         const int count = m_chatItems.count();
         m_mutex.unlock();
         ChatItem item;
-        item.id = count; // This is only relevant for responses
         item.name = name;
         item.currentResponse = true;
         beginInsertRows(QModelIndex(), count, count);
@@ -383,7 +376,10 @@ public:
         QMutexLocker locker(&m_mutex);
         stream << int(m_chatItems.size());
         for (const auto &c : m_chatItems) {
-            stream << c.id;
+            // FIXME: This 'id' should be eliminated the next time we bump serialization version.
+            // (Jared) This was apparently never used.
+            int id = 0;
+            stream << id;
             stream << c.name;
             stream << c.value;
             stream << c.newResponse;
@@ -460,7 +456,9 @@ public:
         stream >> size;
         for (int i = 0; i < size; ++i) {
             ChatItem c;
-            stream >> c.id;
+            // FIXME: see comment in serialization about id
+            int id;
+            stream >> id;
             stream >> c.name;
             stream >> c.value;
             if (version < 10) {
