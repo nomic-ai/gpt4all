@@ -25,15 +25,15 @@ const JinjaFieldMap<ResultInfo> JinjaResultInfo::s_fields = {
     { "date",       [](auto &s) { return s.date      .toStdString(); } },
     { "text",       [](auto &s) { return s.text      .toStdString(); } },
     { "page",       [](auto &s) { return s.page;                     } },
-    { "fileUri",    [](auto &s) { return s.fileUri() .toStdString(); } },
+    { "file_uri",   [](auto &s) { return s.fileUri() .toStdString(); } },
 };
 
 JinjaPromptAttachment::~JinjaPromptAttachment() = default;
 
 const JinjaFieldMap<PromptAttachment> JinjaPromptAttachment::s_fields = {
-    { "url",              [](auto &s) { return s.url.toString()    .toStdString(); } },
-    { "file",             [](auto &s) { return s.file()            .toStdString(); } },
-    { "processedContent", [](auto &s) { return s.processedContent().toStdString(); } },
+    { "url",               [](auto &s) { return s.url.toString()    .toStdString(); } },
+    { "file",              [](auto &s) { return s.file()            .toStdString(); } },
+    { "processed_content", [](auto &s) { return s.processedContent().toStdString(); } },
 };
 
 std::vector<std::string> JinjaMessage::GetKeys() const
