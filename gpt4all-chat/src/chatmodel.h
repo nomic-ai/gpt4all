@@ -376,7 +376,8 @@ public:
         QMutexLocker locker(&m_mutex);
         stream << int(m_chatItems.size());
         for (const auto &c : m_chatItems) {
-            // FIXME: This 'id' should be eliminated the next time we bump serialization version
+            // FIXME: This 'id' should be eliminated the next time we bump serialization version.
+            // (Jared) This was apparently never used.
             int id = 0;
             stream << id;
             stream << c.name;
