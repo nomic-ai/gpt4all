@@ -360,7 +360,7 @@ protected:
                 QString role = takeValue(msg, "role", String, /*required*/ true).toString();
                 if (role == u"system"_s) {
                     res.role = Message::Role::System;
-                } if (role == u"user"_s) {
+                } else if (role == u"user"_s) {
                     res.role = Message::Role::User;
                 } else if (role == u"assistant"_s) {
                     res.role = Message::Role::Assistant;
