@@ -25,7 +25,6 @@ class Chat : public QObject
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(bool isCurrentlyLoading READ isCurrentlyLoading NOTIFY isCurrentlyLoadingChanged)
     Q_PROPERTY(float modelLoadingPercentage READ modelLoadingPercentage NOTIFY modelLoadingPercentageChanged)
-    Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
     Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
@@ -89,7 +88,6 @@ public:
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
-    QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
     ResponseState responseState() const;
     ModelInfo modelInfo() const;
@@ -143,7 +141,6 @@ Q_SIGNALS:
     void isCurrentlyLoadingChanged();
     void modelLoadingPercentageChanged();
     void modelLoadingWarning(const QString &warning);
-    void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();
     void promptRequested(const QList<QString> &collectionList, const QString &prompt);
@@ -195,7 +192,6 @@ private:
     QString m_tokenSpeed;
     QString m_device;
     QString m_fallbackReason;
-    QString m_response;
     QList<QString> m_collections;
     QList<QString> m_generatedQuestions;
     ChatModel *m_chatModel;
