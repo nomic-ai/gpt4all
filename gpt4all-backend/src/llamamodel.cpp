@@ -652,6 +652,13 @@ int32_t LLamaModel::contextLength() const
     return llama_n_ctx(d_ptr->ctx);
 }
 
+std::optional<std::string> LLamaModel::bosToken() const
+{
+    if (!d_ptr->model)
+        throw std::logic_error("model not loaded");
+    return tokenToString(llama_token_bos(d_ptr->model) + 10);
+}
+
 int32_t LLamaModel::inputLength() const
 {
     return d_ptr->inputTokens.size();

@@ -90,6 +90,9 @@ public:
     int32_t contextLength() const override
     { throwNotImplemented(); }
 
+    std::optional<std::string> bosToken() const override
+    { return std::nullopt; }
+
 Q_SIGNALS:
     void request(const QString &apiKey, const QByteArray &array);
 

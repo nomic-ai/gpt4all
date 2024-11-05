@@ -49,6 +49,7 @@ public:
                size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
     int32_t contextLength() const override;
+    std::optional<std::string> bosToken() const override;
 
 protected:
     std::vector<Token> tokenize(std::string_view str) const override;

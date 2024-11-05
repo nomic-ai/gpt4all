@@ -207,6 +207,7 @@ public:
     void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
 
     virtual int32_t contextLength() const = 0;
+    virtual std::optional<std::string> bosToken() const = 0;
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of

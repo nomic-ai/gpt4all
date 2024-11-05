@@ -723,12 +723,15 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
 {
     Q_ASSERT(items.size() >= 1);
 
+    auto *mySettings = MySettings::globalInstance();
+    auto &model      = m_llModelInfo.model;
+
     auto makeMap = [](const ChatItem &item) {
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(item)] { return msg.get(); });
     };
 
     std::unique_ptr<ChatItem> systemItem;
-    QString systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo);
+    QString systemPrompt = mySettings->modelSystemPrompt(m_modelInfo);
     bool useSystem = !isAllSpace(systemPrompt);
 
     // query and length check modes use only the last user message
@@ -743,16 +746,14 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
     for (auto &item : promptItems)
         messages.emplace_back(makeMap(item));
 
-    // TODO(jared): system prompt
-    // TODO(jared): don't hardcode the bos/eos
     jinja2::ValuesMap params {
         { "messages",              std::move(messages) },
-        { "bos_token",             "<|begin_of_text|>" },
-        { "eos_token",             "<|eot_id|>"        },
         { "add_generation_prompt", true                },
     };
+    if (auto token = model->bosToken())
+        params.emplace("bos_token", std::move(*token));
 
-    auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
+    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
 
     jinja2::Template tmpl(jinjaEnv());
     auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {
