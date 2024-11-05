@@ -186,11 +186,6 @@ void Chat::stopGenerating()
     m_llmodel->stopGenerating();
 }
 
-QString Chat::response() const
-{
-    return m_response;
-}
-
 Chat::ResponseState Chat::responseState() const
 {
     return m_responseState;
@@ -203,10 +198,8 @@ void Chat::handleResponseChanged(const QString &response)
         emit responseStateChanged();
     }
 
-    m_response = response;
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateValue(index, this->response());
-    emit responseChanged();
+    m_chatModel->updateValue(index, response);
 }
 
 void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
@@ -246,7 +239,6 @@ void Chat::responseStopped(qint64 promptResponseMs)
 {
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
-    emit responseChanged();
 
     m_responseInProgress = false;
     m_responseState = Chat::ResponseStopped;
