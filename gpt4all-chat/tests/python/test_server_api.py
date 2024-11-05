@@ -248,11 +248,7 @@ def test_with_models(chat_server_with_model: None) -> None:
         max_tokens  = 6,
     )
     response = request.post('completions', data=data)
-    assert len(response['choices']) == 1
-    assert response['choices'][0].keys() == {'text', 'index', 'logprobs', 'finish_reason'}
-    assert response['choices'][0]['text'] == ' jumps over the lazy dog.'
-    assert 'created' in response
-    response.pop('created')  # Remove the dynamic field for comparison
+    del response['created']  # Remove the dynamic field for comparison
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
 
