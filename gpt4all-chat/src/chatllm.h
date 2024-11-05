@@ -25,6 +25,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <variant>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -237,24 +238,31 @@ Q_SIGNALS:
 protected:
     struct PromptResult {
         QByteArray response;       // raw UTF-8
-        quint32    promptTokens;   // note: counts *entire* history, even if cached
-        quint32    responseTokens;
+        int        promptTokens;   // note: counts *entire* history, even if cached
+        int        responseTokens;
     };
 
-    PromptResult promptInternal(const QStringList &enabledCollections, const LLModel::PromptContext &ctx);
+    struct ChatPromptResult : PromptResult {
+        QList<ResultInfo> databaseResults;
+    };
+
+    ChatPromptResult promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx);
+    // passing a string_view directly skips templating and uses the raw string
+    PromptResult promptInternal(const std::variant<std::span<const ChatItem>, std::string_view> &prompt,
+                                const LLModel::PromptContext &ctx,
+                                bool usedLocalDocs);
 
 private:
     std::vector<ChatItem> forkConversation(const QString &prompt) const;
 
-    struct JinjaTemplateResult { size_t nMessages; std::string rendered; };
-
     // Applies the Jinja template. Query mode returns only the last message without special tokens.
     // Returns a (# of messages, rendered prompt) pair.
-    JinjaTemplateResult applyJinjaTemplate(bool onlyLastMsg = false) const;
-    // Pass the list of messages directly, excluding the response being generated.
-    JinjaTemplateResult applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg = false) const;
+    std::string applyJinjaTemplate(std::span<const ChatItem> items) const;
 
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+
+protected:
+    QPointer<ChatModel> m_chatModel;
 
 private:
     const Chat *m_chat;
@@ -270,7 +278,6 @@ private:
     bool m_isServer;
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;
-    QPointer<ChatModel> m_chatModel;
 };
 
 #endif // CHATLLM_H

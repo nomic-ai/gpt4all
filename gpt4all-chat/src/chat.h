@@ -111,7 +111,6 @@ public:
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
     Q_INVOKABLE void addCollection(const QString &collection);
     Q_INVOKABLE void removeCollection(const QString &collection);
-    void resetResponseState();
 
     QString modelLoadingError() const { return m_modelLoadingError; }
 
@@ -129,7 +128,7 @@ public:
     void setNeedsSave(bool n) { m_needsSave = n; }
 
 public Q_SLOTS:
-    void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});
+    void resetResponseState();
 
 Q_SIGNALS:
     void idChanged(const QString &id);
@@ -173,9 +172,6 @@ private Q_SLOTS:
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
-
-private:
-    void newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments);
 
 private:
     QString m_id;

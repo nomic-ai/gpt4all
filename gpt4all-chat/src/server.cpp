@@ -31,6 +31,7 @@
 #include <cstdint>
 #include <iostream>
 #include <optional>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -43,6 +44,7 @@
 
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
+namespace views = std::views;
 
 //#define DEBUG
 
@@ -313,11 +315,8 @@ const std::unordered_map<BaseCompletionRequest::Type, const char *> BaseCompleti
 class ChatRequest : public BaseCompletionRequest {
 public:
     struct Message {
-        enum class Role : uint8_t {
-            User,
-            Assistant,
-        };
-        Role role;
+        enum class Role { System, User, Assistant };
+        Role    role;
         QString content;
     };
 
@@ -349,7 +348,6 @@ protected:
         this->messages.clear();
         {
             QCborArray arr = value.toArray();
-            Message::Role nextRole = Message::Role::User;
             for (qsizetype i = 0; i < arr.size(); i++) {
                 const auto &elem = arr[i];
                 if (!elem.isMap())
@@ -360,9 +358,9 @@ protected:
                 QCborMap msg = elem.toMap();
                 Message res;
                 QString role = takeValue(msg, "role", String, /*required*/ true).toString();
-                if (role == u"system"_s)
-                    continue; // FIXME(jared): don't ignore these
-                if (role == u"user"_s) {
+                if (role == u"system"_s) {
+                    res.role = Message::Role::System;
+                } if (role == u"user"_s) {
                     res.role = Message::Role::User;
                 } else if (role == u"assistant"_s) {
                     res.role = Message::Role::Assistant;
@@ -374,13 +372,7 @@ protected:
                     ));
                 }
                 res.content = takeValue(msg, "content", String, /*required*/ true).toString();
-                if (res.role != nextRole)
-                    throw InvalidRequestError(fmt::format(
-                        "Invalid 'messages[{}].role': did not expect '{}' here", i, role
-                    ));
                 this->messages.append(res);
-                nextRole = res.role == Message::Role::User ? Message::Role::Assistant
-                                                           : Message::Role::User;
 
                 if (!msg.isEmpty())
                     throw InvalidRequestError(fmt::format(
@@ -630,8 +622,7 @@ void Server::start()
     });
 #endif
 
-    connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
-        &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
+    connect(this, &Server::requestResetResponseState, m_chat, &Chat::resetResponseState, Qt::BlockingQueuedConnection);
 }
 
 static auto makeError(auto &&...args) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
@@ -642,6 +633,10 @@ static auto makeError(auto &&...args) -> std::pair<QHttpServerResponse, std::opt
 auto Server::handleCompletionRequest(const CompletionRequest &request)
     -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
 {
+    Q_ASSERT(m_chatModel);
+
+    auto *mySettings = MySettings::globalInstance();
+
     ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
     const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
     for (const ModelInfo &info : modelList) {
@@ -654,10 +649,6 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
         }
     }
 
-    // adds prompt/response items to GUI
-    emit requestServerNewPromptResponsePair(request.prompt); // blocks
-    resetResponse();
-
     // load the new model if necessary
     setShouldBeLoaded(true);
 
@@ -666,47 +657,53 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
+    emit requestResetResponseState(); // blocks
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+
     // NB: this resets the context, regardless of whether this model is already loaded
     if (!loadModel(modelInfo)) {
         std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
-    // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
-    const int  top_k          = modelInfo.topK();
-    const int  n_batch        = modelInfo.promptBatchSize();
-    const auto repeat_penalty = float(modelInfo.repeatPenalty());
-    const int  repeat_last_n  = modelInfo.repeatPenaltyTokens();
+    // add prompt/response items to GUI
+    m_chatModel->appendPrompt(request.prompt);
+    m_chatModel->appendResponse();
 
+    // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
+    LLModel::PromptContext promptCtx {
+        .n_predict      = request.max_tokens,
+        .top_k          = mySettings->modelTopK(modelInfo),
+        .top_p          = request.top_p,
+        .min_p          = request.min_p,
+        .temp           = request.temperature,
+        .n_batch        = mySettings->modelPromptBatchSize(modelInfo),
+        .repeat_penalty = float(mySettings->modelRepeatPenalty(modelInfo)),
+        .repeat_last_n  = mySettings->modelRepeatPenaltyTokens(modelInfo),
+    };
+
+    auto promptUtf8 = request.prompt.toUtf8();
     int promptTokens = 0;
     int responseTokens = 0;
-    QList<QPair<QString, QList<ResultInfo>>> responses;
+    QStringList responses;
     for (int i = 0; i < request.n; ++i) {
-        if (!promptInternal(
-            m_collections,
-            request.prompt,
-            /*promptTemplate*/ u"%1"_s,
-            request.max_tokens,
-            top_k,
-            request.top_p,
-            request.min_p,
-            request.temperature,
-            n_batch,
-            repeat_penalty,
-            repeat_last_n)) {
-
-            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
+        PromptResult result;
+        try {
+            result = promptInternal(std::string_view(promptUtf8.cbegin(), promptUtf8.cend()),
+                                    promptCtx,
+                                    /*usedLocalDocs*/ false);
+        } catch (const std::exception &e) {
+            emit responseChanged(e.what());
+            emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
-        QString resp = response(/*trim*/ false);
+        QString resp = QString::fromUtf8(result.response);
         if (request.echo)
             resp = request.prompt + resp;
-        responses.append({resp, m_databaseResults});
-        if (!promptTokens)
-            promptTokens = m_promptTokens;
-        responseTokens += m_promptResponseTokens - m_promptTokens;
-        if (i < request.n - 1)
-            resetResponse();
+        responses << resp;
+        if (i == 0)
+            promptTokens = result.promptTokens;
+        responseTokens += result.responseTokens;
     }
 
     QJsonObject responseObject {
@@ -717,25 +714,13 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
     };
 
     QJsonArray choices;
-    {
-        int index = 0;
-        for (const auto &r : responses) {
-            QString result = r.first;
-            QList<ResultInfo> infos = r.second;
-            QJsonObject choice {
-                { "text",          result                                                   },
-                { "index",         index++                                                  },
-                { "logprobs",      QJsonValue::Null                                         },
-                { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
-            };
-            if (MySettings::globalInstance()->localDocsShowReferences()) {
-                QJsonArray references;
-                for (const auto &ref : infos)
-                    references.append(resultToJson(ref));
-                choice.insert("references", references.isEmpty() ? QJsonValue::Null : QJsonValue(references));
-            }
-            choices.append(choice);
-        }
+    for (auto [i, resp] : std::as_const(responses) | views::enumerate) {
+        choices << QJsonObject {
+            { "text",          resp                                                     },
+            { "index",         i                                                        },
+            { "logprobs",      QJsonValue::Null                                         },
+            { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
+        };
     }
 
     responseObject.insert("choices", choices);
@@ -751,6 +736,8 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
 auto Server::handleChatRequest(const ChatRequest &request)
     -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>
 {
+    auto *mySettings = MySettings::globalInstance();
+
     ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
     const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
     for (const ModelInfo &info : modelList) {
@@ -771,83 +758,58 @@ auto Server::handleChatRequest(const ChatRequest &request)
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
+    emit requestResetResponseState(); // blocks
+
     // NB: this resets the context, regardless of whether this model is already loaded
     if (!loadModel(modelInfo)) {
         std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
         return makeError(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
-    const QString promptTemplate = modelInfo.promptTemplate();
-    const int     top_k          = modelInfo.topK();
-    const int     n_batch        = modelInfo.promptBatchSize();
-    const auto    repeat_penalty = float(modelInfo.repeatPenalty());
-    const int     repeat_last_n  = modelInfo.repeatPenaltyTokens();
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
 
-    int promptTokens = 0;
+    Q_ASSERT(!request.messages.isEmpty());
+
+    // adds prompt/response items to GUI
+    std::vector<ChatItem> chatItems;
+    for (auto &message : request.messages) {
+        using enum ChatRequest::Message::Role;
+        switch (message.role) {
+            case System:    chatItems.emplace_back(ChatItem::system_tag, message.content); break;
+            case User:      chatItems.emplace_back(ChatItem::prompt_tag, message.content); break;
+            case Assistant: chatItems.emplace_back(ChatItem::response_tag, /*currentResponse*/ false); break;
+        }
+    }
+    m_chatModel->appendResponseWithHistory(chatItems);
+
+    // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
+    LLModel::PromptContext promptCtx {
+        .n_predict      = request.max_tokens,
+        .top_k          = mySettings->modelTopK(modelInfo),
+        .top_p          = request.top_p,
+        .min_p          = request.min_p,
+        .temp           = request.temperature,
+        .n_batch        = mySettings->modelPromptBatchSize(modelInfo),
+        .repeat_penalty = float(mySettings->modelRepeatPenalty(modelInfo)),
+        .repeat_last_n  = mySettings->modelRepeatPenaltyTokens(modelInfo),
+    };
+
+    int promptTokens   = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
-    Q_ASSERT(!request.messages.isEmpty());
-    Q_ASSERT(request.messages.size() % 2 == 1);
-    for (int i = 0; i < request.messages.size() - 2; i += 2) {
-        using enum ChatRequest::Message::Role;
-        auto &user      = request.messages[i];
-        auto &assistant = request.messages[i + 1];
-        Q_ASSERT(user.role      == User);
-        Q_ASSERT(assistant.role == Assistant);
-
-        // adds prompt/response items to GUI
-        emit requestServerNewPromptResponsePair(user.content); // blocks
-        resetResponse();
-
-        if (!promptInternal(
-            {},
-            user.content,
-            promptTemplate,
-            request.max_tokens,
-            top_k,
-            request.top_p,
-            request.min_p,
-            request.temperature,
-            n_batch,
-            repeat_penalty,
-            repeat_last_n,
-            assistant.content)
-        ) {
-            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
-            return makeError(QHttpServerResponder::StatusCode::InternalServerError);
-        }
-        promptTokens += m_promptResponseTokens; // previous responses are part of current prompt
-    }
-
-    QString lastMessage = request.messages.last().content;
-    // adds prompt/response items to GUI
-    emit requestServerNewPromptResponsePair(lastMessage); // blocks
-    resetResponse();
-
     for (int i = 0; i < request.n; ++i) {
-        if (!promptInternal(
-            m_collections,
-            lastMessage,
-            promptTemplate,
-            request.max_tokens,
-            top_k,
-            request.top_p,
-            request.min_p,
-            request.temperature,
-            n_batch,
-            repeat_penalty,
-            repeat_last_n)
-        ) {
-            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
+        ChatPromptResult result;
+        try {
+            result = promptInternalChat(m_collections, promptCtx);
+        } catch (const std::exception &e) {
+            emit responseChanged(e.what());
+            emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
-        responses.append({response(), m_databaseResults});
-        // FIXME(jared): these are UI counts and do not include framing tokens, which they should
+        responses.emplace_back(result.response, result.databaseResults);
         if (i == 0)
-            promptTokens += m_promptTokens;
-        responseTokens += m_promptResponseTokens - m_promptTokens;
-        if (i != request.n - 1)
-            resetResponse();
+            promptTokens = result.promptTokens;
+        responseTokens += result.responseTokens;
     }
 
     QJsonObject responseObject {

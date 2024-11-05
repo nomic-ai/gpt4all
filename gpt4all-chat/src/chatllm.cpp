@@ -686,10 +686,10 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
     }
 
     try {
-        promptInternal(enabledCollections, promptContextFromSettings(m_modelInfo));
+        promptInternalChat(enabledCollections, promptContextFromSettings(m_modelInfo));
     } catch (const std::exception &e) {
         // FIXME(jared): this is neither translated nor serialized
-        emit responseChanged(e.what());
+        emit responseChanged(QString::fromUtf8(e.what()));
         emit responseStopped(0);
     }
 }
@@ -711,15 +711,7 @@ std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
     return conversation;
 }
 
-auto ChatLLM::applyJinjaTemplate(bool onlyLastMsg) const -> JinjaTemplateResult
-{
-    Q_ASSERT(m_chatModel);
-    auto items = m_chatModel->chatItems(); // holds lock
-    Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
-    return applyJinjaTemplate({ items.begin(), items.end() - 1 }, onlyLastMsg);
-}
-
-auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastMsg) const -> JinjaTemplateResult
+std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
 {
     Q_ASSERT(items.size() >= 1);
 
@@ -734,16 +726,13 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
     QString systemPrompt = mySettings->modelSystemPrompt(m_modelInfo);
     bool useSystem = !isAllSpace(systemPrompt);
 
-    // query and length check modes use only the last user message
-    std::span promptItems(onlyLastMsg ? items.end() - 1 : items.begin(), items.end());
-
     jinja2::ValuesList messages;
-    messages.reserve(useSystem + promptItems.size());
+    messages.reserve(useSystem + items.size());
     if (useSystem) {
         systemItem = std::make_unique<ChatItem>(ChatItem::system_tag, systemPrompt);
         messages.emplace_back(makeMap(*systemItem));
     }
-    for (auto &item : promptItems)
+    for (auto &item : items)
         messages.emplace_back(makeMap(item));
 
     jinja2::ValuesMap params {
@@ -763,18 +752,17 @@ auto ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items, bool onlyLastM
     // paired with an if stmt
     if (!maybeRendered)
         throw std::runtime_error(fmt::format("Failed to parse prompt template: {}", maybeRendered.error().ToString()));
-    return {promptItems.size(), *maybeRendered};
+    return *maybeRendered;
 }
 
-auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLModel::PromptContext &ctx) -> PromptResult
+auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx)
+    -> ChatPromptResult
 {
     Q_ASSERT(isModelLoaded());
     Q_ASSERT(m_chatModel);
 
-    auto *mySettings = MySettings::globalInstance();
-
     QList<ResultInfo> databaseResults;
-    const int retrievalSize = mySettings->localDocsRetrievalSize();
+    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
     if (!enabledCollections.isEmpty()) {
         QString query;
         {
@@ -789,17 +777,59 @@ auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLMode
         emit databaseResultsChanged(databaseResults);
     }
 
-    auto [nMessages, conversation] = applyJinjaTemplate();
+    // copy messages for safety (since we can't hold the lock the whole time)
+    std::vector<ChatItem> chatItems;
+    {
+        auto items = m_chatModel->chatItems(); // holds lock
+        Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
+        chatItems.assign(items.begin(), items.end() - 1); // exclude last
+    }
+    auto result = promptInternal(chatItems, ctx, !databaseResults.isEmpty());
+    return {
+        /*PromptResult*/ {
+            .response       = std::move(result.response),
+            .promptTokens   = result.promptTokens,
+            .responseTokens = result.responseTokens,
+        },
+        /*databaseResults*/ std::move(databaseResults),
+    };
+}
 
+auto ChatLLM::promptInternal(
+    const std::variant<std::span<const ChatItem>, std::string_view> &prompt,
+    const LLModel::PromptContext &ctx,
+    bool usedLocalDocs
+) -> PromptResult
+{
+    Q_ASSERT(isModelLoaded());
+
+    auto *mySettings = MySettings::globalInstance();
+
+    // unpack prompt argument
+    const std::span<const ChatItem> *chatItems = nullptr;
+    std::string                      jinjaBuffer;
+    std::string_view                 conversation;
+    if (auto *nonChat = std::get_if<std::string_view>(&prompt)) {
+        conversation = *nonChat; // complete the string without a template
+    } else {
+        chatItems    = &std::get<std::span<const ChatItem>>(prompt);
+        jinjaBuffer  = applyJinjaTemplate(*chatItems);
+        conversation = jinjaBuffer;
+    }
+
+    // check for overlength last message
     if (!dynamic_cast<const ChatAPI *>(m_llModelInfo.model.get())) {
         auto nCtx = m_llModelInfo.model->contextLength();
-        auto lastMessageRendered = nMessages > 1 ? applyJinjaTemplate(/*onlyLastMsg*/ true).rendered : conversation;
+        std::string jinjaBuffer2;
+        auto lastMessageRendered = (chatItems && chatItems->size() > 1)
+            ? std::string_view(jinjaBuffer2 = applyJinjaTemplate({ &chatItems->back(), 1 }))
+            : conversation;
         int32_t lastMessageLength = m_llModelInfo.model->countPromptTokens(lastMessageRendered);
         if (auto limit = nCtx - 4; lastMessageLength > limit) {
-            std::ostringstream ss;
-            ss << "Your message was too long and could not be processed (" << lastMessageLength << " > " << limit
-               << "). Please try again with something shorter.";
-            throw std::runtime_error(ss.str());
+            throw std::invalid_argument(
+                tr("Your message was too long and could not be processed (%1 > %2). "
+                   "Please try again with something shorter.").arg(lastMessageLength, limit).toUtf8().constData()
+            );
         }
     }
 
@@ -830,7 +860,7 @@ auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLMode
         emit promptProcessing();
         m_llModelInfo.model->setThreadCount(mySettings->threadCount());
         m_stopGenerating = false;
-        m_llModelInfo.model->prompt(conversation, handlePrompt, handleResponse, ctx, /*allowContextShift*/ true);
+        m_llModelInfo.model->prompt(conversation, handlePrompt, handleResponse, ctx);
     } catch (...) {
         m_timer->stop();
         throw;
@@ -845,7 +875,7 @@ auto ChatLLM::promptInternal(const QStringList &enabledCollections, const LLMode
         emit responseChanged(respStr.trimmed());
 
     SuggestionMode mode = mySettings->suggestionMode();
-    if (mode == SuggestionMode::On || (!databaseResults.isEmpty() && mode == SuggestionMode::LocalDocsOnly))
+    if (mode == SuggestionMode::On || (usedLocalDocs && mode == SuggestionMode::LocalDocsOnly))
         generateQuestions(elapsed);
     else
         emit responseStopped(elapsed);
@@ -944,7 +974,7 @@ void ChatLLM::generateName()
     };
 
     m_llModelInfo.model->prompt(
-        applyJinjaTemplate(forkConversation(chatNamePrompt)).rendered,
+        applyJinjaTemplate(forkConversation(chatNamePrompt)),
         [this](auto &&...) { return !m_stopGenerating; },
         handleResponse,
         promptContextFromSettings(m_modelInfo),
@@ -1009,7 +1039,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     QElapsedTimer totalTime;
     totalTime.start();
     m_llModelInfo.model->prompt(
-        applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)).rendered,
+        applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)),
         [this](auto &&...) { return !m_stopGenerating; },
         handleResponse,
         promptContextFromSettings(m_modelInfo),

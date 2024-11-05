@@ -36,7 +36,7 @@ Chat::Chat(server_tag_t, QObject *parent)
     , m_chatModel(new ChatModel(this))
     , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
-    , m_llmodel(nullptr) // TODO(jared): new Server(this)
+    , m_llmodel(new Server(this))
     , m_isServer(true)
     , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
@@ -143,7 +143,10 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
     if (!attachedContexts.isEmpty())
         promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt;
 
-    newPromptResponsePairInternal(prompt, attachments);
+    resetResponseState();
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+    m_chatModel->appendPrompt(prompt, attachments);
+    m_chatModel->appendResponse();
 
     emit promptRequested(m_collections);
     m_needsSave = true;
@@ -245,20 +248,6 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
 
     emit modelInfoChanged();
     emit modelChangeRequested(modelInfo);
-}
-
-// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
-void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments)
-{
-    newPromptResponsePairInternal(prompt, attachments);
-}
-
-void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments)
-{
-    resetResponseState();
-    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt(prompt, attachments);
-    m_chatModel->appendResponse();
 }
 
 void Chat::unloadAndDeleteLater()

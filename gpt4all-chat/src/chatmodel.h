@@ -236,12 +236,12 @@ public:
         return roles;
     }
 
-    void appendPrompt(const QString &value, const QList<PromptAttachment> &attachments)
+    void appendPrompt(const QString &value, const QList<PromptAttachment> &attachments = {})
     {
         ChatItem item(ChatItem::prompt_tag, value, attachments);
 
         m_mutex.lock();
-        const int count = m_chatItems.count();
+        const qsizetype count = m_chatItems.count();
         m_mutex.unlock();
         beginInsertRows(QModelIndex(), count, count);
         {
@@ -255,13 +255,37 @@ public:
     void appendResponse()
     {
         m_mutex.lock();
-        const int count = m_chatItems.count();
+        const qsizetype count = m_chatItems.count();
         m_mutex.unlock();
         ChatItem item(ChatItem::response_tag);
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
             m_chatItems.append(item);
+        }
+        endInsertRows();
+        emit countChanged();
+    }
+
+    // Used by Server to append a new conversation to the chat log.
+    void appendResponseWithHistory(std::span<const ChatItem> history)
+    {
+        if (history.empty())
+            throw std::invalid_argument("at least one message is required");
+
+        m_mutex.lock();
+        qsizetype startIndex = m_chatItems.count();
+        m_mutex.unlock();
+
+        qsizetype nNewItems = history.size() + 1;
+        qsizetype endIndex  = startIndex + nNewItems;
+        beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
+        {
+            QMutexLocker locker(&m_mutex);
+            m_chatItems.reserve(m_chatItems.size() + nNewItems);
+            for (auto &item : history)
+                m_chatItems << item;
+            m_chatItems.emplace_back(ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
@@ -423,7 +447,7 @@ public:
         if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
     }
 
-    int count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
+    qsizetype count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
     ChatModelAccessor chatItems() const { return {m_mutex, std::as_const(m_chatItems)}; }
 
