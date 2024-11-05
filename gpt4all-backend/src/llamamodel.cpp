@@ -522,7 +522,7 @@ std::vector<LLModel::Token> LLamaModel::tokenize(std::string_view str) const
 {
     std::vector<LLModel::Token> fres(str.length() + 4);
     int32_t fres_len = llama_tokenize(
-        d_ptr->model, str.data(), str.length(), fres.data(), fres.size(), /*add_special*/ false, /*parse_special*/ true
+        d_ptr->model, str.data(), str.length(), fres.data(), fres.size(), /*add_special*/ true, /*parse_special*/ true
     );
     fres.resize(fres_len);
     return fres;
