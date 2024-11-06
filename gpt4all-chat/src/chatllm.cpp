@@ -627,6 +627,7 @@ void ChatLLM::regenerateResponse()
     m_chatModel->updateStopped        (responseIdx, false);
     m_chatModel->updateThumbsUpState  (responseIdx, false);
     m_chatModel->updateThumbsDownState(responseIdx, false);
+    m_chatModel->setError(false);
 
     prompt(m_chat->collectionList());
 }
@@ -700,6 +701,9 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
 std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
 {
     Q_ASSERT(m_chatModel);
+    if (m_chatModel->hasError())
+        throw std::logic_error("cannot continue conversation with an error");
+
     std::vector<ChatItem> conversation;
     {
         auto items = m_chatModel->chatItems(); // holds lock

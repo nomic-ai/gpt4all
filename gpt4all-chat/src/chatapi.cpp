@@ -1,5 +1,7 @@
 #include "chatapi.h"
 
+#include "utils.h"
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QGuiApplication>
@@ -13,10 +15,12 @@
 #include <QUrl>
 #include <QUtf8StringView>
 #include <QVariant>
+#include <QXmlStreamReader>
 #include <Qt>
 #include <QtGlobal>
 #include <QtLogging>
 
+#include <expected>
 #include <functional>
 #include <iostream>
 #include <utility>
@@ -68,6 +72,81 @@ bool ChatAPI::isModelLoaded() const
     return true;
 }
 
+static auto parsePrompt(QXmlStreamReader &xml) -> std::expected<QJsonArray, QString>
+{
+    QJsonArray messages;
+
+    auto xmlError = [&xml] {
+        return std::unexpected(u"%1:%2: %3"_s.arg(xml.lineNumber()).arg(xml.columnNumber()).arg(xml.errorString()));
+    };
+
+    if (xml.hasError())
+        return xmlError();
+    if (xml.atEnd())
+        return messages;
+
+    // skip header
+    bool foundElement = false;
+    do {
+        switch (xml.readNext()) {
+            using enum QXmlStreamReader::TokenType;
+        case Invalid:
+            return xmlError();
+        case EndDocument:
+            return messages;
+        default:
+            foundElement = true;
+        case StartDocument:
+        case Comment:
+        case DTD:
+        case ProcessingInstruction:
+            ;
+        }
+    } while (!foundElement);
+
+    // document body loop
+    bool foundRoot = false;
+    for (;;) {
+        switch (xml.tokenType()) {
+            using enum QXmlStreamReader::TokenType;
+        case StartElement:
+            {
+                auto name = xml.name();
+                if (!foundRoot) {
+                    if (name != "chat"_L1)
+                        return std::unexpected(u"unexpected tag: %1"_s.arg(name));
+                    foundRoot = true;
+                } else {
+                    if (name != "user"_L1 && name != "assistant"_L1 && name != "system"_L1)
+                        return std::unexpected(u"unknown role: %1"_s.arg(name));
+                    auto content = xml.readElementText();
+                    if (xml.tokenType() != EndElement)
+                        return xmlError();
+                    messages << makeJsonObject({
+                        { "role"_L1,    name.toString().trimmed() },
+                        { "content"_L1, content                   },
+                    });
+                }
+                break;
+            }
+        case Characters:
+            if (!xml.isWhitespace())
+                return std::unexpected(u"unexpected text: %1"_s.arg(xml.text()));
+        case Comment:
+        case ProcessingInstruction:
+        case EndElement:
+            break;
+        case EndDocument:
+            return messages;
+        case Invalid:
+            return xmlError();
+        default:
+            return std::unexpected(u"unexpected token: %1"_s.arg(xml.tokenString()));
+        }
+        xml.readNext();
+    }
+}
+
 void ChatAPI::prompt(
     std::string_view        prompt,
     const PromptCallback   &promptCallback,
@@ -83,30 +162,30 @@ void ChatAPI::prompt(
     if (!promptCtx.n_predict)
         return; // nothing requested
 
-    QString formattedPrompt = QUtf8StringView(prompt).toString();
-
     // FIXME: We don't set the max_tokens on purpose because in order to do so safely without encountering
     // an error we need to be able to count the tokens in our prompt. The only way to do this is to use
     // the OpenAI tiktoken library or to implement our own tokenization function that matches precisely
     // the tokenization used by the OpenAI model we're calling. OpenAI has not introduced any means of
     // using the REST API to count tokens in a prompt.
-    QJsonObject root {
-        { "model",       m_modelName     },
-        { "stream",      true            },
-        { "temperature", promptCtx.temp  },
-        { "top_p",       promptCtx.top_p },
-    };
+    auto root = makeJsonObject({
+        { "model"_L1,       m_modelName     },
+        { "stream"_L1,      true            },
+        { "temperature"_L1, promptCtx.temp  },
+        { "top_p"_L1,       promptCtx.top_p },
+    });
 
     // conversation history
-    // TODO(jared): Use QXmlStreamReader to break XML-encoded message pairs into role/content pairs
-    QJsonArray messages;
-    for (int i = 0; i < 1; ++i) {
-        messages.append(QJsonObject {
-            { "role",    i % 2 == 0 ? "user" : "assistant" },
-            { "content", "TODO"                            },
-        });
+    {
+        QUtf8StringView promptUtf8(prompt);
+        QXmlStreamReader xml(promptUtf8);
+        auto messages = parsePrompt(xml);
+        if (!messages) {
+            auto error = fmt::format("Failed to parse API model prompt: {}", messages.error());
+            qDebug().noquote() << "ChatAPI ERROR:" << error << "Prompt:\n\n" << promptUtf8 << '\n';
+            throw std::invalid_argument(error);
+        }
+        root.insert("messages"_L1, *messages);
     }
-    root.insert("messages", messages);
 
     QJsonDocument doc(root);
 

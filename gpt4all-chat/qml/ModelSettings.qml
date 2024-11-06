@@ -154,7 +154,6 @@ MySettingsTab {
         }
 
         MySettingsLabel {
-            visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
             helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
             Layout.row: 7
