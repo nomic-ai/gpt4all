@@ -216,8 +216,8 @@ private:
     mutable int m_maxGpuLayers        = -1;
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
-    QString m_promptTemplate          = "### Human:\n%1\n\n### Assistant:\n";
-    QString m_systemPrompt            = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
+    QString m_promptTemplate;
+    QString m_systemPrompt;
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
