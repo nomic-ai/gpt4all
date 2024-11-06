@@ -690,7 +690,7 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
         promptInternalChat(enabledCollections, promptContextFromSettings(m_modelInfo));
     } catch (const std::exception &e) {
         // FIXME(jared): this is neither translated nor serialized
-        emit responseChanged(QString::fromUtf8(e.what()));
+        emit responseChanged(u"Error: %1"_s.arg(QString::fromUtf8(e.what())));
         emit responseStopped(0);
     }
 }
@@ -752,8 +752,6 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {
         return tmpl.RenderAsString(params);
     });
-    // FIXME: This can cause a crash right now that can be reproduced by adding an {%- endif -%} not
-    // paired with an if stmt
     if (!maybeRendered)
         throw std::runtime_error(fmt::format("Failed to parse prompt template: {}", maybeRendered.error().ToString()));
     return *maybeRendered;
@@ -984,13 +982,17 @@ void ChatLLM::generateName()
         return words.size() <= 3;
     };
 
-    m_llModelInfo.model->prompt(
-        applyJinjaTemplate(forkConversation(chatNamePrompt)),
-        [this](auto &&...) { return !m_stopGenerating; },
-        handleResponse,
-        promptContextFromSettings(m_modelInfo),
-        /*allowContextShift*/ false
-    );
+    try {
+        m_llModelInfo.model->prompt(
+            applyJinjaTemplate(forkConversation(chatNamePrompt)),
+            [this](auto &&...) { return !m_stopGenerating; },
+            handleResponse,
+            promptContextFromSettings(m_modelInfo),
+            /*allowContextShift*/ false
+        );
+    } catch (const std::exception &e) {
+        qWarning() << "ChatLLM failed to generate name:" << e.what();
+    }
 }
 
 void ChatLLM::handleChatIdChanged(const QString &id)
@@ -1049,13 +1051,17 @@ void ChatLLM::generateQuestions(qint64 elapsed)
 
     QElapsedTimer totalTime;
     totalTime.start();
-    m_llModelInfo.model->prompt(
-        applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)),
-        [this](auto &&...) { return !m_stopGenerating; },
-        handleResponse,
-        promptContextFromSettings(m_modelInfo),
-        /*allowContextShift*/ false
-    );
+    try {
+        m_llModelInfo.model->prompt(
+            applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)),
+            [this](auto &&...) { return !m_stopGenerating; },
+            handleResponse,
+            promptContextFromSettings(m_modelInfo),
+            /*allowContextShift*/ false
+        );
+    } catch (const std::exception &e) {
+        qWarning() << "ChatLLM failed to generate follow-up questions:" << e.what();
+    }
     elapsed += totalTime.elapsed();
     emit responseStopped(elapsed);
 }
