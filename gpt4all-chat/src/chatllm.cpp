@@ -27,6 +27,7 @@
 #include <QMutex>
 #include <QMutexLocker> // IWYU pragma: keep
 #include <QSet>
+#include <QTextStream>
 #include <QUrl>
 #include <QWaitCondition>
 #include <Qt>
@@ -973,13 +974,24 @@ void ChatLLM::generateName()
 
     QByteArray response; // raw UTF-8
 
+    static constexpr qsizetype MAX_WORDS = 3;
+
     auto handleResponse = [this, &response](LLModel::Token token, std::string_view piece) -> bool {
         Q_UNUSED(token)
 
         response.append(piece.data(), piece.size());
-        QStringList words = QString::fromUtf8(response).simplified().split(u' ', Qt::SkipEmptyParts);
+
+        QTextStream stream(response);
+        stream.setAutoDetectUnicode(false);
+        QStringList words;
+        while (!stream.atEnd() && words.size() < MAX_WORDS) {
+            QString word;
+            stream >> word;
+            words << word;
+        }
+
         emit generatedNameChanged(words.join(u' '));
-        return words.size() <= 3;
+        return words.size() < MAX_WORDS || stream.atEnd();
     };
 
     try {
