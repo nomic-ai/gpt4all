@@ -205,7 +205,6 @@ public Q_SLOTS:
     void unloadModel();
     void reloadModel();
     void generateName();
-    void generateQuestions(qint64 elapsed);
     void handleChatIdChanged(const QString &id);
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
@@ -253,13 +252,15 @@ protected:
                                 bool usedLocalDocs);
 
 private:
+    bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+
     std::vector<ChatItem> forkConversation(const QString &prompt) const;
 
     // Applies the Jinja template. Query mode returns only the last message without special tokens.
     // Returns a (# of messages, rendered prompt) pair.
     std::string applyJinjaTemplate(std::span<const ChatItem> items) const;
 
-    bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+    void generateQuestions(qint64 elapsed);
 
 protected:
     QPointer<ChatModel> m_chatModel;

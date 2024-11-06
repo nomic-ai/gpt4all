@@ -874,8 +874,15 @@ auto ChatLLM::promptInternal(
     if (!respStr.isEmpty() && std::as_const(respStr).back().isSpace())
         emit responseChanged(respStr.trimmed());
 
-    SuggestionMode mode = mySettings->suggestionMode();
-    if (mode == SuggestionMode::On || (usedLocalDocs && mode == SuggestionMode::LocalDocsOnly))
+    bool doQuestions = false;
+    if (!m_isServer && chatItems) {
+        switch (mySettings->suggestionMode()) {
+            case SuggestionMode::On:            doQuestions = true;          break;
+            case SuggestionMode::LocalDocsOnly: doQuestions = usedLocalDocs; break;
+            case SuggestionMode::Off:           ;
+        }
+    }
+    if (doQuestions)
         generateQuestions(elapsed);
     else
         emit responseStopped(elapsed);
@@ -949,7 +956,7 @@ void ChatLLM::reloadModel()
 void ChatLLM::generateName()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded())
+    if (!isModelLoaded() || m_isServer)
         return;
 
     Q_ASSERT(m_chatModel);
