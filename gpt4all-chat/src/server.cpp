@@ -31,7 +31,6 @@
 #include <cstdint>
 #include <iostream>
 #include <optional>
-#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -44,7 +43,6 @@
 
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
-namespace views = std::views;
 
 //#define DEBUG
 
@@ -714,10 +712,10 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
     };
 
     QJsonArray choices;
-    for (auto [i, resp] : std::as_const(responses) | views::enumerate) {
+    for (qsizetype i = 0; auto &resp : std::as_const(responses)) {
         choices << QJsonObject {
             { "text",          resp                                                     },
-            { "index",         i                                                        },
+            { "index",         i++                                                      },
             { "logprobs",      QJsonValue::Null                                         },
             { "finish_reason", responseTokens == request.max_tokens ? "length" : "stop" },
         };
