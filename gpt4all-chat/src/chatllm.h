@@ -217,6 +217,7 @@ Q_SIGNALS:
     void modelLoadingError(const QString &error);
     void modelLoadingWarning(const QString &warning);
     void responseChanged(const QString &response);
+    void responseFailed(const QString &error);
     void promptProcessing();
     void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);

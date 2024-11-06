@@ -690,7 +690,7 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
         promptInternalChat(enabledCollections, promptContextFromSettings(m_modelInfo));
     } catch (const std::exception &e) {
         // FIXME(jared): this is neither translated nor serialized
-        emit responseChanged(u"Error: %1"_s.arg(QString::fromUtf8(e.what())));
+        emit responseFailed(u"Error: %1"_s.arg(QString::fromUtf8(e.what())));
         emit responseStopped(0);
     }
 }

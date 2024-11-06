@@ -1197,14 +1197,14 @@ Rectangle {
                             Accessible.role: Accessible.EditableText
                             Accessible.name: placeholderText
                             Accessible.description: qsTr("Send messages/prompts to the model")
-                            Keys.onReturnPressed: (event)=> {
-                                                      if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
-                                                      event.accepted = false;
-                                                      else {
-                                                          editingFinished();
-                                                          sendMessage()
-                                                      }
-                                                  }
+                            Keys.onReturnPressed: event => {
+                                if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier) {
+                                    event.accepted = false;
+                                } else if (!chatModel.hasError) {
+                                    editingFinished();
+                                    sendMessage();
+                                }
+                            }
                             function sendMessage() {
                                 if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress)
                                     return
@@ -1321,6 +1321,7 @@ Rectangle {
                             imageWidth: theme.fontSizeLargest
                             imageHeight: theme.fontSizeLargest
                             visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
+                            enabled: !chatModel.hasError
                             source: "qrc:/gpt4all/icons/send_message.svg"
                             Accessible.name: qsTr("Send message")
                             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")

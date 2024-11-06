@@ -54,6 +54,7 @@ void Chat::connectLLM()
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::responseFailed, this, &Chat::handleResponseFailed, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
@@ -178,6 +179,14 @@ void Chat::handleResponseChanged(const QString &response)
 
     const int index = m_chatModel->count() - 1;
     m_chatModel->updateValue(index, response);
+}
+
+void Chat::handleResponseFailed(const QString &error)
+{
+    const int index = m_chatModel->count() - 1;
+    m_chatModel->updateValue(index, error);
+    m_chatModel->setError();
+    responseStopped(0);
 }
 
 void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)

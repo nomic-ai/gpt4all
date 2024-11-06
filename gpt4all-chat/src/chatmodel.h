@@ -76,6 +76,7 @@ struct ChatItem
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
     Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments)
     Q_PROPERTY(QString promptPlusAttachments READ promptPlusAttachments)
+    Q_PROPERTY(bool isError MEMBER isError)
     // DataLake properties
     Q_PROPERTY(QString newResponse MEMBER newResponse)
     Q_PROPERTY(bool stopped MEMBER stopped)
@@ -141,6 +142,7 @@ public:
     bool stopped = false;
     bool thumbsUpState = false;
     bool thumbsDownState = false;
+    bool isError = false; // used by assistant messages
 };
 Q_DECLARE_METATYPE(ChatItem)
 
@@ -161,6 +163,7 @@ class ChatModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(bool hasError READ hasError NOTIFY hasErrorChanged)
 
 public:
     explicit ChatModel(QObject *parent = nullptr)
@@ -177,7 +180,8 @@ public:
         ThumbsDownStateRole,
         SourcesRole,
         ConsolidatedSourcesRole,
-        PromptAttachmentsRole
+        PromptAttachmentsRole,
+        IsErrorRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -215,6 +219,8 @@ public:
                 return QVariant::fromValue(item.consolidatedSources);
             case PromptAttachmentsRole:
                 return QVariant::fromValue(item.promptAttachments);
+            case IsErrorRole:
+                return item.type() == ChatItem::Type::Response && item.isError;
         }
 
         return QVariant();
@@ -233,6 +239,7 @@ public:
         roles[SourcesRole] = "sources";
         roles[ConsolidatedSourcesRole] = "consolidatedSources";
         roles[PromptAttachmentsRole] = "promptAttachments";
+        roles[IsErrorRole] = "isError";
         return roles;
     }
 
@@ -240,9 +247,14 @@ public:
     {
         ChatItem item(ChatItem::prompt_tag, value, attachments);
 
-        m_mutex.lock();
-        const qsizetype count = m_chatItems.count();
-        m_mutex.unlock();
+        qsizetype count;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (hasErrorUnlocked())
+                throw std::logic_error("cannot append to a failed chat");
+            count = m_chatItems.count();
+        }
+
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
@@ -254,9 +266,14 @@ public:
 
     void appendResponse()
     {
-        m_mutex.lock();
-        const qsizetype count = m_chatItems.count();
-        m_mutex.unlock();
+        qsizetype count;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (hasErrorUnlocked())
+                throw std::logic_error("cannot append to a failed chat");
+            count = m_chatItems.count();
+        }
+
         ChatItem item(ChatItem::response_tag);
         beginInsertRows(QModelIndex(), count, count);
         {
@@ -280,8 +297,10 @@ public:
         qsizetype nNewItems = history.size() + 1;
         qsizetype endIndex  = startIndex + nNewItems;
         beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
+        bool hadError;
         {
             QMutexLocker locker(&m_mutex);
+            hadError = hasErrorUnlocked();
             m_chatItems.reserve(m_chatItems.size() + nNewItems);
             for (auto &item : history)
                 m_chatItems << item;
@@ -289,6 +308,9 @@ public:
         }
         endInsertRows();
         emit countChanged();
+        // Server can add messages when there is an error because each call is a new conversation
+        if (hadError)
+            emit hasErrorChanged(false);
     }
 
     Q_INVOKABLE void clear()
@@ -447,9 +469,30 @@ public:
         if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
     }
 
+    Q_INVOKABLE void setError(bool value = true)
+    {
+        qsizetype index;
+        {
+            QMutexLocker locker(&m_mutex);
+
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1].type() != ChatItem::Type::Response)
+                throw std::logic_error("can only set error on a chat that ends with a response");
+
+            index = m_chatItems.count() - 1;
+            auto &last = m_chatItems.back();
+            if (last.isError == value)
+                return; // already set
+            last.isError = value;
+        }
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsErrorRole});
+        emit hasErrorChanged(value);
+    }
+
     qsizetype count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
     ChatModelAccessor chatItems() const { return {m_mutex, std::as_const(m_chatItems)}; }
+
+    bool hasError() const { QMutexLocker locker(&m_mutex); return hasErrorUnlocked(); }
 
     bool serialize(QDataStream &stream, int version) const
     {
@@ -467,6 +510,9 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
+            if (version >= 11 && c.type() == ChatItem::Type::Response) {
+                stream << c.isError;
+            }
             if (version >= 8) {
                 stream << c.sources.size();
                 for (const ResultInfo &info : c.sources) {
@@ -534,6 +580,7 @@ public:
     {
         int size;
         stream >> size;
+        bool hasError = false;
         for (int i = 0; i < size; ++i) {
             ChatItem c;
             // FIXME: see comment in serialization about id
@@ -551,6 +598,9 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
+            if (version >= 11 && c.type() == ChatItem::Type::Response) {
+                stream >> c.isError;
+            }
             if (version >= 8) {
                 qsizetype count;
                 stream >> count;
@@ -674,16 +724,30 @@ public:
             {
                 QMutexLocker locker(&m_mutex);
                 m_chatItems.append(c);
+                if (i == size - 1)
+                    hasError = hasErrorUnlocked();
             }
             endInsertRows();
         }
         emit countChanged();
+        if (hasError)
+            emit hasErrorChanged(true);
         return stream.status() == QDataStream::Ok;
     }
 
 Q_SIGNALS:
     void countChanged();
     void valueChanged(int index, const QString &value);
+    void hasErrorChanged(bool value);
+
+private:
+    bool hasErrorUnlocked() const
+    {
+        if (m_chatItems.isEmpty())
+            return false;
+        auto &last = m_chatItems.back();
+        return last.type() == ChatItem::Type::Response && last.isError;
+    }
 
 private:
     mutable QMutex m_mutex;
