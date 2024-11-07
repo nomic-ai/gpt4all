@@ -245,8 +245,6 @@ public:
 
     void appendPrompt(const QString &value, const QList<PromptAttachment> &attachments = {})
     {
-        ChatItem item(ChatItem::prompt_tag, value, attachments);
-
         qsizetype count;
         {
             QMutexLocker locker(&m_mutex);
@@ -258,7 +256,7 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.append(item);
+            m_chatItems.emplace_back(ChatItem::prompt_tag, value, attachments);
         }
         endInsertRows();
         emit countChanged();
@@ -274,11 +272,10 @@ public:
             count = m_chatItems.count();
         }
 
-        ChatItem item(ChatItem::response_tag);
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.append(item);
+            m_chatItems.emplace_back(ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
