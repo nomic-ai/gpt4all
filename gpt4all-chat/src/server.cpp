@@ -656,7 +656,9 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
     }
 
     emit requestResetResponseState(); // blocks
-    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+    qsizetype prevMsgIndex = m_chatModel->count() - 1;
+    if (prevMsgIndex >= 0)
+        m_chatModel->updateCurrentResponse(prevMsgIndex, false);
 
     // NB: this resets the context, regardless of whether this model is already loaded
     if (!loadModel(modelInfo)) {
@@ -666,7 +668,7 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
 
     // add prompt/response items to GUI
     m_chatModel->appendPrompt(request.prompt);
-    m_chatModel->appendResponse();
+    m_chatModel->appendResponse(prevMsgIndex + 1);
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {
@@ -775,7 +777,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
         switch (message.role) {
             case System:    chatItems.emplace_back(ChatItem::system_tag, message.content); break;
             case User:      chatItems.emplace_back(ChatItem::prompt_tag, message.content); break;
-            case Assistant: chatItems.emplace_back(ChatItem::response_tag, /*currentResponse*/ false); break;
+            case Assistant: chatItems.emplace_back(ChatItem::response_tag, /*promptIndex*/ -1, /*currentResponse*/ false); break;
         }
     }
     m_chatModel->appendResponseWithHistory(chatItems);

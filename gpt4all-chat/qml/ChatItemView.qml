@@ -40,7 +40,7 @@ GridLayout {
                 to: 360
                 duration: 1000
                 loops: Animation.Infinite
-                running: currentResponse && currentChat.responseInProgress
+                running: isCurrentResponse && currentChat.responseInProgress
             }
         }
     }
@@ -73,7 +73,7 @@ GridLayout {
                 color: theme.mutedTextColor
             }
             RowLayout {
-                visible: currentResponse && (value === "" && currentChat.responseInProgress)
+                visible: isCurrentResponse && (value === "" && currentChat.responseInProgress)
                 Text {
                     color: theme.mutedTextColor
                     font.pixelSize: theme.fontSizeLarger
@@ -154,7 +154,7 @@ GridLayout {
             focus: false
             readOnly: true
             font.pixelSize: theme.fontSizeLarge
-            cursorVisible: currentResponse ? currentChat.responseInProgress : false
+            cursorVisible: isCurrentResponse ? currentChat.responseInProgress : false
             cursorPosition: text.length
             TapHandler {
                 id: tapHandler
@@ -181,12 +181,12 @@ GridLayout {
             }
 
             onLinkActivated: function(link) {
-                if (!currentResponse || !currentChat.responseInProgress)
+                if (!isCurrentResponse || !currentChat.responseInProgress)
                     Qt.openUrlExternally(link)
             }
 
             onLinkHovered: function (link) {
-                if (!currentResponse || !currentChat.responseInProgress)
+                if (!isCurrentResponse || !currentChat.responseInProgress)
                     statusBar.externalHoveredLink = link
             }
 
@@ -285,7 +285,7 @@ GridLayout {
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: 15
             visible: name === "Response: " &&
-                     (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
+                     (!isCurrentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
             spacing: 10
 
             Item {
@@ -357,7 +357,7 @@ GridLayout {
                 return false
             if (!MySettings.localDocsShowReferences)
                 return false
-            if (currentResponse && currentChat.responseInProgress
+            if (isCurrentResponse && currentChat.responseInProgress
                     && currentChat.responseState !== Chat.GeneratingQuestions )
                 return false
             return true
@@ -443,7 +443,7 @@ GridLayout {
                 return false
             if (!MySettings.localDocsShowReferences)
                 return false
-            if (currentResponse && currentChat.responseInProgress
+            if (isCurrentResponse && currentChat.responseInProgress
                     && currentChat.responseState !== Chat.GeneratingQuestions )
                 return false
             return true
@@ -567,7 +567,7 @@ GridLayout {
     }
 
     function shouldShowSuggestions() {
-        if (!currentResponse)
+        if (!isCurrentResponse)
             return false;
         if (MySettings.suggestionMode === 2) // Off
             return false;

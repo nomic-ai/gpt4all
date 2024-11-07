@@ -766,17 +766,22 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
     if (!enabledCollections.isEmpty()) {
-        QString query;
+        std::optional<std::pair<int, QString>> query;
         {
+            // Find the prompt that represents the query. Server chats are flexible and may not have one.
             auto items = m_chatModel->chatItems(); // holds lock
-            Q_ASSERT(items.size() > 1);
-            auto prompt = items.end()[-2];
-            Q_ASSERT(prompt.name == "Prompt: "_L1);
-            query = prompt.value;
+            Q_ASSERT(!items.empty());
+            if (auto &response = items.back(); response.peerIndex >= 0) {
+                Q_ASSERT(response.peerIndex < items.size());
+                query = {response.peerIndex, items[response.peerIndex].value};
+            }
         }
-        emit requestRetrieveFromDB(enabledCollections, query, retrievalSize, &databaseResults); // blocks
-        m_chatModel->updateSources(databaseResults);
-        emit databaseResultsChanged(databaseResults);
+        if (query) {
+            auto &[promptIndex, queryStr] = *query;
+            emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
+            m_chatModel->updateSources(promptIndex, databaseResults);
+            emit databaseResultsChanged(databaseResults);
+        }
     }
 
     // copy messages for safety (since we can't hold the lock the whole time)
