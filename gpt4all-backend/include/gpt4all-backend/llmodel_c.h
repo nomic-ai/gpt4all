@@ -187,7 +187,6 @@ uint64_t llmodel_state_set_data(llmodel_model model, const uint8_t *state, uint6
  * @param prompt_callback A callback function for handling the processing of prompt.
  * @param response_callback A callback function for handling the generated response.
  * @param ctx A pointer to the llmodel_prompt_context structure.
- * @param allow_context_shift Whether to allow shifting of context to make room for more input.
  * @param error A pointer to a string; will only be set on error.
  */
 bool llmodel_prompt(llmodel_model               model,
@@ -195,7 +194,6 @@ bool llmodel_prompt(llmodel_model               model,
                     llmodel_prompt_callback     prompt_callback,
                     llmodel_response_callback   response_callback,
                     llmodel_prompt_context     *ctx,
-                    bool                        allow_context_shift,
                     const char                **error);
 
 /**

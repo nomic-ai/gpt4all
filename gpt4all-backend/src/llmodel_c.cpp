@@ -130,7 +130,6 @@ bool llmodel_prompt(llmodel_model               model,
                     llmodel_prompt_callback     prompt_callback,
                     llmodel_response_callback   response_callback,
                     llmodel_prompt_context     *ctx,
-                    bool                        allow_context_shift,
                     const char                **error)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
@@ -155,7 +154,7 @@ bool llmodel_prompt(llmodel_model               model,
 
     // Call the C++ prompt method
     try {
-        wrapper->llModel->prompt(prompt, prompt_func, response_func, wrapper->promptContext, allow_context_shift);
+        wrapper->llModel->prompt(prompt, prompt_func, response_func, wrapper->promptContext);
     } catch (std::exception const &e) {
         llmodel_set_error(error, e.what());
         return false;

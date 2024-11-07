@@ -158,8 +158,7 @@ public:
     virtual void prompt(std::string_view        prompt,
                         const PromptCallback   &promptCallback,
                         const ResponseCallback &responseCallback,
-                        const PromptContext    &ctx,
-                        bool                    allowContextShift = true);
+                        const PromptContext    &ctx);
 
     virtual int32_t countPromptTokens(std::string_view prompt) const;
 
@@ -252,13 +251,11 @@ protected:
 
     // prefill context with prompt
     auto decodePrompt(const PromptCallback &promptCallback,
-                      bool                  allowContextShift,
                       const PromptContext  &promptCtx,
                       std::vector<Token>    embd_inp)
         -> std::optional<int32_t>;
     // generate a response
     void generateResponse(const ResponseCallback &responseCallback,
-                          bool                    allowContextShift,
                           const PromptContext    &promptCtx,
                           int32_t                 nPast);
 

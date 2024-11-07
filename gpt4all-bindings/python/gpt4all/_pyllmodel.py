@@ -166,7 +166,6 @@ llmodel.llmodel_prompt.argtypes = [
     PromptCallback,
     ResponseCallback,
     ctypes.POINTER(LLModelPromptContext),
-    ctypes.c_bool,
     ctypes.POINTER(ctypes.c_char_p),
 ]
 
@@ -514,7 +513,6 @@ class LLModel:
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._callback_decoder(callback)),
             context,
-            True,
             ctypes.byref(err),
         ):
             s = err.value

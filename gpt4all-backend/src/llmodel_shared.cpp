@@ -8,7 +8,6 @@
 #include <iterator>
 #include <optional>
 #include <ranges>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -21,8 +20,7 @@ void LLModel::prompt(
     std::string_view        prompt,
     const PromptCallback   &promptCallback,
     const ResponseCallback &responseCallback,
-    const PromptContext    &promptCtx,
-    bool                    allowContextShift
+    const PromptContext    &promptCtx
 ) {
     if (!isModelLoaded())
         throw std::invalid_argument("Attempted to prompt an unloaded model.");
@@ -37,8 +35,8 @@ void LLModel::prompt(
     if (embd_inp.empty())
         throw std::invalid_argument("Prompt tokenized to zero tokens.");
 
-    if (auto res = decodePrompt(promptCallback, allowContextShift, promptCtx, std::move(embd_inp)))
-        generateResponse(responseCallback, allowContextShift, promptCtx, /*n_past*/ *res);
+    if (auto res = decodePrompt(promptCallback, promptCtx, std::move(embd_inp)))
+        generateResponse(responseCallback, promptCtx, /*n_past*/ *res);
 }
 
 int32_t LLModel::countPromptTokens(std::string_view prompt) const
@@ -50,23 +48,14 @@ int32_t LLModel::countPromptTokens(std::string_view prompt) const
 
 auto LLModel::decodePrompt(
     const PromptCallback &promptCallback,
-    bool                  allowContextShift,
     const PromptContext  &promptCtx,
     std::vector<Token>    embd_inp
 ) -> std::optional<int32_t>
 {
-    (void)allowContextShift;
     assert(!embd_inp.empty());
 
     int32_t nCtx = contextLength();
     int32_t n_batch = std::min(promptCtx.n_batch, LLMODEL_MAX_PROMPT_BATCH);
-
-    if (!allowContextShift && int32_t(embd_inp.size()) > nCtx) {
-        std::ostringstream ss;
-        ss << "Your message was too long and could not be processed (" << embd_inp.size() << " > " << nCtx
-           << "). Please try again with something shorter.";
-        throw std::runtime_error(ss.str());
-    }
 
     // Find the greatest n_past where the beginning of embd_inp matches the end of the token cache, starting at the
     // requested n_past.
@@ -111,7 +100,6 @@ auto LLModel::decodePrompt(
 
         // Check if the context has run out...
         if (nPast + int32_t(batch.size()) > nCtx) {
-            assert(allowContextShift);
             shiftContext(promptCtx, &nPast);
             assert(nPast + int32_t(batch.size()) <= nCtx);
         }
@@ -153,12 +141,9 @@ static std::string::size_type stringsOverlap(const std::string &s, const std::st
 
 void LLModel::generateResponse(
     const ResponseCallback &responseCallback,
-    bool                    allowContextShift,
     const PromptContext    &promptCtx,
     int32_t                 nPast
 ) {
-    assert(allowContextShift || nPast < contextLength());
-
     static const char *stopSequences[] {
         "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
     };
@@ -177,11 +162,9 @@ void LLModel::generateResponse(
         cachedTokens.push_back(new_tok.value());
         cachedResponse += new_piece;
 
-        auto accept = [this, &promptCtx, &new_tok, &nPast, allowContextShift] {
+        auto accept = [this, &promptCtx, &new_tok, &nPast] {
             // Shift context if out of space
             if (nPast >= contextLength()) {
-                (void)allowContextShift;
-                assert(allowContextShift);
                 shiftContext(promptCtx, &nPast);
                 assert(nPast < contextLength());
             }
@@ -227,12 +210,6 @@ void LLModel::generateResponse(
             // Special tokens must exactly match a stop sequence
             stop = true;
             lengthLimit = cachedResponse.size() - new_piece.size();
-        }
-
-        // Optionally stop if the context will run out
-        if (!allowContextShift && nPast + cachedTokens.size() >= contextLength()) {
-            std::cerr << "LLModel Warning: Not enough space, n_past=" << nPast << ", n_ctx=" << contextLength() << "\n";
-            stop = true;
         }
 
         // Empty the cache, up to the length limit

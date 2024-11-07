@@ -1013,8 +1013,7 @@ void ChatLLM::generateName()
             applyJinjaTemplate(forkConversation(chatNamePrompt)),
             [this](auto &&...) { return !m_stopGenerating; },
             handleResponse,
-            promptContextFromSettings(m_modelInfo),
-            /*allowContextShift*/ false
+            promptContextFromSettings(m_modelInfo)
         );
     } catch (const std::exception &e) {
         qWarning() << "ChatLLM failed to generate name:" << e.what();
@@ -1082,8 +1081,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
             applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)),
             [this](auto &&...) { return !m_stopGenerating; },
             handleResponse,
-            promptContextFromSettings(m_modelInfo),
-            /*allowContextShift*/ false
+            promptContextFromSettings(m_modelInfo)
         );
     } catch (const std::exception &e) {
         qWarning() << "ChatLLM failed to generate follow-up questions:" << e.what();

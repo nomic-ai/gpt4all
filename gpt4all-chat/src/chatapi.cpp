@@ -151,11 +151,9 @@ void ChatAPI::prompt(
     std::string_view        prompt,
     const PromptCallback   &promptCallback,
     const ResponseCallback &responseCallback,
-    const PromptContext    &promptCtx,
-    bool                    allowContextShift
+    const PromptContext    &promptCtx
 ) {
-    Q_UNUSED(promptCallback);
-    Q_UNUSED(allowContextShift);
+    Q_UNUSED(promptCallback)
 
     if (!isModelLoaded())
         throw std::invalid_argument("Attempted to prompt an unloaded model.");

@@ -69,8 +69,7 @@ public:
     void prompt(std::string_view        prompt,
                 const PromptCallback   &promptCallback,
                 const ResponseCallback &responseCallback,
-                const PromptContext    &ctx,
-                bool                    allowContextShift = true) override;
+                const PromptContext    &ctx) override;
 
     [[noreturn]]
     int32_t countPromptTokens(std::string_view prompt) const override
