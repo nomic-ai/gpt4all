@@ -198,13 +198,14 @@ public:
 
         // prompts and responses
         PeerRole,
-        SourcesRole,
-        ConsolidatedSourcesRole,
 
         // prompts
         PromptAttachmentsRole,
 
         // responses
+        // NOTE: sources are stored on the *prompts*, but in the model, they are only on the *responses*!
+        SourcesRole,
+        ConsolidatedSourcesRole,
         IsCurrentResponseRole,
         IsErrorRole,
 
@@ -233,16 +234,6 @@ public:
             return &m_chatItems.at(item.peerIndex);
         };
 
-        // nullopt -> wrong type, nullptr -> not found
-        auto getSourceItem = [this, &getPeer](const ChatItem &item) -> std::optional<const ChatItem *> {
-            switch (item.type()) {
-                using enum ChatItem::Type;
-                case Prompt:   return &item;
-                case Response: return getPeer(item);
-                default:       return std::nullopt;
-            }
-        };
-
         const ChatItem &item = m_chatItems.at(index.row());
         switch (role) {
             case NameRole:
@@ -261,24 +252,26 @@ public:
                 default:
                     return QVariant();
                 }
-            case SourcesRole:
-                if (auto sourceItem = getSourceItem(item)) {
-                    QList<ResultInfo> data;
-                    if (auto src = *sourceItem)
-                        data = src->sources;
-                    return QVariant::fromValue(data);
-                }
-                return QVariant();
-            case ConsolidatedSourcesRole:
-                if (auto sourceItem = getSourceItem(item)) {
-                    QList<ResultInfo> data;
-                    if (auto src = *sourceItem)
-                        data = src->consolidatedSources;
-                    return QVariant::fromValue(data);
-                }
-                return QVariant();
             case PromptAttachmentsRole:
                 return QVariant::fromValue(item.promptAttachments);
+            case SourcesRole:
+                {
+                    QList<ResultInfo> data;
+                    if (item.type() == ChatItem::Type::Response) {
+                        if (auto *prompt = getPeer(item))
+                            data = prompt->consolidatedSources;
+                    }
+                    return QVariant::fromValue(data);
+                }
+            case ConsolidatedSourcesRole:
+                {
+                    QList<ResultInfo> data;
+                    if (item.type() == ChatItem::Type::Response) {
+                        if (auto *prompt = getPeer(item))
+                            data = prompt->sources;
+                    }
+                    return QVariant::fromValue(data);
+                }
             case IsCurrentResponseRole:
                 return item.isCurrentResponse;
             case NewResponseRole:
@@ -302,9 +295,9 @@ public:
             { NameRole,                "name"                },
             { ValueRole,               "value"               },
             { PeerRole,                "peer"                },
+            { PromptAttachmentsRole,   "promptAttachments"   },
             { SourcesRole,             "sources"             },
             { ConsolidatedSourcesRole, "consolidatedSources" },
-            { PromptAttachmentsRole,   "promptAttachments"   },
             { IsCurrentResponseRole,   "isCurrentResponse"   },
             { IsErrorRole,             "isError"             },
             { NewResponseRole,         "newResponse"         },
@@ -505,8 +498,6 @@ public:
             promptItem.sources = sources;
             promptItem.consolidatedSources = consolidateSources(sources);
         }
-        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
-        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
         if (responseIndex >= 0) {
             emit dataChanged(createIndex(responseIndex, 0), createIndex(responseIndex, 0), {SourcesRole});
             emit dataChanged(createIndex(responseIndex, 0), createIndex(responseIndex, 0), {ConsolidatedSourcesRole});
