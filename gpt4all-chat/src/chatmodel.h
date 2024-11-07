@@ -76,8 +76,8 @@ struct ChatItem
     Q_PROPERTY(int peerIndex MEMBER peerIndex)
 
     // prompts
-    Q_PROPERTY(QList<PromptAttachment> promptAttachments     MEMBER  promptAttachments    )
-    Q_PROPERTY(QString                 promptPlusAttachments READ    promptPlusAttachments)
+    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments)
+    Q_PROPERTY(QString                 bakedPrompt       READ   bakedPrompt      )
 
     // responses
     Q_PROPERTY(bool isCurrentResponse MEMBER isCurrentResponse)
@@ -125,16 +125,23 @@ public:
         throw std::invalid_argument(fmt::format("Chat item has unknown label: {:?}", name));
     }
 
-    QString promptPlusAttachments() const
+    // used with version 0 Jinja templates
+    QString bakedPrompt() const
     {
-        if (!promptAttachments.isEmpty()) {
-            QStringList items;
-            for (auto &attached : std::as_const(promptAttachments))
-                items << attached.processedContent();
-            items << value;
-            return items.join("\n\n"_L1);
+        if (type() != Type::Prompt)
+            throw std::logic_error("bakedPrompt() called on non-prompt item");
+        QStringList parts;
+        if (!sources.isEmpty()) {
+            parts << u"### Context:\n"_s;
+            for (auto &source : std::as_const(sources))
+                parts << u"Collection: "_s << source.collection
+                      << u"\nPath: "_s     << source.path
+                      << u"\nExcerpt: "_s  << source.text << u"\n\n"_s;
         }
-        return value;
+        for (auto &attached : std::as_const(promptAttachments))
+            parts << attached.processedContent() << u"\n\n"_s;
+        parts << value;
+        return parts.join(QString());
     }
 
     // TODO: Maybe we should include the model name here as well as timestamp?

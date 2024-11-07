@@ -6,7 +6,6 @@
 
 #include <QString>
 #include <QUrl>
-#include <QtGlobal>
 
 #include <memory>
 #include <vector>
@@ -82,9 +81,9 @@ bool operator==(const JinjaMessage &a, const JinjaMessage &b)
     Q_UNREACHABLE();
 }
 
-const JinjaFieldMap<ChatItem> JinjaMessage::s_fields = {
-    { "role", [](auto &i) {
-        switch (i.type()) {
+const JinjaFieldMap<JinjaMessage> JinjaMessage::s_fields = {
+    { "role", [](auto &m) {
+        switch (m.item().type()) {
             using enum ChatItem::Type;
             case System:   return "system"sv;
             case Prompt:   return "user"sv;
@@ -92,15 +91,19 @@ const JinjaFieldMap<ChatItem> JinjaMessage::s_fields = {
         }
         Q_UNREACHABLE();
     } },
-    { "content", [](auto &i) { return i.value.toStdString(); } },
-    { "sources", [](auto &i) {
-        auto sources = i.sources | views::transform([](auto &r) {
+    { "content", [](auto &m) {
+        if (m.version() == 0 && m.item().type() == ChatItem::Type::Prompt)
+            return m.item().bakedPrompt().toStdString();
+        return m.item().value.toStdString();
+    } },
+    { "sources", [](auto &m) {
+        auto sources = m.item().sources | views::transform([](auto &r) {
             return jinja2::GenericMap([map = std::make_shared<JinjaResultInfo>(r)] { return map.get(); });
         });
         return jinja2::ValuesList(sources.begin(), sources.end());
     } },
-    { "prompt_attachments", [](auto &i) {
-        auto attachments = i.promptAttachments | views::transform([](auto &pa) {
+    { "prompt_attachments", [](auto &m) {
+        auto attachments = m.item().promptAttachments | views::transform([](auto &pa) {
             return jinja2::GenericMap([map = std::make_shared<JinjaPromptAttachment>(pa)] { return map.get(); });
         });
         return jinja2::ValuesList(attachments.begin(), attachments.end());

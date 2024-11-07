@@ -26,6 +26,8 @@
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker> // IWYU pragma: keep
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QSet>
 #include <QUrl>
 #include <QWaitCondition>
@@ -715,6 +717,21 @@ std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
     return conversation;
 }
 
+// version 0 (default): HF compatible
+// version 1: explicit LocalDocs formatting
+static uint parseJinjaTemplateVersion(QStringView tmpl)
+{
+    static uint MAX_VERSION = 1;
+    static QRegularExpression reVersion(uR"(\A{#\s+version\s+(\d+)#}\s*$)"_s, QRegularExpression::MultilineOption);
+    if (auto match = reVersion.matchView(tmpl); match.hasMatch()) {
+        uint ver = match.captured(1).toUInt();
+        if (ver > MAX_VERSION)
+            throw std::out_of_range(fmt::format("Unknown template version: {}", ver));
+        return ver;
+    }
+    return 0;
+}
+
 std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
 {
     Q_ASSERT(items.size() >= 1);
@@ -722,8 +739,11 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     auto *mySettings = MySettings::globalInstance();
     auto &model      = m_llModelInfo.model;
 
-    auto makeMap = [](const ChatItem &item) {
-        return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(item)] { return msg.get(); });
+    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
+    uint version = parseJinjaTemplateVersion(promptTemplate);
+
+    auto makeMap = [version](const ChatItem &item) {
+        return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(version, item)] { return msg.get(); });
     };
 
     std::unique_ptr<ChatItem> systemItem;
@@ -745,8 +765,6 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     };
     if (auto token = model->bosToken())
         params.emplace("bos_token", std::move(*token));
-
-    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
 
     jinja2::Template tmpl(jinjaEnv());
     auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {

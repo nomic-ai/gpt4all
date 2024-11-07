@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <QtGlobal>
+
 namespace views = std::views;
 
 
@@ -84,10 +86,12 @@ private:
 
 class JinjaMessage : public JinjaHelper<JinjaMessage> {
 public:
-    explicit JinjaMessage(const ChatItem &item) noexcept
-        : m_item(&item) {}
+    explicit JinjaMessage(uint version, const ChatItem &item) noexcept
+        : m_version(version), m_item(&item) {}
 
-    const ChatItem &value() const { return *m_item; }
+    const JinjaMessage &value  () const { return *this;     }
+    uint                version() const { return m_version; }
+    const ChatItem      &item  () const { return *m_item;   }
 
     size_t GetSize() const override { return keys().size(); }
     bool HasValue(const std::string &name) const override { return keys().contains(name); }
@@ -101,7 +105,8 @@ private:
     auto keys() const -> const std::unordered_set<std::string_view> &;
 
 private:
-    static const JinjaFieldMap<ChatItem> s_fields;
+    static const JinjaFieldMap<JinjaMessage> s_fields;
+    uint            m_version;
     const ChatItem *m_item;
 
     friend class JinjaHelper<JinjaMessage>;
