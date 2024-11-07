@@ -615,12 +615,13 @@ bool isAllSpace(R &&r)
 void ChatLLM::regenerateResponse()
 {
     Q_ASSERT(m_chatModel);
-    int responseIdx;
+    int responseIdx, promptIdx;
     {
         auto items = m_chatModel->chatItems(); // holds lock
         if (items.size() < 2 || items.back().type() != ChatItem::Type::Response)
             return;
         responseIdx = items.size() - 1;
+        promptIdx = items.back().peerIndex;
     }
 
     emit responseChanged({});
@@ -630,6 +631,8 @@ void ChatLLM::regenerateResponse()
     m_chatModel->updateThumbsUpState  (responseIdx, false);
     m_chatModel->updateThumbsDownState(responseIdx, false);
     m_chatModel->setError(false);
+    if (promptIdx >= 0)
+        m_chatModel->updateSources(promptIdx, {});
 
     prompt(m_chat->collectionList());
 }
