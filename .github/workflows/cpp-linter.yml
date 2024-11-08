@@ -40,13 +40,12 @@ jobs:
             -DLLMODEL_KOMPUTE=OFF
       - uses: cpp-linter/cpp-linter-action@v2
         id: linter
-        env:
-          with:
-            style: ''  # no clang-format
-            extensions: 'c,cpp,h,inl'
-            tidy-checks: ''  # use .clang-tidy config
-            database: gpt4all-chat/build
-            version: 18
+        with:
+          style: ''  # no clang-format
+          extensions: 'c,cpp,h,inl'
+          tidy-checks: ''  # use .clang-tidy config
+          database: gpt4all-chat/build
+          version: 18
       - name: Fail Fast
         if: steps.linter.outputs.clang-tidy-checks-failed > 0
         run: exit 1
