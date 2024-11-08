@@ -9,7 +9,6 @@ on:
 
 jobs:
   cpp-linter:
-    name: Clazy
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
