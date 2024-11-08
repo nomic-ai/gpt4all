@@ -73,6 +73,8 @@ struct ChatItem
     Q_PROPERTY(QString value MEMBER value)
 
     // prompts and responses
+    /* peerIndex is a bidirectional 1:1 link between a prompt and the response that would
+     * cite its LocalDocs sources. Optional and defaults to -1. */
     Q_PROPERTY(int peerIndex MEMBER peerIndex)
 
     // prompts
