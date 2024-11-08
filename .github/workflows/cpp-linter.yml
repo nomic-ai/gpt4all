@@ -20,7 +20,7 @@ jobs:
           wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
           sudo add-apt-repository -y 'deb http://apt.llvm.org/jammy/  llvm-toolchain-jammy-18 main'
           sudo apt-get update
-          sudo apt-get install clang-18 clang-format-18 clang-tidy-18 cmake libopengl-dev libxkbcommon-dev
+          sudo apt-get install clang-18 clang-format-18 clang-tidy-18 cmake libopengl-dev libxkbcommon-dev libxkbcommon-x11-0
       - name: Install Qt
         env:
           QT_EMAIL: ${{ secrets.QT_EMAIL }}
