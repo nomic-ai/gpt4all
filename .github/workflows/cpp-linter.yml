@@ -2,10 +2,10 @@ name: cpp-linter
 
 on:
   pull_request:
-    paths: ['**.c', '**.cpp', '**.h', '**.inl', '**CMakeLists.txt', '**.cmake']
+    paths: ['.github/workflows/cpp-linter.yml', '**.c', '**.cpp', '**.h', '**.inl', '**CMakeLists.txt', '**.cmake']
   push:
     branches: [main]
-    paths: ['**.c', '**.cpp', '**.h', '**.inl', '**CMakeLists.txt', '**.cmake']
+    paths: ['.github/workflows/cpp-linter.yml', '**.c', '**.cpp', '**.h', '**.inl', '**CMakeLists.txt', '**.cmake']
 
 jobs:
   cpp-linter:
