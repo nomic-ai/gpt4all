@@ -33,7 +33,10 @@ jobs:
         run: |
           wget 'https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.0.run'
           chmod +x qt-online-installer-linux-x64-4.8.0.run
-          ./qt-online-installer-linux-x64-4.8.0.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" install qt.qt6.680.gcc_64 qt.qt6.680.addons.qtpdf qt.qt6.680.addons.qthttpserver
+          ./qt-online-installer-linux-x64-4.8.0.run --no-force-installations --no-default-installations \
+            --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+            --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
+            qt.qt6.680.linux_gcc_64 extensions.qtpdf.680.linux_gcc_64 qt.qt6.680.addons.qthttpserver
       - name: Configure
         run: |
           sed -i '/file(DOWNLOAD/,+4 s/^/#/' CMakeLists.txt
