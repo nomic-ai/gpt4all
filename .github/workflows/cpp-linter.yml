@@ -39,7 +39,7 @@ jobs:
             qt.qt6.680.linux_gcc_64 extensions.qtpdf.680.linux_gcc_64 qt.qt6.680.addons.qthttpserver
       - name: Configure
         run: |
-          sed -i '/file(DOWNLOAD/,+4 s/^/#/' CMakeLists.txt
+          sed -i '/file(DOWNLOAD/,+4 s/^/#/' gpt4all-chat/CMakeLists.txt
           cmake -S gpt4all-chat -B gpt4all-chat/build \
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_CXX_COMPILER=clang++-18 \
