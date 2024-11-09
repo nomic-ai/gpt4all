@@ -41,6 +41,7 @@ jobs:
         run: |
           sed -i '/file(DOWNLOAD/,+4 s/^/#/' gpt4all-chat/CMakeLists.txt
           cmake -S gpt4all-chat -B gpt4all-chat/build \
+            -DCMAKE_PREFIX_PATH=~/Qt/6.8.0/gcc_64/lib/cmake \
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_CXX_COMPILER=clang++-18 \
             -DLLMODEL_CUDA=OFF \
