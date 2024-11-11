@@ -304,6 +304,8 @@ class GPT4All:
         model_path: str | os.PathLike[str] | None = None,
         allow_download: bool = True,
         verbose: bool = False,
+        proxies: dict = None,
+        verify_ssl: bool = True,
     ) -> ConfigType:
         """
         Find model file, and if it doesn't exist, download the model.
@@ -314,17 +316,21 @@ class GPT4All:
                 ~/.cache/gpt4all/.
             allow_download: Allow API to download model from gpt4all.io. Default is True.
             verbose: If True (default), print debug messages.
+            proxies: A dictionary of proxies to be used for remote calls.
+            verify_ssl: If true, verify SSL certificates.  Defaults to true.
 
         Returns:
             Model config.
         """
 
         model_filename = append_extension_if_missing(model_name)
+        if proxies is None:
+            proxies = {}
 
         # get the config for the model
         config: ConfigType = {}
         if allow_download:
-            available_models = cls.list_models()
+            available_models = cls.list_models(proxies=proxies, verify_ssl=verify_ssl)
 
             for m in available_models:
                 if model_filename == m["filename"]:
