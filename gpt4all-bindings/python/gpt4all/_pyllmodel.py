@@ -158,9 +158,10 @@ llmodel.llmodel_required_mem.restype = ctypes.c_size_t
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
 
-PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_bool)
-ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
-EmbCancelCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_char_p)
+PromptCallback       = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int32), ctypes.c_size_t, ctypes.c_bool)
+ResponseCallback     = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
+EmbCancelCallback    = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_char_p)
+SpecialTokenCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p, ctypes.c_char_p)
 
 llmodel.llmodel_prompt.argtypes = [
     ctypes.c_void_p,
@@ -222,6 +223,9 @@ llmodel.llmodel_model_gpu_device_name.restype = ctypes.c_char_p
 
 llmodel.llmodel_count_prompt_tokens.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p)]
 llmodel.llmodel_count_prompt_tokens.restype = ctypes.c_int32
+
+llmodel.llmodel_model_foreach_special_token.argtypes = [ctypes.c_void_p, SpecialTokenCallback]
+llmodel.llmodel_model_foreach_special_token.restype = None
 
 ResponseCallbackType = Callable[[int, str], bool]
 RawResponseCallbackType = Callable[[int, bytes], bool]
@@ -286,6 +290,10 @@ class LLModel:
 
             raise RuntimeError(f"Unable to instantiate model: {errmsg}")
         self.model: ctypes.c_void_p | None = model
+        self.special_tokens_map: dict[str, str] = {}
+        llmodel.llmodel_model_foreach_special_token(
+            self.model, lambda n, t: self.special_tokens_map.__setitem__(n.decode(), t.decode()),
+        )
 
     def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):

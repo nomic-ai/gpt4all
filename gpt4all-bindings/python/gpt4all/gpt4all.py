@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Iterator, Literal, NamedTuple, 
 
 import jinja2
 import requests
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
@@ -34,8 +35,7 @@ DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 ConfigType: TypeAlias = "dict[str, Any]"
 
-_jinja_env = jinja2.Environment(
-    loader=jinja2.BaseLoader(),
+_jinja_env = ImmutableSandboxedEnvironment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
@@ -554,10 +554,16 @@ class GPT4All:
         last_msg_rendered = prompt
         if self._chat_session is not None:
             session = self._chat_session
+            def render(messages: list[MessageType]) -> str:
+                return session.template.render(
+                    messages=messages,
+                    add_generation_prompt=True,
+                    **self.model.special_tokens_map,
+                )
             session.history.append(MessageType(role="user", content=prompt))
-            prompt = session.template.render(messages=session.history)
+            prompt = render(session.history)
             if len(session.history) > 1:
-                last_msg_rendered = session.template.render(messages=session.history[-1:])
+                last_msg_rendered = render(session.history[-1:])
 
         # Check request length
         last_msg_len = self.model.count_prompt_tokens(last_msg_rendered)

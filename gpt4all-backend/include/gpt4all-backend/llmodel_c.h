@@ -86,6 +86,8 @@ typedef bool (*llmodel_response_callback)(token_t token_id, const char *response
  */
 typedef bool (*llmodel_emb_cancel_callback)(unsigned *batch_sizes, unsigned n_batch, const char *backend);
 
+typedef void (*llmodel_special_token_callback)(const char *name, const char *token);
+
 /**
  * Create a llmodel instance.
  * Recognises correct model type from file at model_path
@@ -307,6 +309,8 @@ const char *llmodel_model_backend_name(llmodel_model model);
 const char *llmodel_model_gpu_device_name(llmodel_model model);
 
 int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, const char **error);
+
+void llmodel_model_foreach_special_token(llmodel_model model, llmodel_special_token_callback callback);
 
 #ifdef __cplusplus
 }

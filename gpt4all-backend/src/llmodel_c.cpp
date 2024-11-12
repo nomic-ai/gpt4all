@@ -311,3 +311,10 @@ int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, con
         return -1;
     }
 }
+
+void llmodel_model_foreach_special_token(llmodel_model model, llmodel_special_token_callback callback)
+{
+    auto *wrapper = static_cast<const LLModelWrapper *>(model);
+    for (auto &[name, token] : wrapper->llModel->specialTokens())
+        callback(name.c_str(), token.c_str());
+}
