@@ -4,15 +4,17 @@ Python only API for running all GPT4All models.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import platform
 import re
 import sys
 import warnings
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, Literal, NamedTuple, Protocol, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Iterable, Iterator, Literal, NamedTuple, NoReturn, Protocol, TypedDict, overload
 
 import jinja2
 import requests
@@ -22,7 +24,7 @@ from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
 from ._pyllmodel import (CancellationError as CancellationError, EmbCancelCallbackType, EmbedResult as EmbedResult,
-                         LLModel, ResponseCallbackType, empty_response_callback)
+                         LLModel, ResponseCallbackType, _operator_call, empty_response_callback)
 
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
@@ -35,10 +37,23 @@ DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 ConfigType: TypeAlias = "dict[str, Any]"
 
-_jinja_env = ImmutableSandboxedEnvironment(
-    trim_blocks=True,
-    lstrip_blocks=True,
-)
+# Environment setup adapted from HF transformers
+@_operator_call
+def _jinja_env() -> ImmutableSandboxedEnvironment:
+    def raise_exception(message: str) -> NoReturn:
+        raise jinja2.exceptions.TemplateError(message)
+
+    def tojson(obj: Any, indent: int | None = None) -> str:
+        return json.dumps(obj, ensure_ascii=False, indent=indent)
+
+    def strftime_now(fmt: str) -> str:
+        return datetime.now().strftime(fmt)
+
+    env = ImmutableSandboxedEnvironment(trim_blocks=True, lstrip_blocks=True)
+    env.filters["tojson"         ] = tojson
+    env.globals["raise_exception"] = raise_exception
+    env.globals["strftime_now"   ] = strftime_now
+    return env
 
 
 class MessageType(TypedDict):

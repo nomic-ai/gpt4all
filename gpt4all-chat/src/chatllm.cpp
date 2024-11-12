@@ -35,14 +35,18 @@
 #include <QtLogging>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <ctime>
 #include <exception>
+#include <iomanip>
 #include <limits>
 #include <optional>
 #include <ranges>
 #include <regex>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
@@ -58,14 +62,33 @@ namespace ranges = std::ranges;
 // NOTE: not threadsafe
 static jinja2::TemplateEnv *jinjaEnv()
 {
-    static std::optional<jinja2::TemplateEnv> env;
-    if (!env) {
-        auto &e = env.emplace();
-        auto &settings = e.GetSettings();
+    static std::optional<jinja2::TemplateEnv> environment;
+    if (!environment) {
+        auto &env = environment.emplace();
+        auto &settings = env.GetSettings();
         settings.trimBlocks = true;
         settings.lstripBlocks = true;
+        env.AddGlobal("raise_exception", jinja2::UserCallable(
+            /*callable*/ [](auto &params) -> jinja2::Value {
+                auto &message = params.args.at("message").asString();
+                throw std::runtime_error(fmt::format("Jinja template error: {}", message));
+            },
+            /*argsInfo*/ { jinja2::ArgInfo("message", /*isMandatory*/ true) }
+        ));
+        env.AddGlobal("strftime_now", jinja2::UserCallable(
+            /*callable*/ [](auto &params) -> jinja2::Value {
+                using Clock = std::chrono::system_clock;
+                auto &format = params.args.at("format").asString();
+                time_t nowUnix = Clock::to_time_t(Clock::now());
+                auto localDate = *std::localtime(&nowUnix);
+                std::ostringstream ss;
+                ss << std::put_time(&localDate, format.c_str());
+                return ss.str();
+            },
+            /*argsInfo*/ { jinja2::ArgInfo("format", /*isMandatory*/ true) }
+        ));
     }
-    return &*env;
+    return &*environment;
 }
 
 class LLModelStore {
