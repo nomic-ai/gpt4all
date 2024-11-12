@@ -306,7 +306,7 @@ const char *llmodel_model_backend_name(llmodel_model model);
  */
 const char *llmodel_model_gpu_device_name(llmodel_model model);
 
-int32_t llmodel_count_prompt_tokens(const llmodel_model model, const char *prompt, const char **error);
+int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, const char **error);
 
 #ifdef __cplusplus
 }

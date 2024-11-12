@@ -12,7 +12,7 @@ import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Protocol, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Iterable, Iterator, Literal, NamedTuple, Protocol, TypedDict, overload
 
 import jinja2
 import requests
@@ -44,6 +44,11 @@ _jinja_env = jinja2.Environment(
 class MessageType(TypedDict):
     role: str
     content: str
+
+
+class ChatSession(NamedTuple):
+    template: jinja2.Template
+    history: list[MessageType]
 
 
 class Embed4All:
@@ -213,8 +218,7 @@ class GPT4All:
         """
 
         self.model_type = model_type
-        self._history: list[MessageType] | None = None
-        self._current_prompt_template: jinja2.Template | None = None
+        self._chat_session: ChatSession | None = None
 
         device_init = None
         if sys.platform == "darwin":
@@ -273,13 +277,13 @@ class GPT4All:
 
     @property
     def current_chat_session(self) -> list[MessageType] | None:
-        return self._history
+        return None if self._chat_session is None else self._chat_session.history
 
     @current_chat_session.setter
     def current_chat_session(self, history: list[MessageType]) -> None:
-        if self._history is None:
+        if self._chat_session is None:
             raise ValueError("current_chat_session may only be set when there is an active chat session")
-        self._history = history
+        self._chat_session.history[:] = history
 
     @staticmethod
     def list_models() -> list[ConfigType]:
@@ -547,13 +551,15 @@ class GPT4All:
             full_response += response
             return callback(token_id, response)
 
-        if self._history is not None:
-            self._history.append(MessageType(role="user", content=prompt))
-            prompt = self._current_prompt_template.render(messages=self._history)
+        last_msg_rendered = prompt
+        if self._chat_session is not None:
+            session = self._chat_session
+            session.history.append(MessageType(role="user", content=prompt))
+            prompt = session.template.render(messages=session.history)
+            if len(session.history) > 1:
+                last_msg_rendered = session.template.render(messages=session.history[-1:])
 
         # Check request length
-        last_msg_rendered = (self._current_prompt_template.render(messages=self._history[-1])
-                             if len(self._history) > 1 else conversation)
         last_msg_len = self.model.count_prompt_tokens(last_msg_rendered)
         if last_msg_len > (limit := self.model.n_ctx - 4):
             raise ValueError(f"Your message was too long and could not be processed ({last_msg_len} > {limit}).")
@@ -562,13 +568,13 @@ class GPT4All:
         if streaming:
             def stream() -> Iterator[str]:
                 yield from self.model.prompt_model_streaming(prompt, _callback_wrapper, **generate_kwargs)
-                if self._history is not None:
-                    self._history.append(MessageType(role="assistant", content=full_response))
+                if self._chat_session is not None:
+                    self._chat_session.history.append(MessageType(role="assistant", content=full_response))
             return stream()
 
         self.model.prompt_model(prompt, _callback_wrapper, **generate_kwargs)
-        if self._history is not None:
-            self._history.append(MessageType(role="assistant", content=full_response))
+        if self._chat_session is not None:
+            self._chat_session.history.append(MessageType(role="assistant", content=full_response))
         return full_response
 
     @contextmanager
@@ -593,15 +599,17 @@ class GPT4All:
                 raise ValueError("For sideloaded models or with allow_download=False, you must specify a prompt template.")
             prompt_template = tmpl
 
-        self._history = []
+        history = []
         if system_prompt is not False:
-            self._history.append(MessageType(role="system", content=system_prompt))
-        self._current_prompt_template = _jinja_env.from_string(prompt_template)
+            history.append(MessageType(role="system", content=system_prompt))
+        self._chat_session = ChatSession(
+            template=_jinja_env.from_string(prompt_template),
+            history=history,
+        )
         try:
             yield self
         finally:
-            self._history = None
-            self._current_prompt_template = None
+            self._chat_session = None
 
     @staticmethod
     def list_gpus() -> list[str]:

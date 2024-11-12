@@ -9,7 +9,7 @@ import textwrap
 import threading
 from enum import Enum
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, NoReturn, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Iterator, Literal, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -23,7 +23,9 @@ else:
     from typing import TypedDict
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing_extensions import ParamSpec, TypeAlias
+    T = TypeVar("T")
+    P = ParamSpec("P")
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
@@ -31,7 +33,7 @@ cuda_found: bool = False
 
 
 # TODO(jared): use operator.call after we drop python 3.10 support
-def _operator_call(obj, /, *args, **kwargs):
+def _operator_call(obj: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
     return obj(*args, **kwargs)
 
 
@@ -519,7 +521,7 @@ class LLModel:
             raise RuntimeError(f"prompt error: {'null' if s is None else s.decode()}")
 
     def prompt_model_streaming(
-        self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
+        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs: Any,
     ) -> Iterator[str]:
         if self.model is None:
             self._raise_closed()
@@ -539,15 +541,15 @@ class LLModel:
 
             return _generator_callback
 
-        def run_llmodel_prompt(prompt: str, prompt_template: str, callback: ResponseCallbackType, **kwargs):
-            self.prompt_model(prompt, prompt_template, callback, **kwargs)
+        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
+            self.prompt_model(prompt, callback, **kwargs)
             output_queue.put(Sentinel.TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
         # immediately
         thread = threading.Thread(
             target=run_llmodel_prompt,
-            args=(prompt, prompt_template, _generator_callback_wrapper(callback)),
+            args=(prompt, _generator_callback_wrapper(callback)),
             kwargs=kwargs,
         )
         thread.start()

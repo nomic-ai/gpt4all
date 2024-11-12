@@ -21,7 +21,6 @@ static_assert(sizeof(token_t) == sizeof(LLModel::Token));
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;
-    LLModel::PromptContext promptContext;
     ~LLModelWrapper() { delete llModel; }
 };
 
@@ -135,15 +134,17 @@ bool llmodel_prompt(llmodel_model               model,
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
     // Copy the C prompt context
-    wrapper->promptContext.n_predict      = ctx->n_predict;
-    wrapper->promptContext.top_k          = ctx->top_k;
-    wrapper->promptContext.top_p          = ctx->top_p;
-    wrapper->promptContext.min_p          = ctx->min_p;
-    wrapper->promptContext.temp           = ctx->temp;
-    wrapper->promptContext.n_batch        = ctx->n_batch;
-    wrapper->promptContext.repeat_penalty = ctx->repeat_penalty;
-    wrapper->promptContext.repeat_last_n  = ctx->repeat_last_n;
-    wrapper->promptContext.contextErase   = ctx->context_erase;
+    LLModel::PromptContext promptContext {
+        .n_predict      = ctx->n_predict,
+        .top_k          = ctx->top_k,
+        .top_p          = ctx->top_p,
+        .min_p          = ctx->min_p,
+        .temp           = ctx->temp,
+        .n_batch        = ctx->n_batch,
+        .repeat_penalty = ctx->repeat_penalty,
+        .repeat_last_n  = ctx->repeat_last_n,
+        .contextErase   = ctx->context_erase,
+    };
 
     auto prompt_func = [prompt_callback](std::span<const LLModel::Token> token_ids, bool cached) {
         return prompt_callback(token_ids.data(), token_ids.size(), cached);
@@ -154,7 +155,7 @@ bool llmodel_prompt(llmodel_model               model,
 
     // Call the C++ prompt method
     try {
-        wrapper->llModel->prompt(prompt, prompt_func, response_func, wrapper->promptContext);
+        wrapper->llModel->prompt(prompt, prompt_func, response_func, promptContext);
     } catch (std::exception const &e) {
         llmodel_set_error(error, e.what());
         return false;
@@ -300,7 +301,7 @@ const char *llmodel_model_gpu_device_name(llmodel_model model)
     return wrapper->llModel->gpuDeviceName();
 }
 
-int32_t llmodel_count_prompt_tokens(const llmodel_model model, const char *prompt, const char **error)
+int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, const char **error)
 {
     auto *wrapper = static_cast<const LLModelWrapper *>(model);
     try {
