@@ -652,11 +652,17 @@ int32_t LLamaModel::contextLength() const
     return llama_n_ctx(d_ptr->ctx);
 }
 
-std::optional<std::string> LLamaModel::bosToken() const
+auto LLamaModel::specialTokens() -> std::unordered_map<std::string, std::string> const
 {
     if (!d_ptr->model)
         throw std::logic_error("model not loaded");
-    return tokenToString(llama_token_bos(d_ptr->model));
+
+    std::unordered_map<std::string, std::string> tokens;
+    if (auto id = llama_token_bos(d_ptr->model); id != LLAMA_TOKEN_NULL)
+        tokens.emplace("bos_token", tokenToString(id));
+    if (auto id = llama_token_eos(d_ptr->model); id != LLAMA_TOKEN_NULL)
+        tokens.emplace("eos_token", tokenToString(id));
+    return tokens;
 }
 
 int32_t LLamaModel::inputLength() const

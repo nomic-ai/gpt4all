@@ -766,8 +766,8 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
         { "messages",              std::move(messages) },
         { "add_generation_prompt", true                },
     };
-    if (auto token = model->bosToken())
-        params.emplace("bos_token", std::move(*token));
+    for (auto &[name, token] : model->specialTokens())
+        params.emplace(std::move(name), std::move(token));
 
     jinja2::Template tmpl(jinjaEnv());
     auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {

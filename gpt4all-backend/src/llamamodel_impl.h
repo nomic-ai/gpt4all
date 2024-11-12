@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 struct LLamaPrivate;
 struct EmbModelSpec;
@@ -49,7 +50,7 @@ public:
                size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
     int32_t contextLength() const override;
-    std::optional<std::string> bosToken() const override;
+    auto specialTokens() -> std::unordered_map<std::string, std::string> const override;
 
 protected:
     std::vector<Token> tokenize(std::string_view str) const override;

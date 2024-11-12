@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 class QNetworkAccessManager;
@@ -89,8 +90,8 @@ public:
     int32_t contextLength() const override
     { throwNotImplemented(); }
 
-    std::optional<std::string> bosToken() const override
-    { return std::nullopt; }
+    auto specialTokens() -> std::unordered_map<std::string, std::string> const override
+    { return {}; }
 
 Q_SIGNALS:
     void request(const QString &apiKey, const QByteArray &array);
