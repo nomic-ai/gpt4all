@@ -218,7 +218,7 @@ private:
     int     m_repeatPenaltyTokens     = 64;
     QString m_promptTemplate;
     QString m_systemPrompt;
-    QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
+    QString m_chatNamePrompt          = "Describe the above conversation in three words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
 };
