@@ -8,6 +8,7 @@
 #include "localdocsmodel.h"
 #include "modellist.h"
 #include "mysettings.h"
+#include "utils.h"
 
 #include <gpt4all-backend/llmodel.h>
 
@@ -192,11 +193,14 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
         return false;
     }
 
+    auto *currentChat = ChatListModel::globalInstance()->currentChat();
+    Q_ASSERT(currentChat);
+    auto modelInfo = currentChat->modelInfo();
+
     Q_ASSERT(doc.isObject());
-    Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
+    object.insert("agent_id", modelInfo.filename());
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -204,8 +208,9 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
-    QString promptTemplate = ChatListModel::globalInstance()->currentChat()->modelInfo().promptTemplate();
-    object.insert("prompt_template", promptTemplate);
+    if (!modelInfo.id().isNull())
+        if (auto tmpl = modelInfo.chatTemplate().asModern())
+            object.insert("chat_template"_L1, *tmpl);
 
     QJsonDocument newDoc;
     newDoc.setObject(object);
@@ -358,7 +363,8 @@ void Network::sendStartup()
 
 void Network::trackChatEvent(const QString &ev, QVariantMap props)
 {
-    const auto &curChat = ChatListModel::globalInstance()->currentChat();
+    auto *curChat = ChatListModel::globalInstance()->currentChat();
+    Q_ASSERT(curChat);
     if (!props.contains("model"))
         props.insert("model", curChat->modelInfo().filename());
     props.insert("device_backend", curChat->deviceBackend());
@@ -366,7 +372,7 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
     props.insert("doc_collections_enabled", curChat->collectionList().count());
     props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
     props.insert("datalake_active", MySettings::globalInstance()->networkIsActive());
-    props.insert("using_server", ChatListModel::globalInstance()->currentChat()->isServer());
+    props.insert("using_server", curChat->isServer());
     trackEvent(ev, props);
 }
 

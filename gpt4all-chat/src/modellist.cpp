@@ -316,26 +316,14 @@ void ModelInfo::setRepeatPenaltyTokens(int t)
     m_repeatPenaltyTokens = t;
 }
 
-QString ModelInfo::promptTemplate() const
+auto ModelInfo::chatTemplate() const -> UpgradeableSetting
 {
-    return MySettings::globalInstance()->modelPromptTemplate(*this);
+    return MySettings::globalInstance()->modelChatTemplate(*this);
 }
 
-void ModelInfo::setPromptTemplate(const QString &t)
+auto ModelInfo::systemMessage() const -> UpgradeableSetting
 {
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelPromptTemplate(*this, t, true /*force*/);
-    m_promptTemplate = t;
-}
-
-QString ModelInfo::systemPrompt() const
-{
-    return MySettings::globalInstance()->modelSystemPrompt(*this);
-}
-
-void ModelInfo::setSystemPrompt(const QString &p)
-{
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPrompt(*this, p, true /*force*/);
-    m_systemPrompt = p;
+    return MySettings::globalInstance()->modelSystemMessage(*this);
 }
 
 QString ModelInfo::chatNamePrompt() const
@@ -360,6 +348,7 @@ void ModelInfo::setSuggestedFollowUpPrompt(const QString &p)
     m_suggestedFollowUpPrompt = p;
 }
 
+// FIXME(jared): this should not be used for model settings that have meaningful defaults, such as temperature
 bool ModelInfo::shouldSaveMetadata() const
 {
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
@@ -368,30 +357,30 @@ bool ModelInfo::shouldSaveMetadata() const
 QVariantMap ModelInfo::getFields() const
 {
     return {
-        { "filename",            m_filename },
-        { "description",         m_description },
-        { "url",                 m_url },
-        { "quant",               m_quant },
-        { "type",                m_type },
-        { "isClone",             m_isClone },
-        { "isDiscovered",        m_isDiscovered },
-        { "likes",               m_likes },
-        { "downloads",           m_downloads },
-        { "recency",             m_recency },
-        { "temperature",         m_temperature },
-        { "topP",                m_topP },
-        { "minP",                m_minP },
-        { "topK",                m_topK },
-        { "maxLength",           m_maxLength },
-        { "promptBatchSize",     m_promptBatchSize },
-        { "contextLength",       m_contextLength },
-        { "gpuLayers",           m_gpuLayers },
-        { "repeatPenalty",       m_repeatPenalty },
-        { "repeatPenaltyTokens", m_repeatPenaltyTokens },
-        { "promptTemplate",      m_promptTemplate },
-        { "systemPrompt",        m_systemPrompt },
-        { "chatNamePrompt",      m_chatNamePrompt },
-        { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
+        { u"filename"_s,                m_filename                },
+        { u"description"_s,             m_description             },
+        { u"url"_s,                     m_url                     },
+        { u"quant"_s,                   m_quant                   },
+        { u"type"_s,                    m_type                    },
+        { u"isClone"_s,                 m_isClone                 },
+        { u"isDiscovered"_s,            m_isDiscovered            },
+        { u"likes"_s,                   m_likes                   },
+        { u"downloads"_s,               m_downloads               },
+        { u"recency"_s,                 m_recency                 },
+        { u"temperature"_s,             m_temperature             },
+        { u"topP"_s,                    m_topP                    },
+        { u"minP"_s,                    m_minP                    },
+        { u"topK"_s,                    m_topK                    },
+        { u"maxLength"_s,               m_maxLength               },
+        { u"promptBatchSize"_s,         m_promptBatchSize         },
+        { u"contextLength"_s,           m_contextLength           },
+        { u"gpuLayers"_s,               m_gpuLayers               },
+        { u"repeatPenalty"_s,           m_repeatPenalty           },
+        { u"repeatPenaltyTokens"_s,     m_repeatPenaltyTokens     },
+        { u"chatTemplate"_s,            m_chatTemplate            },
+        { u"systemMessage"_s,           m_systemMessage           },
+        { u"chatNamePrompt"_s,          m_chatNamePrompt          },
+        { u"suggestedFollowUpPrompt"_s, m_suggestedFollowUpPrompt },
     };
 }
 
@@ -491,22 +480,24 @@ ModelList::ModelList()
     m_selectableModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
 
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson);
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings);
-    connect(MySettings::globalInstance(), &MySettings::nameChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::temperatureChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::topPChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::minPChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    auto *mySettings = MySettings::globalInstance();
+    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromDirectory );
+    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromJson      );
+    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromSettings  );
+    connect(mySettings, &MySettings::nameChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::temperatureChanged,         this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::topPChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::minPChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::topKChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::maxLengthChanged,           this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::promptBatchSizeChanged,     this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::contextLengthChanged,       this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::gpuLayersChanged,           this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::repeatPenaltyChanged,       this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::chatTemplateChanged,        this, &ModelList::maybeUpdateDataForSettings);
+    connect(mySettings, &MySettings::systemMessageChanged,       this, &ModelList::maybeUpdateDataForSettings);
+
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
@@ -776,10 +767,10 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->repeatPenalty();
         case RepeatPenaltyTokensRole:
             return info->repeatPenaltyTokens();
-        case PromptTemplateRole:
-            return info->promptTemplate();
-        case SystemPromptRole:
-            return info->systemPrompt();
+        case ChatTemplateRole:
+            return QVariant::fromValue(info->chatTemplate());
+        case SystemMessageRole:
+            return QVariant::fromValue(info->systemMessage());
         case ChatNamePromptRole:
             return info->chatNamePrompt();
         case SuggestedFollowUpPromptRole:
@@ -952,10 +943,10 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setRepeatPenalty(value.toDouble()); break;
             case RepeatPenaltyTokensRole:
                 info->setRepeatPenaltyTokens(value.toInt()); break;
-            case PromptTemplateRole:
-                info->setPromptTemplate(value.toString()); break;
-            case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
+            case ChatTemplateRole:
+                info->m_chatTemplate = value.toString(); break;
+            case SystemMessageRole:
+                info->m_systemMessage = value.toString(); break;
             case ChatNamePromptRole:
                 info->setChatNamePrompt(value.toString()); break;
             case SuggestedFollowUpPromptRole:
@@ -1080,6 +1071,20 @@ QString ModelList::clone(const ModelInfo &model)
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
+    QString chatTemplate, systemMessage;
+    if (auto tmpl = model.chatTemplate().asModern()) {
+        chatTemplate = *tmpl;
+    } else {
+        qWarning("ModelList Warning: attempted to clone model with legacy chat template");
+        return {};
+    }
+    if (auto msg = model.systemMessage().asModern()) {
+        systemMessage = *msg;
+    } else {
+        qWarning("ModelList Warning: attempted to clone model with legacy system message");
+        return {};
+    }
+
     QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, model.installed },
         { ModelList::IsCloneRole, true },
@@ -1099,8 +1104,8 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::GpuLayersRole, model.gpuLayers() },
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
-        { ModelList::PromptTemplateRole, model.promptTemplate() },
-        { ModelList::SystemPromptRole, model.systemPrompt() },
+        { ModelList::ChatTemplateRole,  chatTemplate  },
+        { ModelList::SystemMessageRole, systemMessage },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };
@@ -1125,21 +1130,23 @@ void ModelList::removeInstalled(const ModelInfo &model)
     removeInternal(model);
 }
 
+int ModelList::indexByModelId(const QString &id) const
+{
+    QMutexLocker locker(&m_mutex);
+    if (auto it = m_modelMap.find(id); it != m_modelMap.cend())
+        return m_models.indexOf(*it);
+    return -1;
+}
+
 void ModelList::removeInternal(const ModelInfo &model)
 {
-    const bool hasModel = contains(model.id());
-    Q_ASSERT(hasModel);
-    if (!hasModel) {
+    int indexOfModel = indexByModelId(model.id());
+    Q_ASSERT(indexOfModel != -1);
+    if (indexOfModel == -1) {
         qWarning() << "ERROR: model list does not contain" << model.id();
         return;
     }
 
-    int indexOfModel = 0;
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_modelMap.value(model.id());
-        indexOfModel = m_models.indexOf(info);
-    }
     beginRemoveRows(QModelIndex(), indexOfModel, indexOfModel);
     {
         QMutexLocker locker(&m_mutex);
@@ -1314,8 +1321,6 @@ void ModelList::processModelDirectory(const QString &path)
                 // The description is hard-coded into "GPT4All.ini" due to performance issue.
                 // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
                 data.append({ DescriptionRole, description });
-                // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
-                data.append({ PromptTemplateRole, "%1" });
             }
             updateData(id, data);
         }
@@ -1451,6 +1456,14 @@ void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &er
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
+void ModelList::maybeUpdateDataForSettings(const ModelInfo &info, bool fromInfo)
+{
+    // ignore updates that were *because* of a dataChanged - would cause a circular dependency
+    int idx;
+    if (!fromInfo && (idx = indexByModelId(info.id())) != -1)
+        emit dataChanged(index(idx, 0), index(idx, 0));
+}
+
 void ModelList::updateDataForSettings()
 {
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
@@ -1560,10 +1573,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             data.append({ ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble() });
         if (obj.contains("repeatPenaltyTokens"))
             data.append({ ModelList::RepeatPenaltyTokensRole, obj["repeatPenaltyTokens"].toInt() });
-        if (obj.contains("promptTemplate"))
-            data.append({ ModelList::PromptTemplateRole, obj["promptTemplate"].toString() });
-        if (obj.contains("systemPrompt"))
-            data.append({ ModelList::SystemPromptRole, obj["systemPrompt"].toString() });
+        if (auto it = obj.find("chatTemplate"_L1); it != obj.end())
+            data.append({ ModelList::ChatTemplateRole, it->toString() });
+        if (auto it = obj.find("systemMessage"_L1); it != obj.end())
+            data.append({ ModelList::SystemMessageRole, it->toString() });
         updateData(id, data);
     }
 
@@ -1755,6 +1768,9 @@ void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
     updateData(info.id(), data);
 }
 
+// FIXME(jared): This should only contain fields without reasonable defaults such as name, description, and URL.
+//               For other settings, there is no authoritative value and we should load the setting lazily like we do
+//               for any other override.
 void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
@@ -1858,14 +1874,6 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/repeatPenaltyTokens")) {
             const int repeatPenaltyTokens = settings.value(g + "/repeatPenaltyTokens").toInt();
             data.append({ ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens });
-        }
-        if (settings.contains(g + "/promptTemplate")) {
-            const QString promptTemplate = settings.value(g + "/promptTemplate").toString();
-            data.append({ ModelList::PromptTemplateRole, promptTemplate });
-        }
-        if (settings.contains(g + "/systemPrompt")) {
-            const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
-            data.append({ ModelList::SystemPromptRole, systemPrompt });
         }
         if (settings.contains(g + "/chatNamePrompt")) {
             const QString chatNamePrompt = settings.value(g + "/chatNamePrompt").toString();

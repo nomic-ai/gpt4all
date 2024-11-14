@@ -95,18 +95,22 @@ int main(int argc, char *argv[])
 
     // Set the local and language translation before the qml engine has even been started. This will
     // use the default system locale unless the user has explicitly set it to use a different one.
-    MySettings::globalInstance()->setLanguageAndLocale();
+    auto *mySettings = MySettings::globalInstance();
+    mySettings->setLanguageAndLocale();
 
     QQmlApplicationEngine engine;
 
     // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
     // engine.uiLanguage property
-    QObject::connect(MySettings::globalInstance(), &MySettings::languageAndLocaleChanged, [&engine]() {
+    QObject::connect(mySettings, &MySettings::languageAndLocaleChanged, [&engine]() {
         engine.setUiLanguage(MySettings::globalInstance()->languageAndLocale());
     });
 
-    qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", MySettings::globalInstance());
-    qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", ModelList::globalInstance());
+    auto *modelList = ModelList::globalInstance();
+    QObject::connect(modelList, &ModelList::dataChanged, mySettings, &MySettings::onModelInfoChanged);
+
+    qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", mySettings);
+    qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", modelList);
     qmlRegisterSingletonInstance("chatlistmodel", 1, 0, "ChatListModel", ChatListModel::globalInstance());
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());

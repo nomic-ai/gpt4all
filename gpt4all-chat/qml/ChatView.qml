@@ -703,7 +703,7 @@ Rectangle {
                                 if (i !== -1) {
                                     defaultModel = comboBox.valueAt(i);
                                 } else {
-                                    defaultModel = comboBox.valueAt(0);
+                                    defaultModel = comboBox.count ? comboBox.valueAt(0) : "";
                                 }
                                 if (defaultModel !== "") {
                                     defaultModelName = ModelList.modelInfo(defaultModel).name;

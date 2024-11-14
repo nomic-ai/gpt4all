@@ -1,5 +1,8 @@
 #include "mysettings.h"
 
+#include "chatllm.h"
+#include "modellist.h"
+
 #include <gpt4all-backend/llmodel.h>
 
 #include <QDebug>
@@ -29,8 +32,13 @@ static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };
 static const QStringList chatThemeNames      { "Light", "Dark", "LegacyDark" };
 static const QStringList fontSizeNames       { "Small", "Medium", "Large" };
 
-// FIXME: All of these default strings that are shown in the UI for settings need to be marked as
-// translatable
+// psuedo-enum
+namespace ModelSettingsKey { namespace {
+    auto ChatTemplate   = "chatTemplate"_L1;
+    auto PromptTemplate = "promptTemplate"_L1; // legacy
+    auto SystemMessage  = "systemMessage"_L1;
+    auto SystemPrompt   = "systemPrompt"_L1;   // legacy
+} } // namespace ModelSettingsKey::(anonymous)
 
 namespace defaults {
 
@@ -146,6 +154,11 @@ static QStringList getUiLanguages(const QString &modelPath)
     return languageList;
 }
 
+static QString modelSettingName(const ModelInfo &info, const QString &name)
+{
+    return u"model-%1/%2"_s.arg(info.id(), name);
+}
+
 class MyPrivateSettings: public MySettings { };
 Q_GLOBAL_STATIC(MyPrivateSettings, settingsInstance)
 MySettings *MySettings::globalInstance()
@@ -159,6 +172,34 @@ MySettings::MySettings()
     , m_embeddingsDeviceList(getDevices(/*skipKompute*/ true))
     , m_uiLanguages(getUiLanguages(modelPath()))
 {
+}
+
+QVariant MySettings::checkJinjaTemplateError(const QString &tmpl)
+{
+    if (auto err = ChatLLM::checkJinjaTemplateError(tmpl.toStdString()))
+        return QString::fromStdString(*err);
+    return QVariant::fromValue(nullptr);
+}
+
+// Unset settings come from ModelInfo. Listen for changes so we can emit our own setting-specific signals.
+void MySettings::onModelInfoChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
+{
+    auto settingChanged = [&](const auto &info, auto role, const auto &name) {
+        return (roles.isEmpty() || roles.contains(role)) && !m_settings.contains(modelSettingName(info, name));
+    };
+
+    auto &modelList = dynamic_cast<const ModelList &>(*QObject::sender());
+    for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
+        using enum ModelList::Roles;
+        using namespace ModelSettingsKey;
+        auto index = topLeft.siblingAtRow(row);
+        if (auto info = modelList.modelInfo(index.data(IdRole).toString()); !info.id().isNull()) {
+            if (settingChanged(info, ChatTemplateRole, ChatTemplate))
+                emit chatTemplateChanged(info, /*fromInfo*/ true);
+            if (settingChanged(info, SystemMessageRole, SystemMessage))
+                emit systemMessageChanged(info, /*fromInfo*/ true);
+        }
+    }
 }
 
 QVariant MySettings::getBasicSetting(const QString &name) const
@@ -193,8 +234,8 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
     setModelGpuLayers(info, info.m_gpuLayers);
     setModelRepeatPenalty(info, info.m_repeatPenalty);
     setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
-    setModelPromptTemplate(info, info.m_promptTemplate);
-    setModelSystemPrompt(info, info.m_systemPrompt);
+    resetModelChatTemplate (info);
+    resetModelSystemMessage(info);
     setModelChatNamePrompt(info, info.m_chatNamePrompt);
     setModelSuggestedFollowUpPrompt(info, info.m_suggestedFollowUpPrompt);
 }
@@ -250,11 +291,6 @@ void MySettings::setModelName(const ModelInfo &info, const QString &value, bool 
         emit nameChanged(info);
 }
 
-static QString modelSettingName(const ModelInfo &info, const QString &name)
-{
-    return u"model-%1/%2"_s.arg(info.id(), name);
-}
-
 QVariant MySettings::getModelSetting(const QString &name, const ModelInfo &info) const
 {
     return m_settings.value(modelSettingName(info, name), info.getFields().value(name));
@@ -295,10 +331,28 @@ int       MySettings::modelContextLength          (const ModelInfo &info) const 
 int       MySettings::modelGpuLayers              (const ModelInfo &info) const { return getModelSetting("gpuLayers",               info).toInt(); }
 double    MySettings::modelRepeatPenalty          (const ModelInfo &info) const { return getModelSetting("repeatPenalty",           info).toDouble(); }
 int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens",     info).toInt(); }
-QString   MySettings::modelPromptTemplate         (const ModelInfo &info) const { return getModelSetting("promptTemplate",          info).toString(); }
-QString   MySettings::modelSystemPrompt           (const ModelInfo &info) const { return getModelSetting("systemPrompt",            info).toString(); }
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
+
+auto MySettings::modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting
+{
+    using namespace ModelSettingsKey;
+    auto value = m_settings.value(modelSettingName(info, PromptTemplate));
+    if (value.typeId() == QMetaType::QString)
+        return {true, value.toString()};
+
+    return {false, getModelSetting(ChatTemplate, info).toString()};
+}
+
+auto MySettings::modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting
+{
+    using namespace ModelSettingsKey;
+    auto value = m_settings.value(modelSettingName(info, SystemPrompt));
+    if (value.typeId() == QMetaType::QString)
+        return {true, value.toString()};
+
+    return {false, getModelSetting(SystemMessage, info).toString()};
+}
 
 void MySettings::setModelFilename(const ModelInfo &info, const QString &value, bool force)
 {
@@ -400,14 +454,69 @@ void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &info, int value, b
     setModelSetting("repeatPenaltyTokens", info, value, force, true);
 }
 
-void MySettings::setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force)
+void MySettings::setModelChatTemplate(const ModelInfo &info, const QString &value)
 {
-    setModelSetting("promptTemplate", info, value, force, true);
+    using namespace ModelSettingsKey;
+    if (info.id().isEmpty())
+        return qWarning("%s: got null model", Q_FUNC_INFO);
+
+    auto promptKey = modelSettingName(info, PromptTemplate);
+    auto chatKey   = modelSettingName(info, ChatTemplate);
+    if (m_settings.contains(promptKey))
+        m_settings.remove(promptKey);
+    m_settings.setValue(chatKey, value);
+    emit chatTemplateChanged(info);
 }
 
-void MySettings::setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force)
+void MySettings::resetModelChatTemplate(const ModelInfo &info)
 {
-    setModelSetting("systemPrompt", info, value, force, true);
+    using namespace ModelSettingsKey;
+    auto promptKey = modelSettingName(info, PromptTemplate);
+    auto chatKey   = modelSettingName(info, ChatTemplate  );
+    auto oldValue  = modelChatTemplate(info);
+    bool changed   = false;
+    if (m_settings.contains(promptKey)) {
+        m_settings.remove(promptKey);
+        changed = true;
+    }
+    if (m_settings.contains(chatKey)) {
+        m_settings.remove(chatKey);
+        changed = true;
+    }
+    if (changed && modelChatTemplate(info) != oldValue)
+        emit chatTemplateChanged(info);
+}
+
+void MySettings::setModelSystemMessage(const ModelInfo &info, const QString &value)
+{
+    using namespace ModelSettingsKey;
+    if (info.id().isEmpty())
+        return qWarning("%s: got null model", Q_FUNC_INFO);
+
+    auto promptKey  = modelSettingName(info, SystemPrompt);
+    auto messageKey = modelSettingName(info, SystemMessage);
+    if (m_settings.contains(promptKey))
+        m_settings.remove(promptKey);
+    m_settings.setValue(messageKey, value);
+    emit systemMessageChanged(info);
+}
+
+void MySettings::resetModelSystemMessage(const ModelInfo &info)
+{
+    using namespace ModelSettingsKey;
+    auto promptKey  = modelSettingName(info, SystemPrompt );
+    auto messageKey = modelSettingName(info, SystemMessage);
+    bool changed = false;
+    if (m_settings.contains(promptKey)) {
+        m_settings.remove(promptKey);
+        changed = true;
+    }
+    if (m_settings.contains(messageKey)) {
+        m_settings.remove(messageKey);
+        changed = true;
+    }
+    if (changed)
+        emit systemMessageChanged(info);
 }
 
 void MySettings::setModelChatNamePrompt(const ModelInfo &info, const QString &value, bool force)

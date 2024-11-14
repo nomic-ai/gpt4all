@@ -153,8 +153,10 @@ public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
 
-    void destroy();
     static void destroyStore();
+    static std::optional<std::string> checkJinjaTemplateError(const std::string &source);
+
+    void destroy();
     bool isModelLoaded() const;
     void regenerateResponse();
 

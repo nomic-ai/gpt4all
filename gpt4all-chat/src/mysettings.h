@@ -4,6 +4,8 @@
 #include "modellist.h" // IWYU pragma: keep
 
 #include <QDateTime>
+#include <QList>
+#include <QModelIndex>
 #include <QObject>
 #include <QSettings>
 #include <QString>
@@ -74,8 +76,17 @@ class MySettings : public QObject
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
     Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
 
+private:
+    explicit MySettings();
+    ~MySettings() override = default;
+
+public Q_SLOTS:
+    void onModelInfoChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles = {});
+
 public:
     static MySettings *globalInstance();
+
+    Q_INVOKABLE static QVariant checkJinjaTemplateError(const QString &tmpl);
 
     // Restore methods
     Q_INVOKABLE void restoreModelDefaults(const ModelInfo &info);
@@ -124,10 +135,12 @@ public:
     Q_INVOKABLE void setModelRepeatPenalty(const ModelInfo &info, double value, bool force = false);
     int modelRepeatPenaltyTokens(const ModelInfo &info) const;
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
-    QString modelPromptTemplate(const ModelInfo &info) const;
-    Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
-    QString modelSystemPrompt(const ModelInfo &info) const;
-    Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
+    auto modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting;
+    Q_INVOKABLE void setModelChatTemplate(const ModelInfo &info, const QString &value);
+    void resetModelChatTemplate(const ModelInfo &info);
+    auto modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting;
+    Q_INVOKABLE void setModelSystemMessage(const ModelInfo &info, const QString &value);
+    void resetModelSystemMessage(const ModelInfo &info);
     int modelContextLength(const ModelInfo &info) const;
     Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
     int modelGpuLayers(const ModelInfo &info) const;
@@ -212,8 +225,8 @@ Q_SIGNALS:
     void gpuLayersChanged(const ModelInfo &info);
     void repeatPenaltyChanged(const ModelInfo &info);
     void repeatPenaltyTokensChanged(const ModelInfo &info);
-    void promptTemplateChanged(const ModelInfo &info);
-    void systemPromptChanged(const ModelInfo &info);
+    void chatTemplateChanged(const ModelInfo &info, bool fromInfo = false);
+    void systemMessageChanged(const ModelInfo &info, bool fromInfo = false);
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);
     void threadCountChanged();
@@ -242,18 +255,6 @@ Q_SIGNALS:
     void languageAndLocaleChanged();
 
 private:
-    QSettings m_settings;
-    bool m_forceMetal;
-    const QStringList m_deviceList;
-    const QStringList m_embeddingsDeviceList;
-    const QStringList m_uiLanguages;
-    std::unique_ptr<QTranslator> m_translator;
-
-private:
-    explicit MySettings();
-    ~MySettings() {}
-    friend class MyPrivateSettings;
-
     QVariant getBasicSetting(const QString &name) const;
     void setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal = std::nullopt);
     int getEnumSetting(const QString &setting, const QStringList &valueNames) const;
@@ -261,6 +262,16 @@ private:
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
     QString filePathForLocale(const QLocale &locale);
+
+private:
+    QSettings m_settings;
+    bool m_forceMetal;
+    const QStringList m_deviceList;
+    const QStringList m_embeddingsDeviceList;
+    const QStringList m_uiLanguages;
+    std::unique_ptr<QTranslator> m_translator;
+
+    friend class MyPrivateSettings;
 };
 
 #endif // MYSETTINGS_H

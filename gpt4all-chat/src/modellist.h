@@ -11,6 +11,7 @@
 #include <QNetworkReply>
 #include <QObject>
 #include <QPair>
+#include <QQmlEngine>
 #include <QSortFilterProxyModel>
 #include <QSslError>
 #include <QString>
@@ -19,10 +20,31 @@
 #include <Qt>
 #include <QtGlobal>
 
+#include <optional>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
 
+
+class UpgradeableSetting {
+    Q_GADGET
+    Q_PROPERTY(bool    isLegacy MEMBER isLegacy)
+    Q_PROPERTY(QString value    MEMBER value   )
+    QML_ANONYMOUS
+
+public:
+    friend bool operator==(const UpgradeableSetting &a, const UpgradeableSetting &b)
+    { return a.isLegacy == b.isLegacy && a.value == b.value; }
+
+    std::optional<QString> asModern() const
+    {
+        if (!isLegacy) return value;
+        return std::nullopt;
+    }
+
+    bool    isLegacy;
+    QString value;
+};
 
 struct ModelInfo {
     Q_GADGET
@@ -69,8 +91,9 @@ struct ModelInfo {
     Q_PROPERTY(int maxGpuLayers READ maxGpuLayers)
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
-    Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
-    Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
+    // user-defined chat template and system message must be written through settings because of their legacy compat
+    Q_PROPERTY(UpgradeableSetting chatTemplate  READ chatTemplate )
+    Q_PROPERTY(UpgradeableSetting systemMessage READ systemMessage)
     Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
     Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
     Q_PROPERTY(int likes READ likes WRITE setLikes)
@@ -178,15 +201,16 @@ public:
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
     void setRepeatPenaltyTokens(int t);
-    QString promptTemplate() const;
-    void setPromptTemplate(const QString &t);
-    QString systemPrompt() const;
-    void setSystemPrompt(const QString &p);
+    UpgradeableSetting chatTemplate() const;
+    UpgradeableSetting systemMessage() const;
     QString chatNamePrompt() const;
     void setChatNamePrompt(const QString &p);
     QString suggestedFollowUpPrompt() const;
     void setSuggestedFollowUpPrompt(const QString &p);
 
+    // Some metadata must be saved to settings because it does not have a meaningful default from some other source.
+    // This is useful for fields such as name, description, and URL.
+    // It is true for any models that have not been installed from models.json.
     bool shouldSaveMetadata() const;
 
 private:
@@ -216,11 +240,12 @@ private:
     mutable int m_maxGpuLayers        = -1;
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
-    QString m_promptTemplate;
-    QString m_systemPrompt;
+    QString m_chatTemplate;
+    QString m_systemMessage;
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
+    friend class ModelList;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
@@ -340,8 +365,8 @@ public:
         GpuLayersRole,
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
-        PromptTemplateRole,
-        SystemPromptRole,
+        ChatTemplateRole,
+        SystemMessageRole,
         ChatNamePromptRole,
         SuggestedFollowUpPromptRole,
         MinPRole,
@@ -394,8 +419,8 @@ public:
         roles[GpuLayersRole] = "gpuLayers";
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
-        roles[PromptTemplateRole] = "promptTemplate";
-        roles[SystemPromptRole] = "systemPrompt";
+        roles[ChatTemplateRole] = "chatTemplate";
+        roles[SystemMessageRole] = "systemMessage";
         roles[ChatNamePromptRole] = "chatNamePrompt";
         roles[SuggestedFollowUpPromptRole] = "suggestedFollowUpPrompt";
         roles[LikesRole] = "likes";
@@ -485,6 +510,7 @@ private Q_SLOTS:
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
+    void maybeUpdateDataForSettings(const ModelInfo &info, bool fromInfo);
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
     void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
@@ -495,6 +521,9 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
+    // Return the index of the model with the given id, or -1 if not found.
+    int indexByModelId(const QString &id) const;
+
     void removeInternal(const ModelInfo &model);
     void clearDiscoveredModels();
     bool modelExists(const QString &fileName) const;

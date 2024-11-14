@@ -153,43 +153,73 @@ MySettingsTab {
             Layout.fillWidth: true
         }
 
-        MySettingsLabel {
-            text: qsTr("System Prompt")
-            helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
+        RowLayout {
             Layout.row: 7
-            Layout.column: 0
+            Layout.columnSpan: 2
             Layout.topMargin: 15
+            spacing: 10
+            MySettingsLabel {
+                id: systemMessageLabel
+                text: qsTr("System Message")
+                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for none.\n" +
+                               "NOTE: Since GPT4All 3.5, this should not contain framing tokens.")
+            }
+            MySettingsLabel {
+                id: systemMessageLabelHelp
+                text: qsTr("System message is not plain text.")
+                color: theme.textErrorColor
+                visible: systemMessageArea.hasError
+                wrapMode: TextArea.Wrap
+            }
         }
 
         Rectangle {
-            id: systemPrompt
+            id: systemMessage
             visible: !root.currentModelInfo.isOnline
             Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
             color: "transparent"
-            Layout.minimumHeight: Math.max(100, systemPromptArea.contentHeight + 20)
+            Layout.minimumHeight: Math.max(100, systemMessageArea.contentHeight + 20)
             MyTextArea {
-                id: systemPromptArea
+                id: systemMessageArea
                 anchors.fill: parent
-                text: root.currentModelInfo.systemPrompt
+                function resetText() {
+                    const info = root.currentModelInfo;
+                    if (info.id) {
+                        text     = info.systemMessage.value;
+                        hasError = info.systemMessage.isLegacy;
+                    } else {
+                        text     = "";
+                        hasError = false;
+                    }
+                }
+                Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onSystemPromptChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
-                    }
+                    function onSystemMessageChanged() { systemMessageArea.resetText(); }
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
-                    }
+                    function onCurrentModelInfoChanged() { systemMessageArea.resetText(); }
                 }
+                // strict validation, because setModelSystemMessage clears isLegacy
+                readonly property var reLegacyCheck: (
+                    /(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>/m
+                )
                 onTextChanged: {
-                    MySettings.setModelSystemPrompt(root.currentModelInfo, text)
+                    const info = root.currentModelInfo;
+                    if (!info.id || text == info.systemMessage.value)
+                        return; // nothing to save
+                    if (info.systemMessage.isLegacy && reLegacyCheck.test(text))
+                        return; // still looks legacy
+                    MySettings.setModelSystemMessage(info, text);
+                    hasError = false;
                 }
                 Accessible.role: Accessible.EditableText
+                Accessible.name: systemMessageLabel.text
+                Accessible.description: systemMessageLabelHelp.text
             }
         }
 
@@ -200,22 +230,22 @@ MySettingsTab {
             Layout.topMargin: 15
             spacing: 10
             MySettingsLabel {
-                id: promptTemplateLabel
-                text: qsTr("Prompt Template")
-                helpText: qsTr("The template that wraps every prompt.")
+                id: chatTemplateLabel
+                text: qsTr("Chat Template")
+                helpText: qsTr("This Jinja template turns the chat into input for the model.")
             }
-            // FIXME(jared): we should attempt to load the Jinja template here to check if it's valid
-            /* MySettingsLabel {
-                id: promptTemplateLabelHelp
-                text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
+            MySettingsLabel {
+                id: chatTemplateLabelHelp
+                // TODO(jared): provide a reset button to help the user out
+                text: templateTextArea.jinjaError ?? qsTr("Chat template is not in Jinja format.")
                 color: theme.textErrorColor
-                visible: templateTextArea.text.indexOf("%1") === -1
+                visible: templateTextArea.hasError
                 wrapMode: TextArea.Wrap
-            } */
+            }
         }
 
         Rectangle {
-            id: promptTemplate
+            id: chatTemplate
             Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 2
@@ -226,30 +256,62 @@ MySettingsTab {
             MyTextArea {
                 id: templateTextArea
                 anchors.fill: parent
-                text: root.currentModelInfo.promptTemplate
                 font: fixedFont
+                property var jinjaError: null
+                function checkJinja() {
+                    jinjaError = MySettings.checkJinjaTemplateError(text);
+                    hasError = jinjaError !== null;
+                }
+                function resetText() {
+                    const info = root.currentModelInfo;
+                    text = info.id ? info.chatTemplate.value : "";
+                    if (!info.id) {
+                        jinjaError = null;
+                        hasError = false;
+                    } else if (info.chatTemplate.isLegacy) {
+                        jinjaError = null;
+                        hasError = true;
+                    } else
+                        checkJinja();
+                }
+                Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onPromptTemplateChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
+                    function onChatTemplateChanged() {
+                        console.log("chat template changed");
+                        templateTextArea.resetText();
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
+                        console.log("model info changed");
+                        templateTextArea.resetText();
                     }
                 }
                 onTextChanged: {
-                    // FIXME(jared): see comment on promptTemplateLabelHelp
-                    if (true /*templateTextArea.text.indexOf("%1") !== -1*/) {
-                        MySettings.setModelPromptTemplate(root.currentModelInfo, text)
+                    const info = root.currentModelInfo;
+                    if (!info.id)
+                        return; // nowhere to save
+                    if (info.chatTemplate.isLegacy && (
+                        /%[12]\b/.test(text) || !/\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}/.test(text.replace(/\n/g, ''))
+                        || !/\bcontent\b/.test(text)
+                    ))
+                        return; // still looks legacy
+                    checkJinja();
+                    if (!hasError && text != info.chatTemplate.value)
+                        MySettings.setModelChatTemplate(info, text);
+                }
+                Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Tab) {
+                        const a = templateTextArea;
+                        event.accepted = true;           // suppress tab
+                        a.insert(a.cursorPosition, '    '); // four spaces
                     }
                 }
                 Accessible.role: Accessible.EditableText
-                Accessible.name: promptTemplateLabel.text
-                // FIXME(jared): see comment on promptTemplateLabelHelp
-                // Accessible.description: promptTemplateLabelHelp.text
+                Accessible.name: chatTemplateLabel.text
+                Accessible.description: chatTemplateLabelHelp.text
             }
         }
 

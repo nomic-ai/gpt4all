@@ -758,6 +758,22 @@ static uint parseJinjaTemplateVersion(QStringView tmpl)
     return 0;
 }
 
+static auto loadJinjaTemplate(
+    std::optional<jinja2::Template> &tmpl /*out*/, const std::string &source
+) -> jinja2::Result<void>
+{
+    tmpl.emplace(jinjaEnv());
+    return tmpl->Load(source);
+}
+
+std::optional<std::string> ChatLLM::checkJinjaTemplateError(const std::string &source)
+{
+    std::optional<jinja2::Template> tmpl;
+    if (auto res = loadJinjaTemplate(tmpl, source); !res)
+        return res.error().ToString();
+    return std::nullopt;
+}
+
 std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
 {
     Q_ASSERT(items.size() >= 1);
@@ -765,21 +781,31 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     auto *mySettings = MySettings::globalInstance();
     auto &model      = m_llModelInfo.model;
 
-    auto promptTemplate = mySettings->modelPromptTemplate(m_modelInfo);
-    uint version = parseJinjaTemplateVersion(promptTemplate);
+    QString chatTemplate, systemMessage;
+    if (auto tmpl = mySettings->modelChatTemplate(m_modelInfo).asModern()) {
+        chatTemplate = *tmpl;
+    } else {
+        throw std::logic_error("cannot apply Jinja to a legacy prompt template");
+    }
+    if (auto tmpl = mySettings->modelSystemMessage(m_modelInfo).asModern()) {
+        systemMessage = *tmpl;
+    } else {
+        throw std::logic_error("cannot apply Jinja with a legacy system message");
+    }
+
+    uint version = parseJinjaTemplateVersion(chatTemplate);
 
     auto makeMap = [version](const ChatItem &item) {
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(version, item)] { return msg.get(); });
     };
 
     std::unique_ptr<ChatItem> systemItem;
-    QString systemPrompt = mySettings->modelSystemPrompt(m_modelInfo);
-    bool useSystem = !isAllSpace(systemPrompt);
+    bool useSystem = !isAllSpace(systemMessage);
 
     jinja2::ValuesList messages;
     messages.reserve(useSystem + items.size());
     if (useSystem) {
-        systemItem = std::make_unique<ChatItem>(ChatItem::system_tag, systemPrompt);
+        systemItem = std::make_unique<ChatItem>(ChatItem::system_tag, systemMessage);
         messages.emplace_back(makeMap(*systemItem));
     }
     for (auto &item : items)
@@ -792,12 +818,11 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     for (auto &[name, token] : model->specialTokens())
         params.emplace(std::move(name), std::move(token));
 
-    jinja2::Template tmpl(jinjaEnv());
-    auto maybeRendered = tmpl.Load(promptTemplate.toUtf8()).and_then([&tmpl, &params] {
-        return tmpl.RenderAsString(params);
-    });
+    std::optional<jinja2::Template> tmpl;
+    auto maybeRendered = loadJinjaTemplate(tmpl, chatTemplate.toStdString())
+        .and_then([&] { return tmpl->RenderAsString(params); });
     if (!maybeRendered)
-        throw std::runtime_error(fmt::format("Failed to parse prompt template: {}", maybeRendered.error().ToString()));
+        throw std::runtime_error(fmt::format("Failed to parse chat template: {}", maybeRendered.error().ToString()));
     return *maybeRendered;
 }
 
