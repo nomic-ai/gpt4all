@@ -277,17 +277,11 @@ MySettingsTab {
                 Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onChatTemplateChanged() {
-                        console.log("chat template changed");
-                        templateTextArea.resetText();
-                    }
+                    function onChatTemplateChanged() { templateTextArea.resetText(); }
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() {
-                        console.log("model info changed");
-                        templateTextArea.resetText();
-                    }
+                    function onCurrentModelInfoChanged() { templateTextArea.resetText(); }
                 }
                 onTextChanged: {
                     const info = root.currentModelInfo;
