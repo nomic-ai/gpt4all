@@ -316,9 +316,19 @@ void ModelInfo::setRepeatPenaltyTokens(int t)
     m_repeatPenaltyTokens = t;
 }
 
+QString ModelInfo::defaultChatTemplate() const
+{
+    return m_chatTemplate;
+}
+
 auto ModelInfo::chatTemplate() const -> UpgradeableSetting
 {
     return MySettings::globalInstance()->modelChatTemplate(*this);
+}
+
+QString ModelInfo::defaultSystemMessage() const
+{
+    return m_systemMessage;
 }
 
 auto ModelInfo::systemMessage() const -> UpgradeableSetting

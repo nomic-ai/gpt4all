@@ -92,8 +92,10 @@ struct ModelInfo {
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     // user-defined chat template and system message must be written through settings because of their legacy compat
-    Q_PROPERTY(UpgradeableSetting chatTemplate  READ chatTemplate )
-    Q_PROPERTY(UpgradeableSetting systemMessage READ systemMessage)
+    Q_PROPERTY(QString            defaultChatTemplate  READ defaultChatTemplate )
+    Q_PROPERTY(UpgradeableSetting chatTemplate         READ chatTemplate        )
+    Q_PROPERTY(QString            defaultSystemMessage READ defaultSystemMessage)
+    Q_PROPERTY(UpgradeableSetting systemMessage        READ systemMessage       )
     Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
     Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
     Q_PROPERTY(int likes READ likes WRITE setLikes)
@@ -201,7 +203,9 @@ public:
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
     void setRepeatPenaltyTokens(int t);
+    QString defaultChatTemplate() const;
     UpgradeableSetting chatTemplate() const;
+    QString defaultSystemMessage() const;
     UpgradeableSetting systemMessage() const;
     QString chatNamePrompt() const;
     void setChatNamePrompt(const QString &p);

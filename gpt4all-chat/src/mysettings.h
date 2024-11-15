@@ -137,10 +137,10 @@ public:
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
     auto modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting;
     Q_INVOKABLE void setModelChatTemplate(const ModelInfo &info, const QString &value);
-    void resetModelChatTemplate(const ModelInfo &info);
+    Q_INVOKABLE void resetModelChatTemplate(const ModelInfo &info);
     auto modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting;
     Q_INVOKABLE void setModelSystemMessage(const ModelInfo &info, const QString &value);
-    void resetModelSystemMessage(const ModelInfo &info);
+    Q_INVOKABLE void resetModelSystemMessage(const ModelInfo &info);
     int modelContextLength(const ModelInfo &info) const;
     Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
     int modelGpuLayers(const ModelInfo &info) const;

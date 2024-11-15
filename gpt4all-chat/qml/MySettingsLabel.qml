@@ -17,13 +17,41 @@ ColumnLayout {
     property alias color: mainTextLabel.color
     property alias linkColor: mainTextLabel.linkColor
 
-    Label {
-        id: mainTextLabel
-        color: theme.settingsTitleTextColor
-        font.pixelSize: theme.fontSizeLarger
-        font.bold: true
-        onLinkActivated: function(link) {
-            root.linkActivated(link);
+    property var onReset: null
+    property alias canReset: resetButton.enabled
+
+    Item {
+        anchors.margins: 5
+        width: childrenRect.width
+        height: mainTextLabel.contentHeight
+
+        Label {
+            id: mainTextLabel
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            color: theme.settingsTitleTextColor
+            font.pixelSize: theme.fontSizeLarger
+            font.bold: true
+            verticalAlignment: Text.AlignVCenter
+            onLinkActivated: function(link) {
+                root.linkActivated(link);
+            }
+        }
+
+        MySettingsButton {
+            id: resetButton
+            anchors.baseline: mainTextLabel.baseline
+            anchors.left: mainTextLabel.right
+            height: mainTextLabel.contentHeight
+            anchors.leftMargin: 10
+            padding: 2
+            leftPadding: 10
+            rightPadding: 10
+            backgroundRadius: 5
+            text: qsTr("Reset")
+            visible: root.onReset !== null
+            onClicked: root.onReset()
         }
     }
     Label {

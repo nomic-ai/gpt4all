@@ -161,14 +161,28 @@ MySettingsTab {
             MySettingsLabel {
                 id: systemMessageLabel
                 text: qsTr("System Message")
-                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for none.\n" +
+                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for none. " +
                                "NOTE: Since GPT4All 3.5, this should not contain framing tokens.")
+                onReset: () => MySettings.resetModelSystemMessage(root.currentModelInfo)
+                function update() {
+                    const info = root.currentModelInfo;
+                    canReset = !!info.id && (info.systemMessage.isLegacy || systemMessageArea.text != info.defaultSystemMessage);
+                }
+                Component.onCompleted: update()
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() { update(); }
+                }
             }
-            MySettingsLabel {
+            Label {
                 id: systemMessageLabelHelp
+                visible: systemMessageArea.hasError
+                Layout.alignment: Qt.AlignBottom
+                Layout.rightMargin: 5
                 text: qsTr("System message is not plain text.")
                 color: theme.textErrorColor
-                visible: systemMessageArea.hasError
+                font.pixelSize: theme.fontSizeLarger
+                font.bold: true
                 wrapMode: TextArea.Wrap
             }
         }
@@ -208,6 +222,7 @@ MySettingsTab {
                     /(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>/m
                 )
                 onTextChanged: {
+                    systemMessageLabel.update();
                     const info = root.currentModelInfo;
                     if (!info.id || text == info.systemMessage.value)
                         return; // nothing to save
@@ -224,7 +239,6 @@ MySettingsTab {
 
         RowLayout {
             Layout.row: 9
-            Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
             spacing: 10
@@ -232,13 +246,27 @@ MySettingsTab {
                 id: chatTemplateLabel
                 text: qsTr("Chat Template")
                 helpText: qsTr("This Jinja template turns the chat into input for the model.")
+                onReset: () => MySettings.resetModelChatTemplate(root.currentModelInfo)
+                function update() {
+                    // TODO: do not offer reset if there is no default
+                    const info = root.currentModelInfo;
+                    canReset = !!info.id && (info.chatTemplate.isLegacy || templateTextArea.text != info.defaultChatTemplate);
+                }
+                Component.onCompleted: update()
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() { update(); }
+                }
             }
-            MySettingsLabel {
+            Label {
                 id: chatTemplateLabelHelp
-                // TODO(jared): provide a reset button to help the user out
+                visible: templateTextArea.hasError
+                Layout.alignment: Qt.AlignBottom
+                Layout.rightMargin: 5
                 text: templateTextArea.jinjaError ?? qsTr("Chat template is not in Jinja format.")
                 color: theme.textErrorColor
-                visible: templateTextArea.hasError
+                font.pixelSize: theme.fontSizeLarger
+                font.bold: true
                 wrapMode: TextArea.Wrap
             }
         }
@@ -283,6 +311,7 @@ MySettingsTab {
                     function onCurrentModelInfoChanged() { templateTextArea.resetText(); }
                 }
                 onTextChanged: {
+                    chatTemplateLabel.update();
                     const info = root.currentModelInfo;
                     if (!info.id)
                         return; // nowhere to save
