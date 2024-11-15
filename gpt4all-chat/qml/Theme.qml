@@ -922,16 +922,8 @@ QtObject {
         }
     }
 
-    property color textErrorColor: {
-        switch (MySettings.chatTheme) {
-            case MySettingsEnums.ChatTheme.LegacyDark:
-                return red400
-            case MySettingsEnums.ChatTheme.Dark:
-                return red400
-            default:
-                return red400
-        }
-    }
+    readonly property color textErrorColor:   red400
+    readonly property color textWarningColor: yellow400
 
     property color settingsTitleTextColor: {
         switch (MySettings.chatTheme) {

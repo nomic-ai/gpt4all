@@ -166,7 +166,7 @@ MySettingsTab {
                 onReset: () => MySettings.resetModelSystemMessage(root.currentModelInfo)
                 function update() {
                     const info = root.currentModelInfo;
-                    canReset = !!info.id && (info.systemMessage.isLegacy || systemMessageArea.text != info.defaultSystemMessage);
+                    canReset = !!info.id && (info.systemMessage.isLegacy || systemMessageArea.text !== info.defaultSystemMessage);
                 }
                 Component.onCompleted: update()
                 Connections {
@@ -176,11 +176,11 @@ MySettingsTab {
             }
             Label {
                 id: systemMessageLabelHelp
-                visible: systemMessageArea.hasError
+                visible: systemMessageArea.errState !== "ok"
                 Layout.alignment: Qt.AlignBottom
                 Layout.rightMargin: 5
                 text: qsTr("System message is not plain text.")
-                color: theme.textErrorColor
+                color: systemMessageArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
                 wrapMode: TextArea.Wrap
@@ -200,13 +200,13 @@ MySettingsTab {
                 anchors.fill: parent
                 function resetText() {
                     const info = root.currentModelInfo;
-                    if (info.id) {
-                        text     = info.systemMessage.value;
-                        hasError = info.systemMessage.isLegacy;
-                    } else {
-                        text     = "";
-                        hasError = false;
-                    }
+                    text = info.id ? info.systemMessage.value : "";
+                    if (!info.id) {
+                        errState = "ok";
+                    } else if (info.systemMessage.isLegacy) {
+                        errState = "error";
+                    } else
+                        errState = reLegacyCheck.test(text) ? "warning" : "ok";
                 }
                 Component.onCompleted: resetText()
                 Connections {
@@ -224,12 +224,11 @@ MySettingsTab {
                 onTextChanged: {
                     systemMessageLabel.update();
                     const info = root.currentModelInfo;
-                    if (!info.id || text == info.systemMessage.value)
+                    if (!info.id || text === info.systemMessage.value)
                         return; // nothing to save
                     if (info.systemMessage.isLegacy && reLegacyCheck.test(text))
                         return; // still looks legacy
                     MySettings.setModelSystemMessage(info, text);
-                    hasError = false;
                 }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: systemMessageLabel.text
@@ -250,7 +249,7 @@ MySettingsTab {
                 function update() {
                     // TODO: do not offer reset if there is no default
                     const info = root.currentModelInfo;
-                    canReset = !!info.id && (info.chatTemplate.isLegacy || templateTextArea.text != info.defaultChatTemplate);
+                    canReset = !!info.id && (info.chatTemplate.isLegacy || templateTextArea.text !== info.defaultChatTemplate);
                 }
                 Component.onCompleted: update()
                 Connections {
@@ -260,11 +259,11 @@ MySettingsTab {
             }
             Label {
                 id: chatTemplateLabelHelp
-                visible: templateTextArea.hasError
+                visible: templateTextArea.errState !== "ok"
                 Layout.alignment: Qt.AlignBottom
                 Layout.rightMargin: 5
                 text: templateTextArea.jinjaError ?? qsTr("Chat template is not in Jinja format.")
-                color: theme.textErrorColor
+                color: templateTextArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
                 wrapMode: TextArea.Wrap
@@ -287,17 +286,19 @@ MySettingsTab {
                 property var jinjaError: null
                 function checkJinja() {
                     jinjaError = MySettings.checkJinjaTemplateError(text);
-                    hasError = jinjaError !== null;
+                    errState = jinjaError !== null ? "error"   :
+                               legacyCheck()       ? "warning" :
+                                                     "ok";
                 }
                 function resetText() {
                     const info = root.currentModelInfo;
                     text = info.id ? info.chatTemplate.value : "";
                     if (!info.id) {
                         jinjaError = null;
-                        hasError = false;
+                        errState = "ok";
                     } else if (info.chatTemplate.isLegacy) {
                         jinjaError = null;
-                        hasError = true;
+                        errState = "error";
                     } else
                         checkJinja();
                 }
@@ -310,18 +311,19 @@ MySettingsTab {
                     target: root
                     function onCurrentModelInfoChanged() { templateTextArea.resetText(); }
                 }
+                function legacyCheck() {
+                    return /%[12]\b/.test(text) || !/\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}/.test(text.replace(/\n/g, ''))
+                        || !/\bcontent\b/.test(text);
+                }
                 onTextChanged: {
                     chatTemplateLabel.update();
                     const info = root.currentModelInfo;
                     if (!info.id)
                         return; // nowhere to save
-                    if (info.chatTemplate.isLegacy && (
-                        /%[12]\b/.test(text) || !/\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}/.test(text.replace(/\n/g, ''))
-                        || !/\bcontent\b/.test(text)
-                    ))
+                    if (info.chatTemplate.isLegacy && legacyCheck())
                         return; // still looks legacy
                     checkJinja();
-                    if (!hasError && text != info.chatTemplate.value)
+                    if (errState !== "error" && text !== info.chatTemplate.value)
                         MySettings.setModelChatTemplate(info, text);
                 }
                 Keys.onPressed: event => {

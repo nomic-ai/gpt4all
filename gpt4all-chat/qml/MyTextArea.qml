@@ -6,7 +6,7 @@ import QtQuick.Controls.Basic
 TextArea {
     id: myTextArea
 
-    property bool hasError: false
+    property string errState: "ok"  // one of "ok", "error", "warning"
 
     color: enabled ? theme.textColor : theme.mutedTextColor
     placeholderTextColor: theme.mutedTextColor
@@ -14,8 +14,14 @@ TextArea {
     background: Rectangle {
         implicitWidth: 150
         color: theme.controlBackground
-        border.width: myTextArea.hasError ? 2 : 1
-        border.color: myTextArea.hasError ? theme.textErrorColor : theme.controlBorder
+        border.width: errState === "ok" ? 1 : 2
+        border.color: {
+            switch (errState) {
+                case "ok":      return theme.controlBorder;
+                case "warning": return theme.textWarningColor;
+                case "error":   return theme.textErrorColor;
+            }
+        }
         radius: 10
     }
     padding: 10
