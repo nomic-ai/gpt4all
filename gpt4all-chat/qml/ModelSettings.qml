@@ -175,7 +175,6 @@ MySettingsTab {
 
         Rectangle {
             id: systemMessage
-            visible: !root.currentModelInfo.isOnline
             Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
