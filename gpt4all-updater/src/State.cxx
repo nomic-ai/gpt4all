@@ -6,6 +6,7 @@
     #include "Embedded.h"
 #endif
 
+#include <QStandardPaths>
 
 using namespace gpt4all::state;
 
@@ -21,7 +22,7 @@ void Gpt4AllState::driveOffline()
     // if(this->checkForExistingInstall())
     //     this->removeCurrentInstallation();
 #if defined(Q_OS_WINDOWS)
-    this->installer = new QString(QDir::tempPath() + "gpt4all-installer.exe");
+    this->installer = new QFile(QDir::tempPath() + "gpt4all-installer.exe");
     gpt4all::resource::WinInstallerResources::extractAndInstall(installer);
 #elif defined(Q_OS_DARWIN)
     QString installer(QDir::tempPath() + "gpt4all-installer.dmg");

@@ -42,6 +42,7 @@ endif()
 
 if(NOT BUILD_OFFLINE_UPDATER)
     configure_file(src/Download.cxx.in ${CMAKE_BINARY_DIR}/Download.cxx @ONLY)
+    set(ONLINE_SOURCES ${CMAKE_BINARY_DIR}/Download.cxx)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network)
@@ -51,7 +52,6 @@ set(auto_updater_sources
     src/CommandFactory.cxx
     src/CommandLine.cxx
     src/Downgrade.cxx
-    ${CMAKE_BINARY_DIR}/Download.cxx
     src/Manifest.cxx
     src/Modify.cxx
     src/Package.cxx
@@ -60,6 +60,7 @@ set(auto_updater_sources
     src/Update.cxx
     src/utils.cxx
     src/main.cxx
+    ${ONLINE_SOURCES}
     ${ASSEMBLER_SOURCES}
     ${RC_FILES}
 )

@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include <QCoreApplication>
+#include <QFile>
 
 namespace gpt4all {
 namespace resource {
@@ -12,7 +13,7 @@ namespace resource {
 class WinInstallerResources : public QObject
 {
 public:
-    static int extractAndInstall();
-}
+    static int extractAndInstall(QFile *installerPath);
+};
 }
 }

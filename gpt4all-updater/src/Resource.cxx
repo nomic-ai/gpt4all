@@ -1,6 +1,7 @@
 #include "Resource.h"
 
-using namespace gpt4all::resource
+using namespace Qt::Literals::StringLiterals;
+using namespace gpt4all::resource;
 
 
 int WinInstallerResources::extractAndInstall(QFile *installerPath)
@@ -27,9 +28,9 @@ int WinInstallerResources::extractAndInstall(QFile *installerPath)
         const QString error
             = u"ERROR: Could not open temp file: %1 %2"_s.arg(installerPath->fileName());
         qWarning() << error;
-        return nullptr;
+        return -1;
     }
     const char* installerdat = (const char*)resource;
-    installerPath.write(installerdat);
-    installerPath.close();
+    installerPath->write(installerdat);
+    installerPath->close();
 }
