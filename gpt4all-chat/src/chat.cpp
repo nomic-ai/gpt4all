@@ -65,7 +65,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
@@ -75,6 +75,8 @@ void Chat::connectLLM()
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
+
+    connect(ModelList::globalInstance(), &ModelList::modelInfoChanged, this, &Chat::handleModelInfoChanged);
 }
 
 void Chat::reset()
@@ -363,7 +365,16 @@ void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
     m_needsSave = true;
 }
 
+// we need to notify listeners of the modelInfo property when its properties are updated,
+// since it's a gadget and can't do that on its own
 void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
+{
+    if (!m_modelInfo.id().isNull() && modelInfo.id() == m_modelInfo.id())
+        emit modelInfoChanged();
+}
+
+// react if a new model is loaded
+void Chat::handleModelChanged(const ModelInfo &modelInfo)
 {
     if (m_modelInfo == modelInfo)
         return;

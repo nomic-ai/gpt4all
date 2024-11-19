@@ -508,6 +508,8 @@ ModelList::ModelList()
     connect(mySettings, &MySettings::chatTemplateChanged,        this, &ModelList::maybeUpdateDataForSettings);
     connect(mySettings, &MySettings::systemMessageChanged,       this, &ModelList::maybeUpdateDataForSettings);
 
+    connect(this, &ModelList::dataChanged, this, &ModelList::onDataChanged);
+
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
@@ -515,6 +517,18 @@ ModelList::ModelList()
     updateModelsFromDirectory();
 
     QCoreApplication::instance()->installEventFilter(this);
+}
+
+// an easier way to listen for model info and setting changes
+void ModelList::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
+{
+    Q_UNUSED(roles)
+    for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
+        auto index = topLeft.siblingAtRow(row);
+        auto id = index.data(ModelList::IdRole).toString();
+        if (auto info = modelInfo(id); !info.id().isNull())
+            emit modelInfoChanged(info);
+    }
 }
 
 QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
@@ -1470,13 +1484,16 @@ void ModelList::maybeUpdateDataForSettings(const ModelInfo &info, bool fromInfo)
 {
     // ignore updates that were *because* of a dataChanged - would cause a circular dependency
     int idx;
-    if (!fromInfo && (idx = indexByModelId(info.id())) != -1)
+    if (!fromInfo && (idx = indexByModelId(info.id())) != -1) {
         emit dataChanged(index(idx, 0), index(idx, 0));
+        emit selectableModelListChanged();
+    }
 }
 
 void ModelList::updateDataForSettings()
 {
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
+    emit selectableModelListChanged();
 }
 
 void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)

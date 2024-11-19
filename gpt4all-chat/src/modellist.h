@@ -505,11 +505,13 @@ Q_SIGNALS:
     void discoverSortChanged();
     void discoverProgressChanged();
     void discoverInProgressChanged();
+    void modelInfoChanged(const ModelInfo &info);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev) override;
 
 private Q_SLOTS:
+    void onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
     void resortModel();
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
