@@ -202,7 +202,7 @@ static int32_t get_arch_key_u32(std::string const &modelPath, std::string const 
         if (keyidx != -1) {
             value = gguf_get_val_u32(ctx, keyidx);
         } else {
-            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
+            std::cerr << __func__ << ": " << key << " not found in " << modelPath << "\n";
         }
     }
 
