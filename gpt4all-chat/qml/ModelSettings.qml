@@ -161,17 +161,24 @@ MySettingsTab {
             MySettingsLabel {
                 id: systemMessageLabel
                 text: qsTr("System Message")
-                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for none. " +
-                               "NOTE: Since GPT4All 3.5, this should not contain framing tokens.")
+                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for " +
+                               "none. NOTE: Since GPT4All 3.5, this should not contain framing tokens.")
                 onReset: () => MySettings.resetModelSystemMessage(root.currentModelInfo)
-                function update() {
+                function updateResetButton() {
                     const info = root.currentModelInfo;
-                    canReset = !!info.id && (info.systemMessage.isLegacy || systemMessageArea.text !== info.defaultSystemMessage);
+                    // NOTE: checks if the *override* is set, regardless of whether there is a default
+                    canReset = !!info.id && MySettings.isModelSystemMessageSet(info);
+                    resetClears = !info.defaultSystemMessage;
                 }
-                Component.onCompleted: update()
+                Component.onCompleted: updateResetButton()
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() { update(); }
+                    function onCurrentModelIdChanged() { systemMessageLabel.updateResetButton(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onSystemMessageChanged(info)
+                    { if (info.id === root.currentModelId) systemMessageLabel.updateResetButton(); }
                 }
             }
             Label {
@@ -198,37 +205,38 @@ MySettingsTab {
             MyTextArea {
                 id: systemMessageArea
                 anchors.fill: parent
+                property bool isBeingReset: false
                 function resetText() {
                     const info = root.currentModelInfo;
-                    text = info.id ? info.systemMessage.value : "";
-                    if (!info.id) {
-                        errState = "ok";
-                    } else if (info.systemMessage.isLegacy) {
-                        errState = "error";
-                    } else
-                        errState = reLegacyCheck.test(text) ? "warning" : "ok";
+                    isBeingReset = true;
+                    text = (info.id ? info.systemMessage.value : null) ?? "";
+                    isBeingReset = false;
                 }
                 Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onSystemMessageChanged() { systemMessageArea.resetText(); }
+                    function onSystemMessageChanged(info)
+                    { if (info.id === root.currentModelId) systemMessageArea.resetText(); }
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() { systemMessageArea.resetText(); }
+                    function onCurrentModelIdChanged() { systemMessageArea.resetText(); }
                 }
                 // strict validation, because setModelSystemMessage clears isLegacy
                 readonly property var reLegacyCheck: (
                     /(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>/m
                 )
                 onTextChanged: {
-                    systemMessageLabel.update();
                     const info = root.currentModelInfo;
-                    if (!info.id || text === info.systemMessage.value)
-                        return; // nothing to save
-                    if (info.systemMessage.isLegacy && reLegacyCheck.test(text))
-                        return; // still looks legacy
-                    MySettings.setModelSystemMessage(info, text);
+                    if (!info.id) {
+                        errState = "ok";
+                    } else if (info.systemMessage.isLegacy && (isBeingReset || reLegacyCheck.test(text))) {
+                        errState = "error";
+                    } else
+                        errState = reLegacyCheck.test(text) ? "warning" : "ok";
+                    if (info.id && errState !== "error" && !isBeingReset)
+                        MySettings.setModelSystemMessage(info, text);
+                    systemMessageLabel.updateResetButton();
                 }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: systemMessageLabel.text
@@ -245,16 +253,27 @@ MySettingsTab {
                 id: chatTemplateLabel
                 text: qsTr("Chat Template")
                 helpText: qsTr("This Jinja template turns the chat into input for the model.")
-                onReset: () => MySettings.resetModelChatTemplate(root.currentModelInfo)
-                function update() {
-                    // TODO: do not offer reset if there is no default
-                    const info = root.currentModelInfo;
-                    canReset = !!info.id && (info.chatTemplate.isLegacy || templateTextArea.text !== info.defaultChatTemplate);
+                onReset: () => {
+                    MySettings.resetModelChatTemplate(root.currentModelInfo);
+                    templateTextArea.resetText();
                 }
-                Component.onCompleted: update()
+                function updateResetButton() {
+                    const info = root.currentModelInfo;
+                    canReset = !!info.id && (
+                        MySettings.isModelChatTemplateSet(info)
+                        || templateTextArea.text !== (info.chatTemplate.value ?? "")
+                    );
+                    resetClears = !info.defaultChatTemplate;
+                }
+                Component.onCompleted: updateResetButton()
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() { update(); }
+                    function onCurrentModelIdChanged() { chatTemplateLabel.updateResetButton(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onChatTemplateChanged(info)
+                    { if (info.id === root.currentModelId) chatTemplateLabel.updateResetButton(); }
                 }
             }
             Label {
@@ -283,24 +302,13 @@ MySettingsTab {
                 id: templateTextArea
                 anchors.fill: parent
                 font: fixedFont
+                property bool isBeingReset: false
                 property var jinjaError: null
-                function checkJinja() {
-                    jinjaError = MySettings.checkJinjaTemplateError(text);
-                    errState = jinjaError !== null ? "error"   :
-                               legacyCheck()       ? "warning" :
-                                                     "ok";
-                }
                 function resetText() {
                     const info = root.currentModelInfo;
-                    text = info.id ? info.chatTemplate.value : "";
-                    if (!info.id) {
-                        jinjaError = null;
-                        errState = "ok";
-                    } else if (info.chatTemplate.isLegacy) {
-                        jinjaError = null;
-                        errState = "error";
-                    } else
-                        checkJinja();
+                    isBeingReset = true;
+                    text = (info.id ? info.chatTemplate.value : null) ?? "";
+                    isBeingReset = false;
                 }
                 Component.onCompleted: resetText()
                 Connections {
@@ -309,27 +317,34 @@ MySettingsTab {
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() { templateTextArea.resetText(); }
+                    function onCurrentModelIdChanged() { templateTextArea.resetText(); }
                 }
                 function legacyCheck() {
                     return /%[12]\b/.test(text) || !/\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}/.test(text.replace(/\n/g, ''))
                         || !/\bcontent\b/.test(text);
                 }
                 onTextChanged: {
-                    chatTemplateLabel.update();
                     const info = root.currentModelInfo;
-                    if (!info.id)
-                        return; // nowhere to save
-                    if (info.chatTemplate.isLegacy && legacyCheck())
-                        return; // still looks legacy
-                    checkJinja();
-                    if (errState !== "error" && text !== info.chatTemplate.value)
+                    if (!info.id) {
+                        jinjaError = null;
+                        errState = "ok";
+                    } else if (info.chatTemplate.isLegacy && (isBeingReset || legacyCheck())) {
+                        jinjaError = null;
+                        errState = "error";
+                    } else {
+                        jinjaError = MySettings.checkJinjaTemplateError(text);
+                        errState = jinjaError !== null ? "error"   :
+                                   legacyCheck()       ? "warning" :
+                                                         "ok";
+                    }
+                    if (info.id && errState !== "error" && !isBeingReset)
                         MySettings.setModelChatTemplate(info, text);
+                    chatTemplateLabel.updateResetButton();
                 }
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_Tab) {
                         const a = templateTextArea;
-                        event.accepted = true;           // suppress tab
+                        event.accepted = true;              // suppress tab
                         a.insert(a.cursorPosition, '    '); // four spaces
                     }
                 }

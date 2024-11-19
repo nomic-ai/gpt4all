@@ -19,6 +19,7 @@ ColumnLayout {
 
     property var onReset: null
     property alias canReset: resetButton.enabled
+    property bool resetClears: false
 
     Item {
         anchors.margins: 5
@@ -49,7 +50,7 @@ ColumnLayout {
             leftPadding: 10
             rightPadding: 10
             backgroundRadius: 5
-            text: qsTr("Reset")
+            text: resetClears ? qsTr("Clear") : qsTr("Reset")
             visible: root.onReset !== null
             onClicked: root.onReset()
         }

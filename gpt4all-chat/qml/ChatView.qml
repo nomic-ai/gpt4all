@@ -24,6 +24,12 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property var currentModelInfo: currentChat && currentChat.modelInfo
+    property var currentModelId: null
+    onCurrentModelInfoChanged: {
+        const newId = currentModelInfo && currentModelInfo.id;
+        if (currentModelId !== newId) { currentModelId = newId; }
+    }
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -1009,13 +1015,15 @@ Rectangle {
                 anchors.leftMargin: 30
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignVCenter
-                color: theme.mutedTextColor
-                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== ""
+                color: textInputView.error !== null ? theme.textErrorColor : theme.mutedTextColor
+                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== "" || textInputView.error !== null
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 text: {
                     if (externalHoveredLink !== "")
                         return externalHoveredLink
+                    if (textInputView.error !== null)
+                        return textInputView.error;
 
                     const segments = [currentChat.tokenSpeed];
                     const device = currentChat.device;
@@ -1062,8 +1070,8 @@ Rectangle {
             Rectangle {
                 id: textInputView
                 color: theme.controlBackground
-                border.width: 1
-                border.color: theme.controlBorder
+                border.width: error === null ? 1 : 2
+                border.color: error === null ? theme.controlBorder : theme.textErrorColor
                 radius: 10
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -1073,6 +1081,33 @@ Rectangle {
                 anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
                 height: textInputViewLayout.implicitHeight
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
+
+                property var error: null
+                function checkError() {
+                    const info = currentModelInfo;
+                    if (info === null || !info.id) {
+                        error = null;
+                    } else if (info.chatTemplate.isLegacy) {
+                        error = qsTr("Legacy prompt template needs to be updated in Settings.");
+                    } else if (!info.chatTemplate.isSet) {
+                        error = qsTr("No chat template configured.");
+                    } else if (info.systemMessage.isLegacy) {
+                        error = qsTr("Legacy system prompt needs to be updated in Settings.");
+                    } else
+                        error = null;
+                }
+                Component.onCompleted: checkError()
+                Connections {
+                    target: window
+                    function onCurrentModelIdChanged() { textInputView.checkError(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onChatTemplateChanged(info)
+                    { if (info.id === window.currentModelId) textInputView.checkError(); }
+                    function onSystemMessageChanged(info)
+                    { if (info.id === window.currentModelId) textInputView.checkError(); }
+                }
 
                 MouseArea {
                     id: textInputViewMouseArea
@@ -1200,7 +1235,7 @@ Rectangle {
                             Keys.onReturnPressed: event => {
                                 if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier) {
                                     event.accepted = false;
-                                } else if (!chatModel.hasError) {
+                                } else if (!chatModel.hasError && textInputView.error === null) {
                                     editingFinished();
                                     sendMessage();
                                 }
@@ -1321,7 +1356,7 @@ Rectangle {
                             imageWidth: theme.fontSizeLargest
                             imageHeight: theme.fontSizeLargest
                             visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
-                            enabled: !chatModel.hasError
+                            enabled: !chatModel.hasError && textInputView.error === null
                             source: "qrc:/gpt4all/icons/send_message.svg"
                             Accessible.name: qsTr("Send message")
                             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
