@@ -334,24 +334,32 @@ int       MySettings::modelRepeatPenaltyTokens    (const ModelInfo &info) const 
 QString   MySettings::modelChatNamePrompt         (const ModelInfo &info) const { return getModelSetting("chatNamePrompt",          info).toString(); }
 QString   MySettings::modelSuggestedFollowUpPrompt(const ModelInfo &info) const { return getModelSetting("suggestedFollowUpPrompt", info).toString(); }
 
+auto MySettings::getUpgradeableModelSetting(
+    const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+) const -> UpgradeableSetting
+{
+    if (info.id().isEmpty()) {
+        qWarning("%s: got null model", Q_FUNC_INFO);
+        return { false, {} };
+    }
+
+    auto value = m_settings.value(modelSettingName(info, legacyKey));
+    if (value.isValid())
+        return { true, value.toString() };
+
+    return { false, getModelSetting(newKey, info).toString() };
+}
+
 auto MySettings::modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting
 {
     using namespace ModelSettingsKey;
-    auto value = m_settings.value(modelSettingName(info, PromptTemplate));
-    if (value.typeId() == QMetaType::QString)
-        return {true, value.toString()};
-
-    return {false, getModelSetting(ChatTemplate, info).toString()};
+    return getUpgradeableModelSetting(info, PromptTemplate, ChatTemplate);
 }
 
 auto MySettings::modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting
 {
     using namespace ModelSettingsKey;
-    auto value = m_settings.value(modelSettingName(info, SystemPrompt));
-    if (value.typeId() == QMetaType::QString)
-        return {true, value.toString()};
-
-    return {false, getModelSetting(SystemMessage, info).toString()};
+    return getUpgradeableModelSetting(info, SystemPrompt, SystemMessage);
 }
 
 void MySettings::setModelFilename(const ModelInfo &info, const QString &value, bool force)
@@ -454,68 +462,76 @@ void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &info, int value, b
     setModelSetting("repeatPenaltyTokens", info, value, force, true);
 }
 
+bool MySettings::setUpgradeableModelSetting(
+    const ModelInfo &info, const QString &value, QLatin1StringView legacyKey, QLatin1StringView newKey
+) {
+    if (info.id().isEmpty()) {
+        qWarning("%s: got null model", Q_FUNC_INFO);
+        return false;
+    }
+
+    auto legacyModelKey = modelSettingName(info, legacyKey);
+    auto newModelKey    = modelSettingName(info, newKey   );
+    bool changed = false;
+    if (m_settings.contains(legacyModelKey)) {
+        m_settings.remove(legacyModelKey);
+        changed = true;
+    }
+    auto oldValue = m_settings.value(newModelKey);
+    if (!oldValue.isValid() || oldValue.toString() != value) {
+        m_settings.setValue(newModelKey, value);
+        changed = true;
+    }
+    return changed;
+}
+
+bool MySettings::resetUpgradeableModelSetting(
+    const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+) {
+    if (info.id().isEmpty()) {
+        qWarning("%s: got null model", Q_FUNC_INFO);
+        return false;
+    }
+
+    auto legacyModelKey = modelSettingName(info, legacyKey);
+    auto newModelKey    = modelSettingName(info, newKey   );
+    bool changed        = false;
+    if (m_settings.contains(legacyModelKey)) {
+        m_settings.remove(legacyModelKey);
+        changed = true;
+    }
+    if (m_settings.contains(newModelKey)) {
+        m_settings.remove(newModelKey);
+        changed = true;
+    }
+    return changed;
+}
+
 void MySettings::setModelChatTemplate(const ModelInfo &info, const QString &value)
 {
     using namespace ModelSettingsKey;
-    if (info.id().isEmpty())
-        return qWarning("%s: got null model", Q_FUNC_INFO);
-
-    auto promptKey = modelSettingName(info, PromptTemplate);
-    auto chatKey   = modelSettingName(info, ChatTemplate);
-    if (m_settings.contains(promptKey))
-        m_settings.remove(promptKey);
-    m_settings.setValue(chatKey, value);
-    emit chatTemplateChanged(info);
+    if (setUpgradeableModelSetting(info, value, PromptTemplate, ChatTemplate))
+        emit chatTemplateChanged(info);
 }
 
 void MySettings::resetModelChatTemplate(const ModelInfo &info)
 {
     using namespace ModelSettingsKey;
-    auto promptKey = modelSettingName(info, PromptTemplate);
-    auto chatKey   = modelSettingName(info, ChatTemplate  );
-    auto oldValue  = modelChatTemplate(info);
-    bool changed   = false;
-    if (m_settings.contains(promptKey)) {
-        m_settings.remove(promptKey);
-        changed = true;
-    }
-    if (m_settings.contains(chatKey)) {
-        m_settings.remove(chatKey);
-        changed = true;
-    }
-    if (changed && modelChatTemplate(info) != oldValue)
+    if (resetUpgradeableModelSetting(info, PromptTemplate, ChatTemplate))
         emit chatTemplateChanged(info);
 }
 
 void MySettings::setModelSystemMessage(const ModelInfo &info, const QString &value)
 {
     using namespace ModelSettingsKey;
-    if (info.id().isEmpty())
-        return qWarning("%s: got null model", Q_FUNC_INFO);
-
-    auto promptKey  = modelSettingName(info, SystemPrompt);
-    auto messageKey = modelSettingName(info, SystemMessage);
-    if (m_settings.contains(promptKey))
-        m_settings.remove(promptKey);
-    m_settings.setValue(messageKey, value);
-    emit systemMessageChanged(info);
+    if (setUpgradeableModelSetting(info, value, SystemPrompt, SystemMessage))
+        emit systemMessageChanged(info);
 }
 
 void MySettings::resetModelSystemMessage(const ModelInfo &info)
 {
     using namespace ModelSettingsKey;
-    auto promptKey  = modelSettingName(info, SystemPrompt );
-    auto messageKey = modelSettingName(info, SystemMessage);
-    bool changed = false;
-    if (m_settings.contains(promptKey)) {
-        m_settings.remove(promptKey);
-        changed = true;
-    }
-    if (m_settings.contains(messageKey)) {
-        m_settings.remove(messageKey);
-        changed = true;
-    }
-    if (changed)
+    if (resetUpgradeableModelSetting(info, SystemPrompt, SystemMessage))
         emit systemMessageChanged(info);
 }
 

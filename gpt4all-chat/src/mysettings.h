@@ -261,6 +261,15 @@ private:
     QVariant getModelSetting(const QString &name, const ModelInfo &info) const;
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
+    auto getUpgradeableModelSetting(
+        const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+    ) const -> UpgradeableSetting;
+    bool setUpgradeableModelSetting(
+        const ModelInfo &info, const QString &value, QLatin1StringView legacyKey, QLatin1StringView newKey
+    );
+    bool resetUpgradeableModelSetting(
+        const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+    );
     QString filePathForLocale(const QLocale &locale);
 
 private:
