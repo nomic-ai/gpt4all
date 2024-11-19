@@ -4,6 +4,7 @@
 #include "modellist.h" // IWYU pragma: keep
 
 #include <QDateTime>
+#include <QLatin1StringView>
 #include <QList>
 #include <QModelIndex>
 #include <QObject>
@@ -136,9 +137,11 @@ public:
     int modelRepeatPenaltyTokens(const ModelInfo &info) const;
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
     auto modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting;
+    Q_INVOKABLE bool isModelChatTemplateSet(const ModelInfo &info) const;
     Q_INVOKABLE void setModelChatTemplate(const ModelInfo &info, const QString &value);
     Q_INVOKABLE void resetModelChatTemplate(const ModelInfo &info);
     auto modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting;
+    Q_INVOKABLE bool isModelSystemMessageSet(const ModelInfo &info) const;
     Q_INVOKABLE void setModelSystemMessage(const ModelInfo &info, const QString &value);
     Q_INVOKABLE void resetModelSystemMessage(const ModelInfo &info);
     int modelContextLength(const ModelInfo &info) const;
@@ -258,12 +261,18 @@ private:
     QVariant getBasicSetting(const QString &name) const;
     void setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal = std::nullopt);
     int getEnumSetting(const QString &setting, const QStringList &valueNames) const;
-    QVariant getModelSetting(const QString &name, const ModelInfo &info) const;
-    void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
+    QVariant getModelSetting(QLatin1StringView name, const ModelInfo &info) const;
+    QVariant getModelSetting(const char *name, const ModelInfo &info) const;
+    void setModelSetting(QLatin1StringView name, const ModelInfo &info, const QVariant &value, bool force,
+                         bool signal = false);
+    void setModelSetting(const char *name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
     auto getUpgradeableModelSetting(
         const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
     ) const -> UpgradeableSetting;
+    bool isUpgradeableModelSettingSet(
+        const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+    ) const;
     bool setUpgradeableModelSetting(
         const ModelInfo &info, const QString &value, QLatin1StringView legacyKey, QLatin1StringView newKey
     );

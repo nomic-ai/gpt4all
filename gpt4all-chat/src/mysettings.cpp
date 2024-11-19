@@ -154,7 +154,7 @@ static QStringList getUiLanguages(const QString &modelPath)
     return languageList;
 }
 
-static QString modelSettingName(const ModelInfo &info, const QString &name)
+static QString modelSettingName(const ModelInfo &info, auto &&name)
 {
     return u"model-%1/%2"_s.arg(info.id(), name);
 }
@@ -291,24 +291,37 @@ void MySettings::setModelName(const ModelInfo &info, const QString &value, bool 
         emit nameChanged(info);
 }
 
-QVariant MySettings::getModelSetting(const QString &name, const ModelInfo &info) const
+QVariant MySettings::getModelSetting(QLatin1StringView name, const ModelInfo &info) const
 {
-    return m_settings.value(modelSettingName(info, name), info.getFields().value(name));
+    QLatin1StringView nameL1(name);
+    return m_settings.value(modelSettingName(info, nameL1), info.getField(nameL1));
 }
 
-void MySettings::setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
+QVariant MySettings::getModelSetting(const char *name, const ModelInfo &info) const
+{
+    return getModelSetting(QLatin1StringView(name), info);
+}
+
+void MySettings::setModelSetting(QLatin1StringView name, const ModelInfo &info, const QVariant &value, bool force,
                                  bool signal)
 {
     if (!force && (info.id().isEmpty() || getModelSetting(name, info) == value))
         return;
 
-    QString settingName = modelSettingName(info, name);
-    if (info.getFields().value(name) == value && !info.shouldSaveMetadata())
+    QLatin1StringView nameL1(name);
+    QString settingName = modelSettingName(info, nameL1);
+    if (info.getField(nameL1) == value && !info.shouldSaveMetadata())
         m_settings.remove(settingName);
     else
         m_settings.setValue(settingName, value);
     if (signal && !force)
-        QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(name).toLatin1().constData(), Q_ARG(ModelInfo, info));
+        QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(nameL1).toLatin1().constData(), Q_ARG(ModelInfo, info));
+}
+
+void MySettings::setModelSetting(const char *name, const ModelInfo &info, const QVariant &value, bool force,
+                                 bool signal)
+{
+    setModelSetting(QLatin1StringView(name), info, value, force, signal);
 }
 
 QString   MySettings::modelFilename               (const ModelInfo &info) const { return getModelSetting("filename",                info).toString(); }
@@ -340,14 +353,33 @@ auto MySettings::getUpgradeableModelSetting(
 {
     if (info.id().isEmpty()) {
         qWarning("%s: got null model", Q_FUNC_INFO);
-        return { false, {} };
+        return {};
     }
 
     auto value = m_settings.value(modelSettingName(info, legacyKey));
     if (value.isValid())
-        return { true, value.toString() };
+        return { UpgradeableSetting::legacy_tag, value.toString() };
 
-    return { false, getModelSetting(newKey, info).toString() };
+    value = getModelSetting(newKey, info);
+    if (!value.isNull())
+        return value.toString();
+    return {}; // neither a default nor an override
+}
+
+bool MySettings::isUpgradeableModelSettingSet(
+    const ModelInfo &info, QLatin1StringView legacyKey, QLatin1StringView newKey
+) const
+{
+    if (info.id().isEmpty()) {
+        qWarning("%s: got null model", Q_FUNC_INFO);
+        return false;
+    }
+
+    if (m_settings.contains(modelSettingName(info, legacyKey)))
+        return true;
+
+    // NOTE: unlike getUpgradeableSetting(), this ignores the default
+    return m_settings.contains(modelSettingName(info, newKey));
 }
 
 auto MySettings::modelChatTemplate(const ModelInfo &info) const -> UpgradeableSetting
@@ -356,10 +388,22 @@ auto MySettings::modelChatTemplate(const ModelInfo &info) const -> UpgradeableSe
     return getUpgradeableModelSetting(info, PromptTemplate, ChatTemplate);
 }
 
+bool MySettings::isModelChatTemplateSet(const ModelInfo &info) const
+{
+    using namespace ModelSettingsKey;
+    return isUpgradeableModelSettingSet(info, PromptTemplate, ChatTemplate);
+}
+
 auto MySettings::modelSystemMessage(const ModelInfo &info) const -> UpgradeableSetting
 {
     using namespace ModelSettingsKey;
     return getUpgradeableModelSetting(info, SystemPrompt, SystemMessage);
+}
+
+bool MySettings::isModelSystemMessageSet(const ModelInfo &info) const
+{
+    using namespace ModelSettingsKey;
+    return isUpgradeableModelSettingSet(info, SystemPrompt, SystemMessage);
 }
 
 void MySettings::setModelFilename(const ModelInfo &info, const QString &value, bool force)

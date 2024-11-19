@@ -316,9 +316,29 @@ void ModelInfo::setRepeatPenaltyTokens(int t)
     m_repeatPenaltyTokens = t;
 }
 
-QString ModelInfo::defaultChatTemplate() const
+QVariant ModelInfo::defaultChatTemplate() const
 {
-    return m_chatTemplate;
+    auto res = m_chatTemplate.or_else([this] -> std::optional<QString> {
+        if (!installed || isOnline)
+            return std::nullopt;
+        if (!m_modelChatTemplate) {
+            auto path = (dirpath + filename()).toUtf8();
+            auto res = LLModel::Implementation::chatTemplate(path.constData());
+            if (res) {
+                m_modelChatTemplate = QString::fromStdString(*res);
+            } else {
+                qWarning().nospace() << "failed to get chat template for " << filename() << ": " << res.error().c_str();
+                m_modelChatTemplate = QString(); // do not retry
+            }
+        }
+        if (m_modelChatTemplate->isNull())
+            return std::nullopt;
+        return m_modelChatTemplate;
+    });
+
+    if (res)
+        return std::move(*res);
+    return QVariant::fromValue(nullptr);
 }
 
 auto ModelInfo::chatTemplate() const -> UpgradeableSetting
@@ -364,34 +384,35 @@ bool ModelInfo::shouldSaveMetadata() const
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
 }
 
-QVariantMap ModelInfo::getFields() const
+QVariant ModelInfo::getField(QLatin1StringView name) const
 {
-    return {
-        { u"filename"_s,                m_filename                },
-        { u"description"_s,             m_description             },
-        { u"url"_s,                     m_url                     },
-        { u"quant"_s,                   m_quant                   },
-        { u"type"_s,                    m_type                    },
-        { u"isClone"_s,                 m_isClone                 },
-        { u"isDiscovered"_s,            m_isDiscovered            },
-        { u"likes"_s,                   m_likes                   },
-        { u"downloads"_s,               m_downloads               },
-        { u"recency"_s,                 m_recency                 },
-        { u"temperature"_s,             m_temperature             },
-        { u"topP"_s,                    m_topP                    },
-        { u"minP"_s,                    m_minP                    },
-        { u"topK"_s,                    m_topK                    },
-        { u"maxLength"_s,               m_maxLength               },
-        { u"promptBatchSize"_s,         m_promptBatchSize         },
-        { u"contextLength"_s,           m_contextLength           },
-        { u"gpuLayers"_s,               m_gpuLayers               },
-        { u"repeatPenalty"_s,           m_repeatPenalty           },
-        { u"repeatPenaltyTokens"_s,     m_repeatPenaltyTokens     },
-        { u"chatTemplate"_s,            m_chatTemplate            },
-        { u"systemMessage"_s,           m_systemMessage           },
-        { u"chatNamePrompt"_s,          m_chatNamePrompt          },
-        { u"suggestedFollowUpPrompt"_s, m_suggestedFollowUpPrompt },
+    static const std::unordered_map<QLatin1StringView, QVariant(*)(const ModelInfo &)> s_fields = {
+        { "filename"_L1,                [](auto &i) -> QVariant { return i.m_filename;                } },
+        { "description"_L1,             [](auto &i) -> QVariant { return i.m_description;             } },
+        { "url"_L1,                     [](auto &i) -> QVariant { return i.m_url;                     } },
+        { "quant"_L1,                   [](auto &i) -> QVariant { return i.m_quant;                   } },
+        { "type"_L1,                    [](auto &i) -> QVariant { return i.m_type;                    } },
+        { "isClone"_L1,                 [](auto &i) -> QVariant { return i.m_isClone;                 } },
+        { "isDiscovered"_L1,            [](auto &i) -> QVariant { return i.m_isDiscovered;            } },
+        { "likes"_L1,                   [](auto &i) -> QVariant { return i.m_likes;                   } },
+        { "downloads"_L1,               [](auto &i) -> QVariant { return i.m_downloads;               } },
+        { "recency"_L1,                 [](auto &i) -> QVariant { return i.m_recency;                 } },
+        { "temperature"_L1,             [](auto &i) -> QVariant { return i.m_temperature;             } },
+        { "topP"_L1,                    [](auto &i) -> QVariant { return i.m_topP;                    } },
+        { "minP"_L1,                    [](auto &i) -> QVariant { return i.m_minP;                    } },
+        { "topK"_L1,                    [](auto &i) -> QVariant { return i.m_topK;                    } },
+        { "maxLength"_L1,               [](auto &i) -> QVariant { return i.m_maxLength;               } },
+        { "promptBatchSize"_L1,         [](auto &i) -> QVariant { return i.m_promptBatchSize;         } },
+        { "contextLength"_L1,           [](auto &i) -> QVariant { return i.m_contextLength;           } },
+        { "gpuLayers"_L1,               [](auto &i) -> QVariant { return i.m_gpuLayers;               } },
+        { "repeatPenalty"_L1,           [](auto &i) -> QVariant { return i.m_repeatPenalty;           } },
+        { "repeatPenaltyTokens"_L1,     [](auto &i) -> QVariant { return i.m_repeatPenaltyTokens;     } },
+        { "chatTemplate"_L1,            [](auto &i) -> QVariant { return i.defaultChatTemplate();     } },
+        { "systemMessage"_L1,           [](auto &i) -> QVariant { return i.m_systemMessage;           } },
+        { "chatNamePrompt"_L1,          [](auto &i) -> QVariant { return i.m_chatNamePrompt;          } },
+        { "suggestedFollowUpPrompt"_L1, [](auto &i) -> QVariant { return i.m_suggestedFollowUpPrompt; } },
     };
+    return s_fields.at(name)(*this);
 }
 
 InstalledModels::InstalledModels(QObject *parent, bool selectable)

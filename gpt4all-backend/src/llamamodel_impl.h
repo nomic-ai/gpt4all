@@ -69,6 +69,7 @@ protected:
     bool shouldAddBOS() const override;
     int32_t maxContextLength(std::string const &modelPath) const override;
     int32_t layerCount(std::string const &modelPath) const override;
+    auto chatTemplate(const char *modelPath) const -> std::expected<std::string, std::string> override;
 
     void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
                        size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb,

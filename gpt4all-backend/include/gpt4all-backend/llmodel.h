@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <functional>
 #include <optional>
 #include <span>
@@ -105,6 +106,7 @@ public:
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
         static bool isEmbeddingModel(const std::string &modelPath);
+        static auto chatTemplate(const char *modelPath) -> std::expected<std::string, std::string>;
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
         static bool hasSupportedCPU();
@@ -236,6 +238,12 @@ protected:
     {
         (void)modelPath;
         return -1;
+    }
+
+    virtual auto chatTemplate(const char *modelPath) const -> std::expected<std::string, std::string>
+    {
+        (void)modelPath;
+        return std::unexpected("not implemented");
     }
 
     const Implementation *m_implementation = nullptr;

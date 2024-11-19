@@ -326,6 +326,12 @@ bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath)
     return llama && llama->isEmbeddingModel(modelPath);
 }
 
+auto LLModel::Implementation::chatTemplate(const char *modelPath) -> std::expected<std::string, std::string>
+{
+    auto *llama = constructGlobalLlama();
+    return llama ? llama->chatTemplate(modelPath) : std::unexpected("backend not available");
+}
+
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path)
 {
     s_implementations_search_path = path;

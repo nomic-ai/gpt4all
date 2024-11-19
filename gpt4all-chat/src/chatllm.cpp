@@ -782,10 +782,16 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     auto &model      = m_llModelInfo.model;
 
     QString chatTemplate, systemMessage;
-    if (auto tmpl = mySettings->modelChatTemplate(m_modelInfo).asModern()) {
+    auto chatTemplateSetting = mySettings->modelChatTemplate(m_modelInfo);
+    if (auto tmpl = chatTemplateSetting.asModern()) {
         chatTemplate = *tmpl;
-    } else {
+    } else if (chatTemplateSetting.isLegacy()) {
         throw std::logic_error("cannot apply Jinja to a legacy prompt template");
+    } else {
+        throw std::logic_error("cannot apply Jinja without setting a chat template first");
+    }
+    if (chatTemplate.isEmpty()) {
+        throw std::logic_error("cannot apply Jinja with a blank chat template");
     }
     if (auto tmpl = mySettings->modelSystemMessage(m_modelInfo).asModern()) {
         systemMessage = *tmpl;

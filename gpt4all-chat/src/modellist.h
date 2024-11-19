@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QHash>
+#include <QLatin1StringView>
 #include <QList>
 #include <QMutex>
 #include <QNetworkAccessManager>
@@ -28,22 +29,43 @@ using namespace Qt::Literals::StringLiterals;
 
 class UpgradeableSetting {
     Q_GADGET
-    Q_PROPERTY(bool    isLegacy MEMBER isLegacy)
-    Q_PROPERTY(QString value    MEMBER value   )
     QML_ANONYMOUS
 
-public:
-    friend bool operator==(const UpgradeableSetting &a, const UpgradeableSetting &b)
-    { return a.isLegacy == b.isLegacy && a.value == b.value; }
+    // NOTE: Unset implies there is neither a value nor a default
+    enum class State { Unset, Legacy, Modern };
 
+    Q_PROPERTY(bool     isSet     READ isSet   )
+    Q_PROPERTY(bool     isLegacy  READ isLegacy)
+    Q_PROPERTY(bool     isModern  READ isModern)
+    Q_PROPERTY(QVariant value READ value) // string or null
+
+public:
+    struct legacy_tag_t { explicit legacy_tag_t() = default; };
+    static inline constexpr legacy_tag_t legacy_tag = legacy_tag_t();
+
+    UpgradeableSetting()                           : m_state(State::Unset ) {}
+    UpgradeableSetting(legacy_tag_t, QString value): m_state(State::Legacy), m_value(std::move(value)) {}
+    UpgradeableSetting(              QString value): m_state(State::Modern), m_value(std::move(value)) {}
+
+    bool     isSet   () const { return m_state != State::Unset;  }
+    bool     isLegacy() const { return m_state == State::Legacy; }
+    bool     isModern() const { return m_state == State::Modern; }
+    QVariant value   () const { return m_state == State::Unset ? QVariant::fromValue(nullptr) : m_value; }
+
+    friend bool operator==(const UpgradeableSetting &a, const UpgradeableSetting &b)
+    { return a.m_state == b.m_state && (a.m_state == State::Unset || a.m_value == b.m_value); }
+
+    // returns std::nullopt if there is a legacy template or it is not set
     std::optional<QString> asModern() const
     {
-        if (!isLegacy) return value;
+        if (m_state == State::Modern)
+            return m_value;
         return std::nullopt;
     }
 
-    bool    isLegacy;
-    QString value;
+private:
+    State   m_state;
+    QString m_value;
 };
 
 struct ModelInfo {
@@ -92,7 +114,7 @@ struct ModelInfo {
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     // user-defined chat template and system message must be written through settings because of their legacy compat
-    Q_PROPERTY(QString            defaultChatTemplate  READ defaultChatTemplate )
+    Q_PROPERTY(QVariant           defaultChatTemplate  READ defaultChatTemplate )
     Q_PROPERTY(UpgradeableSetting chatTemplate         READ chatTemplate        )
     Q_PROPERTY(QString            defaultSystemMessage READ defaultSystemMessage)
     Q_PROPERTY(UpgradeableSetting systemMessage        READ systemMessage       )
@@ -203,7 +225,7 @@ public:
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
     void setRepeatPenaltyTokens(int t);
-    QString defaultChatTemplate() const;
+    QVariant defaultChatTemplate() const;
     UpgradeableSetting chatTemplate() const;
     QString defaultSystemMessage() const;
     UpgradeableSetting systemMessage() const;
@@ -218,7 +240,7 @@ public:
     bool shouldSaveMetadata() const;
 
 private:
-    QVariantMap getFields() const;
+    QVariant getField(QLatin1StringView name) const;
 
     QString m_id;
     QString m_name;
@@ -244,7 +266,8 @@ private:
     mutable int m_maxGpuLayers        = -1;
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
-    QString m_chatTemplate;
+            std::optional<QString> m_chatTemplate;
+    mutable std::optional<QString> m_modelChatTemplate;
     QString m_systemMessage;
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
