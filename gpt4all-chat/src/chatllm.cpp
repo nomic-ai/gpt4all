@@ -790,7 +790,7 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     } else {
         throw std::logic_error("cannot apply Jinja without setting a chat template first");
     }
-    if (chatTemplate.isEmpty()) {
+    if (isAllSpace(chatTemplate)) {
         throw std::logic_error("cannot apply Jinja with a blank chat template");
     }
     if (auto tmpl = mySettings->modelSystemMessage(m_modelInfo).asModern()) {
