@@ -1090,7 +1090,7 @@ Rectangle {
                     } else if (!info.chatTemplate.isSet) {
                         error = qsTr("No chat template configured.");
                     } else if (/^\s*$/.test(info.chatTemplate.value)) {
-                        error = qsTr("The chat template is blank.");
+                        error = qsTr("The chat template cannot be blank.");
                     } else if (info.systemMessage.isLegacy) {
                         error = qsTr("Legacy system prompt needs to be updated in Settings.");
                     } else

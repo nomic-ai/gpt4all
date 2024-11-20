@@ -304,7 +304,7 @@ MySettingsTab {
                 visible: templateTextArea.errState !== "ok"
                 Layout.alignment: Qt.AlignBottom
                 Layout.rightMargin: 5
-                text: templateTextArea.jinjaError ?? qsTr("Chat template is not in Jinja format.")
+                text: templateTextArea.errMsg
                 color: templateTextArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
@@ -326,7 +326,7 @@ MySettingsTab {
                 anchors.fill: parent
                 font: fixedFont
                 property bool isBeingReset: false
-                property var jinjaError: null
+                property var errMsg: null
                 function resetText() {
                     const info = root.currentModelInfo;
                     isBeingReset = true;
@@ -348,17 +348,27 @@ MySettingsTab {
                 }
                 onTextChanged: {
                     const info = root.currentModelInfo;
+                    let jinjaError;
                     if (!info.id) {
-                        jinjaError = null;
+                        errMsg = null;
                         errState = "ok";
                     } else if (info.chatTemplate.isLegacy && (isBeingReset || legacyCheck())) {
-                        jinjaError = null;
+                        errMsg = null;
                         errState = "error";
+                    } else if (text === "" && !info.chatTemplate.isSet) {
+                        errMsg = qsTr("No chat template configured.");
+                        errState = "error";
+                    } else if (/^\s*$/.test(text)) {
+                        errMsg = qsTr("The chat template cannot be blank.");
+                        errState = "error";
+                    } else if ((jinjaError = MySettings.checkJinjaTemplateError(text)) !== null) {
+                        errMsg = jinjaError;
+                        errState = "error";
+                    } else if (legacyCheck()) {
+                        errMsg = qsTr("Chat template is not in Jinja format.")
+                        errState = "warning";
                     } else {
-                        jinjaError = MySettings.checkJinjaTemplateError(text);
-                        errState = jinjaError !== null ? "error"   :
-                                   legacyCheck()       ? "warning" :
-                                                         "ok";
+                        errState = "ok";
                     }
                     if (info.id && errState !== "error" && !isBeingReset)
                         MySettings.setModelChatTemplate(info, text);
