@@ -228,7 +228,7 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/SettingsView.qml
       qml/StartupDialog.qml
-      qml/SwitchModelDialog.qml
+      qml/ConfirmationDialog.qml
       qml/Theme.qml
       qml/ThumbsDownDialog.qml
       qml/Toast.qml

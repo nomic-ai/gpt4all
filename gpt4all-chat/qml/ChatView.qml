@@ -85,14 +85,12 @@ Rectangle {
         function open_(msg) { message = msg; open(); }
     }
 
-    SwitchModelDialog {
+    ConfirmationDialog {
         id: switchModelDialog
         anchors.centerIn: parent
-        Item {
-            Accessible.role: Accessible.Dialog
-            Accessible.name: qsTr("Switch model dialog")
-            Accessible.description: qsTr("Warn the user if they switch models, then context will be erased")
-        }
+        property int index: -1
+        dialogTitle: qsTr("Erase conversation?")
+        description: qsTr("Changing the model will erase the current conversation.")
     }
 
     PopupDialog {

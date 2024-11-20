@@ -12,6 +12,32 @@ MySettingsTab {
         MySettings.restoreModelDefaults(root.currentModelInfo);
     }
     title: qsTr("Model")
+
+    ConfirmationDialog {
+        id: resetSystemMessageDialog
+        anchors.centerIn: parent
+        property var index: null
+        property bool resetClears: false
+        dialogTitle: qsTr("%1 system message?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))
+        description: qsTr("The system message will be %1.").arg(resetClears ? qsTr("removed") : qsTr("reset to the default"))
+        onAccepted: MySettings.resetModelSystemMessage(ModelList.modelInfo(index))
+        function show(index_, resetClears_) { index = index_; resetClears = resetClears_; open(); }
+    }
+
+    ConfirmationDialog {
+        id: resetChatTemplateDialog
+        anchors.centerIn: parent
+        property bool resetClears: false
+        property var index: null
+        dialogTitle: qsTr("%1 chat template?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))
+        description: qsTr("The chat template will be %1.").arg(resetClears ? qsTr("erased") : qsTr("reset to the default"))
+        onAccepted: {
+            MySettings.resetModelChatTemplate(ModelList.modelInfo(index));
+            templateTextArea.resetText();
+        }
+        function show(index_, resetClears_) { index = index_; resetClears = resetClears_; open(); }
+    }
+
     contentItem: GridLayout {
         id: root
         columns: 3
@@ -163,7 +189,7 @@ MySettingsTab {
                 text: qsTr("System Message")
                 helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for " +
                                "none. NOTE: Since GPT4All 3.5, this should not contain framing tokens.")
-                onReset: () => MySettings.resetModelSystemMessage(root.currentModelInfo)
+                onReset: () => resetSystemMessageDialog.show(root.currentModelId, resetClears)
                 function updateResetButton() {
                     const info = root.currentModelInfo;
                     // NOTE: checks if the *override* is set, regardless of whether there is a default
@@ -253,10 +279,7 @@ MySettingsTab {
                 id: chatTemplateLabel
                 text: qsTr("Chat Template")
                 helpText: qsTr("This Jinja template turns the chat into input for the model.")
-                onReset: () => {
-                    MySettings.resetModelChatTemplate(root.currentModelInfo);
-                    templateTextArea.resetText();
-                }
+                onReset: () => resetChatTemplateDialog.show(root.currentModelId, resetClears)
                 function updateResetButton() {
                     const info = root.currentModelInfo;
                     canReset = !!info.id && (
