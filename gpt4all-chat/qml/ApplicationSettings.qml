@@ -10,7 +10,7 @@ import network
 import llm
 
 MySettingsTab {
-    onRestoreDefaultsClicked: {
+    onRestoreDefaults: {
         MySettings.restoreApplicationDefaults();
     }
     title: qsTr("Application")

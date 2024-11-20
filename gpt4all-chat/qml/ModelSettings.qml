@@ -8,7 +8,7 @@ import mysettings
 import chatlistmodel
 
 MySettingsTab {
-    onRestoreDefaultsClicked: {
+    onRestoreDefaults: {
         MySettings.restoreModelDefaults(root.currentModelInfo);
     }
     title: qsTr("Model")
