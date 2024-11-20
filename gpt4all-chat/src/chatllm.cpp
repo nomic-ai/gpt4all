@@ -748,7 +748,7 @@ std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
 static uint parseJinjaTemplateVersion(QStringView tmpl)
 {
     static uint MAX_VERSION = 1;
-    static QRegularExpression reVersion(uR"(\A{#-?\s+version\s+(\d+)-?#}\s*$)"_s, QRegularExpression::MultilineOption);
+    static QRegularExpression reVersion(uR"(\A{#-?\s+gpt4all v(\d+)-?#}\s*$)"_s, QRegularExpression::MultilineOption);
     if (auto match = reVersion.matchView(tmpl); match.hasMatch()) {
         uint ver = match.captured(1).toUInt();
         if (ver > MAX_VERSION)
