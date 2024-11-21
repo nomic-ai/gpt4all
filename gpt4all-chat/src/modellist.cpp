@@ -512,9 +512,6 @@ ModelList::ModelList()
     m_downloadableModels->setSourceModel(this);
 
     auto *mySettings = MySettings::globalInstance();
-    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromDirectory );
-    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromJson      );
-    connect(mySettings, &MySettings::modelPathChanged,           this, &ModelList::updateModelsFromSettings  );
     connect(mySettings, &MySettings::nameChanged,                this, &ModelList::updateDataForSettings     );
     connect(mySettings, &MySettings::temperatureChanged,         this, &ModelList::updateDataForSettings     );
     connect(mySettings, &MySettings::topPChanged,                this, &ModelList::updateDataForSettings     );
@@ -536,6 +533,10 @@ ModelList::ModelList()
     updateModelsFromJson();
     updateModelsFromSettings();
     updateModelsFromDirectory();
+
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson     );
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings );
 
     QCoreApplication::instance()->installEventFilter(this);
 }
@@ -1092,11 +1093,11 @@ ModelInfo ModelList::modelInfo(const QString &id) const
     return *m_modelMap.value(id);
 }
 
-ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
+ModelInfo ModelList::modelInfoByFilename(const QString &filename, bool allowClone) const
 {
     QMutexLocker locker(&m_mutex);
     for (ModelInfo *info : m_models)
-        if (info->filename() == filename)
+        if (info->filename() == filename && (allowClone || !info->isClone()))
             return *info;
     return ModelInfo();
 }
@@ -1833,12 +1834,27 @@ void ModelList::updateModelsFromSettings()
 
         // If we can't find the corresponding file, then ignore it as this reflects a stale model.
         // The file could have been deleted manually by the user for instance or temporarily renamed.
-        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString()))
-            continue;
+        QString filename;
+        {
+            auto value = settings.value(u"%1/filename"_s.arg(g));
+            if (!value.isValid() || !modelExists(filename = value.toString()))
+                continue;
+        }
+
+        QVector<QPair<int, QVariant>> data;
+
+        // load data from base model
+        // FIXME(jared): how does "Restore Defaults" work for other settings of clones which we don't do this for?
+        if (auto base = modelInfoByFilename(filename, /*allowClone*/ false); !base.id().isNull()) {
+            if (auto tmpl = base.m_chatTemplate)
+                data.append({ ModelList::ChatTemplateRole,  *tmpl });
+            if (auto msg  = base.m_systemMessage; !msg.isNull())
+                data.append({ ModelList::SystemMessageRole,  msg  });
+        }
 
         addModel(id);
 
-        QVector<QPair<int, QVariant>> data;
+        // load data from settings
         if (settings.contains(g + "/name")) {
             const QString name = settings.value(g + "/name").toString();
             data.append({ ModelList::NameRole, name });

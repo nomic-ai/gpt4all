@@ -468,7 +468,7 @@ public:
     bool contains(const QString &id) const;
     bool containsByFilename(const QString &filename) const;
     Q_INVOKABLE ModelInfo modelInfo(const QString &id) const;
-    Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename) const;
+    Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename, bool allowClone = true) const;
     Q_INVOKABLE bool isUniqueName(const QString &name) const;
     Q_INVOKABLE QString clone(const ModelInfo &model);
     Q_INVOKABLE void removeClone(const ModelInfo &model);
