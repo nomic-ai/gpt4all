@@ -216,6 +216,7 @@ qt_add_qml_module(chat
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
       qml/ChatItemView.qml
+      qml/ChatMessageButton.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
       qml/HomeView.qml

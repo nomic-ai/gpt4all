@@ -794,9 +794,9 @@ Rectangle {
                             Layout.leftMargin: 50
                             Layout.rightMargin: 50
                             Layout.alignment: Qt.AlignHCenter
-                            spacing: 25
+                            spacing: 10
                             model: chatModel
-                            cacheBuffer: Math.max(0, listView.contentHeight)
+                            cacheBuffer: 2147483647
 
                             ScrollBar.vertical: ScrollBar {
                                 policy: ScrollBar.AsNeeded
@@ -836,11 +836,9 @@ Rectangle {
                 clip: true
                 z: 400
 
-                property bool isHovered: {
-                    return conversationTrayButton.isHovered ||
-                        resetContextButton.hovered || copyChatButton.hovered ||
-                        regenerateButton.hovered
-                }
+                property bool isHovered: (
+                    conversationTrayButton.isHovered || resetContextButton.hovered || copyChatButton.hovered
+                )
 
                 state: conversationTrayContent.isHovered ? "expanded" : "collapsed"
                 states: [
@@ -923,18 +921,6 @@ Rectangle {
                         }
                         ToolTip.visible: copyChatButton.hovered
                         ToolTip.text: qsTr("Copy chat session to clipboard")
-                    }
-                    MyToolButton {
-                        id: regenerateButton
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        source: "qrc:/gpt4all/icons/regenerate.svg"
-                        imageWidth: 20
-                        imageHeight: 20
-                        visible: chatModel.count >= 2 && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
-                        onClicked: currentChat.regenerateResponse()
-                        ToolTip.visible: regenerateButton.hovered
-                        ToolTip.text: qsTr("Redo last chat response")
                     }
                 }
             }

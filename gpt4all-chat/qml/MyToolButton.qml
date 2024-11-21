@@ -16,6 +16,7 @@ Button {
     property alias fillMode: image.fillMode
     property alias imageWidth: image.sourceSize.width
     property alias imageHeight: image.sourceSize.height
+    property alias bgTransform: background.transform
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
@@ -26,6 +27,7 @@ Button {
     }
 
     background: Item {
+        id: background
         anchors.fill: parent
         Rectangle {
             anchors.fill: parent
