@@ -635,24 +635,24 @@ bool isAllSpace(R &&r)
     return ranges::all_of(std::forward<R>(r), [](QChar c) { return c.isSpace(); });
 }
 
-void ChatLLM::regenerateResponse()
+void ChatLLM::regenerateResponse(int index)
 {
     Q_ASSERT(m_chatModel);
-    int responseIdx, promptIdx;
+    int promptIdx;
     {
         auto items = m_chatModel->chatItems(); // holds lock
-        if (items.size() < 2 || items.back().type() != ChatItem::Type::Response)
+        if (index < 0 || index >= items.size() || items[index].type() != ChatItem::Type::Response)
             return;
-        responseIdx = items.size() - 1;
-        promptIdx = items.back().peerIndex;
+        promptIdx = items[index].peerIndex;
     }
 
     emit responseChanged({});
-    m_chatModel->updateCurrentResponse(responseIdx, true );
-    m_chatModel->updateNewResponse    (responseIdx, {}   );
-    m_chatModel->updateStopped        (responseIdx, false);
-    m_chatModel->updateThumbsUpState  (responseIdx, false);
-    m_chatModel->updateThumbsDownState(responseIdx, false);
+    m_chatModel->truncate(index + 1);
+    m_chatModel->updateCurrentResponse(index, true );
+    m_chatModel->updateNewResponse    (index, {}   );
+    m_chatModel->updateStopped        (index, false);
+    m_chatModel->updateThumbsUpState  (index, false);
+    m_chatModel->updateThumbsDownState(index, false);
     m_chatModel->setError(false);
     if (promptIdx >= 0)
         m_chatModel->updateSources(promptIdx, {});

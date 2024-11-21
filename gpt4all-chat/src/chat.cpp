@@ -157,10 +157,10 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
     m_needsSave = true;
 }
 
-void Chat::regenerateResponse()
+void Chat::regenerateResponse(int index)
 {
     resetResponseState();
-    emit regenerateResponseRequested();
+    emit regenerateResponseRequested(index);
     m_needsSave = true;
 }
 

@@ -547,15 +547,14 @@ GridLayout {
         }*/
 
         ChatMessageButton {
-            visible: parent.canModify && name === "Response: " && index == chatModel.count - 1
+            visible: parent.canModify && model.name === "Response: "
             Layout.maximumWidth: 24
             Layout.maximumHeight: 24
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: false
             name: qsTr("Redo")
             source: "qrc:/gpt4all/icons/regenerate.svg"
-            // TODO: make this regenerate *this* message, not the last one
-            onClicked: currentChat.regenerateResponse()
+            onClicked: currentChat.regenerateResponse(index)
         }
 
         ChatMessageButton {

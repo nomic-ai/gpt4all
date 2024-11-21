@@ -82,7 +82,7 @@ public:
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
-    Q_INVOKABLE void regenerateResponse();
+    Q_INVOKABLE void regenerateResponse(int index);
     Q_INVOKABLE void stopGenerating();
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }
@@ -141,7 +141,7 @@ Q_SIGNALS:
     void responseInProgressChanged();
     void responseStateChanged();
     void promptRequested(const QStringList &enabledCollections);
-    void regenerateResponseRequested();
+    void regenerateResponseRequested(int index);
     void resetResponseRequested();
     void resetContextRequested();
     void modelChangeRequested(const ModelInfo &modelInfo);

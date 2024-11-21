@@ -158,7 +158,7 @@ public:
 
     void destroy();
     bool isModelLoaded() const;
-    void regenerateResponse();
+    void regenerateResponse(int index);
 
     void stopGenerating() { m_stopGenerating = true; }
 

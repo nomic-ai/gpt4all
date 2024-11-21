@@ -394,6 +394,28 @@ public:
             emit dataChanged(createIndex(promptIndex, 0), createIndex(promptIndex, 0), {PeerRole});
     }
 
+    void truncate(qsizetype size)
+    {
+        qsizetype oldSize;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (size >= (oldSize = m_chatItems.size())) return;
+        }
+
+        bool oldHasError;
+        beginRemoveRows(QModelIndex(), size, oldSize - 1 /*inclusive*/);
+        {
+            QMutexLocker locker(&m_mutex);
+            oldHasError = hasErrorUnlocked();
+            Q_ASSERT(size < m_chatItems.size());
+            m_chatItems.resize(size);
+        }
+        endRemoveRows();
+        emit countChanged();
+        if (oldHasError)
+            emit hasErrorChanged(false);
+    }
+
     Q_INVOKABLE void clear()
     {
         {
