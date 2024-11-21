@@ -601,30 +601,35 @@ class GPT4All:
     @contextmanager
     def chat_session(
         self,
-        system_prompt: str | Literal[False] | None = None,
-        prompt_template: str | None = None,
+        system_message: str | Literal[False] | None = None,
+        chat_template: str | None = None,
     ):
         """
         Context manager to hold an inference optimized chat session with a GPT4All model.
 
         Args:
-            system_prompt: An initial instruction for the model, None to use the model default, or False to disable. Defaults to None.
-            prompt_template: Jinja template for the conversation, or None to use the model default. Defaults to None.
+            system_message: An initial instruction for the model, None to use the model default, or False to disable. Defaults to None.
+            chat_template: Jinja template for the conversation, or None to use the model default. Defaults to None.
         """
 
-        if system_prompt is None:
-            system_prompt = self.config.get("systemPrompt", False)
+        if system_message is None:
+            system_message = self.config.get("systemMessage", False)
 
-        if prompt_template is None:
-            if (tmpl := self.config.get("promptTemplate")) is None:
-                raise ValueError("For sideloaded models or with allow_download=False, you must specify a prompt template.")
-            prompt_template = tmpl
+        if chat_template is None:
+            if "name" not in self.config:
+                raise ValueError("For sideloaded models or with allow_download=False, you must specify a chat template.")
+            if "chatTemplate" not in self.config:
+                raise NotImplementedError("This model appears to have a built-in chat template, but loading it is not "
+                                          "currently implemented. Please pass a template to chat_session() directly.")
+            if (tmpl := self.config["chatTemplate"]) is None:
+                raise ValueError(f"The model {self.config['name']!r} does not support chat.")
+            chat_template = tmpl
 
         history = []
-        if system_prompt is not False:
-            history.append(MessageType(role="system", content=system_prompt))
+        if system_message is not False:
+            history.append(MessageType(role="system", content=system_message))
         self._chat_session = ChatSession(
-            template=_jinja_env.from_string(prompt_template),
+            template=_jinja_env.from_string(chat_template),
             history=history,
         )
         try:
