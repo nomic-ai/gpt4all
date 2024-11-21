@@ -145,7 +145,8 @@ void LLModel::generateResponse(
     int32_t                 nPast
 ) {
     static const char *stopSequences[] {
-        "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
+        "### System", "### Instruction", "### Human", "### User", "### Response", "### Assistant", "### Context",
+        "<|im_start|>", "<|im_end|>", "<|endoftext|>",
     };
 
     initSampler(promptCtx);
