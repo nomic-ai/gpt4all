@@ -178,21 +178,21 @@ For standard templates, GPT4All combines the user message, sources, and attachme
 ```jinja
 {# gpt4all v1 #}
 {%- for message in messages %}
-    {{- '<|start_header_id|>' + message.role + '<|end_header_id|>\n\n' }}
-    {%- if message.role == 'user' %}
-        {%- for source in message.sources %}
+    {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' }}
+    {%- if message['role'] == 'user' %}
+        {%- for source in message['sources'] %}
             {%- if loop.first %}
                 {{- '### Context:\n' }}
             {%- endif %}
-            {{- 'Collection: ' + source.collection + '\n'   +
-                'Path: '       + source.path       + '\n'   +
-                'Excerpt: '    + source.text       + '\n\n' }}
+            {{- 'Collection: ' + source['collection'] + '\n'   +
+                'Path: '       + source['path']       + '\n'   +
+                'Excerpt: '    + source['text']       + '\n\n' }}
         {%- endfor %}
     {%- endif %}
-    {%- for attachment in message.prompt_attachments %}
-        {{- attachment.processed_content + '\n\n' }}
+    {%- for attachment in message['prompt_attachments'] %}
+        {{- attachment['processed_content'] + '\n\n' }}
     {%- endfor %}
-    {{- message.content | trim }}
+    {{- message['content'] | trim }}
     {{- '<|eot_id|>' }}
 {%- endfor %}
 {%- if add_generation_prompt %}
