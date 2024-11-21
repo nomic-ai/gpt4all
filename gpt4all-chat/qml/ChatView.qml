@@ -1039,6 +1039,7 @@ Rectangle {
                 }
                 font.pixelSize: theme.fontSizeSmaller
                 font.bold: true
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
 
             RectangularGlow {
@@ -1086,13 +1087,19 @@ Rectangle {
                     if (info === null || !info.id) {
                         error = null;
                     } else if (info.chatTemplate.isLegacy) {
-                        error = qsTr("Legacy prompt template needs to be updated in Settings.");
+                        error = qsTr("Legacy prompt template needs to be " +
+                                     "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">updated" +
+                                     "</a> in Settings.");
                     } else if (!info.chatTemplate.isSet) {
-                        error = qsTr("No chat template configured.");
+                        error = qsTr("No <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                     "chat template</a> configured.");
                     } else if (/^\s*$/.test(info.chatTemplate.value)) {
-                        error = qsTr("The chat template cannot be blank.");
+                        error = qsTr("The <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                     "chat template</a> cannot be blank.");
                     } else if (info.systemMessage.isLegacy) {
-                        error = qsTr("Legacy system prompt needs to be updated in Settings.");
+                        error = qsTr("Legacy system prompt needs to be " +
+                                     "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">updated" +
+                                     "</a> in Settings.");
                     } else
                         error = null;
                 }

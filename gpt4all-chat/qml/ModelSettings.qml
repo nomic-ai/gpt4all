@@ -217,12 +217,14 @@ MySettingsTab {
                 Layout.fillWidth: true
                 Layout.rightMargin: 5
                 Layout.maximumHeight: systemMessageLabel.height
-                text: qsTr("System message is not plain text.")
+                text: qsTr("System message is not " +
+                           "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">plain text</a>.")
                 color: systemMessageArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
         }
 
@@ -320,6 +322,7 @@ MySettingsTab {
                 font.bold: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
         }
 
@@ -367,16 +370,21 @@ MySettingsTab {
                         errMsg = null;
                         errState = "error";
                     } else if (text === "" && !info.chatTemplate.isSet) {
-                        errMsg = qsTr("No chat template configured.");
+                        errMsg = qsTr("No <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "chat template</a> configured.");
                         errState = "error";
                     } else if (/^\s*$/.test(text)) {
-                        errMsg = qsTr("The chat template cannot be blank.");
+                        errMsg = qsTr("The <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "chat template</a> cannot be blank.");
                         errState = "error";
                     } else if ((jinjaError = MySettings.checkJinjaTemplateError(text)) !== null) {
-                        errMsg = jinjaError;
+                        errMsg = qsTr("<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">Syntax" +
+                                      " error</a>: %1").arg(jinjaError);
                         errState = "error";
                     } else if (legacyCheck()) {
-                        errMsg = qsTr("Chat template is not in Jinja format.")
+                        errMsg = qsTr("Chat template is not in " +
+                                      "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "Jinja format</a>.")
                         errState = "warning";
                     } else {
                         errState = "ok";
