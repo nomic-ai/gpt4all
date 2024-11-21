@@ -808,6 +808,13 @@ Rectangle {
 
                             delegate: ChatItemView {
                                 width: listView.contentItem.width - 15
+                                inputBoxText: textInput.text
+                                onSetInputBoxText: text => {
+                                    textInput.text  = text;
+                                    textInput.focus = true;
+                                    textInput.forceActiveFocus();
+                                    textInput.cursorPosition = text.length;
+                                }
                             }
 
                             function scrollToEnd() {

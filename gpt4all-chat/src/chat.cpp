@@ -164,6 +164,14 @@ void Chat::regenerateResponse(int index)
     m_needsSave = true;
 }
 
+QVariant Chat::popPrompt(int index)
+{
+    auto content = m_llmodel->popPrompt(index);
+    m_needsSave = true;
+    if (content) return *content;
+    return QVariant::fromValue(nullptr);
+}
+
 void Chat::stopGenerating()
 {
     m_llmodel->stopGenerating();

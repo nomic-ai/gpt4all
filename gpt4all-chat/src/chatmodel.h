@@ -399,7 +399,12 @@ public:
         qsizetype oldSize;
         {
             QMutexLocker locker(&m_mutex);
-            if (size >= (oldSize = m_chatItems.size())) return;
+            if (size >= (oldSize = m_chatItems.size()))
+                return;
+            if (size && m_chatItems.at(size - 1).type() != ChatItem::Type::Response)
+                throw std::invalid_argument(
+                    fmt::format("chat model truncated to {} items would not end in a response", size)
+                );
         }
 
         bool oldHasError;

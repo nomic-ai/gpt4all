@@ -159,6 +159,8 @@ public:
     void destroy();
     bool isModelLoaded() const;
     void regenerateResponse(int index);
+    // used to implement edit functionality
+    std::optional<QString> popPrompt(int index);
 
     void stopGenerating() { m_stopGenerating = true; }
 

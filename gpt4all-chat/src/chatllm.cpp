@@ -641,7 +641,7 @@ void ChatLLM::regenerateResponse(int index)
     int promptIdx;
     {
         auto items = m_chatModel->chatItems(); // holds lock
-        if (index < 0 || index >= items.size() || items[index].type() != ChatItem::Type::Response)
+        if (index < 1 || index >= items.size() || items[index].type() != ChatItem::Type::Response)
             return;
         promptIdx = items[index].peerIndex;
     }
@@ -658,6 +658,20 @@ void ChatLLM::regenerateResponse(int index)
         m_chatModel->updateSources(promptIdx, {});
 
     prompt(m_chat->collectionList());
+}
+
+std::optional<QString> ChatLLM::popPrompt(int index)
+{
+    Q_ASSERT(m_chatModel);
+    QString content;
+    {
+        auto items = m_chatModel->chatItems(); // holds lock
+        if (index < 0 || index >= items.size() || items[index].type() != ChatItem::Type::Prompt)
+            return std::nullopt;
+        content = items[index].value;
+    }
+    m_chatModel->truncate(index);
+    return content;
 }
 
 ModelInfo ChatLLM::modelInfo() const

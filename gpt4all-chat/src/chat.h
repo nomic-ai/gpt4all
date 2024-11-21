@@ -83,6 +83,7 @@ public:
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
     Q_INVOKABLE void regenerateResponse(int index);
+    Q_INVOKABLE QVariant popPrompt(int index);
     Q_INVOKABLE void stopGenerating();
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }

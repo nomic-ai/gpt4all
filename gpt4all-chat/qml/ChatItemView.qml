@@ -10,6 +10,9 @@ import mysettings
 
 ColumnLayout {
 
+property var inputBoxText: null
+signal setInputBoxText(text: string)
+
 Item {
 
 Layout.fillWidth: true
@@ -250,13 +253,19 @@ GridLayout {
                 textProcessor.setValue(value);
             }
 
+            property bool textProcessorReady: false
+
             Component.onCompleted: {
                 resetChatViewTextProcessor();
-                chatModel.valueChanged.connect(function(i, value) {
-                    if (index === i)
+                textProcessorReady = true;
+            }
+
+            Connections {
+                target: chatModel
+                function onValueChanged(i, value) {
+                    if (myTextArea.textProcessorReady && index === i)
                         textProcessor.setValue(value);
                 }
-                );
             }
 
             Connections {
@@ -535,16 +544,22 @@ GridLayout {
             OpacityAnimator { duration: 30 }
         }
 
-        /*ChatMessageButton {
-            visible: parent.canModify && name === "Prompt: "
+        ChatMessageButton {
+            visible: parent.canModify && model.name === "Prompt: "
             Layout.maximumWidth: 24
             Layout.maximumHeight: 24
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: false
             source: "qrc:/gpt4all/icons/edit.svg"
-            onClicked: TODO
+            onClicked: {
+                if (inputBoxText === "") {
+                    const msg = currentChat.popPrompt(index);
+                    if (msg !== null)
+                        setInputBoxText(msg);
+                }
+            }
             name: qsTr("Edit")
-        }*/
+        }
 
         ChatMessageButton {
             visible: parent.canModify && model.name === "Response: "
