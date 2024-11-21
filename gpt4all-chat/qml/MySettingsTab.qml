@@ -55,6 +55,7 @@ Item {
             Column {
                 id: contentInner
                 Layout.fillWidth: true
+                Layout.maximumWidth: parent.width
             }
 
             Item {

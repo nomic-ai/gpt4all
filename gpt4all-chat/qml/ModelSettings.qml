@@ -61,6 +61,7 @@ MySettingsTab {
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             Layout.row: 2
             Layout.column: 0
             Layout.columnSpan: 2
@@ -183,6 +184,8 @@ MySettingsTab {
             Layout.row: 7
             Layout.columnSpan: 2
             Layout.topMargin: 15
+            Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             spacing: 10
             MySettingsLabel {
                 id: systemMessageLabel
@@ -211,12 +214,15 @@ MySettingsTab {
                 id: systemMessageLabelHelp
                 visible: systemMessageArea.errState !== "ok"
                 Layout.alignment: Qt.AlignBottom
+                Layout.fillWidth: true
                 Layout.rightMargin: 5
+                Layout.maximumHeight: systemMessageLabel.height
                 text: qsTr("System message is not plain text.")
                 color: systemMessageArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
-                wrapMode: TextArea.Wrap
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
             }
         }
 
@@ -274,6 +280,8 @@ MySettingsTab {
             Layout.row: 9
             Layout.columnSpan: 2
             Layout.topMargin: 15
+            Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             spacing: 10
             MySettingsLabel {
                 id: chatTemplateLabel
@@ -303,12 +311,15 @@ MySettingsTab {
                 id: chatTemplateLabelHelp
                 visible: templateTextArea.errState !== "ok"
                 Layout.alignment: Qt.AlignBottom
+                Layout.fillWidth: true
                 Layout.rightMargin: 5
+                Layout.maximumHeight: chatTemplateLabel.height
                 text: templateTextArea.errMsg
                 color: templateTextArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
-                wrapMode: TextArea.Wrap
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
             }
         }
 
