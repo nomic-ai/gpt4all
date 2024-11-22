@@ -106,6 +106,16 @@ Rectangle {
         font.pixelSize: theme.fontSizeLarge
     }
 
+    ConfirmationDialog {
+        id: resetContextDialog
+        dialogTitle: qsTr("Erase conversation?")
+        description: qsTr("The entire chat will be erased.")
+        onAccepted: {
+            Network.trackChatEvent("reset_context", { "length": chatModel.count });
+            currentChat.reset();
+        }
+    }
+
     function getConversation() {
         var conversation = "";
         for (var i = 0; i < chatModel.count; i++) {
@@ -899,10 +909,7 @@ Rectangle {
                         source: "qrc:/gpt4all/icons/recycle.svg"
                         imageWidth: 20
                         imageHeight: 20
-                        onClicked: {
-                            Network.trackChatEvent("reset_context", { "length": chatModel.count })
-                            currentChat.reset();
-                        }
+                        onClicked: resetContextDialog.open()
                         ToolTip.visible: resetContextButton.hovered
                         ToolTip.text: qsTr("Erase and reset chat session")
                     }
