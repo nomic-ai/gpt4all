@@ -4,6 +4,7 @@ Natively, large language models only know how to complete plain text and do not 
 For a given model, it is important to use an appropriate chat template, as each model is designed to work best with a specific format. The chat templates included with the built-in models should be sufficient for most purposes.
 
 There are two reasons you would want to alter the chat template:
+
 - You are sideloading a model and there is no chat template available,
 - You would like to have greater control over the input to the LLM than a system message provides.
 
@@ -29,6 +30,7 @@ You typically do not need to write your own chat template. The exception is mode
 
 ## What changed in GPT4All v3.5?
 GPT4All v3.5 overhauled the chat template system. There are three crucial differences:
+
 - The chat template now formats an entire conversation instead of a single pair of messages,
 - The chat template now uses Jinja syntax instead of `%1` and `%2` placeholders,
 - And the system message should no longer contain control tokens or trailing whitespace.
@@ -38,6 +40,7 @@ If you are using any chat templates or system messages that had been added or al
 
 ## Error/Warning: System message is not plain text.
 This is easy to fix. Go to the model's settings and look at the system prompt. There are three things to look for:
+
 - Control tokens such as `<|im_start|>`, `<|start_header_id|>`, or `<|system|>`
 - A prefix such as `### System` or `SYSTEM:`
 - Trailing whitespace, such as a space character or blank line.
