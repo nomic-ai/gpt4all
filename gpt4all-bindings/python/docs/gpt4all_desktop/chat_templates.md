@@ -70,7 +70,9 @@ This is the same as [above][above-1], but appears on the chat page.
 
 
 ## Error/Warning: Chat template is not in Jinja format.
-This is not as easy to fix. If you see a "Reset" button, and this is a built-in model that you have not intentionally modified the prompt template for, you can click "Reset". Otherwise, this is what you can do:
+This is the result of attempting to use an old-style template (possibly from a previous version) in GPT4All 3.5+.
+
+Go to the Model Settings page and select the affected model. If you see a "Reset" button, and you have not intentionally modified the prompt template, you can click "Reset". Otherwise, this is what you can do:
 
 1. Back up your chat template by copying it safely to a text file and saving it. In the next step, it will be removed from GPT4All.
 2. Click "Reset" or "Clear".
