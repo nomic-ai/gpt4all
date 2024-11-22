@@ -15,7 +15,6 @@ MySettingsTab {
 
     ConfirmationDialog {
         id: resetSystemMessageDialog
-        anchors.centerIn: parent
         property var index: null
         property bool resetClears: false
         dialogTitle: qsTr("%1 system message?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))
@@ -26,7 +25,6 @@ MySettingsTab {
 
     ConfirmationDialog {
         id: resetChatTemplateDialog
-        anchors.centerIn: parent
         property bool resetClears: false
         property var index: null
         dialogTitle: qsTr("%1 chat template?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))

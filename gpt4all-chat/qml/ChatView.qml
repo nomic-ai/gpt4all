@@ -87,7 +87,6 @@ Rectangle {
 
     ConfirmationDialog {
         id: switchModelDialog
-        anchors.centerIn: parent
         property int index: -1
         dialogTitle: qsTr("Erase conversation?")
         description: qsTr("Changing the model will erase the current conversation.")
@@ -810,8 +809,7 @@ Rectangle {
                                 width: listView.contentItem.width - 15
                                 inputBoxText: textInput.text
                                 onSetInputBoxText: text => {
-                                    textInput.text  = text;
-                                    textInput.focus = true;
+                                    textInput.text = text;
                                     textInput.forceActiveFocus();
                                     textInput.cursorPosition = text.length;
                                 }

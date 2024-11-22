@@ -21,7 +21,6 @@ Item {
 
     ConfirmationDialog {
         id: restoreDefaultsDialog
-        anchors.centerIn: parent
         dialogTitle: qsTr("Restore defaults?")
         description: qsTr("This page of settings will be reset to the defaults.")
         onAccepted: root.restoreDefaults()

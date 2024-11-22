@@ -527,6 +527,24 @@ GridLayout {
         }
     }
 
+    ConfirmationDialog {
+        id: editPromptDialog
+        dialogTitle: qsTr("Edit this prompt?")
+        description: qsTr("The exising response and all later messages will be permanently erased.")
+        onAccepted: {
+            const msg = currentChat.popPrompt(index);
+            if (msg !== null)
+                setInputBoxText(msg);
+        }
+    }
+
+    ConfirmationDialog {
+        id: redoResponseDialog
+        dialogTitle: qsTr("Redo this response?")
+        description: qsTr("The exising response and all later messages will be permanently erased.")
+        onAccepted: currentChat.regenerateResponse(index)
+    }
+
     RowLayout {
         id: buttonRow
         Layout.row: 4
@@ -552,11 +570,8 @@ GridLayout {
             Layout.fillWidth: false
             source: "qrc:/gpt4all/icons/edit.svg"
             onClicked: {
-                if (inputBoxText === "") {
-                    const msg = currentChat.popPrompt(index);
-                    if (msg !== null)
-                        setInputBoxText(msg);
-                }
+                if (inputBoxText === "")
+                    editPromptDialog.open();
             }
             name: qsTr("Edit")
         }
@@ -569,7 +584,7 @@ GridLayout {
             Layout.fillWidth: false
             name: qsTr("Redo")
             source: "qrc:/gpt4all/icons/regenerate.svg"
-            onClicked: currentChat.regenerateResponse(index)
+            onClicked: redoResponseDialog.open()
         }
 
         ChatMessageButton {

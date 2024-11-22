@@ -52,5 +52,8 @@ MyDialog {
         background: Rectangle {
             color: "transparent"
         }
+        Keys.onEnterPressed: confirmationDialog.accept()
+        Keys.onReturnPressed: confirmationDialog.accept()
     }
+    Component.onCompleted: dialogBox.forceActiveFocus()
 }
