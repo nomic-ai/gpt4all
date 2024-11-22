@@ -643,7 +643,7 @@ void ChatLLM::regenerateResponse(int index)
         auto items = m_chatModel->chatItems(); // holds lock
         if (index < 1 || index >= items.size() || items[index].type() != ChatItem::Type::Response)
             return;
-        promptIdx = items[index].peerIndex;
+        promptIdx = m_chatModel->getPeerUnlocked(index).value_or(-1);
     }
 
     emit responseChanged({});
@@ -859,11 +859,10 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
         {
             // Find the prompt that represents the query. Server chats are flexible and may not have one.
             auto items = m_chatModel->chatItems(); // holds lock
-            Q_ASSERT(!items.empty());
-            if (auto &response = items.back(); response.peerIndex >= 0) {
-                Q_ASSERT(response.peerIndex < items.size());
-                query = {response.peerIndex, items[response.peerIndex].value};
-            }
+            Q_ASSERT(items);
+            auto response = items.cend() - 1;
+            if (auto peer = m_chatModel->getPeerUnlocked(response))
+                query = {*peer - items.cbegin(), (*peer)->value};
         }
         if (query) {
             auto &[promptIndex, queryStr] = *query;

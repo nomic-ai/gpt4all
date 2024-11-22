@@ -21,10 +21,13 @@
 #include <Qt>
 #include <QtGlobal>
 
+#include <iterator>
+#include <ranges>
 #include <span>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
+namespace ranges = std::ranges;
 
 
 struct PromptAttachment {
@@ -72,11 +75,6 @@ struct ChatItem
     Q_PROPERTY(QString name  MEMBER name )
     Q_PROPERTY(QString value MEMBER value)
 
-    // prompts and responses
-    /* peerIndex is a bidirectional 1:1 link between a prompt and the response that would
-     * cite its LocalDocs sources. Optional and defaults to -1. */
-    Q_PROPERTY(int peerIndex MEMBER peerIndex)
-
     // prompts
     Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments)
     Q_PROPERTY(QString                 bakedPrompt       READ   bakedPrompt      )
@@ -113,8 +111,8 @@ public:
     ChatItem(prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
         : name(u"Prompt: "_s), value(value), promptAttachments(attachments) {}
 
-    ChatItem(response_tag_t, int promptIndex, bool isCurrentResponse = true)
-        : name(u"Response: "_s), peerIndex(promptIndex), isCurrentResponse(isCurrentResponse) {}
+    ChatItem(response_tag_t, bool isCurrentResponse = true)
+        : name(u"Response: "_s), isCurrentResponse(isCurrentResponse) {}
 
     Type type() const
     {
@@ -150,9 +148,6 @@ public:
     QString name;
     QString value;
 
-    // prompts and responses
-    int peerIndex = -1;
-
     // prompts
     QList<ResultInfo>       sources;
     QList<ResultInfo>       consolidatedSources;
@@ -170,9 +165,9 @@ public:
 };
 Q_DECLARE_METATYPE(ChatItem)
 
-class ChatModelAccessor : public std::span<const ChatItem> {
+class ChatModelAccessor : public ranges::subrange<QList<ChatItem>::const_iterator> {
 private:
-    using Super = std::span<const ChatItem>;
+    using Super = ranges::subrange<QList<ChatItem>::const_iterator>;
 
 public:
     template <typename... T>
@@ -225,67 +220,96 @@ public:
         return m_chatItems.size();
     }
 
+    /* a "peer" is a bidirectional 1:1 link between a prompt and the response that would cite its LocalDocs
+     * sources. Return std::nullopt if there is none, which is possible for e.g. server chats. */
+    auto getPeerUnlocked(QList<ChatItem>::const_iterator item) const
+        -> std::optional<QList<ChatItem>::const_iterator>
+    {
+        switch (item->type()) {
+            using enum ChatItem::Type;
+        case Prompt:
+            {
+                auto peer = std::next(item);
+                if (peer < m_chatItems.cend() && peer->type() == Response)
+                    return peer;
+                break;
+            }
+        case Response:
+            {
+                if (item > m_chatItems.cbegin()) {
+                    if (auto peer = std::prev(item); peer->type() == Prompt)
+                        return peer;
+                }
+                break;
+            }
+        default:
+            throw std::invalid_argument("getPeer() called on item that is not a prompt or response");
+        }
+        return std::nullopt;
+    }
+
+    auto getPeerUnlocked(int index) const -> std::optional<int>
+    {
+        return getPeerUnlocked(m_chatItems.cbegin() + index)
+            .transform([&](auto &&i) { return i - m_chatItems.cbegin(); } );
+    }
+
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
         QMutexLocker locker(&m_mutex);
         if (!index.isValid() || index.row() < 0 || index.row() >= m_chatItems.size())
             return QVariant();
 
-        auto getPeer = [this](const ChatItem &item) -> const ChatItem * {
-            if (item.peerIndex < 0) return nullptr;
-            return &m_chatItems.at(item.peerIndex);
-        };
-
-        const ChatItem &item = m_chatItems.at(index.row());
+        auto item = m_chatItems.cbegin() + index.row();
         switch (role) {
             case NameRole:
-                return item.name;
+                return item->name;
             case ValueRole:
-                return item.value;
+                return item->value;
             case PeerRole:
-                switch (item.type()) {
+                switch (item->type()) {
                     using enum ChatItem::Type;
                 case Prompt:
                 case Response:
                     {
-                        auto *peer = getPeer(item);
-                        return peer ? QVariant::fromValue(*peer) : QVariant::fromValue(nullptr);
+                        auto peer = getPeerUnlocked(item);
+                        return peer ? QVariant::fromValue(**peer) : QVariant::fromValue(nullptr);
                     }
                 default:
                     return QVariant();
                 }
             case PromptAttachmentsRole:
-                return QVariant::fromValue(item.promptAttachments);
+                return QVariant::fromValue(item->promptAttachments);
             case SourcesRole:
                 {
                     QList<ResultInfo> data;
-                    if (item.type() == ChatItem::Type::Response) {
-                        if (auto *prompt = getPeer(item))
-                            data = prompt->consolidatedSources;
+                    if (item->type() == ChatItem::Type::Response) {
+                        if (auto prompt = getPeerUnlocked(item))
+                            data = (*prompt)->consolidatedSources;
                     }
                     return QVariant::fromValue(data);
                 }
             case ConsolidatedSourcesRole:
                 {
                     QList<ResultInfo> data;
-                    if (item.type() == ChatItem::Type::Response) {
-                        if (auto *prompt = getPeer(item))
-                            data = prompt->sources;
+                    if (item->type() == ChatItem::Type::Response) {
+                        if (auto prompt = getPeerUnlocked(item))
+                            data = (*prompt)->sources;
                     }
                     return QVariant::fromValue(data);
                 }
             case IsCurrentResponseRole:
-                return item.isCurrentResponse;
+                return item->isCurrentResponse;
             case NewResponseRole:
-                return item.newResponse;
+                return item->newResponse;
             case StoppedRole:
-                return item.stopped;
+                return item->stopped;
             case ThumbsUpStateRole:
-                return item.thumbsUpState;
+                return item->thumbsUpState;
             case ThumbsDownStateRole:
-                return item.thumbsDownState;
+                return item->thumbsDownState;
             case IsErrorRole:
-                return item.type() == ChatItem::Type::Response && item.isError;
+                return item->type() == ChatItem::Type::Response && item->isError;
         }
 
         return QVariant();
@@ -347,7 +371,6 @@ public:
                 auto &promptItem = m_chatItems[promptIndex];
                 if (promptItem.type() != ChatItem::Type::Prompt)
                     throw std::invalid_argument(fmt::format("item at index {} is not a prompt", promptIndex));
-                promptItem.peerIndex = m_chatItems.count();
             }
             m_chatItems.emplace_back(ChatItem::response_tag, promptIndex);
         }
@@ -378,12 +401,7 @@ public:
             m_chatItems.reserve(m_chatItems.count() + nNewItems);
             for (auto &item : history)
                 m_chatItems << item;
-            // locate the prompt that will used for LocalDocs
-            promptIndex = (m_chatItems.back().type() == ChatItem::Type::Prompt
-                           ? m_chatItems.count() - 1 : -1);
-            if (promptIndex >= 0)
-                m_chatItems[promptIndex].peerIndex = m_chatItems.count();
-            m_chatItems.emplace_back(ChatItem::response_tag, promptIndex);
+            m_chatItems.emplace_back(ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
@@ -515,17 +533,18 @@ public:
 
     Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
     {
-        int responseIndex;
+        int responseIndex = -1;
         {
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            auto &promptItem = m_chatItems[index];
-            if (promptItem.type() != ChatItem::Type::Prompt)
+            auto promptItem = m_chatItems.begin() + index;
+            if (promptItem->type() != ChatItem::Type::Prompt)
                 throw std::invalid_argument(fmt::format("item at index {} is not a prompt", index));
-            responseIndex = promptItem.peerIndex;
-            promptItem.sources = sources;
-            promptItem.consolidatedSources = consolidateSources(sources);
+            if (auto peer = getPeerUnlocked(promptItem))
+                responseIndex = *peer - m_chatItems.cbegin();
+            promptItem->sources = sources;
+            promptItem->consolidatedSources = consolidateSources(sources);
         }
         if (responseIndex >= 0) {
             emit dataChanged(createIndex(responseIndex, 0), createIndex(responseIndex, 0), {SourcesRole});
@@ -610,7 +629,8 @@ public:
     {
         QMutexLocker locker(&m_mutex);
         stream << int(m_chatItems.size());
-        for (auto c : m_chatItems) { // NB: copies
+        for (auto itemIt = m_chatItems.cbegin(); itemIt < m_chatItems.cend(); ++itemIt) {
+            auto c = *itemIt; // NB: copies
             if (version < 11) {
                 // move sources from their prompt to the next response
                 switch (c.type()) {
@@ -621,10 +641,9 @@ public:
                     break;
                 case Response:
                     // note: we drop sources for responseless prompts
-                    if (c.peerIndex >= 0) {
-                        auto &peer = m_chatItems.at(c.peerIndex);
-                        c.sources             = peer.sources;
-                        c.consolidatedSources = peer.consolidatedSources;
+                    if (auto peer = getPeerUnlocked(itemIt)) {
+                        c.sources             = (*peer)->sources;
+                        c.consolidatedSources = (*peer)->consolidatedSources;
                     }
                 default:
                     ;
@@ -642,12 +661,8 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
-            if (version >= 11 && c.type() == ChatItem::Type::Response) {
-                // this should only be -1 for Server chats, which aren't saved
-                Q_ASSERT(c.peerIndex >= 0);
-                stream << c.peerIndex;
+            if (version >= 11 && c.type() == ChatItem::Type::Response)
                 stream << c.isError;
-            }
             if (version >= 8) {
                 stream << c.sources.size();
                 for (const ResultInfo &info : c.sources) {
@@ -742,24 +757,8 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
-            if (version >= 11 && c.type() == ChatItem::Type::Response) {
-                decltype(c.peerIndex) pidx;
-                stream >> pidx;
+            if (version >= 11 && c.type() == ChatItem::Type::Response)
                 stream >> c.isError;
-
-                auto idx = chatItems.size();
-                ChatItem *prompt;
-                if (
-                    pidx < 0 || pidx >= chatItems.size()
-                    || (prompt = &chatItems[pidx])->type() != ChatItem::Type::Prompt
-                    || prompt->peerIndex >= 0
-                ) {
-                    qWarning() << "ChatModel ERROR: response " << idx << "has bad peer index" << pidx;
-                    return false;
-                }
-                c.peerIndex = pidx;
-                prompt->peerIndex = idx;
-            }
             if (version >= 8) {
                 qsizetype count;
                 stream >> count;
@@ -883,8 +882,7 @@ public:
                     auto &prompt = chatItems[lastPromptIndex];
                     prompt.sources             = std::move(c.sources            );
                     prompt.consolidatedSources = std::move(c.consolidatedSources);
-                    c.peerIndex = std::exchange(lastPromptIndex, -1);
-                    prompt.peerIndex = chatItems.size();
+                    lastPromptIndex = -1;
                 } else {
                     // drop sources for promptless responses
                     c.sources.clear();
