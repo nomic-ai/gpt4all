@@ -860,9 +860,9 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
             // Find the prompt that represents the query. Server chats are flexible and may not have one.
             auto items = m_chatModel->chatItems(); // holds lock
             Q_ASSERT(items);
-            auto response = items.cend() - 1;
+            auto response = items.end() - 1;
             if (auto peer = m_chatModel->getPeerUnlocked(response))
-                query = {*peer - items.cbegin(), (*peer)->value};
+                query = {*peer - items.begin(), (*peer)->value};
         }
         if (query) {
             auto &[promptIndex, queryStr] = *query;
