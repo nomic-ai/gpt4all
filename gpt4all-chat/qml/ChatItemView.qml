@@ -530,7 +530,7 @@ GridLayout {
     ConfirmationDialog {
         id: editPromptDialog
         dialogTitle: qsTr("Edit this prompt?")
-        description: qsTr("The exising response and all later messages will be permanently erased.")
+        description: qsTr("The existing response and all later messages will be permanently erased.")
         onAccepted: {
             const msg = currentChat.popPrompt(index);
             if (msg !== null)
@@ -541,7 +541,7 @@ GridLayout {
     ConfirmationDialog {
         id: redoResponseDialog
         dialogTitle: qsTr("Redo this response?")
-        description: qsTr("The exising response and all later messages will be permanently erased.")
+        description: qsTr("The existing response and all later messages will be permanently erased.")
         onAccepted: currentChat.regenerateResponse(index)
     }
 
