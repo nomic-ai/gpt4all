@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 struct LLamaPrivate;
 struct EmbModelSpec;
@@ -49,26 +50,26 @@ public:
                size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
     int32_t contextLength() const override;
+    auto specialTokens() -> std::unordered_map<std::string, std::string> const override;
 
 protected:
-    std::vector<Token> tokenize(std::string_view str, bool special) override;
+    std::vector<Token> tokenize(std::string_view str) const override;
     bool isSpecialToken(Token id) const override;
     std::string tokenToString(Token id) const override;
-    void initSampler(PromptContext &ctx) override;
+    void initSampler(const PromptContext &ctx) override;
     Token sampleToken() const override;
-    bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const override;
-    void shiftContext(PromptContext &promptCtx) override;
+    bool evalTokens(int32_t nPast, std::span<const Token> tokens) const override;
+    void shiftContext(const PromptContext &promptCtx, int32_t *nPast) override;
     int32_t inputLength() const override;
-    void setTokenizeInputPosition(int32_t pos) override;
-    auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
-        -> std::vector<Token>::const_iterator override;
-    void setModelInputPosition(PromptContext &ctx, int32_t pos) override;
-    void appendInputToken(PromptContext &ctx, Token tok) override;
+    int32_t computeModelInputPosition(std::span<const Token> input) const override;
+    void setModelInputPosition(int32_t pos) override;
+    void appendInputToken(Token tok) override;
     std::span<const Token> inputTokens() const override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;
     int32_t maxContextLength(std::string const &modelPath) const override;
     int32_t layerCount(std::string const &modelPath) const override;
+    auto chatTemplate(const char *modelPath) const -> std::expected<std::string, std::string> override;
 
     void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
                        size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb,

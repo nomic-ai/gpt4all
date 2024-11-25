@@ -24,6 +24,12 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property var currentModelInfo: currentChat && currentChat.modelInfo
+    property var currentModelId: null
+    onCurrentModelInfoChanged: {
+        const newId = currentModelInfo && currentModelInfo.id;
+        if (currentModelId !== newId) { currentModelId = newId; }
+    }
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -79,14 +85,11 @@ Rectangle {
         function open_(msg) { message = msg; open(); }
     }
 
-    SwitchModelDialog {
+    ConfirmationDialog {
         id: switchModelDialog
-        anchors.centerIn: parent
-        Item {
-            Accessible.role: Accessible.Dialog
-            Accessible.name: qsTr("Switch model dialog")
-            Accessible.description: qsTr("Warn the user if they switch models, then context will be erased")
-        }
+        property int index: -1
+        dialogTitle: qsTr("Erase conversation?")
+        description: qsTr("Changing the model will erase the current conversation.")
     }
 
     PopupDialog {
@@ -101,6 +104,16 @@ Rectangle {
         anchors.centerIn: parent
         text: qsTr("Code copied to clipboard.")
         font.pixelSize: theme.fontSizeLarge
+    }
+
+    ConfirmationDialog {
+        id: resetContextDialog
+        dialogTitle: qsTr("Erase conversation?")
+        description: qsTr("The entire chat will be erased.")
+        onAccepted: {
+            Network.trackChatEvent("reset_context", { "length": chatModel.count });
+            currentChat.reset();
+        }
     }
 
     function getConversation() {
@@ -703,7 +716,7 @@ Rectangle {
                                 if (i !== -1) {
                                     defaultModel = comboBox.valueAt(i);
                                 } else {
-                                    defaultModel = comboBox.valueAt(0);
+                                    defaultModel = comboBox.count ? comboBox.valueAt(0) : "";
                                 }
                                 if (defaultModel !== "") {
                                     defaultModelName = ModelList.modelInfo(defaultModel).name;
@@ -790,9 +803,9 @@ Rectangle {
                             Layout.leftMargin: 50
                             Layout.rightMargin: 50
                             Layout.alignment: Qt.AlignHCenter
-                            spacing: 25
+                            spacing: 10
                             model: chatModel
-                            cacheBuffer: Math.max(0, listView.contentHeight)
+                            cacheBuffer: 2147483647
 
                             ScrollBar.vertical: ScrollBar {
                                 policy: ScrollBar.AsNeeded
@@ -804,6 +817,12 @@ Rectangle {
 
                             delegate: ChatItemView {
                                 width: listView.contentItem.width - 15
+                                inputBoxText: textInput.text
+                                onSetInputBoxText: text => {
+                                    textInput.text = text;
+                                    textInput.forceActiveFocus();
+                                    textInput.cursorPosition = text.length;
+                                }
                             }
 
                             function scrollToEnd() {
@@ -832,11 +851,9 @@ Rectangle {
                 clip: true
                 z: 400
 
-                property bool isHovered: {
-                    return conversationTrayButton.isHovered ||
-                        resetContextButton.hovered || copyChatButton.hovered ||
-                        regenerateButton.hovered
-                }
+                property bool isHovered: (
+                    conversationTrayButton.isHovered || resetContextButton.hovered || copyChatButton.hovered
+                )
 
                 state: conversationTrayContent.isHovered ? "expanded" : "collapsed"
                 states: [
@@ -892,11 +909,7 @@ Rectangle {
                         source: "qrc:/gpt4all/icons/recycle.svg"
                         imageWidth: 20
                         imageHeight: 20
-                        onClicked: {
-                            Network.trackChatEvent("reset_context", { "length": chatModel.count })
-                            currentChat.reset();
-                            currentChat.processSystemPrompt();
-                        }
+                        onClicked: resetContextDialog.open()
                         ToolTip.visible: resetContextButton.hovered
                         ToolTip.text: qsTr("Erase and reset chat session")
                     }
@@ -920,34 +933,6 @@ Rectangle {
                         }
                         ToolTip.visible: copyChatButton.hovered
                         ToolTip.text: qsTr("Copy chat session to clipboard")
-                    }
-                    MyToolButton {
-                        id: regenerateButton
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        source: "qrc:/gpt4all/icons/regenerate.svg"
-                        imageWidth: 20
-                        imageHeight: 20
-                        visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
-                        onClicked: {
-                            if (chatModel.count < 2)
-                                return
-                            var promptIndex = chatModel.count - 2
-                            var promptElement = chatModel.get(promptIndex)
-                            var responseIndex = chatModel.count - 1
-                            var responseElement = chatModel.get(responseIndex)
-                            if (promptElement.name !== "Prompt: " || responseElement.name !== "Response: ")
-                                return
-                            currentChat.regenerateResponse()
-                            chatModel.updateCurrentResponse(responseIndex, true)
-                            chatModel.updateStopped(responseIndex, false)
-                            chatModel.updateThumbsUpState(responseIndex, false)
-                            chatModel.updateThumbsDownState(responseIndex, false)
-                            chatModel.updateNewResponse(responseIndex, "")
-                            currentChat.prompt(promptElement.promptPlusAttachments)
-                        }
-                        ToolTip.visible: regenerateButton.hovered
-                        ToolTip.text: qsTr("Redo last chat response")
                     }
                 }
             }
@@ -1026,13 +1011,15 @@ Rectangle {
                 anchors.leftMargin: 30
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignVCenter
-                color: theme.mutedTextColor
-                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== ""
+                color: textInputView.error !== null ? theme.textErrorColor : theme.mutedTextColor
+                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== "" || textInputView.error !== null
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 text: {
                     if (externalHoveredLink !== "")
                         return externalHoveredLink
+                    if (textInputView.error !== null)
+                        return textInputView.error;
 
                     const segments = [currentChat.tokenSpeed];
                     const device = currentChat.device;
@@ -1050,6 +1037,7 @@ Rectangle {
                 }
                 font.pixelSize: theme.fontSizeSmaller
                 font.bold: true
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
 
             RectangularGlow {
@@ -1079,8 +1067,8 @@ Rectangle {
             Rectangle {
                 id: textInputView
                 color: theme.controlBackground
-                border.width: 1
-                border.color: theme.controlBorder
+                border.width: error === null ? 1 : 2
+                border.color: error === null ? theme.controlBorder : theme.textErrorColor
                 radius: 10
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -1090,6 +1078,41 @@ Rectangle {
                 anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
                 height: textInputViewLayout.implicitHeight
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
+
+                property var error: null
+                function checkError() {
+                    const info = currentModelInfo;
+                    if (info === null || !info.id) {
+                        error = null;
+                    } else if (info.chatTemplate.isLegacy) {
+                        error = qsTr("Legacy prompt template needs to be " +
+                                     "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">updated" +
+                                     "</a> in Settings.");
+                    } else if (!info.chatTemplate.isSet) {
+                        error = qsTr("No <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                     "chat template</a> configured.");
+                    } else if (/^\s*$/.test(info.chatTemplate.value)) {
+                        error = qsTr("The <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                     "chat template</a> cannot be blank.");
+                    } else if (info.systemMessage.isLegacy) {
+                        error = qsTr("Legacy system prompt needs to be " +
+                                     "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">updated" +
+                                     "</a> in Settings.");
+                    } else
+                        error = null;
+                }
+                Component.onCompleted: checkError()
+                Connections {
+                    target: window
+                    function onCurrentModelIdChanged() { textInputView.checkError(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onChatTemplateChanged(info)
+                    { if (info.id === window.currentModelId) textInputView.checkError(); }
+                    function onSystemMessageChanged(info)
+                    { if (info.id === window.currentModelId) textInputView.checkError(); }
+                }
 
                 MouseArea {
                     id: textInputViewMouseArea
@@ -1214,16 +1237,16 @@ Rectangle {
                             Accessible.role: Accessible.EditableText
                             Accessible.name: placeholderText
                             Accessible.description: qsTr("Send messages/prompts to the model")
-                            Keys.onReturnPressed: (event)=> {
-                                                      if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
-                                                      event.accepted = false;
-                                                      else {
-                                                          editingFinished();
-                                                          sendMessage()
-                                                      }
-                                                  }
+                            Keys.onReturnPressed: event => {
+                                if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier) {
+                                    event.accepted = false;
+                                } else if (!chatModel.hasError && textInputView.error === null) {
+                                    editingFinished();
+                                    sendMessage();
+                                }
+                            }
                             function sendMessage() {
-                                if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress || currentChat.restoringFromText)
+                                if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress)
                                     return
 
                                 currentChat.stopGenerating()
@@ -1338,6 +1361,7 @@ Rectangle {
                             imageWidth: theme.fontSizeLargest
                             imageHeight: theme.fontSizeLargest
                             visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
+                            enabled: !chatModel.hasError && textInputView.error === null
                             source: "qrc:/gpt4all/icons/send_message.svg"
                             Accessible.name: qsTr("Send message")
                             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")

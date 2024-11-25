@@ -11,3 +11,5 @@ add_subdirectory(DuckX)
 
 set(QT_VERSION_MAJOR 6)
 add_subdirectory(QXlsx/QXlsx)
+
+add_subdirectory(Jinja2Cpp)

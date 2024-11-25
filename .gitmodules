@@ -17,3 +17,6 @@
 [submodule "gpt4all-chat/deps/QXlsx"]
 	path = gpt4all-chat/deps/QXlsx
 	url = https://github.com/nomic-ai/QXlsx.git
+[submodule "gpt4all-chat/deps/Jinja2Cpp"]
+	path = gpt4all-chat/deps/Jinja2Cpp
+	url = https://github.com/nomic-ai/jinja2cpp.git

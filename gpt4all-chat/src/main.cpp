@@ -12,12 +12,16 @@
 #include <singleapplication.h>
 
 #include <QCoreApplication>
+#include <QFont>
+#include <QFontDatabase>
 #include <QObject>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QQuickWindow>
 #include <QSettings>
 #include <QString>
 #include <QUrl>
+#include <QVariant>
 #include <Qt>
 
 #ifdef Q_OS_LINUX
@@ -91,24 +95,33 @@ int main(int argc, char *argv[])
 
     // Set the local and language translation before the qml engine has even been started. This will
     // use the default system locale unless the user has explicitly set it to use a different one.
-    MySettings::globalInstance()->setLanguageAndLocale();
+    auto *mySettings = MySettings::globalInstance();
+    mySettings->setLanguageAndLocale();
 
     QQmlApplicationEngine engine;
 
     // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
     // engine.uiLanguage property
-    QObject::connect(MySettings::globalInstance(), &MySettings::languageAndLocaleChanged, [&engine]() {
+    QObject::connect(mySettings, &MySettings::languageAndLocaleChanged, [&engine]() {
         engine.setUiLanguage(MySettings::globalInstance()->languageAndLocale());
     });
 
-    qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", MySettings::globalInstance());
-    qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", ModelList::globalInstance());
+    auto *modelList = ModelList::globalInstance();
+    QObject::connect(modelList, &ModelList::dataChanged, mySettings, &MySettings::onModelInfoChanged);
+
+    qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", mySettings);
+    qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", modelList);
     qmlRegisterSingletonInstance("chatlistmodel", 1, 0, "ChatListModel", ChatListModel::globalInstance());
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
     qmlRegisterSingletonInstance("localdocs", 1, 0, "LocalDocs", LocalDocs::globalInstance());
     qmlRegisterUncreatableMetaObject(MySettingsEnums::staticMetaObject, "mysettingsenums", 1, 0, "MySettingsEnums", "Error: only enums");
+
+    {
+        auto fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        engine.rootContext()->setContextProperty("fixedFont", fixedFont);
+    }
 
     const QUrl url(u"qrc:/gpt4all/main.qml"_s);
 

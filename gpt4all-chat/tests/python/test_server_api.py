@@ -203,11 +203,10 @@ EXPECTED_MODEL_INFO = {
 EXPECTED_COMPLETIONS_RESPONSE = {
     'choices': [
         {
-            'finish_reason': 'stop',
+            'finish_reason': 'length',
             'index': 0,
             'logprobs': None,
-            'references': None,
-            'text': ' jumps over the lazy dog.',
+            'text': ' jumps over the lazy dog.\n',
         },
     ],
     'id': 'placeholder',
@@ -242,18 +241,14 @@ def test_with_models(chat_server_with_model: None) -> None:
         'type': 'invalid_request_error',
     }}
 
-    data = {
-        'model': 'Llama 3.2 1B Instruct',
-        'prompt': 'The quick brown fox',
-        'temperature': 0,
-    }
-
+    data = dict(
+        model       = 'Llama 3.2 1B Instruct',
+        prompt      = 'The quick brown fox',
+        temperature = 0,
+        max_tokens  = 6,
+    )
     response = request.post('completions', data=data)
-    assert len(response['choices']) == 1
-    assert response['choices'][0].keys() == {'text', 'index', 'logprobs', 'references', 'finish_reason'}
-    assert response['choices'][0]['text'] == ' jumps over the lazy dog.'
-    assert 'created' in response
-    response.pop('created')  # Remove the dynamic field for comparison
+    del response['created']  # Remove the dynamic field for comparison
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
 
