@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -22,7 +21,6 @@ static_assert(sizeof(token_t) == sizeof(LLModel::Token));
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;
-    LLModel::PromptContext promptContext;
     ~LLModelWrapper() { delete llModel; }
 };
 
@@ -126,49 +124,44 @@ uint64_t llmodel_state_set_data(llmodel_model model, const uint8_t *state, uint6
     return wrapper->llModel->restoreState({state, size_t(state_size)}, {input_tokens, size_t(n_input_tokens)});
 }
 
-void llmodel_prompt(llmodel_model model, const char *prompt,
-                    const char *prompt_template,
-                    llmodel_prompt_callback prompt_callback,
-                    llmodel_response_callback response_callback,
-                    bool allow_context_shift,
-                    llmodel_prompt_context *ctx,
-                    bool special,
-                    const char *fake_reply)
+bool llmodel_prompt(llmodel_model               model,
+                    const char                 *prompt,
+                    llmodel_prompt_callback     prompt_callback,
+                    llmodel_response_callback   response_callback,
+                    llmodel_prompt_context     *ctx,
+                    const char                **error)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
-    auto response_func = [response_callback](int32_t token_id, const std::string &response) {
-        return response_callback(token_id, response.c_str());
+    // Copy the C prompt context
+    LLModel::PromptContext promptContext {
+        .n_predict      = ctx->n_predict,
+        .top_k          = ctx->top_k,
+        .top_p          = ctx->top_p,
+        .min_p          = ctx->min_p,
+        .temp           = ctx->temp,
+        .n_batch        = ctx->n_batch,
+        .repeat_penalty = ctx->repeat_penalty,
+        .repeat_last_n  = ctx->repeat_last_n,
+        .contextErase   = ctx->context_erase,
     };
 
-    // Copy the C prompt context
-    wrapper->promptContext.n_past = ctx->n_past;
-    wrapper->promptContext.n_predict = ctx->n_predict;
-    wrapper->promptContext.top_k = ctx->top_k;
-    wrapper->promptContext.top_p = ctx->top_p;
-    wrapper->promptContext.min_p = ctx->min_p;
-    wrapper->promptContext.temp = ctx->temp;
-    wrapper->promptContext.n_batch = ctx->n_batch;
-    wrapper->promptContext.repeat_penalty = ctx->repeat_penalty;
-    wrapper->promptContext.repeat_last_n = ctx->repeat_last_n;
-    wrapper->promptContext.contextErase = ctx->context_erase;
+    auto prompt_func = [prompt_callback](std::span<const LLModel::Token> token_ids, bool cached) {
+        return prompt_callback(token_ids.data(), token_ids.size(), cached);
+    };
+    auto response_func = [response_callback](LLModel::Token token_id, std::string_view piece) {
+        return response_callback(token_id, piece.data());
+    };
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, allow_context_shift,
-                             wrapper->promptContext, special,
-                             fake_reply ? std::make_optional<std::string_view>(fake_reply) : std::nullopt);
+    try {
+        wrapper->llModel->prompt(prompt, prompt_func, response_func, promptContext);
+    } catch (std::exception const &e) {
+        llmodel_set_error(error, e.what());
+        return false;
+    }
 
-    // Update the rest of the C prompt context
-    ctx->n_past = wrapper->promptContext.n_past;
-    ctx->n_predict = wrapper->promptContext.n_predict;
-    ctx->top_k = wrapper->promptContext.top_k;
-    ctx->top_p = wrapper->promptContext.top_p;
-    ctx->min_p = wrapper->promptContext.min_p;
-    ctx->temp = wrapper->promptContext.temp;
-    ctx->n_batch = wrapper->promptContext.n_batch;
-    ctx->repeat_penalty = wrapper->promptContext.repeat_penalty;
-    ctx->repeat_last_n = wrapper->promptContext.repeat_last_n;
-    ctx->context_erase = wrapper->promptContext.contextErase;
+    return true;
 }
 
 float *llmodel_embed(
@@ -306,4 +299,22 @@ const char *llmodel_model_gpu_device_name(llmodel_model model)
 {
     const auto *wrapper = static_cast<LLModelWrapper *>(model);
     return wrapper->llModel->gpuDeviceName();
+}
+
+int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, const char **error)
+{
+    auto *wrapper = static_cast<const LLModelWrapper *>(model);
+    try {
+        return wrapper->llModel->countPromptTokens(prompt);
+    } catch (const std::exception& e) {
+        llmodel_set_error(error, e.what());
+        return -1;
+    }
+}
+
+void llmodel_model_foreach_special_token(llmodel_model model, llmodel_special_token_callback callback)
+{
+    auto *wrapper = static_cast<const LLModelWrapper *>(model);
+    for (auto &[name, token] : wrapper->llModel->specialTokens())
+        callback(name.c_str(), token.c_str());
 }

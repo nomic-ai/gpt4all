@@ -8,8 +8,23 @@ import QtQuick.Layouts
 import gpt4all
 import mysettings
 
+ColumnLayout {
+
+property var inputBoxText: null
+signal setInputBoxText(text: string)
+
+Item {
+
+Layout.fillWidth: true
+Layout.maximumWidth: parent.width
+Layout.preferredHeight: gridLayout.height
+
+HoverHandler { id: hoverArea }
+
 GridLayout {
-    rows: 5
+    id: gridLayout
+    anchors.left: parent.left
+    anchors.right: parent.right
     columns: 2
 
     Item {
@@ -40,7 +55,7 @@ GridLayout {
                 to: 360
                 duration: 1000
                 loops: Animation.Infinite
-                running: currentResponse && (currentChat.responseInProgress || currentChat.restoringFromText)
+                running: isCurrentResponse && currentChat.responseInProgress
             }
         }
     }
@@ -73,13 +88,11 @@ GridLayout {
                 color: theme.mutedTextColor
             }
             RowLayout {
-                visible: currentResponse && ((value === "" && currentChat.responseInProgress) || currentChat.restoringFromText)
+                visible: isCurrentResponse && (value === "" && currentChat.responseInProgress)
                 Text {
                     color: theme.mutedTextColor
                     font.pixelSize: theme.fontSizeLarger
                     text: {
-                        if (currentChat.restoringFromText)
-                            return qsTr("restoring from text ...");
                         switch (currentChat.responseState) {
                         case Chat.ResponseStopped: return qsTr("response stopped ...");
                         case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: %1 ...").arg(currentChat.collectionList.join(", "));
@@ -99,10 +112,11 @@ GridLayout {
         Layout.row: 1
         Layout.column: 1
         Layout.fillWidth: true
-        spacing: 20
+        spacing: 10
         Flow {
             id: attachedUrlsFlow
             Layout.fillWidth: true
+            Layout.bottomMargin: 10
             spacing: 10
             visible: promptAttachments.length !== 0
             Repeater {
@@ -156,7 +170,7 @@ GridLayout {
             focus: false
             readOnly: true
             font.pixelSize: theme.fontSizeLarge
-            cursorVisible: currentResponse ? currentChat.responseInProgress : false
+            cursorVisible: isCurrentResponse ? currentChat.responseInProgress : false
             cursorPosition: text.length
             TapHandler {
                 id: tapHandler
@@ -183,12 +197,12 @@ GridLayout {
             }
 
             onLinkActivated: function(link) {
-                if (!currentResponse || !currentChat.responseInProgress)
+                if (!isCurrentResponse || !currentChat.responseInProgress)
                     Qt.openUrlExternally(link)
             }
 
             onLinkHovered: function (link) {
-                if (!currentResponse || !currentChat.responseInProgress)
+                if (!isCurrentResponse || !currentChat.responseInProgress)
                     statusBar.externalHoveredLink = link
             }
 
@@ -239,13 +253,19 @@ GridLayout {
                 textProcessor.setValue(value);
             }
 
+            property bool textProcessorReady: false
+
             Component.onCompleted: {
                 resetChatViewTextProcessor();
-                chatModel.valueChanged.connect(function(i, value) {
-                    if (index === i)
+                textProcessorReady = true;
+            }
+
+            Connections {
+                target: chatModel
+                function onValueChanged(i, value) {
+                    if (myTextArea.textProcessorReady && index === i)
                         textProcessor.setValue(value);
                 }
-                );
             }
 
             Connections {
@@ -282,67 +302,6 @@ GridLayout {
                 Network.sendConversation(currentChat.id, getConversationJson());
             }
         }
-
-        Column {
-            Layout.alignment: Qt.AlignRight
-            Layout.rightMargin: 15
-            visible: name === "Response: " &&
-                     (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
-            spacing: 10
-
-            Item {
-                width: childrenRect.width
-                height: childrenRect.height
-                MyToolButton {
-                    id: thumbsUp
-                    width: 24
-                    height: 24
-                    imageWidth: width
-                    imageHeight: height
-                    opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                    source: "qrc:/gpt4all/icons/thumbs_up.svg"
-                    Accessible.name: qsTr("Thumbs up")
-                    Accessible.description: qsTr("Gives a thumbs up to the response")
-                    onClicked: {
-                        if (thumbsUpState && !thumbsDownState)
-                            return
-
-                        chatModel.updateNewResponse(index, "")
-                        chatModel.updateThumbsUpState(index, true)
-                        chatModel.updateThumbsDownState(index, false)
-                        Network.sendConversation(currentChat.id, getConversationJson());
-                    }
-                }
-
-                MyToolButton {
-                    id: thumbsDown
-                    anchors.top: thumbsUp.top
-                    anchors.topMargin: 3
-                    anchors.left: thumbsUp.right
-                    anchors.leftMargin: 3
-                    width: 24
-                    height: 24
-                    imageWidth: width
-                    imageHeight: height
-                    checked: thumbsDownState
-                    opacity: thumbsDownState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                    transform: [
-                        Matrix4x4 {
-                            matrix: Qt.matrix4x4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-                        },
-                        Translate {
-                            x: thumbsDown.width
-                        }
-                    ]
-                    source: "qrc:/gpt4all/icons/thumbs_down.svg"
-                    Accessible.name: qsTr("Thumbs down")
-                    Accessible.description: qsTr("Opens thumbs down dialog")
-                    onClicked: {
-                        thumbsDownDialog.open()
-                    }
-                }
-            }
-        }
     }
 
     Item {
@@ -353,11 +312,13 @@ GridLayout {
         Layout.preferredWidth: childrenRect.width
         Layout.preferredHeight: childrenRect.height
         visible: {
+            if (name !== "Response: ")
+                return false
             if (consolidatedSources.length === 0)
                 return false
             if (!MySettings.localDocsShowReferences)
                 return false
-            if (currentResponse && currentChat.responseInProgress
+            if (isCurrentResponse && currentChat.responseInProgress
                     && currentChat.responseState !== Chat.GeneratingQuestions )
                 return false
             return true
@@ -443,7 +404,7 @@ GridLayout {
                 return false
             if (!MySettings.localDocsShowReferences)
                 return false
-            if (currentResponse && currentChat.responseInProgress
+            if (isCurrentResponse && currentChat.responseInProgress
                     && currentChat.responseState !== Chat.GeneratingQuestions )
                 return false
             return true
@@ -566,8 +527,139 @@ GridLayout {
         }
     }
 
+    ConfirmationDialog {
+        id: editPromptDialog
+        dialogTitle: qsTr("Edit this prompt?")
+        description: qsTr("The existing response and all later messages will be permanently erased.")
+        onAccepted: {
+            const msg = currentChat.popPrompt(index);
+            if (msg !== null)
+                setInputBoxText(msg);
+        }
+    }
+
+    ConfirmationDialog {
+        id: redoResponseDialog
+        dialogTitle: qsTr("Redo this response?")
+        description: qsTr("The existing response and all later messages will be permanently erased.")
+        onAccepted: currentChat.regenerateResponse(index)
+    }
+
+    RowLayout {
+        id: buttonRow
+        Layout.row: 4
+        Layout.column: 1
+        Layout.maximumWidth: parent.width
+        Layout.fillWidth: false
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        spacing: 3
+        visible: !isCurrentResponse || !currentChat.responseInProgress
+        enabled: opacity > 0
+        opacity: hoverArea.hovered
+        readonly property var canModify: !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
+
+        Behavior on opacity {
+            OpacityAnimator { duration: 30 }
+        }
+
+        ChatMessageButton {
+            visible: parent.canModify && model.name === "Prompt: "
+            Layout.maximumWidth: 24
+            Layout.maximumHeight: 24
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: false
+            source: "qrc:/gpt4all/icons/edit.svg"
+            onClicked: {
+                if (inputBoxText === "")
+                    editPromptDialog.open();
+            }
+            name: qsTr("Edit")
+        }
+
+        ChatMessageButton {
+            visible: parent.canModify && model.name === "Response: "
+            Layout.maximumWidth: 24
+            Layout.maximumHeight: 24
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: false
+            name: qsTr("Redo")
+            source: "qrc:/gpt4all/icons/regenerate.svg"
+            onClicked: redoResponseDialog.open()
+        }
+
+        ChatMessageButton {
+            Layout.maximumWidth: 24
+            Layout.maximumHeight: 24
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: false
+            name: qsTr("Copy")
+            source: "qrc:/gpt4all/icons/copy.svg"
+            onClicked: {
+                myTextArea.selectAll();
+                myTextArea.copy();
+                myTextArea.deselect();
+            }
+        }
+
+        Item {
+            visible: name === "Response: " && MySettings.networkIsActive
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: childrenRect.width
+            Layout.preferredHeight: childrenRect.height
+            Layout.fillWidth: false
+
+            ChatMessageButton {
+                id: thumbsUp
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                source: "qrc:/gpt4all/icons/thumbs_up.svg"
+                name: qsTr("Like response")
+                onClicked: {
+                    if (thumbsUpState && !thumbsDownState)
+                        return
+
+                    chatModel.updateNewResponse(index, "")
+                    chatModel.updateThumbsUpState(index, true)
+                    chatModel.updateThumbsDownState(index, false)
+                    Network.sendConversation(currentChat.id, getConversationJson());
+                }
+            }
+
+            ChatMessageButton {
+                id: thumbsDown
+                anchors.top: thumbsUp.top
+                anchors.topMargin: buttonRow.spacing
+                anchors.left: thumbsUp.right
+                anchors.leftMargin: buttonRow.spacing
+                checked: thumbsDownState
+                opacity: thumbsDownState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                bgTransform: [
+                    Matrix4x4 {
+                        matrix: Qt.matrix4x4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+                    },
+                    Translate {
+                        x: thumbsDown.width
+                    }
+                ]
+                source: "qrc:/gpt4all/icons/thumbs_down.svg"
+                name: qsTr("Dislike response")
+                onClicked: {
+                    thumbsDownDialog.open()
+                }
+            }
+        }
+    }
+} // GridLayout
+
+} // Item
+
+GridLayout {
+    Layout.fillWidth: true
+    Layout.maximumWidth: parent.width
+
     function shouldShowSuggestions() {
-        if (!currentResponse)
+        if (!isCurrentResponse)
             return false;
         if (MySettings.suggestionMode === 2) // Off
             return false;
@@ -577,8 +669,8 @@ GridLayout {
     }
 
     Item {
-        visible: shouldShowSuggestions()
-        Layout.row: 4
+        visible: parent.shouldShowSuggestions()
+        Layout.row: 5
         Layout.column: 0
         Layout.topMargin: 20
         Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
@@ -601,8 +693,8 @@ GridLayout {
     }
 
     Item {
-        visible: shouldShowSuggestions()
-        Layout.row: 4
+        visible: parent.shouldShowSuggestions()
+        Layout.row: 5
         Layout.column: 1
         Layout.topMargin: 20
         Layout.fillWidth: true
@@ -627,8 +719,8 @@ GridLayout {
     }
 
     ColumnLayout {
-        visible: shouldShowSuggestions()
-        Layout.row: 5
+        visible: parent.shouldShowSuggestions()
+        Layout.row: 6
         Layout.column: 1
         Layout.fillWidth: true
         Layout.minimumHeight: 1
@@ -786,4 +878,7 @@ GridLayout {
             }
         }
     }
-}
+
+} // GridLayout
+
+} // ColumnLayout

@@ -202,7 +202,7 @@ static int32_t get_arch_key_u32(std::string const &modelPath, std::string const 
         if (keyidx != -1) {
             value = gguf_get_val_u32(ctx, keyidx);
         } else {
-            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
+            std::cerr << __func__ << ": " << key << " not found in " << modelPath << "\n";
         }
     }
 
@@ -518,18 +518,13 @@ size_t LLamaModel::restoreState(std::span<const uint8_t> state, std::span<const 
     return bytesRead;
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(std::string_view str, bool special)
+std::vector<LLModel::Token> LLamaModel::tokenize(std::string_view str) const
 {
-    bool atStart = m_tokenize_last_token == -1;
-    bool insertSpace = atStart || isSpecialToken(m_tokenize_last_token);
     std::vector<LLModel::Token> fres(str.length() + 4);
-    int32_t fres_len = llama_tokenize_gpt4all(
-        d_ptr->model, str.data(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
-        /*parse_special*/ special, /*insert_space*/ insertSpace
+    int32_t fres_len = llama_tokenize(
+        d_ptr->model, str.data(), str.length(), fres.data(), fres.size(), /*add_special*/ true, /*parse_special*/ true
     );
     fres.resize(fres_len);
-    if (fres_len)
-        m_tokenize_last_token = fres.back();
     return fres;
 }
 
@@ -555,7 +550,7 @@ std::string LLamaModel::tokenToString(Token id) const
     return std::string(result.data(), result.size());
 }
 
-void LLamaModel::initSampler(PromptContext &promptCtx)
+void LLamaModel::initSampler(const PromptContext &promptCtx)
 {
     auto *model = d_ptr->model;
     auto *chain = d_ptr->sampler_chain;
@@ -601,9 +596,11 @@ LLModel::Token LLamaModel::sampleToken() const
     return llama_sampler_sample(d_ptr->sampler_chain, d_ptr->ctx, -1);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, std::span<const Token> tokens) const
+bool LLamaModel::evalTokens(int32_t nPast, std::span<const Token> tokens) const
 {
-    llama_kv_cache_seq_rm(d_ptr->ctx, 0, ctx.n_past, -1);
+    assert(!tokens.empty());
+
+    llama_kv_cache_seq_rm(d_ptr->ctx, 0, nPast, -1);
 
     llama_batch batch = llama_batch_init(tokens.size(), 0, 1);
 
@@ -611,7 +608,7 @@ bool LLamaModel::evalTokens(PromptContext &ctx, std::span<const Token> tokens) c
 
     for (int32_t i = 0; i < batch.n_tokens; i++) {
         batch.token   [i] = tokens[i];
-        batch.pos     [i] = ctx.n_past + i;
+        batch.pos     [i] = nPast + i;
         batch.n_seq_id[i] = 1;
         batch.seq_id  [i][0] = 0;
         batch.logits  [i] = false;
@@ -625,13 +622,13 @@ bool LLamaModel::evalTokens(PromptContext &ctx, std::span<const Token> tokens) c
     return res == 0;
 }
 
-void LLamaModel::shiftContext(PromptContext &promptCtx)
+void LLamaModel::shiftContext(const PromptContext &promptCtx, int32_t *nPast)
 {
     // infinite text generation via context shifting
 
     // erase up to n_ctx*contextErase tokens
     int n_keep = shouldAddBOS();
-    int n_past = promptCtx.n_past;
+    int n_past = *nPast;
     int n_discard = std::min(n_past - n_keep, int(contextLength() * promptCtx.contextErase));
 
     assert(n_discard > 0);
@@ -647,7 +644,7 @@ void LLamaModel::shiftContext(PromptContext &promptCtx)
 
     auto &inp = d_ptr->inputTokens;
     inp.erase(inp.begin() + n_keep, inp.begin() + n_keep + n_discard);
-    promptCtx.n_past = inp.size();
+    *nPast = inp.size();
 }
 
 int32_t LLamaModel::contextLength() const
@@ -655,39 +652,37 @@ int32_t LLamaModel::contextLength() const
     return llama_n_ctx(d_ptr->ctx);
 }
 
+auto LLamaModel::specialTokens() -> std::unordered_map<std::string, std::string> const
+{
+    if (!d_ptr->model)
+        throw std::logic_error("model not loaded");
+
+    std::unordered_map<std::string, std::string> tokens;
+    if (auto id = llama_token_bos(d_ptr->model); id != LLAMA_TOKEN_NULL)
+        tokens.emplace("bos_token", tokenToString(id));
+    if (auto id = llama_token_eos(d_ptr->model); id != LLAMA_TOKEN_NULL)
+        tokens.emplace("eos_token", tokenToString(id));
+    return tokens;
+}
+
 int32_t LLamaModel::inputLength() const
 {
     return d_ptr->inputTokens.size();
 }
 
-void LLamaModel::setTokenizeInputPosition(int32_t pos)
+int32_t LLamaModel::computeModelInputPosition(std::span<const Token> input) const
 {
-    assert(pos >= 0);
-    m_tokenize_last_token = pos ? d_ptr->inputTokens.at(size_t(pos) - 1) : -1; // not serialized
-}
-
-auto LLamaModel::computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
-    -> std::vector<Token>::const_iterator
-{
-    assert(ctx.n_past >= 0);
-    auto pos = size_t(ctx.n_past);
-    if (pos > d_ptr->inputTokens.size()) {
-        std::ostringstream ss;
-        ss << "n_past=" << pos << " is past end of token cache length=" << d_ptr->inputTokens.size();
-        throw std::out_of_range(ss.str());
-    }
-
     // find common prefix
     auto cacheIt = d_ptr->inputTokens.begin();
     auto inputIt = input.begin();
     while (cacheIt < d_ptr->inputTokens.end() && inputIt < input.end() && *cacheIt == *inputIt) {
-        ++cacheIt; ++inputIt; ++pos;
+        ++cacheIt; ++inputIt;
     }
     // tell the caller to ignore the tokens between [begin, inputIt)
-    return inputIt;
+    return inputIt - input.begin();
 }
 
-void LLamaModel::setModelInputPosition(PromptContext &ctx, int32_t pos)
+void LLamaModel::setModelInputPosition(int32_t pos)
 {
     auto &inp = d_ptr->inputTokens;
     assert(pos >= 0);
@@ -695,13 +690,11 @@ void LLamaModel::setModelInputPosition(PromptContext &ctx, int32_t pos)
     // truncate token cache to end at the new n_past
     if (pos < inp.size())
         inp.resize(pos);
-    ctx.n_past = pos;
 }
 
-void LLamaModel::appendInputToken(PromptContext &ctx, Token tok)
+void LLamaModel::appendInputToken(Token tok)
 {
     d_ptr->inputTokens.push_back(tok);
-    ctx.n_past += 1;
 }
 
 auto LLamaModel::inputTokens() const -> std::span<const Token>
@@ -727,6 +720,37 @@ int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
 int32_t LLamaModel::layerCount(std::string const &modelPath) const
 {
     return get_arch_key_u32(modelPath, "block_count");
+}
+
+// TODO(jared): reduce redundant code and operations by combining all metadata getters for unloaded
+//              models into a class that keeps the model file open
+auto LLamaModel::chatTemplate(const char *modelPath) const -> std::expected<std::string, std::string>
+{
+    auto *ctx = load_gguf(modelPath);
+    if (!ctx)
+        return std::unexpected("failed to open model file");
+
+    std::expected<std::string, std::string> result;
+    enum gguf_type ktype;
+    const int kid = gguf_find_key(ctx, "tokenizer.chat_template");
+    if (kid == -1) {
+        result = std::unexpected("key not found");
+        goto cleanup;
+    }
+
+    ktype = gguf_get_kv_type(ctx, kid);
+    if (ktype != GGUF_TYPE_STRING) {
+        result = std::unexpected(
+            "expected key type STRING (" + std::to_string(GGUF_TYPE_STRING) + "), got " + std::to_string(ktype)
+        );
+        goto cleanup;
+    }
+
+    result = gguf_get_val_str(ctx, kid);
+
+cleanup:
+    gguf_free(ctx);
+    return result;
 }
 
 #ifdef GGML_USE_VULKAN

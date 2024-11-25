@@ -190,6 +190,7 @@ qt_add_executable(chat
     src/database.cpp              src/database.h
     src/download.cpp              src/download.h
     src/embllm.cpp                src/embllm.h
+    src/jinja_helpers.cpp         src/jinja_helpers.h
     src/llm.cpp                   src/llm.h
     src/localdocs.cpp             src/localdocs.h
     src/localdocsmodel.cpp        src/localdocsmodel.h
@@ -215,6 +216,7 @@ qt_add_qml_module(chat
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
       qml/ChatItemView.qml
+      qml/ChatMessageButton.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
       qml/HomeView.qml
@@ -227,7 +229,7 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/SettingsView.qml
       qml/StartupDialog.qml
-      qml/SwitchModelDialog.qml
+      qml/ConfirmationDialog.qml
       qml/Theme.qml
       qml/ThumbsDownDialog.qml
       qml/Toast.qml
@@ -386,7 +388,7 @@ target_include_directories(chat PRIVATE deps/usearch/include
 target_link_libraries(chat
     PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx jinja2cpp)
 
 if (APPLE)
     target_link_libraries(chat PRIVATE ${COCOA_LIBRARY})

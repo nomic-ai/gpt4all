@@ -5,12 +5,14 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QHash>
+#include <QLatin1StringView>
 #include <QList>
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
 #include <QPair>
+#include <QQmlEngine>
 #include <QSortFilterProxyModel>
 #include <QSslError>
 #include <QString>
@@ -19,10 +21,52 @@
 #include <Qt>
 #include <QtGlobal>
 
+#include <optional>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
 
+
+class UpgradeableSetting {
+    Q_GADGET
+    QML_ANONYMOUS
+
+    // NOTE: Unset implies there is neither a value nor a default
+    enum class State { Unset, Legacy, Modern };
+
+    Q_PROPERTY(bool     isSet     READ isSet   )
+    Q_PROPERTY(bool     isLegacy  READ isLegacy)
+    Q_PROPERTY(bool     isModern  READ isModern)
+    Q_PROPERTY(QVariant value READ value) // string or null
+
+public:
+    struct legacy_tag_t { explicit legacy_tag_t() = default; };
+    static inline constexpr legacy_tag_t legacy_tag = legacy_tag_t();
+
+    UpgradeableSetting()                           : m_state(State::Unset ) {}
+    UpgradeableSetting(legacy_tag_t, QString value): m_state(State::Legacy), m_value(std::move(value)) {}
+    UpgradeableSetting(              QString value): m_state(State::Modern), m_value(std::move(value)) {}
+
+    bool     isSet   () const { return m_state != State::Unset;  }
+    bool     isLegacy() const { return m_state == State::Legacy; }
+    bool     isModern() const { return m_state == State::Modern; }
+    QVariant value   () const { return m_state == State::Unset ? QVariant::fromValue(nullptr) : m_value; }
+
+    friend bool operator==(const UpgradeableSetting &a, const UpgradeableSetting &b)
+    { return a.m_state == b.m_state && (a.m_state == State::Unset || a.m_value == b.m_value); }
+
+    // returns std::nullopt if there is a legacy template or it is not set
+    std::optional<QString> asModern() const
+    {
+        if (m_state == State::Modern)
+            return m_value;
+        return std::nullopt;
+    }
+
+private:
+    State   m_state;
+    QString m_value;
+};
 
 struct ModelInfo {
     Q_GADGET
@@ -69,8 +113,11 @@ struct ModelInfo {
     Q_PROPERTY(int maxGpuLayers READ maxGpuLayers)
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
-    Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
-    Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
+    // user-defined chat template and system message must be written through settings because of their legacy compat
+    Q_PROPERTY(QVariant           defaultChatTemplate  READ defaultChatTemplate )
+    Q_PROPERTY(UpgradeableSetting chatTemplate         READ chatTemplate        )
+    Q_PROPERTY(QString            defaultSystemMessage READ defaultSystemMessage)
+    Q_PROPERTY(UpgradeableSetting systemMessage        READ systemMessage       )
     Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
     Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
     Q_PROPERTY(int likes READ likes WRITE setLikes)
@@ -178,19 +225,22 @@ public:
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
     void setRepeatPenaltyTokens(int t);
-    QString promptTemplate() const;
-    void setPromptTemplate(const QString &t);
-    QString systemPrompt() const;
-    void setSystemPrompt(const QString &p);
+    QVariant defaultChatTemplate() const;
+    UpgradeableSetting chatTemplate() const;
+    QString defaultSystemMessage() const;
+    UpgradeableSetting systemMessage() const;
     QString chatNamePrompt() const;
     void setChatNamePrompt(const QString &p);
     QString suggestedFollowUpPrompt() const;
     void setSuggestedFollowUpPrompt(const QString &p);
 
+    // Some metadata must be saved to settings because it does not have a meaningful default from some other source.
+    // This is useful for fields such as name, description, and URL.
+    // It is true for any models that have not been installed from models.json.
     bool shouldSaveMetadata() const;
 
 private:
-    QVariantMap getFields() const;
+    QVariant getField(QLatin1StringView name) const;
 
     QString m_id;
     QString m_name;
@@ -216,11 +266,13 @@ private:
     mutable int m_maxGpuLayers        = -1;
     double  m_repeatPenalty           = 1.18;
     int     m_repeatPenaltyTokens     = 64;
-    QString m_promptTemplate          = "### Human:\n%1\n\n### Assistant:\n";
-    QString m_systemPrompt            = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
+            std::optional<QString> m_chatTemplate;
+    mutable std::optional<QString> m_modelChatTemplate;
+    QString m_systemMessage;
     QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
+    friend class ModelList;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
@@ -340,8 +392,8 @@ public:
         GpuLayersRole,
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
-        PromptTemplateRole,
-        SystemPromptRole,
+        ChatTemplateRole,
+        SystemMessageRole,
         ChatNamePromptRole,
         SuggestedFollowUpPromptRole,
         MinPRole,
@@ -394,8 +446,8 @@ public:
         roles[GpuLayersRole] = "gpuLayers";
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
-        roles[PromptTemplateRole] = "promptTemplate";
-        roles[SystemPromptRole] = "systemPrompt";
+        roles[ChatTemplateRole] = "chatTemplate";
+        roles[SystemMessageRole] = "systemMessage";
         roles[ChatNamePromptRole] = "chatNamePrompt";
         roles[SuggestedFollowUpPromptRole] = "suggestedFollowUpPrompt";
         roles[LikesRole] = "likes";
@@ -416,7 +468,7 @@ public:
     bool contains(const QString &id) const;
     bool containsByFilename(const QString &filename) const;
     Q_INVOKABLE ModelInfo modelInfo(const QString &id) const;
-    Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename) const;
+    Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename, bool allowClone = true) const;
     Q_INVOKABLE bool isUniqueName(const QString &name) const;
     Q_INVOKABLE QString clone(const ModelInfo &model);
     Q_INVOKABLE void removeClone(const ModelInfo &model);
@@ -476,15 +528,18 @@ Q_SIGNALS:
     void discoverSortChanged();
     void discoverProgressChanged();
     void discoverInProgressChanged();
+    void modelInfoChanged(const ModelInfo &info);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev) override;
 
 private Q_SLOTS:
+    void onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
     void resortModel();
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
+    void maybeUpdateDataForSettings(const ModelInfo &info, bool fromInfo);
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
     void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
@@ -495,6 +550,9 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
+    // Return the index of the model with the given id, or -1 if not found.
+    int indexByModelId(const QString &id) const;
+
     void removeInternal(const ModelInfo &model);
     void clearDiscoveredModels();
     bool modelExists(const QString &fileName) const;

@@ -14,6 +14,7 @@ nav:
     - 'Models' : 'gpt4all_desktop/models.md'
     - 'LocalDocs' : 'gpt4all_desktop/localdocs.md'
     - 'Settings' : 'gpt4all_desktop/settings.md'
+    - 'Chat Templates' : 'gpt4all_desktop/chat_templates.md'
     - 'Cookbook':
       - 'Local AI Chat with Microsoft Excel': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-microsoft-excel.md'
       - 'Local AI Chat with your Google Drive': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-google-drive.md'

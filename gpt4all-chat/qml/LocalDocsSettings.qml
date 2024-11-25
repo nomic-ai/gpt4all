@@ -10,7 +10,7 @@ import mysettings
 import network
 
 MySettingsTab {
-    onRestoreDefaultsClicked: {
+    onRestoreDefaults: {
         MySettings.restoreLocalDocsDefaults();
     }
 

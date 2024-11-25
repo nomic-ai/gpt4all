@@ -8,10 +8,34 @@ import mysettings
 import chatlistmodel
 
 MySettingsTab {
-    onRestoreDefaultsClicked: {
+    onRestoreDefaults: {
         MySettings.restoreModelDefaults(root.currentModelInfo);
     }
     title: qsTr("Model")
+
+    ConfirmationDialog {
+        id: resetSystemMessageDialog
+        property var index: null
+        property bool resetClears: false
+        dialogTitle: qsTr("%1 system message?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))
+        description: qsTr("The system message will be %1.").arg(resetClears ? qsTr("removed") : qsTr("reset to the default"))
+        onAccepted: MySettings.resetModelSystemMessage(ModelList.modelInfo(index))
+        function show(index_, resetClears_) { index = index_; resetClears = resetClears_; open(); }
+    }
+
+    ConfirmationDialog {
+        id: resetChatTemplateDialog
+        property bool resetClears: false
+        property var index: null
+        dialogTitle: qsTr("%1 chat template?").arg(resetClears ? qsTr("Clear") : qsTr("Reset"))
+        description: qsTr("The chat template will be %1.").arg(resetClears ? qsTr("erased") : qsTr("reset to the default"))
+        onAccepted: {
+            MySettings.resetModelChatTemplate(ModelList.modelInfo(index));
+            templateTextArea.resetText();
+        }
+        function show(index_, resetClears_) { index = index_; resetClears = resetClears_; open(); }
+    }
+
     contentItem: GridLayout {
         id: root
         columns: 3
@@ -35,6 +59,7 @@ MySettingsTab {
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             Layout.row: 2
             Layout.column: 0
             Layout.columnSpan: 2
@@ -153,69 +178,154 @@ MySettingsTab {
             Layout.fillWidth: true
         }
 
-        MySettingsLabel {
-            visible: !root.currentModelInfo.isOnline
-            text: qsTr("System Prompt")
-            helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
+        RowLayout {
             Layout.row: 7
-            Layout.column: 0
+            Layout.columnSpan: 2
             Layout.topMargin: 15
+            Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
+            spacing: 10
+            MySettingsLabel {
+                id: systemMessageLabel
+                text: qsTr("System Message")
+                helpText: qsTr("A message to set the context or guide the behavior of the model. Leave blank for " +
+                               "none. NOTE: Since GPT4All 3.5, this should not contain control tokens.")
+                onReset: () => resetSystemMessageDialog.show(root.currentModelId, resetClears)
+                function updateResetButton() {
+                    const info = root.currentModelInfo;
+                    // NOTE: checks if the *override* is set, regardless of whether there is a default
+                    canReset = !!info.id && MySettings.isModelSystemMessageSet(info);
+                    resetClears = !info.defaultSystemMessage;
+                }
+                Component.onCompleted: updateResetButton()
+                Connections {
+                    target: root
+                    function onCurrentModelIdChanged() { systemMessageLabel.updateResetButton(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onSystemMessageChanged(info)
+                    { if (info.id === root.currentModelId) systemMessageLabel.updateResetButton(); }
+                }
+            }
+            Label {
+                id: systemMessageLabelHelp
+                visible: systemMessageArea.errState !== "ok"
+                Layout.alignment: Qt.AlignBottom
+                Layout.fillWidth: true
+                Layout.rightMargin: 5
+                Layout.maximumHeight: systemMessageLabel.height
+                text: qsTr("System message is not " +
+                           "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">plain text</a>.")
+                color: systemMessageArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
+                font.pixelSize: theme.fontSizeLarger
+                font.bold: true
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
+            }
         }
 
         Rectangle {
-            id: systemPrompt
-            visible: !root.currentModelInfo.isOnline
+            id: systemMessage
             Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
             color: "transparent"
-            Layout.minimumHeight: Math.max(100, systemPromptArea.contentHeight + 20)
+            Layout.minimumHeight: Math.max(100, systemMessageArea.contentHeight + 20)
             MyTextArea {
-                id: systemPromptArea
+                id: systemMessageArea
                 anchors.fill: parent
-                text: root.currentModelInfo.systemPrompt
+                property bool isBeingReset: false
+                function resetText() {
+                    const info = root.currentModelInfo;
+                    isBeingReset = true;
+                    text = (info.id ? info.systemMessage.value : null) ?? "";
+                    isBeingReset = false;
+                }
+                Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onSystemPromptChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
-                    }
+                    function onSystemMessageChanged(info)
+                    { if (info.id === root.currentModelId) systemMessageArea.resetText(); }
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() {
-                        systemPromptArea.text = root.currentModelInfo.systemPrompt;
-                    }
+                    function onCurrentModelIdChanged() { systemMessageArea.resetText(); }
                 }
+                // strict validation, because setModelSystemMessage clears isLegacy
+                readonly property var reLegacyCheck: (
+                    /(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>/m
+                )
                 onTextChanged: {
-                    MySettings.setModelSystemPrompt(root.currentModelInfo, text)
+                    const info = root.currentModelInfo;
+                    if (!info.id) {
+                        errState = "ok";
+                    } else if (info.systemMessage.isLegacy && (isBeingReset || reLegacyCheck.test(text))) {
+                        errState = "error";
+                    } else
+                        errState = reLegacyCheck.test(text) ? "warning" : "ok";
+                    if (info.id && errState !== "error" && !isBeingReset)
+                        MySettings.setModelSystemMessage(info, text);
+                    systemMessageLabel.updateResetButton();
                 }
                 Accessible.role: Accessible.EditableText
+                Accessible.name: systemMessageLabel.text
+                Accessible.description: systemMessageLabelHelp.text
             }
         }
 
         RowLayout {
             Layout.row: 9
-            Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
+            Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             spacing: 10
             MySettingsLabel {
-                id: promptTemplateLabel
-                text: qsTr("Prompt Template")
-                helpText: qsTr("The template that wraps every prompt.")
+                id: chatTemplateLabel
+                text: qsTr("Chat Template")
+                helpText: qsTr("This Jinja template turns the chat into input for the model.")
+                onReset: () => resetChatTemplateDialog.show(root.currentModelId, resetClears)
+                function updateResetButton() {
+                    const info = root.currentModelInfo;
+                    canReset = !!info.id && (
+                        MySettings.isModelChatTemplateSet(info)
+                        || templateTextArea.text !== (info.chatTemplate.value ?? "")
+                    );
+                    resetClears = !info.defaultChatTemplate;
+                }
+                Component.onCompleted: updateResetButton()
+                Connections {
+                    target: root
+                    function onCurrentModelIdChanged() { chatTemplateLabel.updateResetButton(); }
+                }
+                Connections {
+                    target: MySettings
+                    function onChatTemplateChanged(info)
+                    { if (info.id === root.currentModelId) chatTemplateLabel.updateResetButton(); }
+                }
             }
-            MySettingsLabel {
-                id: promptTemplateLabelHelp
-                text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
-                color: theme.textErrorColor
-                visible: templateTextArea.text.indexOf("%1") === -1
-                wrapMode: TextArea.Wrap
+            Label {
+                id: chatTemplateLabelHelp
+                visible: templateTextArea.errState !== "ok"
+                Layout.alignment: Qt.AlignBottom
+                Layout.fillWidth: true
+                Layout.rightMargin: 5
+                Layout.maximumHeight: chatTemplateLabel.height
+                text: templateTextArea.errMsg
+                color: templateTextArea.errState === "error" ? theme.textErrorColor : theme.textWarningColor
+                font.pixelSize: theme.fontSizeLarger
+                font.bold: true
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
         }
 
         Rectangle {
-            id: promptTemplate
+            id: chatTemplate
             Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 2
@@ -226,27 +336,71 @@ MySettingsTab {
             MyTextArea {
                 id: templateTextArea
                 anchors.fill: parent
-                text: root.currentModelInfo.promptTemplate
+                font: fixedFont
+                property bool isBeingReset: false
+                property var errMsg: null
+                function resetText() {
+                    const info = root.currentModelInfo;
+                    isBeingReset = true;
+                    text = (info.id ? info.chatTemplate.value : null) ?? "";
+                    isBeingReset = false;
+                }
+                Component.onCompleted: resetText()
                 Connections {
                     target: MySettings
-                    function onPromptTemplateChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
-                    }
+                    function onChatTemplateChanged() { templateTextArea.resetText(); }
                 }
                 Connections {
                     target: root
-                    function onCurrentModelInfoChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
-                    }
+                    function onCurrentModelIdChanged() { templateTextArea.resetText(); }
+                }
+                function legacyCheck() {
+                    return /%[12]\b/.test(text) || !/\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}/.test(text.replace(/\n/g, ''))
+                        || !/\bcontent\b/.test(text);
                 }
                 onTextChanged: {
-                    if (templateTextArea.text.indexOf("%1") !== -1) {
-                        MySettings.setModelPromptTemplate(root.currentModelInfo, text)
+                    const info = root.currentModelInfo;
+                    let jinjaError;
+                    if (!info.id) {
+                        errMsg = null;
+                        errState = "ok";
+                    } else if (info.chatTemplate.isLegacy && (isBeingReset || legacyCheck())) {
+                        errMsg = null;
+                        errState = "error";
+                    } else if (text === "" && !info.chatTemplate.isSet) {
+                        errMsg = qsTr("No <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "chat template</a> configured.");
+                        errState = "error";
+                    } else if (/^\s*$/.test(text)) {
+                        errMsg = qsTr("The <a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "chat template</a> cannot be blank.");
+                        errState = "error";
+                    } else if ((jinjaError = MySettings.checkJinjaTemplateError(text)) !== null) {
+                        errMsg = qsTr("<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">Syntax" +
+                                      " error</a>: %1").arg(jinjaError);
+                        errState = "error";
+                    } else if (legacyCheck()) {
+                        errMsg = qsTr("Chat template is not in " +
+                                      "<a href=\"https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html\">" +
+                                      "Jinja format</a>.")
+                        errState = "warning";
+                    } else {
+                        errState = "ok";
+                    }
+                    if (info.id && errState !== "error" && !isBeingReset)
+                        MySettings.setModelChatTemplate(info, text);
+                    chatTemplateLabel.updateResetButton();
+                }
+                Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Tab) {
+                        const a = templateTextArea;
+                        event.accepted = true;              // suppress tab
+                        a.insert(a.cursorPosition, '    '); // four spaces
                     }
                 }
                 Accessible.role: Accessible.EditableText
-                Accessible.name: promptTemplateLabel.text
-                Accessible.description: promptTemplateLabelHelp.text
+                Accessible.name: chatTemplateLabel.text
+                Accessible.description: chatTemplateLabelHelp.text
             }
         }
 

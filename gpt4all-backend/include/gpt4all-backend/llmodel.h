@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <functional>
 #include <optional>
 #include <span>
@@ -24,6 +25,10 @@ using namespace std::string_literals;
 class LLModel {
 public:
     using Token = int32_t;
+    using PromptCallback      = std::function<bool(std::span<const Token> batch, bool cached)>;
+    using ResponseCallback    = std::function<bool(Token token, std::string_view piece)>;
+    using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
+    using ProgressCallback    = std::function<bool(float progress)>;
 
     class BadArchError: public std::runtime_error {
     public:
@@ -101,6 +106,7 @@ public:
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
         static bool isEmbeddingModel(const std::string &modelPath);
+        static auto chatTemplate(const char *modelPath) -> std::expected<std::string, std::string>;
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
         static bool hasSupportedCPU();
@@ -124,7 +130,6 @@ public:
     };
 
     struct PromptContext {
-        int32_t n_past = 0;             // number of tokens in past conversation
         int32_t n_predict = 200;
         int32_t top_k = 40;
         float   top_p = 0.9f;
@@ -135,8 +140,6 @@ public:
         int32_t repeat_last_n = 64;     // last n tokens to penalize
         float   contextErase = 0.5f;    // percent of context to erase if we exceed the context window
     };
-
-    using ProgressCallback = std::function<bool(float progress)>;
 
     explicit LLModel() {}
     virtual ~LLModel() {}
@@ -154,16 +157,12 @@ public:
 
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
-    virtual void prompt(const std::string &prompt,
-                        const std::string &promptTemplate,
-                        std::function<bool(int32_t)> promptCallback,
-                        std::function<bool(int32_t, const std::string&)> responseCallback,
-                        bool allowContextShift,
-                        PromptContext &ctx,
-                        bool special = false,
-                        std::optional<std::string_view> fakeReply = {});
+    virtual void prompt(std::string_view        prompt,
+                        const PromptCallback   &promptCallback,
+                        const ResponseCallback &responseCallback,
+                        const PromptContext    &ctx);
 
-    using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
+    virtual int32_t countPromptTokens(std::string_view prompt) const;
 
     virtual size_t embeddingSize() const {
         throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
@@ -209,23 +208,22 @@ public:
     void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
 
     virtual int32_t contextLength() const = 0;
+    virtual auto specialTokens() -> std::unordered_map<std::string, std::string> const = 0;
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(std::string_view str, bool special = false) = 0;
+    virtual std::vector<Token> tokenize(std::string_view str) const = 0;
     virtual bool isSpecialToken(Token id) const = 0;
     virtual std::string tokenToString(Token id) const = 0;
-    virtual void initSampler(PromptContext &ctx) = 0;
+    virtual void initSampler(const PromptContext &ctx) = 0;
     virtual Token sampleToken() const = 0;
-    virtual bool evalTokens(PromptContext &ctx, std::span<const Token> tokens) const = 0;
-    virtual void shiftContext(PromptContext &promptCtx) = 0;
+    virtual bool evalTokens(int32_t nPast, std::span<const Token> tokens) const = 0;
+    virtual void shiftContext(const PromptContext &promptCtx, int32_t *nPast) = 0;
     virtual int32_t inputLength() const = 0;
-    virtual void setTokenizeInputPosition(int32_t pos) = 0;
-    virtual auto computeModelInputPosition(PromptContext &ctx, const std::vector<Token> &input)
-        -> std::vector<Token>::const_iterator = 0;
-    virtual void setModelInputPosition(PromptContext &ctx, int32_t pos) = 0;
-    virtual void appendInputToken(PromptContext &ctx, Token tok) = 0;
+    virtual int32_t computeModelInputPosition(std::span<const Token> input) const = 0;
+    virtual void setModelInputPosition(int32_t pos) = 0;
+    virtual void appendInputToken(Token tok) = 0;
     virtual std::span<const Token> inputTokens() const = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;
@@ -242,6 +240,12 @@ protected:
         return -1;
     }
 
+    virtual auto chatTemplate(const char *modelPath) const -> std::expected<std::string, std::string>
+    {
+        (void)modelPath;
+        return std::unexpected("not implemented");
+    }
+
     const Implementation *m_implementation = nullptr;
 
     ProgressCallback m_progressCallback;
@@ -253,19 +257,15 @@ protected:
         return true;
     }
 
-    bool decodePrompt(std::function<bool(int32_t)> promptCallback,
-                      std::function<bool(int32_t, const std::string&)> responseCallback,
-                      bool allowContextShift,
-                      PromptContext &promptCtx,
-                      std::vector<Token> embd_inp,
-                      bool isResponse = false,
-                      bool alwaysDecode = false);
-    void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
-                          bool allowContextShift,
-                          PromptContext &promptCtx);
-
-protected:
-    Token m_tokenize_last_token = -1; // not serialized
+    // prefill context with prompt
+    auto decodePrompt(const PromptCallback &promptCallback,
+                      const PromptContext  &promptCtx,
+                      std::vector<Token>    embd_inp)
+        -> std::optional<int32_t>;
+    // generate a response
+    void generateResponse(const ResponseCallback &responseCallback,
+                          const PromptContext    &promptCtx,
+                          int32_t                 nPast);
 
     friend class LLMImplementation;
 };

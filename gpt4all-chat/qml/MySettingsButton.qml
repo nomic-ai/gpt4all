@@ -17,6 +17,7 @@ Button {
     property color  borderColor: "transparent"
     property real   fontPixelSize: theme.fontSizeLarge
     property string toolTip
+    property alias backgroundRadius: background.radius
 
     contentItem: Text {
         text: myButton.text
@@ -28,6 +29,7 @@ Button {
         Accessible.name: text
     }
     background: Rectangle {
+        id: background
         radius: 10
         border.width: borderWidth
         border.color: borderColor

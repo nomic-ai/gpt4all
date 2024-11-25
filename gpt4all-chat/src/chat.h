@@ -12,6 +12,8 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
+#include <QStringList> // IWYU pragma: keep
+#include <QStringView>
 #include <QtGlobal>
 
 class QDataStream;
@@ -27,7 +29,6 @@ class Chat : public QObject
     Q_PROPERTY(float modelLoadingPercentage READ modelLoadingPercentage NOTIFY modelLoadingPercentageChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
-    Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
     Q_PROPERTY(ResponseState responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
@@ -77,13 +78,12 @@ public:
     bool isNewChat() const { return m_name == tr("New Chat") && !m_chatModel->count(); }
 
     Q_INVOKABLE void reset();
-    Q_INVOKABLE void processSystemPrompt();
     bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = {});
-    Q_INVOKABLE void prompt(const QString &prompt);
-    Q_INVOKABLE void regenerateResponse();
+    Q_INVOKABLE void regenerateResponse(int index);
+    Q_INVOKABLE QVariant popPrompt(int index);
     Q_INVOKABLE void stopGenerating();
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }
@@ -92,7 +92,6 @@ public:
     ResponseState responseState() const;
     ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &modelInfo);
-    bool restoringFromText() const;
 
     Q_INVOKABLE void unloadModel();
     Q_INVOKABLE void reloadModel();
@@ -113,7 +112,6 @@ public:
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
     Q_INVOKABLE void addCollection(const QString &collection);
     Q_INVOKABLE void removeCollection(const QString &collection);
-    void resetResponseState();
 
     QString modelLoadingError() const { return m_modelLoadingError; }
 
@@ -131,7 +129,7 @@ public:
     void setNeedsSave(bool n) { m_needsSave = n; }
 
 public Q_SLOTS:
-    void serverNewPromptResponsePair(const QString &prompt, const QList<PromptAttachment> &attachments = {});
+    void resetResponseState();
 
 Q_SIGNALS:
     void idChanged(const QString &id);
@@ -143,14 +141,12 @@ Q_SIGNALS:
     void modelLoadingWarning(const QString &warning);
     void responseInProgressChanged();
     void responseStateChanged();
-    void promptRequested(const QList<QString> &collectionList, const QString &prompt);
-    void regenerateResponseRequested();
+    void promptRequested(const QStringList &enabledCollections);
+    void regenerateResponseRequested(int index);
     void resetResponseRequested();
     void resetContextRequested();
-    void processSystemPromptRequested();
     void modelChangeRequested(const ModelInfo &modelInfo);
     void modelInfoChanged();
-    void restoringFromTextChanged();
     void loadDefaultModelRequested();
     void generateNameRequested();
     void modelLoadingErrorChanged();
@@ -166,21 +162,19 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
+    void handleResponseFailed(const QString &error);
     void handleModelLoadingPercentageChanged(float);
     void promptProcessing();
     void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &question);
-    void handleRestoringFromText();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
+    void handleModelChanged(const ModelInfo &modelInfo);
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
-
-private:
-    void newPromptResponsePairInternal(const QString &prompt, const QList<PromptAttachment> &attachments);
 
 private:
     QString m_id;

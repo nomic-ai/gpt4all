@@ -29,7 +29,8 @@
     "description": "<ul><li>Fast responses</li><li>Instruct model</li><li>Multilingual dialogue use</li><li>Agentic system capable</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_2/license/\">Meta Llama 3.2 Community License</a></li></ul>",
     "url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
-    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>",
+    "chatTemplate": "{{- bos_token }}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{%- for message in messages %}\n    {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n"
   },
   {
     "order": "c",
@@ -45,7 +46,8 @@
     "description": "<ul><li>Fast responses</li><li>Instruct model</li><li>Multilingual dialogue use</li><li>Agentic system capable</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_2/license/\">Meta Llama 3.2 Community License</a></li></ul>",
     "url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
-    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>",
+    "chatTemplate": "{{- bos_token }}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{%- for message in messages %}\n    {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n"
   },
   {
     "order": "d",
@@ -77,7 +79,8 @@
     "systemPrompt": "",
     "description": "<strong>Strong overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
-    "promptTemplate": "[INST] %1 [/INST]"
+    "promptTemplate": "[INST] %1 [/INST]",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] %}\n    {%- set loop_start = 1 %}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if (message['role'] == 'user') != ((loop.index0 - loop_start) % 2 == 0) %}\n            {{- raise_exception('After the optional system message, conversation roles must alternate user/assistant/user/assistant/...') }}\n        {%- endif %}\n        {%- if message['role'] == 'user' %}\n            {%- if loop.first and system_message is defined %}\n                {{- ' [INST] ' + system_message + '\\n\\n' + message['content'] + ' [/INST]' }}\n            {%- else %}\n                {{- ' [INST] ' + message['content'] + ' [/INST]' }}\n            {%- endif %}\n        {%- elif message['role'] == 'assistant' %}\n            {{- ' ' + message['content'] + eos_token }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}"
   },
   {
     "order": "f",
@@ -125,7 +128,8 @@
     "systemPrompt": "",
     "description": "<strong>Very fast model with good quality</strong><br><ul><li>Fastest responses</li><li>Instruction based</li><li>Trained by TII<li>Finetuned by Nomic AI<li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/gpt4all-falcon-newbpe-q4_0.gguf",
-    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
+    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {{- messages[0]['content'] + '\\n\\n' }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if message['role'] == 'user' %}\n            {{- '### User: ' + message['content'] + '\\n\\n' }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- '### Assistant: ' + message['content'] + '\\n\\n' }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '### Assistant:' }}\n{%- endif %}"
   },
   {
     "order": "i",
@@ -140,7 +144,8 @@
     "type": "LLaMA2",
     "systemPrompt": "",
     "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
-    "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf",
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "j",
@@ -155,7 +160,8 @@
     "type": "LLaMA2",
     "systemPrompt": "",
     "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
-    "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf",
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "k",
@@ -170,7 +176,9 @@
     "type": "LLaMA2",
     "systemPrompt": "",
     "description": "<strong>Strong overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul>",
-    "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {{- messages[0]['content'] + ' ' }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in loop_messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if message['role'] == 'user' %}\n            {{- 'USER: ' + message['content'] }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- 'ASSISTANT: ' + message['content'] }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n        {%- if (loop.index0 - loop_start) % 2 == 0 %}\n            {{- ' ' }}\n        {%- else %}\n            {{- eos_token }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- 'ASSISTANT:' }}\n{%- endif %}",
+    "systemMessage": "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
   },
   {
     "order": "l",
@@ -186,7 +194,8 @@
     "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
     "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/ghost-7b-v0.9.1-Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
-    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
+    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>",
+    "systemMessage": "You are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior."
   },
   {
     "order": "m",
@@ -202,7 +211,8 @@
     "systemPrompt": "",
     "description": "<strong>Extremely good model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/nous-hermes-llama2-13b.Q4_0.gguf",
-    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
+    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {{- messages[0]['content'] + '\\n\\n' }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if message['role'] == 'user' %}\n            {{- '### Instruction:\\n' + message['content'] + '\\n\\n' }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- '### Response:\\n' + message['content'] + '\\n\\n' }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '### Instruction:\\n' }}\n{%- endif %}"
   },
   {
     "order": "n",
@@ -217,7 +227,9 @@
     "type": "LLaMA",
     "systemPrompt": "",
     "description": "<strong>Very good overall model</strong><br><ul><li>Instruction based<li>Based on the same dataset as Groovy<li>Slower than Groovy, with higher quality responses<li>Trained by Nomic AI<li>Cannot be used commercially</ul>",
-    "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {{- messages[0]['content'] + '\\n\\n' }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if message['role'] == 'user' %}\n            {{- '### Instruction:\\n' + message['content'] + '\\n\\n' }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- '### Response:\\n' + message['content'] + '\\n\\n' }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '### Response:\\n' }}\n{%- endif %}",
+    "systemMessage": "Below is an instruction that describes a task. Write a response that appropriately completes the request."
   },
   {
     "order": "o",
@@ -234,7 +246,8 @@
     "description": "<strong>Good model with novel architecture</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/mpt-7b-chat-newbpe-q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
-    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
+    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n",
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "p",
@@ -250,7 +263,8 @@
     "description": "<strong>Good model with novel architecture</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/mpt-7b-chat.gguf4.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
-    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
+    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n",
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "q",
@@ -282,7 +296,8 @@
     "description": "<strong>Small version of new model with novel dataset</strong><br><ul><li>Very fast responses</li><li>Instruction based</li><li>Explain tuned datasets</li><li>Orca Research Paper dataset construction approaches</li><li>Cannot be used commercially</li></ul>",
     "url": "https://gpt4all.io/models/gguf/orca-mini-3b-gguf2-q4_0.gguf",
     "promptTemplate": "### User:\n%1\n\n### Response:\n",
-    "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
+    "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {{- '### System:\\n' + messages[0]['content'] + '\\n\\n' }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if message['role'] == 'user' %}\n            {{- '### User:\\n' + message['content'] + '\\n\\n' }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- '### Response:\\n' + message['content'] + '\\n\\n' }}\n        {%- else %}\n            {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '### Response:\\n' }}\n{%- endif %}"
   },
   {
     "order": "s",
@@ -299,7 +314,8 @@
     "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use<li>WARNING: Not available for chat GUI</ul>",
-    "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf",
+    "chatTemplate": null
   },
   {
     "order": "t",
@@ -316,7 +332,8 @@
     "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</ul>",
-    "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf",
+    "chatTemplate": null
   },
   {
     "order": "u",
@@ -333,7 +350,8 @@
     "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on collection of Python and TypeScript</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</li>",
-    "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf",
+    "chatTemplate": null
   },
   {
     "order": "v",
@@ -351,7 +369,8 @@
     "embeddingModel": true,
     "systemPrompt": "",
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
-    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
+    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf",
+    "chatTemplate": null
   },
   {
     "order": "w",
@@ -367,7 +386,8 @@
     "type": "Bert",
     "embeddingModel": true,
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
-    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
+    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf",
+    "chatTemplate": null
   },
   {
     "order": "x",
@@ -383,7 +403,9 @@
     "description": "<strong>Mistral-based model for German-language applications</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by ellamind<li>Finetuned on German instruction and chat data</a><li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
     "promptTemplate": "USER: %1 ASSISTANT: ",
-    "systemPrompt": "Du bist ein hilfreicher Assistent. "
+    "systemPrompt": "Du bist ein hilfreicher Assistent. ",
+    "chatTemplate": "{%- set system_message = false %}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set loop_start = 1 %}\n    {%- set system_message = true %}\n    {{- messages[0]['content'] }}\n{%- else %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {%- if (not loop.first) or (system_message is not none)  %}\n            {{- ' ' }}\n        {%- endif %}\n        {%- if message['role'] == 'user' %}\n            {{- 'USER: ' + message['content'] }}\n        {%- elif message['role'] == 'assistant' %}\n            {{- 'ASSISTANT: ' + message['content'] }}\n        {%- else %}\n            {{- raise_exception('After the optional system message, conversation roles must be either user or assistant.') }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {%- if messages %}\n        {{- ' ' }}\n    {%- endif %}\n    {{- 'ASSISTANT:' }}\n{%- endif %}",
+    "systemMessage": "Du bist ein hilfreicher Assistent."
   },
   {
     "order": "y",
@@ -400,7 +422,8 @@
     "embeddingModel": true,
     "systemPrompt": "",
     "description": "nomic-embed-text-v1",
-    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf",
+    "chatTemplate": null
   },
   {
     "order": "z",
@@ -417,7 +440,8 @@
     "embeddingModel": true,
     "systemPrompt": "",
     "description": "nomic-embed-text-v1.5",
-    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf",
+    "chatTemplate": null
   },
   {
     "order": "zzz",

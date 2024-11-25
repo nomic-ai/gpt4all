@@ -316,26 +316,44 @@ void ModelInfo::setRepeatPenaltyTokens(int t)
     m_repeatPenaltyTokens = t;
 }
 
-QString ModelInfo::promptTemplate() const
+QVariant ModelInfo::defaultChatTemplate() const
 {
-    return MySettings::globalInstance()->modelPromptTemplate(*this);
+    auto res = m_chatTemplate.or_else([this] -> std::optional<QString> {
+        if (!installed || isOnline)
+            return std::nullopt;
+        if (!m_modelChatTemplate) {
+            auto path = (dirpath + filename()).toUtf8();
+            auto res = LLModel::Implementation::chatTemplate(path.constData());
+            if (res) {
+                m_modelChatTemplate = QString::fromStdString(*res);
+            } else {
+                qWarning().nospace() << "failed to get chat template for " << filename() << ": " << res.error().c_str();
+                m_modelChatTemplate = QString(); // do not retry
+            }
+        }
+        if (m_modelChatTemplate->isNull())
+            return std::nullopt;
+        return m_modelChatTemplate;
+    });
+
+    if (res)
+        return std::move(*res);
+    return QVariant::fromValue(nullptr);
 }
 
-void ModelInfo::setPromptTemplate(const QString &t)
+auto ModelInfo::chatTemplate() const -> UpgradeableSetting
 {
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelPromptTemplate(*this, t, true /*force*/);
-    m_promptTemplate = t;
+    return MySettings::globalInstance()->modelChatTemplate(*this);
 }
 
-QString ModelInfo::systemPrompt() const
+QString ModelInfo::defaultSystemMessage() const
 {
-    return MySettings::globalInstance()->modelSystemPrompt(*this);
+    return m_systemMessage;
 }
 
-void ModelInfo::setSystemPrompt(const QString &p)
+auto ModelInfo::systemMessage() const -> UpgradeableSetting
 {
-    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSystemPrompt(*this, p, true /*force*/);
-    m_systemPrompt = p;
+    return MySettings::globalInstance()->modelSystemMessage(*this);
 }
 
 QString ModelInfo::chatNamePrompt() const
@@ -360,39 +378,41 @@ void ModelInfo::setSuggestedFollowUpPrompt(const QString &p)
     m_suggestedFollowUpPrompt = p;
 }
 
+// FIXME(jared): this should not be used for model settings that have meaningful defaults, such as temperature
 bool ModelInfo::shouldSaveMetadata() const
 {
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
 }
 
-QVariantMap ModelInfo::getFields() const
+QVariant ModelInfo::getField(QLatin1StringView name) const
 {
-    return {
-        { "filename",            m_filename },
-        { "description",         m_description },
-        { "url",                 m_url },
-        { "quant",               m_quant },
-        { "type",                m_type },
-        { "isClone",             m_isClone },
-        { "isDiscovered",        m_isDiscovered },
-        { "likes",               m_likes },
-        { "downloads",           m_downloads },
-        { "recency",             m_recency },
-        { "temperature",         m_temperature },
-        { "topP",                m_topP },
-        { "minP",                m_minP },
-        { "topK",                m_topK },
-        { "maxLength",           m_maxLength },
-        { "promptBatchSize",     m_promptBatchSize },
-        { "contextLength",       m_contextLength },
-        { "gpuLayers",           m_gpuLayers },
-        { "repeatPenalty",       m_repeatPenalty },
-        { "repeatPenaltyTokens", m_repeatPenaltyTokens },
-        { "promptTemplate",      m_promptTemplate },
-        { "systemPrompt",        m_systemPrompt },
-        { "chatNamePrompt",      m_chatNamePrompt },
-        { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
+    static const std::unordered_map<QLatin1StringView, QVariant(*)(const ModelInfo &)> s_fields = {
+        { "filename"_L1,                [](auto &i) -> QVariant { return i.m_filename;                } },
+        { "description"_L1,             [](auto &i) -> QVariant { return i.m_description;             } },
+        { "url"_L1,                     [](auto &i) -> QVariant { return i.m_url;                     } },
+        { "quant"_L1,                   [](auto &i) -> QVariant { return i.m_quant;                   } },
+        { "type"_L1,                    [](auto &i) -> QVariant { return i.m_type;                    } },
+        { "isClone"_L1,                 [](auto &i) -> QVariant { return i.m_isClone;                 } },
+        { "isDiscovered"_L1,            [](auto &i) -> QVariant { return i.m_isDiscovered;            } },
+        { "likes"_L1,                   [](auto &i) -> QVariant { return i.m_likes;                   } },
+        { "downloads"_L1,               [](auto &i) -> QVariant { return i.m_downloads;               } },
+        { "recency"_L1,                 [](auto &i) -> QVariant { return i.m_recency;                 } },
+        { "temperature"_L1,             [](auto &i) -> QVariant { return i.m_temperature;             } },
+        { "topP"_L1,                    [](auto &i) -> QVariant { return i.m_topP;                    } },
+        { "minP"_L1,                    [](auto &i) -> QVariant { return i.m_minP;                    } },
+        { "topK"_L1,                    [](auto &i) -> QVariant { return i.m_topK;                    } },
+        { "maxLength"_L1,               [](auto &i) -> QVariant { return i.m_maxLength;               } },
+        { "promptBatchSize"_L1,         [](auto &i) -> QVariant { return i.m_promptBatchSize;         } },
+        { "contextLength"_L1,           [](auto &i) -> QVariant { return i.m_contextLength;           } },
+        { "gpuLayers"_L1,               [](auto &i) -> QVariant { return i.m_gpuLayers;               } },
+        { "repeatPenalty"_L1,           [](auto &i) -> QVariant { return i.m_repeatPenalty;           } },
+        { "repeatPenaltyTokens"_L1,     [](auto &i) -> QVariant { return i.m_repeatPenaltyTokens;     } },
+        { "chatTemplate"_L1,            [](auto &i) -> QVariant { return i.defaultChatTemplate();     } },
+        { "systemMessage"_L1,           [](auto &i) -> QVariant { return i.m_systemMessage;           } },
+        { "chatNamePrompt"_L1,          [](auto &i) -> QVariant { return i.m_chatNamePrompt;          } },
+        { "suggestedFollowUpPrompt"_L1, [](auto &i) -> QVariant { return i.m_suggestedFollowUpPrompt; } },
     };
+    return s_fields.at(name)(*this);
 }
 
 InstalledModels::InstalledModels(QObject *parent, bool selectable)
@@ -491,29 +511,46 @@ ModelList::ModelList()
     m_selectableModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
 
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson);
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings);
-    connect(MySettings::globalInstance(), &MySettings::nameChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::temperatureChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::topPChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::minPChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
-    connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    auto *mySettings = MySettings::globalInstance();
+    connect(mySettings, &MySettings::nameChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::temperatureChanged,         this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::topPChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::minPChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::topKChanged,                this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::maxLengthChanged,           this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::promptBatchSizeChanged,     this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::contextLengthChanged,       this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::gpuLayersChanged,           this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::repeatPenaltyChanged,       this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings     );
+    connect(mySettings, &MySettings::chatTemplateChanged,        this, &ModelList::maybeUpdateDataForSettings);
+    connect(mySettings, &MySettings::systemMessageChanged,       this, &ModelList::maybeUpdateDataForSettings);
+
+    connect(this, &ModelList::dataChanged, this, &ModelList::onDataChanged);
+
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
     updateModelsFromSettings();
     updateModelsFromDirectory();
 
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson     );
+    connect(mySettings, &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings );
+
     QCoreApplication::instance()->installEventFilter(this);
+}
+
+// an easier way to listen for model info and setting changes
+void ModelList::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
+{
+    Q_UNUSED(roles)
+    for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
+        auto index = topLeft.siblingAtRow(row);
+        auto id = index.data(ModelList::IdRole).toString();
+        if (auto info = modelInfo(id); !info.id().isNull())
+            emit modelInfoChanged(info);
+    }
 }
 
 QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
@@ -776,10 +813,10 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->repeatPenalty();
         case RepeatPenaltyTokensRole:
             return info->repeatPenaltyTokens();
-        case PromptTemplateRole:
-            return info->promptTemplate();
-        case SystemPromptRole:
-            return info->systemPrompt();
+        case ChatTemplateRole:
+            return QVariant::fromValue(info->chatTemplate());
+        case SystemMessageRole:
+            return QVariant::fromValue(info->systemMessage());
         case ChatNamePromptRole:
             return info->chatNamePrompt();
         case SuggestedFollowUpPromptRole:
@@ -952,10 +989,10 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setRepeatPenalty(value.toDouble()); break;
             case RepeatPenaltyTokensRole:
                 info->setRepeatPenaltyTokens(value.toInt()); break;
-            case PromptTemplateRole:
-                info->setPromptTemplate(value.toString()); break;
-            case SystemPromptRole:
-                info->setSystemPrompt(value.toString()); break;
+            case ChatTemplateRole:
+                info->m_chatTemplate = value.toString(); break;
+            case SystemMessageRole:
+                info->m_systemMessage = value.toString(); break;
             case ChatNamePromptRole:
                 info->setChatNamePrompt(value.toString()); break;
             case SuggestedFollowUpPromptRole:
@@ -1056,11 +1093,11 @@ ModelInfo ModelList::modelInfo(const QString &id) const
     return *m_modelMap.value(id);
 }
 
-ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
+ModelInfo ModelList::modelInfoByFilename(const QString &filename, bool allowClone) const
 {
     QMutexLocker locker(&m_mutex);
     for (ModelInfo *info : m_models)
-        if (info->filename() == filename)
+        if (info->filename() == filename && (allowClone || !info->isClone()))
             return *info;
     return ModelInfo();
 }
@@ -1079,6 +1116,20 @@ QString ModelList::clone(const ModelInfo &model)
 {
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
+
+    QString chatTemplate, systemMessage;
+    if (auto tmpl = model.chatTemplate().asModern()) {
+        chatTemplate = *tmpl;
+    } else {
+        qWarning("ModelList Warning: attempted to clone model with legacy chat template");
+        return {};
+    }
+    if (auto msg = model.systemMessage().asModern()) {
+        systemMessage = *msg;
+    } else {
+        qWarning("ModelList Warning: attempted to clone model with legacy system message");
+        return {};
+    }
 
     QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, model.installed },
@@ -1099,8 +1150,8 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::GpuLayersRole, model.gpuLayers() },
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
-        { ModelList::PromptTemplateRole, model.promptTemplate() },
-        { ModelList::SystemPromptRole, model.systemPrompt() },
+        { ModelList::ChatTemplateRole,  chatTemplate  },
+        { ModelList::SystemMessageRole, systemMessage },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };
@@ -1125,21 +1176,23 @@ void ModelList::removeInstalled(const ModelInfo &model)
     removeInternal(model);
 }
 
+int ModelList::indexByModelId(const QString &id) const
+{
+    QMutexLocker locker(&m_mutex);
+    if (auto it = m_modelMap.find(id); it != m_modelMap.cend())
+        return m_models.indexOf(*it);
+    return -1;
+}
+
 void ModelList::removeInternal(const ModelInfo &model)
 {
-    const bool hasModel = contains(model.id());
-    Q_ASSERT(hasModel);
-    if (!hasModel) {
+    int indexOfModel = indexByModelId(model.id());
+    Q_ASSERT(indexOfModel != -1);
+    if (indexOfModel == -1) {
         qWarning() << "ERROR: model list does not contain" << model.id();
         return;
     }
 
-    int indexOfModel = 0;
-    {
-        QMutexLocker locker(&m_mutex);
-        ModelInfo *info = m_modelMap.value(model.id());
-        indexOfModel = m_models.indexOf(info);
-    }
     beginRemoveRows(QModelIndex(), indexOfModel, indexOfModel);
     {
         QMutexLocker locker(&m_mutex);
@@ -1314,8 +1367,6 @@ void ModelList::processModelDirectory(const QString &path)
                 // The description is hard-coded into "GPT4All.ini" due to performance issue.
                 // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
                 data.append({ DescriptionRole, description });
-                // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
-                data.append({ PromptTemplateRole, "%1" });
             }
             updateData(id, data);
         }
@@ -1451,9 +1502,20 @@ void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &er
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
+void ModelList::maybeUpdateDataForSettings(const ModelInfo &info, bool fromInfo)
+{
+    // ignore updates that were *because* of a dataChanged - would cause a circular dependency
+    int idx;
+    if (!fromInfo && (idx = indexByModelId(info.id())) != -1) {
+        emit dataChanged(index(idx, 0), index(idx, 0));
+        emit selectableModelListChanged();
+    }
+}
+
 void ModelList::updateDataForSettings()
 {
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
+    emit selectableModelListChanged();
 }
 
 void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
@@ -1560,10 +1622,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             data.append({ ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble() });
         if (obj.contains("repeatPenaltyTokens"))
             data.append({ ModelList::RepeatPenaltyTokensRole, obj["repeatPenaltyTokens"].toInt() });
-        if (obj.contains("promptTemplate"))
-            data.append({ ModelList::PromptTemplateRole, obj["promptTemplate"].toString() });
-        if (obj.contains("systemPrompt"))
-            data.append({ ModelList::SystemPromptRole, obj["systemPrompt"].toString() });
+        if (auto it = obj.find("chatTemplate"_L1); it != obj.end())
+            data.append({ ModelList::ChatTemplateRole, it->toString() });
+        if (auto it = obj.find("systemMessage"_L1); it != obj.end())
+            data.append({ ModelList::SystemMessageRole, it->toString() });
         updateData(id, data);
     }
 
@@ -1755,6 +1817,9 @@ void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
     updateData(info.id(), data);
 }
 
+// FIXME(jared): This should only contain fields without reasonable defaults such as name, description, and URL.
+//               For other settings, there is no authoritative value and we should load the setting lazily like we do
+//               for any other override.
 void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
@@ -1769,12 +1834,27 @@ void ModelList::updateModelsFromSettings()
 
         // If we can't find the corresponding file, then ignore it as this reflects a stale model.
         // The file could have been deleted manually by the user for instance or temporarily renamed.
-        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString()))
-            continue;
+        QString filename;
+        {
+            auto value = settings.value(u"%1/filename"_s.arg(g));
+            if (!value.isValid() || !modelExists(filename = value.toString()))
+                continue;
+        }
+
+        QVector<QPair<int, QVariant>> data;
+
+        // load data from base model
+        // FIXME(jared): how does "Restore Defaults" work for other settings of clones which we don't do this for?
+        if (auto base = modelInfoByFilename(filename, /*allowClone*/ false); !base.id().isNull()) {
+            if (auto tmpl = base.m_chatTemplate)
+                data.append({ ModelList::ChatTemplateRole,  *tmpl });
+            if (auto msg  = base.m_systemMessage; !msg.isNull())
+                data.append({ ModelList::SystemMessageRole,  msg  });
+        }
 
         addModel(id);
 
-        QVector<QPair<int, QVariant>> data;
+        // load data from settings
         if (settings.contains(g + "/name")) {
             const QString name = settings.value(g + "/name").toString();
             data.append({ ModelList::NameRole, name });
@@ -1858,14 +1938,6 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/repeatPenaltyTokens")) {
             const int repeatPenaltyTokens = settings.value(g + "/repeatPenaltyTokens").toInt();
             data.append({ ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens });
-        }
-        if (settings.contains(g + "/promptTemplate")) {
-            const QString promptTemplate = settings.value(g + "/promptTemplate").toString();
-            data.append({ ModelList::PromptTemplateRole, promptTemplate });
-        }
-        if (settings.contains(g + "/systemPrompt")) {
-            const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
-            data.append({ ModelList::SystemPromptRole, systemPrompt });
         }
         if (settings.contains(g + "/chatNamePrompt")) {
             const QString chatNamePrompt = settings.value(g + "/chatNamePrompt").toString();
