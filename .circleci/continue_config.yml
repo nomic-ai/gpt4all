@@ -71,7 +71,6 @@ jobs:
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S ../gpt4all-chat -B . -G Ninja \
-              -DCMAKE_INSTALL_PREFIX=~/install \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
