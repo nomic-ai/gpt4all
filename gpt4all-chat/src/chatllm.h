@@ -30,7 +30,7 @@
 using namespace Qt::Literals::StringLiterals;
 
 class QDataStream;
-struct ChatItem;
+class MessageItem;
 
 // NOTE: values serialized to disk, do not change or reuse
 enum class LLModelTypeV0 { // chat versions 2-5
@@ -220,8 +220,8 @@ Q_SIGNALS:
     void modelLoadingPercentageChanged(float);
     void modelLoadingError(const QString &error);
     void modelLoadingWarning(const QString &warning);
-    void responseChanged(const QString &response);
-    void responseFailed(const QString &error);
+    void responseChanged();
+    void responseFailed();
     void promptProcessing();
     void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);
@@ -252,18 +252,18 @@ protected:
 
     ChatPromptResult promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx);
     // passing a string_view directly skips templating and uses the raw string
-    PromptResult promptInternal(const std::variant<std::span<const ChatItem>, std::string_view> &prompt,
+    PromptResult promptInternal(const std::variant<std::span<const MessageItem>, std::string_view> &prompt,
                                 const LLModel::PromptContext &ctx,
                                 bool usedLocalDocs);
 
 private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
-    std::vector<ChatItem> forkConversation(const QString &prompt) const;
+    std::vector<MessageItem> forkConversation(const QString &prompt) const;
 
     // Applies the Jinja template. Query mode returns only the last message without special tokens.
     // Returns a (# of messages, rendered prompt) pair.
-    std::string applyJinjaTemplate(std::span<const ChatItem> items) const;
+    std::string applyJinjaTemplate(std::span<const MessageItem> items) const;
 
     void generateQuestions(qint64 elapsed);
 
