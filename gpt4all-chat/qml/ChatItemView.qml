@@ -4,9 +4,11 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import Qt.labs.qmlmodels
 
 import gpt4all
 import mysettings
+import toolenums
 
 ColumnLayout {
 
@@ -33,6 +35,9 @@ GridLayout {
         Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
         Layout.preferredWidth: 32
         Layout.preferredHeight: 32
+        Layout.topMargin: model.index > 0 ? 25 : 0
+        visible: content !== "" || childItems.length > 0
+
         Image {
             id: logo
             sourceSize: Qt.size(32, 32)
@@ -65,6 +70,9 @@ GridLayout {
         Layout.column: 1
         Layout.fillWidth: true
         Layout.preferredHeight: 38
+        Layout.topMargin: model.index > 0 ? 25 : 0
+        visible: content !== "" || childItems.length > 0
+
         RowLayout {
             spacing: 5
             anchors.left: parent.left
@@ -72,7 +80,11 @@ GridLayout {
             anchors.bottom: parent.bottom
 
             TextArea {
-                text: name === "Response: " ? qsTr("GPT4All") : qsTr("You")
+                text: {
+                    if (name === "Response: ")
+                        return qsTr("GPT4All");
+                    return qsTr("You");
+                }
                 padding: 0
                 font.pixelSize: theme.fontSizeLarger
                 font.bold: true
@@ -88,7 +100,7 @@ GridLayout {
                 color: theme.mutedTextColor
             }
             RowLayout {
-                visible: isCurrentResponse && (value === "" && currentChat.responseInProgress)
+                visible: isCurrentResponse && (content === "" && currentChat.responseInProgress)
                 Text {
                     color: theme.mutedTextColor
                     font.pixelSize: theme.fontSizeLarger
@@ -156,131 +168,36 @@ GridLayout {
             }
         }
 
-        TextArea {
-            id: myTextArea
+        Repeater {
+            model: childItems
+
+            DelegateChooser {
+                id: chooser
+                role: "name"
+                DelegateChoice {
+                    roleValue: "Text: ";
+                    ChatTextItem {
+                        Layout.fillWidth: true
+                        textContent: modelData.content
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "ToolCall: ";
+                    ChatCollapsibleItem {
+                        Layout.fillWidth: true
+                        textContent: modelData.content
+                        isCurrent: modelData.isCurrentResponse
+                        isError: modelData.isToolCallError
+                    }
+                }
+            }
+
+            delegate: chooser
+        }
+
+        ChatTextItem {
             Layout.fillWidth: true
-            padding: 0
-            color: {
-                if (!currentChat.isServer)
-                    return theme.textColor
-                return theme.white
-            }
-            wrapMode: Text.WordWrap
-            textFormat: TextEdit.PlainText
-            focus: false
-            readOnly: true
-            font.pixelSize: theme.fontSizeLarge
-            cursorVisible: isCurrentResponse ? currentChat.responseInProgress : false
-            cursorPosition: text.length
-            TapHandler {
-                id: tapHandler
-                onTapped: function(eventPoint, button) {
-                    var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
-                    var success = textProcessor.tryCopyAtPosition(clickedPos);
-                    if (success)
-                        copyCodeMessage.open();
-                }
-            }
-
-            MouseArea {
-                id: conversationMouseArea
-                anchors.fill: parent
-                acceptedButtons: Qt.RightButton
-
-                onClicked: (mouse) => {
-                               if (mouse.button === Qt.RightButton) {
-                                   conversationContextMenu.x = conversationMouseArea.mouseX
-                                   conversationContextMenu.y = conversationMouseArea.mouseY
-                                   conversationContextMenu.open()
-                               }
-                           }
-            }
-
-            onLinkActivated: function(link) {
-                if (!isCurrentResponse || !currentChat.responseInProgress)
-                    Qt.openUrlExternally(link)
-            }
-
-            onLinkHovered: function (link) {
-                if (!isCurrentResponse || !currentChat.responseInProgress)
-                    statusBar.externalHoveredLink = link
-            }
-
-            MyMenu {
-                id: conversationContextMenu
-                MyMenuItem {
-                    text: qsTr("Copy")
-                    enabled: myTextArea.selectedText !== ""
-                    height: enabled ? implicitHeight : 0
-                    onTriggered: myTextArea.copy()
-                }
-                MyMenuItem {
-                    text: qsTr("Copy Message")
-                    enabled: myTextArea.selectedText === ""
-                    height: enabled ? implicitHeight : 0
-                    onTriggered: {
-                        myTextArea.selectAll()
-                        myTextArea.copy()
-                        myTextArea.deselect()
-                    }
-                }
-                MyMenuItem {
-                    text: textProcessor.shouldProcessText ? qsTr("Disable markdown") : qsTr("Enable markdown")
-                    height: enabled ? implicitHeight : 0
-                    onTriggered: {
-                        textProcessor.shouldProcessText = !textProcessor.shouldProcessText;
-                        textProcessor.setValue(value);
-                    }
-                }
-            }
-
-            ChatViewTextProcessor {
-                id: textProcessor
-            }
-
-            function resetChatViewTextProcessor() {
-                textProcessor.fontPixelSize                = myTextArea.font.pixelSize
-                textProcessor.codeColors.defaultColor      = theme.codeDefaultColor
-                textProcessor.codeColors.keywordColor      = theme.codeKeywordColor
-                textProcessor.codeColors.functionColor     = theme.codeFunctionColor
-                textProcessor.codeColors.functionCallColor = theme.codeFunctionCallColor
-                textProcessor.codeColors.commentColor      = theme.codeCommentColor
-                textProcessor.codeColors.stringColor       = theme.codeStringColor
-                textProcessor.codeColors.numberColor       = theme.codeNumberColor
-                textProcessor.codeColors.headerColor       = theme.codeHeaderColor
-                textProcessor.codeColors.backgroundColor   = theme.codeBackgroundColor
-                textProcessor.textDocument                 = textDocument
-                textProcessor.setValue(value);
-            }
-
-            property bool textProcessorReady: false
-
-            Component.onCompleted: {
-                resetChatViewTextProcessor();
-                textProcessorReady = true;
-            }
-
-            Connections {
-                target: chatModel
-                function onValueChanged(i, value) {
-                    if (myTextArea.textProcessorReady && index === i)
-                        textProcessor.setValue(value);
-                }
-            }
-
-            Connections {
-                target: MySettings
-                function onFontSizeChanged() {
-                    myTextArea.resetChatViewTextProcessor();
-                }
-                function onChatThemeChanged() {
-                    myTextArea.resetChatViewTextProcessor();
-                }
-            }
-
-            Accessible.role: Accessible.Paragraph
-            Accessible.name: text
-            Accessible.description: name === "Response: " ? "The response by the model" : "The prompt by the user"
+            textContent: content
         }
 
         ThumbsDownDialog {
@@ -289,16 +206,16 @@ GridLayout {
             y: Math.round((parent.height - height) / 2)
             width: 640
             height: 300
-            property string text: value
+            property string text: content
             response: newResponse === undefined || newResponse === "" ? text : newResponse
             onAccepted: {
                 var responseHasChanged = response !== text && response !== newResponse
                 if (thumbsDownState && !thumbsUpState && !responseHasChanged)
                     return
 
-                chatModel.updateNewResponse(index, response)
-                chatModel.updateThumbsUpState(index, false)
-                chatModel.updateThumbsDownState(index, true)
+                chatModel.updateNewResponse(model.index, response)
+                chatModel.updateThumbsUpState(model.index, false)
+                chatModel.updateThumbsDownState(model.index, true)
                 Network.sendConversation(currentChat.id, getConversationJson());
             }
         }
@@ -416,7 +333,7 @@ GridLayout {
         states: [
             State {
                 name: "expanded"
-                PropertyChanges { target: sourcesLayout; Layout.preferredHeight: flow.height }
+                PropertyChanges { target: sourcesLayout; Layout.preferredHeight: sourcesFlow.height }
             },
             State {
                 name: "collapsed"
@@ -438,7 +355,7 @@ GridLayout {
         ]
 
         Flow {
-            id: flow
+            id: sourcesFlow
             Layout.fillWidth: true
             spacing: 10
             visible: consolidatedSources.length !== 0

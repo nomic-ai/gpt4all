@@ -7,6 +7,9 @@
 #include "localdocs.h"
 #include "mysettings.h"
 #include "network.h"
+#include "tool.h"
+#include "toolmodel.h"
+#include "toolcallparser.h"
 
 #include <fmt/format.h>
 
@@ -55,6 +58,7 @@
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+using namespace ToolEnums;
 namespace ranges = std::ranges;
 
 //#define DEBUG
@@ -643,6 +647,7 @@ bool isAllSpace(R &&r)
 void ChatLLM::regenerateResponse(int index)
 {
     Q_ASSERT(m_chatModel);
+#if 0 // FIXME
     int promptIdx;
     {
         auto items = m_chatModel->chatItems(); // holds lock
@@ -661,7 +666,7 @@ void ChatLLM::regenerateResponse(int index)
     m_chatModel->setError(false);
     if (promptIdx >= 0)
         m_chatModel->updateSources(promptIdx, {});
-
+#endif
     prompt(m_chat->collectionList());
 }
 
@@ -670,10 +675,10 @@ std::optional<QString> ChatLLM::popPrompt(int index)
     Q_ASSERT(m_chatModel);
     QString content;
     {
-        auto items = m_chatModel->chatItems(); // holds lock
-        if (index < 0 || index >= items.size() || items[index].type() != ChatItem::Type::Prompt)
+        auto items = m_chatModel->messageItems(); // holds lock
+        if (index < 0 || index >= items.size() || items[index].type() != MessageItem::Type::Prompt)
             return std::nullopt;
-        content = items[index].value;
+        content = items[index].content();
     }
     m_chatModel->truncate(index);
     return content;
@@ -737,7 +742,8 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
         promptInternalChat(enabledCollections, promptContextFromSettings(m_modelInfo));
     } catch (const std::exception &e) {
         // FIXME(jared): this is neither translated nor serialized
-        emit responseFailed(u"Error: %1"_s.arg(QString::fromUtf8(e.what())));
+        m_chatModel->setResponseValue(u"Error: %1"_s.arg(QString::fromUtf8(e.what())));
+        m_chatModel->setError();
         emit responseStopped(0);
     }
 }
@@ -745,20 +751,20 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
 // FIXME(jared): We can avoid this potentially expensive copy if we use ChatItem pointers, but this is only safe if we
 // hold the lock while generating. We can't do that now because Chat is actually in charge of updating the response, not
 // ChatLLM.
-std::vector<ChatItem> ChatLLM::forkConversation(const QString &prompt) const
+std::vector<MessageItem> ChatLLM::forkConversation(const QString &prompt) const
 {
     Q_ASSERT(m_chatModel);
     if (m_chatModel->hasError())
         throw std::logic_error("cannot continue conversation with an error");
 
-    std::vector<ChatItem> conversation;
+    std::vector<MessageItem> conversation;
     {
-        auto items = m_chatModel->chatItems(); // holds lock
+        auto items = m_chatModel->messageItems();
         Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
         conversation.reserve(items.size() + 1);
         conversation.assign(items.begin(), items.end());
     }
-    conversation.emplace_back(ChatItem::prompt_tag, prompt);
+    conversation.emplace_back(MessageItem::Type::Prompt, prompt.toUtf8());
     return conversation;
 }
 
@@ -793,7 +799,7 @@ std::optional<std::string> ChatLLM::checkJinjaTemplateError(const std::string &s
     return std::nullopt;
 }
 
-std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
+std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) const
 {
     Q_ASSERT(items.size() >= 1);
 
@@ -820,25 +826,33 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
 
     uint version = parseJinjaTemplateVersion(chatTemplate);
 
-    auto makeMap = [version](const ChatItem &item) {
+    auto makeMap = [version](const MessageItem &item) {
         return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(version, item)] { return msg.get(); });
     };
 
-    std::unique_ptr<ChatItem> systemItem;
+    std::unique_ptr<MessageItem> systemItem;
     bool useSystem = !isAllSpace(systemMessage);
 
     jinja2::ValuesList messages;
     messages.reserve(useSystem + items.size());
     if (useSystem) {
-        systemItem = std::make_unique<ChatItem>(ChatItem::system_tag, systemMessage);
+        systemItem = std::make_unique<MessageItem>(MessageItem::Type::System, systemMessage.toUtf8());
         messages.emplace_back(makeMap(*systemItem));
     }
     for (auto &item : items)
         messages.emplace_back(makeMap(item));
 
+    jinja2::ValuesList toolList;
+    const int toolCount = ToolModel::globalInstance()->count();
+    for (int i = 0; i < toolCount; ++i) {
+        Tool *t = ToolModel::globalInstance()->get(i);
+        toolList.push_back(t->jinjaValue());
+    }
+
     jinja2::ValuesMap params {
         { "messages",              std::move(messages) },
         { "add_generation_prompt", true                },
+        { "toolList",              toolList            },
     };
     for (auto &[name, token] : model->specialTokens())
         params.emplace(std::move(name), std::move(token));
@@ -857,43 +871,45 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
     Q_ASSERT(isModelLoaded());
     Q_ASSERT(m_chatModel);
 
-    // Return a (ChatModelAccessor, std::span) pair where the span represents the relevant messages for this chat.
+    // Return a vector of relevant messages for this chat.
     // "subrange" is used to select only local server messages from the current chat session.
     auto getChat = [&]() {
-        auto items = m_chatModel->chatItems(); // holds lock
-        std::span view(items);
-        if (subrange)
-            view = view.subspan(subrange->first, subrange->second);
-        Q_ASSERT(view.size() >= 2);
-        return std::pair(std::move(items), view);
+        auto items = m_chatModel->messageItems();
+        if (subrange) {
+            items.erase(items.begin(),                    items.begin() + subrange->first);
+            items.erase(items.begin() + subrange->second, items.end()                    );
+        }
+        Q_ASSERT(items.size() >= 2);
+        return items;
     };
 
-    // copy messages for safety (since we can't hold the lock the whole time)
-    std::optional<std::pair<int, QString>> query;
-    {
-        // Find the prompt that represents the query. Server chats are flexible and may not have one.
-        auto [_, view] = getChat(); // holds lock
-        if (auto peer = m_chatModel->getPeer(view, view.end() - 1)) // peer of response
-            query = { *peer - view.begin(), (*peer)->value };
-    }
-
     QList<ResultInfo> databaseResults;
-    if (query && !enabledCollections.isEmpty()) {
-        auto &[promptIndex, queryStr] = *query;
-        const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-        emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
-        m_chatModel->updateSources(promptIndex, databaseResults);
-        emit databaseResultsChanged(databaseResults);
+    if (!enabledCollections.isEmpty()) {
+        std::optional<std::pair<int, QString>> query;
+        {
+            // Find the prompt that represents the query. Server chats are flexible and may not have one.
+            auto items = getChat();
+            if (auto peer = m_chatModel->getPeer(items, items.end() - 1)) // peer of response
+                query = { *peer - items.begin(), (*peer)->content() };
+        }
+
+        if (query) {
+            auto &[promptIndex, queryStr] = *query;
+            const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
+            emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
+            m_chatModel->updateSources(promptIndex, databaseResults);
+            emit databaseResultsChanged(databaseResults);
+        }
     }
 
     // copy messages for safety (since we can't hold the lock the whole time)
-    std::vector<ChatItem> chatItems;
+    std::vector<MessageItem> messageItems;
     {
-        auto [_, view] = getChat(); // holds lock
-        chatItems.assign(view.begin(), view.end() - 1); // exclude new response
+        auto items = getChat();
+        messageItems.assign(items.begin(), items.end() - 1); // exclude new response
     }
 
-    auto result = promptInternal(chatItems, ctx, !databaseResults.isEmpty());
+    auto result = promptInternal(messageItems, ctx, !databaseResults.isEmpty());
     return {
         /*PromptResult*/ {
             .response       = std::move(result.response),
@@ -905,7 +921,7 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
 }
 
 auto ChatLLM::promptInternal(
-    const std::variant<std::span<const ChatItem>, std::string_view> &prompt,
+    const std::variant<std::span<const MessageItem>, std::string_view> &prompt,
     const LLModel::PromptContext &ctx,
     bool usedLocalDocs
 ) -> PromptResult
@@ -915,14 +931,14 @@ auto ChatLLM::promptInternal(
     auto *mySettings = MySettings::globalInstance();
 
     // unpack prompt argument
-    const std::span<const ChatItem> *chatItems = nullptr;
+    const std::span<const MessageItem> *messageItems = nullptr;
     std::string                      jinjaBuffer;
     std::string_view                 conversation;
     if (auto *nonChat = std::get_if<std::string_view>(&prompt)) {
         conversation = *nonChat; // complete the string without a template
     } else {
-        chatItems    = &std::get<std::span<const ChatItem>>(prompt);
-        jinjaBuffer  = applyJinjaTemplate(*chatItems);
+        messageItems    = &std::get<std::span<const MessageItem>>(prompt);
+        jinjaBuffer  = applyJinjaTemplate(*messageItems);
         conversation = jinjaBuffer;
     }
 
@@ -930,8 +946,8 @@ auto ChatLLM::promptInternal(
     if (!dynamic_cast<const ChatAPI *>(m_llModelInfo.model.get())) {
         auto nCtx = m_llModelInfo.model->contextLength();
         std::string jinjaBuffer2;
-        auto lastMessageRendered = (chatItems && chatItems->size() > 1)
-            ? std::string_view(jinjaBuffer2 = applyJinjaTemplate({ &chatItems->back(), 1 }))
+        auto lastMessageRendered = (messageItems && messageItems->size() > 1)
+            ? std::string_view(jinjaBuffer2 = applyJinjaTemplate({ &messageItems->back(), 1 }))
             : conversation;
         int32_t lastMessageLength = m_llModelInfo.model->countPromptTokens(lastMessageRendered);
         if (auto limit = nCtx - 4; lastMessageLength > limit) {
@@ -951,14 +967,34 @@ auto ChatLLM::promptInternal(
         return !m_stopGenerating;
     };
 
-    auto handleResponse = [this, &result](LLModel::Token token, std::string_view piece) -> bool {
+    ToolCallParser toolCallParser;
+    auto handleResponse = [this, &result, &toolCallParser](LLModel::Token token, std::string_view piece) -> bool {
         Q_UNUSED(token)
         result.responseTokens++;
         m_timer->inc();
+
+        // FIXME: This is *not* necessarily fully formed utf data because it can be partial at this point
+        // handle this like below where we have a QByteArray
+        toolCallParser.update(QString::fromStdString(piece.data()));
+
+        // Create a toolcall and split the response if needed
+        if (!toolCallParser.hasSplit() && toolCallParser.state() == ToolEnums::ParseState::Partial) {
+            const QPair<QString, QString> pair = toolCallParser.split();
+            m_chatModel->splitToolCall(pair);
+        }
+
         result.response.append(piece.data(), piece.size());
         auto respStr = QString::fromUtf8(result.response);
-        emit responseChanged(removeLeadingWhitespace(respStr));
-        return !m_stopGenerating;
+
+        if (toolCallParser.hasSplit())
+            m_chatModel->setResponseValue(toolCallParser.buffer());
+        else
+            m_chatModel->setResponseValue(removeLeadingWhitespace(respStr));
+
+        emit responseChanged();
+
+        const bool foundToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete;
+        return !foundToolCall && !m_stopGenerating;
     };
 
     QElapsedTimer totalTime;
@@ -969,6 +1005,7 @@ auto ChatLLM::promptInternal(
         emit promptProcessing();
         m_llModelInfo.model->setThreadCount(mySettings->threadCount());
         m_stopGenerating = false;
+        // qDebug().noquote() << conversation;
         m_llModelInfo.model->prompt(conversation, handlePrompt, handleResponse, ctx);
     } catch (...) {
         m_timer->stop();
@@ -978,13 +1015,20 @@ auto ChatLLM::promptInternal(
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
+    const bool foundToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete;
+
     // trim trailing whitespace
     auto respStr = QString::fromUtf8(result.response);
-    if (!respStr.isEmpty() && std::as_const(respStr).back().isSpace())
-        emit responseChanged(respStr.trimmed());
+    if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || foundToolCall)) {
+        if (toolCallParser.hasSplit())
+            m_chatModel->setResponseValue(toolCallParser.buffer());
+        else
+            m_chatModel->setResponseValue(respStr.trimmed());
+        emit responseChanged();
+    }
 
     bool doQuestions = false;
-    if (!m_isServer && chatItems) {
+    if (!m_isServer && messageItems && !foundToolCall) {
         switch (mySettings->suggestionMode()) {
             case SuggestionMode::On:            doQuestions = true;          break;
             case SuggestionMode::LocalDocsOnly: doQuestions = usedLocalDocs; break;

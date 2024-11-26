@@ -694,7 +694,8 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
                                     promptCtx,
                                     /*usedLocalDocs*/ false);
         } catch (const std::exception &e) {
-            emit responseChanged(e.what());
+            m_chatModel->setResponseValue(e.what());
+            m_chatModel->setError();
             emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
@@ -772,16 +773,16 @@ auto Server::handleChatRequest(const ChatRequest &request)
     Q_ASSERT(!request.messages.isEmpty());
 
     // adds prompt/response items to GUI
-    QList<ChatItem> chatItems;
+    std::vector<MessageItem> messageItems;
     for (auto &message : request.messages) {
         using enum ChatRequest::Message::Role;
         switch (message.role) {
-            case System:    chatItems.emplace_back(ChatItem::system_tag,   message.content); break;
-            case User:      chatItems.emplace_back(ChatItem::prompt_tag,   message.content); break;
-            case Assistant: chatItems.emplace_back(ChatItem::response_tag, message.content); break;
+            case System:    messageItems.emplace_back(MessageItem(MessageItem::Type::System, message.content)); break;
+            case User:      messageItems.emplace_back(MessageItem(MessageItem::Type::Prompt, message.content)); break;
+            case Assistant: messageItems.emplace_back(MessageItem(MessageItem::Type::Response, message.content)); break;
         }
     }
-    auto subrange = m_chatModel->appendResponseWithHistory(chatItems);
+    auto subrange = m_chatModel->appendResponseWithHistory(messageItems);
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {
@@ -803,7 +804,8 @@ auto Server::handleChatRequest(const ChatRequest &request)
         try {
             result = promptInternalChat(m_collections, promptCtx, subrange);
         } catch (const std::exception &e) {
-            emit responseChanged(e.what());
+            m_chatModel->setResponseValue(e.what());
+            m_chatModel->setError();
             emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }

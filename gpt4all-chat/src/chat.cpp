@@ -3,18 +3,27 @@
 #include "chatlistmodel.h"
 #include "network.h"
 #include "server.h"
+#include "tool.h"
+#include "toolcallparser.h"
+#include "toolmodel.h"
 
 #include <QBuffer>
 #include <QDataStream>
 #include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QLatin1String>
 #include <QMap>
+#include <QRegularExpression>
 #include <QString>
 #include <QVariant>
 #include <Qt>
 #include <QtLogging>
 
 #include <utility>
+
+using namespace ToolEnums;
 
 Chat::Chat(QObject *parent)
     : QObject(parent)
@@ -54,7 +63,6 @@ void Chat::connectLLM()
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::responseFailed, this, &Chat::handleResponseFailed, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
@@ -181,23 +189,12 @@ Chat::ResponseState Chat::responseState() const
     return m_responseState;
 }
 
-void Chat::handleResponseChanged(const QString &response)
+void Chat::handleResponseChanged()
 {
     if (m_responseState != Chat::ResponseGeneration) {
         m_responseState = Chat::ResponseGeneration;
         emit responseStateChanged();
     }
-
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateValue(index, response);
-}
-
-void Chat::handleResponseFailed(const QString &error)
-{
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateValue(index, error);
-    m_chatModel->setError();
-    responseStopped(0);
 }
 
 void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
@@ -242,9 +239,58 @@ void Chat::responseStopped(qint64 promptResponseMs)
     m_responseState = Chat::ResponseStopped;
     emit responseInProgressChanged();
     emit responseStateChanged();
+
+    const int index = m_chatModel->count() - 1;
+    ChatItem *item = m_chatModel->get(index);
+
+    // FIXME
+    const QString possibleToolcall = item->toolCallValue();
+
+    ToolCallParser parser;
+    parser.update(possibleToolcall);
+
+    if (item->type() == ChatItem::Type::Response && parser.state() == ToolEnums::ParseState::Complete) {
+        const QString toolCall = parser.toolCall();
+
+        // Regex to remove the formatting around the code
+        static const QRegularExpression regex("^\\s*```javascript\\s*|\\s*```\\s*$");
+        QString code = toolCall;
+        code.remove(regex);
+        code = code.trimmed();
+
+        // Right now the code interpreter is the only available tool
+        Tool *toolInstance = ToolModel::globalInstance()->get(ToolCallConstants::CodeInterpreterFunction);
+        Q_ASSERT(toolInstance);
+
+        // The param is the code
+        const ToolParam param = { "code", ToolEnums::ParamType::String, code };
+        const QString result = toolInstance->run({param}, 10000 /*msecs to timeout*/);
+        const ToolEnums::Error error = toolInstance->error();
+        const QString errorString = toolInstance->errorString();
+
+        // Update the current response with meta information about toolcall and re-parent
+        m_chatModel->updateToolCall({
+            ToolCallConstants::CodeInterpreterFunction,
+            { param },
+            result,
+            error,
+            errorString
+        });
+
+        ++m_consecutiveToolCalls;
+
+        // We limit the number of consecutive toolcalls otherwise we get into a potentially endless loop
+        if (m_consecutiveToolCalls < 3 || error == ToolEnums::Error::NoError) {
+            resetResponseState();
+            emit promptRequested(m_collections); // triggers a new response
+            return;
+        }
+    }
+
     if (m_generatedName.isEmpty())
         emit generateNameRequested();
 
+    m_consecutiveToolCalls = 0;
     Network::globalInstance()->trackChatEvent("response_complete", {
         {"first", m_firstResponse},
         {"message_count", chatModel()->count()},

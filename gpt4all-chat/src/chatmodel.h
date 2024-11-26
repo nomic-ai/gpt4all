@@ -2,6 +2,8 @@
 #define CHATMODEL_H
 
 #include "database.h"
+#include "tool.h"
+#include "toolcallparser.h"
 #include "utils.h"
 #include "xlsxtomd.h"
 
@@ -11,6 +13,7 @@
 #include <QBuffer>
 #include <QByteArray>
 #include <QDataStream>
+#include <QJsonDocument>
 #include <QHash>
 #include <QList>
 #include <QObject>
@@ -21,13 +24,16 @@
 #include <Qt>
 #include <QtGlobal>
 
+#include <algorithm>
 #include <iterator>
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 namespace ranges = std::ranges;
+namespace views  = std::views;
 
 
 struct PromptAttachment {
@@ -69,19 +75,70 @@ public:
 };
 Q_DECLARE_METATYPE(PromptAttachment)
 
-struct ChatItem
+class MessageItem
 {
     Q_GADGET
+    Q_PROPERTY(Type    type    READ type    CONSTANT)
+    Q_PROPERTY(QString content READ content CONSTANT)
+
+public:
+    enum class Type { System, Prompt, Response, ToolResponse };
+
+    MessageItem(Type type, QString content)
+        : m_type(type), m_content(std::move(content)) {}
+
+    Type           type()    const { return m_type;    }
+    const QString &content() const { return m_content; }
+
+    QList<ResultInfo>       sources()           const { return m_sources;           }
+    QList<PromptAttachment> promptAttachments() const { return m_promptAttachments; }
+
+    // used with version 0 Jinja templates
+    QString bakedPrompt() const
+    {
+        if (type() != Type::Prompt)
+            throw std::logic_error("bakedPrompt() called on non-prompt item");
+        QStringList parts;
+        if (!m_sources.isEmpty()) {
+            parts << u"### Context:\n"_s;
+            for (auto &source : std::as_const(m_sources))
+                parts << u"Collection: "_s << source.collection
+                      << u"\nPath: "_s     << source.path
+                      << u"\nExcerpt: "_s  << source.text << u"\n\n"_s;
+        }
+        for (auto &attached : std::as_const(m_promptAttachments))
+            parts << attached.processedContent() << u"\n\n"_s;
+        parts << m_content;
+        return parts.join(QString());
+    }
+
+private:
+    Type                    m_type;
+    QString                 m_content;
+    QList<ResultInfo>       m_sources;
+    QList<PromptAttachment> m_promptAttachments;
+};
+Q_DECLARE_METATYPE(MessageItem)
+
+class ChatItem : public QObject
+{
+    Q_OBJECT
     Q_PROPERTY(QString name  MEMBER name )
     Q_PROPERTY(QString value MEMBER value)
 
+    // prompts and responses
+    Q_PROPERTY(QString content   READ content NOTIFY contentChanged)
+
     // prompts
     Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments)
-    Q_PROPERTY(QString                 bakedPrompt       READ   bakedPrompt      )
 
     // responses
-    Q_PROPERTY(bool isCurrentResponse MEMBER isCurrentResponse)
-    Q_PROPERTY(bool isError           MEMBER isError          )
+    Q_PROPERTY(bool                isCurrentResponse   MEMBER isCurrentResponse NOTIFY isCurrentResponseChanged)
+    Q_PROPERTY(bool                isError             MEMBER isError          )
+    Q_PROPERTY(QList<ChatItem *>   childItems          READ   childItems       )
+
+    // toolcall
+    Q_PROPERTY(bool                isToolCallError     READ isToolCallError     NOTIFY isTooCallErrorChanged)
 
     // responses (DataLake)
     Q_PROPERTY(QString newResponse     MEMBER newResponse    )
@@ -90,34 +147,73 @@ struct ChatItem
     Q_PROPERTY(bool    thumbsDownState MEMBER thumbsDownState)
 
 public:
-    enum class Type { System, Prompt, Response };
+    enum class Type { System, Prompt, Response, Text, ToolCall, ToolResponse };
 
     // tags for constructing ChatItems
-    struct prompt_tag_t { explicit prompt_tag_t() = default; };
-    static inline constexpr prompt_tag_t prompt_tag = prompt_tag_t();
-    struct response_tag_t { explicit response_tag_t() = default; };
-    static inline constexpr response_tag_t response_tag = response_tag_t();
-    struct system_tag_t { explicit system_tag_t() = default; };
-    static inline constexpr system_tag_t system_tag = system_tag_t();
-
-    // FIXME(jared): This should not be necessary. QML should see null or undefined if it
-    // tries to access something invalid.
-    ChatItem() = default;
+    struct prompt_tag_t        { explicit prompt_tag_t       () = default; };
+    struct response_tag_t      { explicit response_tag_t     () = default; };
+    struct system_tag_t        { explicit system_tag_t       () = default; };
+    struct text_tag_t          { explicit text_tag_t         () = default; };
+    struct tool_call_tag_t     { explicit tool_call_tag_t    () = default; };
+    struct tool_response_tag_t { explicit tool_response_tag_t() = default; };
+    static inline constexpr prompt_tag_t        prompt_tag        = prompt_tag_t        {};
+    static inline constexpr response_tag_t      response_tag      = response_tag_t      {};
+    static inline constexpr system_tag_t        system_tag        = system_tag_t        {};
+    static inline constexpr text_tag_t          text_tag          = text_tag_t          {};
+    static inline constexpr tool_call_tag_t     tool_call_tag     = tool_call_tag_t     {};
+    static inline constexpr tool_response_tag_t tool_response_tag = tool_response_tag_t {};
 
     // NOTE: system messages are currently never stored in the model or serialized
-    ChatItem(system_tag_t, const QString &value)
-        : name(u"System: "_s), value(value) {}
+    ChatItem(QObject *parent, system_tag_t, const QString &value)
+        : QObject(nullptr), name(u"System: "_s), value(value)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
 
-    ChatItem(prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
-        : name(u"Prompt: "_s), value(value), promptAttachments(attachments) {}
+    ChatItem(QObject *parent, prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
+        : QObject(nullptr), name(u"Prompt: "_s), value(value), promptAttachments(attachments)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
 
     // A new response, to be filled in
-    ChatItem(response_tag_t)
-        : name(u"Response: "_s), isCurrentResponse(true) {}
+    ChatItem(QObject *parent, response_tag_t)
+        : QObject(nullptr), name(u"Response: "_s), isCurrentResponse(true)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
 
     // An existing response, from Server
-    ChatItem(response_tag_t, const QString &value)
-        : name(u"Response: "_s), value(value) {}
+    ChatItem(QObject *parent, response_tag_t, const QString &value)
+        : QObject(nullptr), name(u"Response: "_s), value(value)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
+
+    ChatItem(QObject *parent, text_tag_t, const QString &value)
+        : QObject(nullptr), name(u"Text: "_s), value(value)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
+
+    ChatItem(QObject *parent, tool_call_tag_t, const QString &value)
+        : QObject(nullptr), name(u"ToolCall: "_s), value(value)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
+
+    ChatItem(QObject *parent, tool_response_tag_t, const QString &value)
+        : QObject(nullptr), name(u"ToolResponse: "_s), value(value)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
 
     Type type() const
     {
@@ -127,27 +223,162 @@ public:
             return Type::Prompt;
         if (name == u"Response: "_s)
             return Type::Response;
+        if (name == u"Text: "_s)
+            return Type::Text;
+        if (name == u"ToolCall: "_s)
+            return Type::ToolCall;
+        if (name == u"ToolResponse: "_s)
+            return Type::ToolResponse;
         throw std::invalid_argument(fmt::format("Chat item has unknown label: {:?}", name));
     }
 
-    // used with version 0 Jinja templates
-    QString bakedPrompt() const
+    QString flattenedContent() const
     {
-        if (type() != Type::Prompt)
-            throw std::logic_error("bakedPrompt() called on non-prompt item");
-        QStringList parts;
-        if (!sources.isEmpty()) {
-            parts << u"### Context:\n"_s;
-            for (auto &source : std::as_const(sources))
-                parts << u"Collection: "_s << source.collection
-                      << u"\nPath: "_s     << source.path
-                      << u"\nExcerpt: "_s  << source.text << u"\n\n"_s;
-        }
-        for (auto &attached : std::as_const(promptAttachments))
-            parts << attached.processedContent() << u"\n\n"_s;
-        parts << value;
-        return parts.join(QString());
+        if (subItems.empty())
+            return value;
+
+        // We only flatten one level
+        QString content;
+        for (ChatItem *item : subItems)
+            content += item->value;
+        return content;
     }
+
+    QString content() const
+    {
+        if (type() == Type::Response) {
+            // We parse if this contains any part of a partial toolcall
+            ToolCallParser parser;
+            parser.update(value);
+
+            // If no tool call is detected, return the original value
+            if (parser.startIndex() < 0)
+                return value;
+
+            // Otherwise we only return the text before and any partial code interpreter code
+            const QString beforeToolCall = value.left(parser.startIndex());
+            const QString toolCallString = value.mid(parser.startIndex());
+            return beforeToolCall + codeInterpreterContent(toolCallString);
+        }
+
+        // For complete tool calls we only return content if it is code interpreter
+        if (type() == Type::ToolCall)
+            return codeInterpreterContent(value);
+
+        // We don't show any of content from the tool response in the GUI
+        if (type() == Type::ToolResponse)
+            return QString();
+
+        return value;
+    }
+
+    QString codeInterpreterContent(const QString &value) const
+    {
+        // Constants for identifying and formatting the code interpreter tool call
+        static const QString prefix = ToolCallConstants::CodeInterpreterTag;
+
+        // Check if the tool call is a code interpreter tool call
+        if (!value.startsWith(prefix))
+            return QString();
+
+        // Regex to remove the tag and any surrounding whitespace
+        static const QRegularExpression regex("^"
+            + ToolCallConstants::CodeInterpreterTag
+            + "\\s*|\\s*"
+            + ToolCallConstants::CodeInterpreterEndTag
+            + "$");
+
+        // Extract the code
+        QString code = value;
+        code.remove(regex);
+        code = code.trimmed();
+
+        QString result;
+
+        // If we've finished the tool call then extract the result from meta information
+        if (toolCallInfo.name == ToolCallConstants::CodeInterpreterFunction)
+            result = "```\n" + toolCallInfo.result + "```";
+
+        // Return the formatted code and the result if available
+        return code + result;
+    }
+
+    QList<ChatItem *> childItems() const
+    {
+        // We currently have leaf nodes at depth 3 with nodes at depth 2 as mere containers we don't
+        // care about in GUI
+        QList<ChatItem *> items;
+        for (const ChatItem *item : subItems) {
+            items.reserve(items.size() + item->subItems.size());
+            ranges::copy(item->subItems, std::back_inserter(items));
+        }
+        return items;
+    }
+
+    QString toolCallValue() const
+    {
+        if (!subItems.empty())
+            return subItems.back()->toolCallValue();
+        if (type() == Type::ToolCall)
+            return value;
+        else
+            return QString();
+    }
+
+    void setCurrentResponse(bool b)
+    {
+        if (!subItems.empty())
+            subItems.back()->setCurrentResponse(b);
+        isCurrentResponse = b;
+        emit isCurrentResponseChanged();
+    }
+
+    void setValue(const QString &v)
+    {
+        if (!subItems.empty() && subItems.back()->isCurrentResponse) {
+            subItems.back()->setValue(v);
+            return;
+        }
+
+        value = v;
+        emit contentChanged();
+    }
+
+    void setToolCallInfo(const ToolCallInfo &info)
+    {
+        toolCallInfo = info;
+        emit contentChanged();
+        emit isTooCallErrorChanged();
+    }
+
+    bool isToolCallError() const
+    {
+        return toolCallInfo.error != ToolEnums::Error::NoError;
+    }
+
+    MessageItem asMessageItem() const
+    {
+        MessageItem::Type msgType;
+        switch (auto typ = type()) {
+            using enum ChatItem::Type;
+            case System:       msgType = MessageItem::Type::System;       break;
+            case Prompt:       msgType = MessageItem::Type::Prompt;       break;
+            case Response:     msgType = MessageItem::Type::Response;     break;
+            case ToolResponse: msgType = MessageItem::Type::ToolResponse; break;
+            case Text:
+            case ToolCall:
+                throw std::invalid_argument(fmt::format("cannot convert ChatItem type {} to message item", int(typ)));
+        }
+
+        return { msgType, flattenedContent() };
+    }
+
+Q_SIGNALS:
+    void contentChanged();
+    void isTooCallErrorChanged();
+    void isCurrentResponseChanged();
+
+public:
 
     // TODO: Maybe we should include the model name here as well as timestamp?
     QString name;
@@ -161,26 +392,14 @@ public:
     // responses
     bool isCurrentResponse = false;
     bool isError           = false;
+    ToolCallInfo toolCallInfo;
+    std::list<ChatItem *> subItems;
 
     // responses (DataLake)
     QString newResponse;
     bool    stopped         = false;
     bool    thumbsUpState   = false;
     bool    thumbsDownState = false;
-};
-Q_DECLARE_METATYPE(ChatItem)
-
-class ChatModelAccessor : public std::span<const ChatItem> {
-private:
-    using Super = std::span<const ChatItem>;
-
-public:
-    template <typename... T>
-    ChatModelAccessor(QMutex &mutex, T &&...args)
-        : Super(std::forward<T>(args)...), m_lock(&mutex) {}
-
-private:
-    QMutexLocker<QMutex> m_lock;
 };
 
 class ChatModel : public QAbstractListModel
@@ -198,6 +417,9 @@ public:
         NameRole = Qt::UserRole + 1,
         ValueRole,
 
+        // prompts and responses
+        ContentRole,
+
         // prompts
         PromptAttachmentsRole,
 
@@ -207,6 +429,7 @@ public:
         ConsolidatedSourcesRole,
         IsCurrentResponseRole,
         IsErrorRole,
+        ChildItemsRole,
 
         // responses (DataLake)
         NewResponseRole,
@@ -224,14 +447,36 @@ public:
 
     /* a "peer" is a bidirectional 1:1 link between a prompt and the response that would cite its LocalDocs
      * sources. Return std::nullopt if there is none, which is possible for e.g. server chats. */
-    static std::optional<qsizetype> getPeer(const ChatItem *arr, qsizetype size, qsizetype index)
+    template <typename T>
+    static std::optional<qsizetype> getPeer(const T *arr, qsizetype size, qsizetype index)
     {
         Q_ASSERT(index >= 0);
         Q_ASSERT(index < size);
+        return getPeerInternal(arr, size, index);
+    }
+
+private:
+    static std::optional<qsizetype> getPeerInternal(const ChatItem * const *arr, qsizetype size, qsizetype index)
+    {
         qsizetype peer;
         ChatItem::Type expected;
-        switch (arr[index].type()) {
+        switch (arr[index]->type()) {
             using enum ChatItem::Type;
+            case Prompt:   peer = index + 1; expected = Response; break;
+            case Response: peer = index - 1; expected = Prompt;   break;
+            default: throw std::invalid_argument("getPeer() called on item that is not a prompt or response");
+        }
+        if (peer >= 0 && peer < size && arr[peer]->type() == expected)
+            return peer;
+        return std::nullopt;
+    }
+
+    static std::optional<qsizetype> getPeerInternal(const MessageItem *arr, qsizetype size, qsizetype index)
+    {
+        qsizetype peer;
+        MessageItem::Type expected;
+        switch (arr[index].type()) {
+            using enum MessageItem::Type;
             case Prompt:   peer = index + 1; expected = Response; break;
             case Response: peer = index - 1; expected = Prompt;   break;
             default: throw std::invalid_argument("getPeer() called on item that is not a prompt or response");
@@ -241,8 +486,8 @@ public:
         return std::nullopt;
     }
 
+public:
     template <ranges::contiguous_range R>
-        requires std::same_as<ranges::range_value_t<R>, ChatItem>
     static auto getPeer(R &&range, ranges::iterator_t<R> item) -> std::optional<ranges::iterator_t<R>>
     {
         auto begin = ranges::begin(range);
@@ -250,7 +495,7 @@ public:
             .transform([&](auto i) { return begin + i; });
     }
 
-    auto getPeerUnlocked(QList<ChatItem>::const_iterator item) const -> std::optional<QList<ChatItem>::const_iterator>
+    auto getPeerUnlocked(QList<ChatItem *>::const_iterator item) const -> std::optional<QList<ChatItem *>::const_iterator>
     { return getPeer(m_chatItems, item); }
 
     std::optional<qsizetype> getPeerUnlocked(qsizetype index) const
@@ -262,7 +507,8 @@ public:
         if (!index.isValid() || index.row() < 0 || index.row() >= m_chatItems.size())
             return QVariant();
 
-        auto item = m_chatItems.cbegin() + index.row();
+        auto itemIt = m_chatItems.cbegin() + index.row();
+        auto *item = *itemIt;
         switch (role) {
             case NameRole:
                 return item->name;
@@ -274,8 +520,8 @@ public:
                 {
                     QList<ResultInfo> data;
                     if (item->type() == ChatItem::Type::Response) {
-                        if (auto prompt = getPeerUnlocked(item))
-                            data = (*prompt)->sources;
+                        if (auto prompt = getPeerUnlocked(itemIt))
+                            data = (**prompt)->sources;
                     }
                     return QVariant::fromValue(data);
                 }
@@ -283,8 +529,8 @@ public:
                 {
                     QList<ResultInfo> data;
                     if (item->type() == ChatItem::Type::Response) {
-                        if (auto prompt = getPeerUnlocked(item))
-                            data = (*prompt)->consolidatedSources;
+                        if (auto prompt = getPeerUnlocked(itemIt))
+                            data = (**prompt)->consolidatedSources;
                     }
                     return QVariant::fromValue(data);
                 }
@@ -300,6 +546,10 @@ public:
                 return item->thumbsDownState;
             case IsErrorRole:
                 return item->type() == ChatItem::Type::Response && item->isError;
+            case ContentRole:
+                return item->content();
+            case ChildItemsRole:
+                return QVariant::fromValue(item->childItems());
         }
 
         return QVariant();
@@ -319,6 +569,8 @@ public:
             { StoppedRole,             "stopped"             },
             { ThumbsUpStateRole,       "thumbsUpState"       },
             { ThumbsDownStateRole,     "thumbsDownState"     },
+            { ContentRole,             "content"             },
+            { ChildItemsRole,          "childItems"          },
         };
     }
 
@@ -335,7 +587,8 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.emplace_back(ChatItem::prompt_tag, value, attachments);
+            ChatItem *item = new ChatItem(this, ChatItem::prompt_tag, value, attachments);
+            m_chatItems.emplace_back(item);
         }
         endInsertRows();
         emit countChanged();
@@ -354,22 +607,19 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.emplace_back(ChatItem::response_tag);
+            ChatItem *item = new ChatItem(this, ChatItem::response_tag);
+            m_chatItems.emplace_back(item);
         }
         endInsertRows();
         emit countChanged();
     }
 
     // Used by Server to append a new conversation to the chat log.
-    // Appends a new, blank response to the end of the input list.
     // Returns an (offset, count) pair representing the indices of the appended items, including the new response.
-    std::pair<int, int> appendResponseWithHistory(QList<ChatItem> &history)
+    std::pair<int, int> appendResponseWithHistory(std::span<const MessageItem> history)
     {
         if (history.empty())
             throw std::invalid_argument("at least one message is required");
-
-        // add an empty response to prepare for generation
-        history.emplace_back(ChatItem::response_tag);
 
         m_mutex.lock();
         qsizetype startIndex = m_chatItems.size();
@@ -385,8 +635,11 @@ public:
             hadError = hasErrorUnlocked();
             subrange = { m_chatItems.size(), history.size() };
             m_chatItems.reserve(m_chatItems.size() + history.size());
+#if 0 // FIXME
             for (auto &item : history)
                 m_chatItems << item;
+            m_chatItems.emplace_back(ChatItem::response_tag);
+#endif
         }
         endInsertRows();
         emit countChanged();
@@ -403,7 +656,7 @@ public:
             QMutexLocker locker(&m_mutex);
             if (size >= (oldSize = m_chatItems.size()))
                 return;
-            if (size && m_chatItems.at(size - 1).type() != ChatItem::Type::Response)
+            if (size && m_chatItems.at(size - 1)->type() != ChatItem::Type::Response)
                 throw std::invalid_argument(
                     fmt::format("chat model truncated to {} items would not end in a response", size)
                 );
@@ -443,28 +696,24 @@ public:
             emit hasErrorChanged(false);
     }
 
-    Q_INVOKABLE ChatItem get(int index)
+    Q_INVOKABLE ChatItem *get(int index)
     {
         QMutexLocker locker(&m_mutex);
-        if (index < 0 || index >= m_chatItems.size()) return ChatItem();
+        if (index < 0 || index >= m_chatItems.size()) return nullptr;
         return m_chatItems.at(index);
     }
 
     Q_INVOKABLE void updateCurrentResponse(int index, bool b)
     {
-        bool changed = false;
         {
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            ChatItem &item = m_chatItems[index];
-            if (item.isCurrentResponse != b) {
-                item.isCurrentResponse = b;
-                changed = true;
-            }
+            ChatItem *item = m_chatItems[index];
+            item->setCurrentResponse(b);
         }
 
-        if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsCurrentResponseRole});
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsCurrentResponseRole});
     }
 
     Q_INVOKABLE void updateStopped(int index, bool b)
@@ -474,32 +723,28 @@ public:
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            ChatItem &item = m_chatItems[index];
-            if (item.stopped != b) {
-                item.stopped = b;
+            ChatItem *item = m_chatItems[index];
+            if (item->stopped != b) {
+                item->stopped = b;
                 changed = true;
             }
         }
         if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {StoppedRole});
     }
 
-    Q_INVOKABLE void updateValue(int index, const QString &value)
+    Q_INVOKABLE void setResponseValue(const QString &value)
     {
-        bool changed = false;
+        qsizetype index;
         {
             QMutexLocker locker(&m_mutex);
-            if (index < 0 || index >= m_chatItems.size()) return;
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
+                throw std::logic_error("we only set this on a response");
 
-            ChatItem &item = m_chatItems[index];
-            if (item.value != value) {
-                item.value = value;
-                changed = true;
-            }
+            index = m_chatItems.count() - 1;
+            ChatItem *item = m_chatItems.back();
+            item->setValue(value);
         }
-        if (changed) {
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ValueRole});
-            emit valueChanged(index, value);
-        }
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ValueRole, ContentRole});
     }
 
     static QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
@@ -523,12 +768,12 @@ public:
             if (index < 0 || index >= m_chatItems.size()) return;
 
             auto promptItem = m_chatItems.begin() + index;
-            if (promptItem->type() != ChatItem::Type::Prompt)
+            if ((*promptItem)->type() != ChatItem::Type::Prompt)
                 throw std::invalid_argument(fmt::format("item at index {} is not a prompt", index));
             if (auto peer = getPeerUnlocked(promptItem))
                 responseIndex = *peer - m_chatItems.cbegin();
-            promptItem->sources = sources;
-            promptItem->consolidatedSources = consolidateSources(sources);
+            (*promptItem)->sources = sources;
+            (*promptItem)->consolidatedSources = consolidateSources(sources);
         }
         if (responseIndex >= 0) {
             emit dataChanged(createIndex(responseIndex, 0), createIndex(responseIndex, 0), {SourcesRole});
@@ -543,9 +788,9 @@ public:
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            ChatItem &item = m_chatItems[index];
-            if (item.thumbsUpState != b) {
-                item.thumbsUpState = b;
+            ChatItem *item = m_chatItems[index];
+            if (item->thumbsUpState != b) {
+                item->thumbsUpState = b;
                 changed = true;
             }
         }
@@ -559,9 +804,9 @@ public:
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            ChatItem &item = m_chatItems[index];
-            if (item.thumbsDownState != b) {
-                item.thumbsDownState = b;
+            ChatItem *item = m_chatItems[index];
+            if (item->thumbsDownState != b) {
+                item->thumbsDownState = b;
                 changed = true;
             }
         }
@@ -575,13 +820,100 @@ public:
             QMutexLocker locker(&m_mutex);
             if (index < 0 || index >= m_chatItems.size()) return;
 
-            ChatItem &item = m_chatItems[index];
-            if (item.newResponse != newResponse) {
-                item.newResponse = newResponse;
+            ChatItem *item = m_chatItems[index];
+            if (item->newResponse != newResponse) {
+                item->newResponse = newResponse;
                 changed = true;
             }
         }
         if (changed) emit dataChanged(createIndex(index, 0), createIndex(index, 0), {NewResponseRole});
+    }
+
+    Q_INVOKABLE void splitToolCall(const QPair<QString, QString> &split)
+    {
+        qsizetype index;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
+                throw std::logic_error("can only set toolcall on a chat that ends with a response");
+
+            index = m_chatItems.count() - 1;
+            ChatItem *currentResponse = m_chatItems.back();
+            Q_ASSERT(currentResponse->isCurrentResponse);
+
+            // Create a new response container for any text and the tool call
+            ChatItem *newResponse = new ChatItem(this, ChatItem::response_tag);
+
+            // Add preceding text if any
+            if (!split.first.isEmpty()) {
+                ChatItem *textItem = new ChatItem(this, ChatItem::text_tag, split.first);
+                newResponse->subItems.push_back(textItem);
+            }
+
+            // Add the toolcall
+            Q_ASSERT(!split.second.isEmpty());
+            ChatItem *toolCallItem = new ChatItem(this, ChatItem::tool_call_tag, split.second);
+            toolCallItem->isCurrentResponse = true;
+            // toolCallItem.toolCallInfo = toolCallInfo;
+            newResponse->subItems.push_back(toolCallItem);
+
+            // Add new response and reset our value
+            currentResponse->subItems.push_back(newResponse);
+            currentResponse->value = QString();
+        }
+
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ChildItemsRole, ContentRole});
+    }
+
+    Q_INVOKABLE void updateToolCall(const ToolCallInfo &toolCallInfo)
+    {
+        qsizetype index;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
+                throw std::logic_error("can only set toolcall on a chat that ends with a response");
+
+            index = m_chatItems.count() - 1;
+            ChatItem *currentResponse = m_chatItems.back();
+            Q_ASSERT(currentResponse->isCurrentResponse);
+
+            ChatItem *subResponse = currentResponse->subItems.back();
+            Q_ASSERT(subResponse->type() == ChatItem::Type::Response);
+            Q_ASSERT(subResponse->isCurrentResponse);
+
+            ChatItem *toolCallItem = subResponse->subItems.back();
+            Q_ASSERT(toolCallItem->type() == ChatItem::Type::ToolCall);
+            toolCallItem->setToolCallInfo(toolCallInfo);
+            toolCallItem->setCurrentResponse(false);
+
+            // Add tool response
+            ChatItem *toolResponseItem = new ChatItem(this, ChatItem::tool_response_tag, toolCallInfo.result);
+            currentResponse->subItems.push_back(toolResponseItem);
+        }
+
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ChildItemsRole, ContentRole});
+    }
+
+    Q_INVOKABLE void clearSubItems()
+    {
+        qsizetype index;
+        bool changed = false;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
+                throw std::logic_error("can only clear subitems on a chat that ends with a response");
+
+            index = m_chatItems.count() - 1;
+            ChatItem *item = m_chatItems.back();
+            if (!item->subItems.empty()) {
+                item->subItems.clear();
+                changed = true;
+            }
+        }
+        if (changed) {
+            qDebug() << "signaling we've cleared the subitems.";
+            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ChildItemsRole, ContentRole});
+        }
     }
 
     Q_INVOKABLE void setError(bool value = true)
@@ -590,14 +922,14 @@ public:
         {
             QMutexLocker locker(&m_mutex);
 
-            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1].type() != ChatItem::Type::Response)
+            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
                 throw std::logic_error("can only set error on a chat that ends with a response");
 
             index = m_chatItems.count() - 1;
             auto &last = m_chatItems.back();
-            if (last.isError == value)
+            if (last->isError == value)
                 return; // already set
-            last.isError = value;
+            last->isError = value;
         }
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsErrorRole});
         emit hasErrorChanged(value);
@@ -605,12 +937,24 @@ public:
 
     qsizetype count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }
 
-    ChatModelAccessor chatItems() const { return {m_mutex, std::as_const(m_chatItems)}; }
+    std::vector<MessageItem> messageItems() const
+    {
+        // A flattened version of the chat item tree used by the backend and jinja
+        std::vector<MessageItem> chatItems;
+        for (const ChatItem *item : m_chatItems) {
+            chatItems.reserve(chatItems.size() + item->subItems.size() + 1);
+            ranges::copy(item->subItems | views::transform(&ChatItem::asMessageItem), std::back_inserter(chatItems));
+            chatItems.push_back(item->asMessageItem());
+        }
+        return chatItems;
+    }
 
     bool hasError() const { QMutexLocker locker(&m_mutex); return hasErrorUnlocked(); }
 
     bool serialize(QDataStream &stream, int version) const
     {
+#if 0
+        // FIXME: need to serialize the toolcall info
         QMutexLocker locker(&m_mutex);
         stream << int(m_chatItems.size());
         for (auto itemIt = m_chatItems.cbegin(); itemIt < m_chatItems.cend(); ++itemIt) {
@@ -708,10 +1052,14 @@ public:
             }
         }
         return stream.status() == QDataStream::Ok;
+#else
+        return false;
+#endif
     }
 
     bool deserialize(QDataStream &stream, int version)
     {
+#if 0
         clear(); // reset to known state
 
         int size;
@@ -891,11 +1239,13 @@ public:
         if (hasError)
             emit hasErrorChanged(true);
         return stream.status() == QDataStream::Ok;
+#else
+        return false;
+#endif
     }
 
 Q_SIGNALS:
     void countChanged();
-    void valueChanged(int index, const QString &value);
     void hasErrorChanged(bool value);
 
 private:
@@ -904,12 +1254,12 @@ private:
         if (m_chatItems.isEmpty())
             return false;
         auto &last = m_chatItems.back();
-        return last.type() == ChatItem::Type::Response && last.isError;
+        return last->type() == ChatItem::Type::Response && last->isError;
     }
 
 private:
     mutable QMutex m_mutex;
-    QList<ChatItem> m_chatItems;
+    QList<ChatItem *> m_chatItems;
 };
 
 #endif // CHATMODEL_H
