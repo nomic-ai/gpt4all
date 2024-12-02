@@ -13,6 +13,7 @@ set(QT_VERSION_MAJOR 6)
 add_subdirectory(QXlsx/QXlsx)
 
 # forked dependency of Jinja2Cpp
+set(RAPIDJSON_BUILD_TESTS OFF)
 add_subdirectory(rapidjson)
 
 add_subdirectory(Jinja2Cpp)
