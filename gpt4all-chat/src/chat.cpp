@@ -147,11 +147,10 @@ void Chat::newPromptResponsePair(const QString &prompt, const QList<QUrl> &attac
         promptPlusAttached = attachedContexts.join("\n\n") + "\n\n" + prompt;
 
     resetResponseState();
-    qsizetype prevMsgIndex = m_chatModel->count() - 1;
-    if (prevMsgIndex >= 0)
-        m_chatModel->updateCurrentResponse(prevMsgIndex, false);
+    if (int count = m_chatModel->count())
+        m_chatModel->updateCurrentResponse(count - 1, false);
     m_chatModel->appendPrompt(prompt, attachments);
-    m_chatModel->appendResponse(prevMsgIndex + 1);
+    m_chatModel->appendResponse();
 
     emit promptRequested(m_collections);
     m_needsSave = true;

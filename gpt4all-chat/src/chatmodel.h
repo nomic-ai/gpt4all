@@ -352,7 +352,7 @@ public:
         emit countChanged();
     }
 
-    void appendResponse(int promptIndex)
+    void appendResponse()
     {
         qsizetype count;
         {
@@ -362,17 +362,13 @@ public:
             count = m_chatItems.count();
         }
 
+        int promptIndex = 0;
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            if (promptIndex >= 0) {
-                if (promptIndex >= m_chatItems.size())
-                    throw std::out_of_range(fmt::format("index {} is out of range", promptIndex));
-                auto &promptItem = m_chatItems[promptIndex];
-                if (promptItem.type() != ChatItem::Type::Prompt)
-                    throw std::invalid_argument(fmt::format("item at index {} is not a prompt", promptIndex));
-            }
             m_chatItems.emplace_back(ChatItem::response_tag, promptIndex);
+            if (auto pi = getPeerUnlocked(m_chatItems.size() - 1))
+                promptIndex = *pi;
         }
         endInsertRows();
         emit countChanged();
@@ -394,7 +390,6 @@ public:
         qsizetype endIndex  = startIndex + nNewItems;
         beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
         bool hadError;
-        int promptIndex;
         {
             QMutexLocker locker(&m_mutex);
             hadError = hasErrorUnlocked();
@@ -408,8 +403,6 @@ public:
         // Server can add messages when there is an error because each call is a new conversation
         if (hadError)
             emit hasErrorChanged(false);
-        if (promptIndex >= 0)
-            emit dataChanged(createIndex(promptIndex, 0), createIndex(promptIndex, 0), {PeerRole});
     }
 
     void truncate(qsizetype size)
