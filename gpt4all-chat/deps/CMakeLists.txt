@@ -12,4 +12,7 @@ add_subdirectory(DuckX)
 set(QT_VERSION_MAJOR 6)
 add_subdirectory(QXlsx/QXlsx)
 
+# forked dependency of Jinja2Cpp
+add_subdirectory(rapidjson)
+
 add_subdirectory(Jinja2Cpp)
