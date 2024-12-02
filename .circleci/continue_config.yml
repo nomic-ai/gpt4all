@@ -495,7 +495,7 @@ jobs:
             mkdir dotnet
             cd dotnet
             $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
-            wget "$dotnet_url"
+            wget.exe "$dotnet_url"
             Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
