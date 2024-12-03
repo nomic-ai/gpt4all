@@ -1109,7 +1109,7 @@ jobs:
           paths:
             - "*.whl"
 
-  store-and-upload-wheels:
+  publish-wheels:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -1565,7 +1565,7 @@ workflows:
           <<: *main_only
       - build-py-docs:
           <<: *main_only
-  build-py-deploy:
+  build-python:
     when:
       or:
         - << pipeline.parameters.run-all-workflows >>
@@ -1585,7 +1585,7 @@ workflows:
       - build-py-windows:
           requires:
             - hold
-      - store-and-upload-wheels:
+      - publish-wheels:
           <<: *main_only
           requires:
             - pypi-hold
