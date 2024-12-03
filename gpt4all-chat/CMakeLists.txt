@@ -33,6 +33,10 @@ option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires si
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (MSVC)
+    # Enable accurate __cplusplus macro to fix errors in Jinja2Cpp
+    add_compile_options(/Zc:__cplusplus)
+endif()
 
 
 # conftests
