@@ -1462,6 +1462,11 @@ jobs:
             npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
             npm publish
 
+main_only: &main_only
+  filters:
+    branches:
+      only: main
+
 workflows:
   version: 2
   noop:
@@ -1507,23 +1512,30 @@ workflows:
         - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - hold:
+          <<: *main_only
           type: approval
       - build-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - hold
       - sign-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - build-online-chat-installer-macos
       - notarize-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - sign-online-chat-installer-macos
       - build-online-chat-installer-windows:
+          <<: *main_only
           requires:
             - hold
       - sign-online-chat-installer-windows:
+          <<: *main_only
           requires:
             - build-online-chat-installer-windows
       - build-online-chat-installer-linux:
+          <<: *main_only
           requires:
             - hold
   build-and-test-gpt4all-chat:
