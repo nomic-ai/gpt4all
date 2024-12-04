@@ -318,7 +318,7 @@ void ModelInfo::setRepeatPenaltyTokens(int t)
 
 QVariant ModelInfo::defaultChatTemplate() const
 {
-    auto res = m_chatTemplate.or_else([this] -> std::optional<QString> {
+    auto res = m_chatTemplate.or_else([this]() -> std::optional<QString> {
         if (!installed || isOnline)
             return std::nullopt;
         if (!m_modelChatTemplate) {

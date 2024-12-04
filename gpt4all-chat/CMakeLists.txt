@@ -33,6 +33,10 @@ option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires si
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (MSVC)
+    # Enable accurate __cplusplus macro to fix errors in Jinja2Cpp
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
+endif()
 
 
 # conftests
@@ -97,6 +101,10 @@ message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
+endif()
 
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
@@ -398,10 +406,6 @@ endif()
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
-endif()
-
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
 install(
@@ -514,6 +518,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
 endif()
 
+set(CPACK_COMPONENTS_ALL gpt4all)  # exclude development components
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
