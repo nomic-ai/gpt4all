@@ -1109,7 +1109,7 @@ jobs:
           paths:
             - "*.whl"
 
-  store-and-upload-wheels:
+  publish-wheels:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -1462,6 +1462,11 @@ jobs:
             npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
             npm publish
 
+main_only: &main_only
+  filters:
+    branches:
+      only: main
+
 workflows:
   version: 2
   noop:
@@ -1507,23 +1512,30 @@ workflows:
         - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - hold:
+          <<: *main_only
           type: approval
       - build-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - hold
       - sign-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - build-online-chat-installer-macos
       - notarize-online-chat-installer-macos:
+          <<: *main_only
           requires:
             - sign-online-chat-installer-macos
       - build-online-chat-installer-windows:
+          <<: *main_only
           requires:
             - hold
       - sign-online-chat-installer-windows:
+          <<: *main_only
           requires:
             - build-online-chat-installer-windows
       - build-online-chat-installer-linux:
+          <<: *main_only
           requires:
             - hold
   build-and-test-gpt4all-chat:
@@ -1550,47 +1562,31 @@ workflows:
         - << pipeline.parameters.run-python-workflow >>
     jobs:
       - build-ts-docs:
-          filters:
-            branches:
-              only:
-                - main
+          <<: *main_only
       - build-py-docs:
-          filters:
-            branches:
-              only:
-                - main
-  build-py-deploy:
+          <<: *main_only
+  build-python:
     when:
       or:
         - << pipeline.parameters.run-all-workflows >>
         - << pipeline.parameters.run-python-workflow >>
     jobs:
       - pypi-hold:
+          <<: *main_only
           type: approval
       - hold:
           type: approval
       - build-py-linux:
-          filters:
-            branches:
-              only:
           requires:
             - hold
       - build-py-macos:
-          filters:
-            branches:
-              only:
           requires:
             - hold
       - build-py-windows:
-          filters:
-            branches:
-              only:
           requires:
             - hold
-      - store-and-upload-wheels:
-          filters:
-            branches:
-              only:
+      - publish-wheels:
+          <<: *main_only
           requires:
             - pypi-hold
             - build-py-windows
@@ -1605,59 +1601,38 @@ workflows:
     jobs:
       - hold:
           type: approval
-      - nuget-hold:
-          type: approval
       - nodejs-hold:
           type: approval
       - npm-hold:
+          <<: *main_only
           type: approval
       - build-bindings-backend-linux:
-          filters:
-            branches:
-              only:
           requires:
             - hold
       - build-bindings-backend-macos:
-          filters:
-            branches:
-              only:
           requires:
             - hold
       - build-bindings-backend-windows:
-          filters:
-            branches:
-              only:
           requires:
             - hold
 
       # NodeJs Jobs
       - prepare-npm-pkg:
-          filters:
-            branches:
-              only:
+          <<: *main_only
           requires:
             - npm-hold
             - build-nodejs-linux
             - build-nodejs-windows
             - build-nodejs-macos
       - build-nodejs-linux:
-          filters:
-            branches:
-              only:
           requires:
             - nodejs-hold
             - build-bindings-backend-linux
       - build-nodejs-windows:
-          filters:
-            branches:
-              only:
           requires:
             - nodejs-hold
             - build-bindings-backend-windows
       - build-nodejs-macos:
-          filters:
-            branches:
-              only:
           requires:
             - nodejs-hold
             - build-bindings-backend-macos
