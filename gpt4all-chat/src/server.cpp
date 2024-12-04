@@ -668,7 +668,7 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
 
     // add prompt/response items to GUI
     m_chatModel->appendPrompt(request.prompt);
-    m_chatModel->appendResponse(prevMsgIndex + 1);
+    m_chatModel->appendResponse();
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {

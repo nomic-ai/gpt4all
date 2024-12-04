@@ -20,3 +20,6 @@
 [submodule "gpt4all-chat/deps/Jinja2Cpp"]
 	path = gpt4all-chat/deps/Jinja2Cpp
 	url = https://github.com/nomic-ai/jinja2cpp.git
+[submodule "gpt4all-chat/deps/rapidjson"]
+	path = gpt4all-chat/deps/rapidjson
+	url = https://github.com/nomic-ai/rapidjson.git
