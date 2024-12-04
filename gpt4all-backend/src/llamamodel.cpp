@@ -584,7 +584,8 @@ void LLamaModel::initSampler(const PromptContext &promptCtx)
             llama_sampler_init_top_p(promptCtx.top_p, 1),
             llama_sampler_init_min_p(promptCtx.min_p, 1),
             llama_sampler_init_temp(promptCtx.temp),
-            llama_sampler_init_dist(LLAMA_DEFAULT_SEED)
+            llama_sampler_init_softmax(),
+            llama_sampler_init_dist(LLAMA_DEFAULT_SEED),
         };
         for (auto *smpl : samplers)
             llama_sampler_chain_add(chain, smpl);
