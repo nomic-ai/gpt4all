@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.5.0-rc1] - 2024-12-04
 
 ### Added
 - Add ability to attach text, markdown, and rst files to chat ([#3135](https://github.com/nomic-ai/gpt4all/pull/3135))
@@ -178,7 +178,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.4.2...HEAD
+[3.5.0-rc1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.2...v3.5.0-rc1
 [3.4.2]: https://github.com/nomic-ai/gpt4all/compare/v3.4.1...v3.4.2
 [3.4.1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.0...v3.4.1
 [3.4.0]: https://github.com/nomic-ai/gpt4all/compare/v3.3.0...v3.4.0
