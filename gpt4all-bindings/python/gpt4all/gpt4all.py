@@ -62,8 +62,9 @@ class MessageType(TypedDict):
 
 
 class ChatSession(NamedTuple):
-    template: jinja2.Template
-    history: list[MessageType]
+    template:        jinja2.Template
+    template_source: str
+    history:         list[MessageType]
 
 
 class Embed4All:
@@ -193,6 +194,16 @@ class GPT4All:
     Python class that handles instantiation, downloading, generation and chat with GPT4All models.
     """
 
+    RE_LEGACY_SYSPROMPT = re.compile(
+        r"(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>",
+        re.MULTILINE,
+    )
+
+    RE_JINJA_LIKE = re.compile(
+        r"\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}",
+        re.DOTALL,
+    )
+
     def __init__(
         self,
         model_name: str,
@@ -260,6 +271,7 @@ class GPT4All:
 
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
+        self._was_allow_download = allow_download
         self.model = LLModel(self.config["path"], n_ctx, ngl, backend)
         if device_init is not None:
             self.model.init_gpu(device_init)
@@ -299,6 +311,10 @@ class GPT4All:
         if self._chat_session is None:
             raise ValueError("current_chat_session may only be set when there is an active chat session")
         self._chat_session.history[:] = history
+
+    @property
+    def current_chat_template(self) -> str | None:
+        return None if self._chat_session is None else self._chat_session.template_source
 
     @staticmethod
     def list_models() -> list[ConfigType]:
@@ -598,11 +614,19 @@ class GPT4All:
             self._chat_session.history.append(MessageType(role="assistant", content=full_response))
         return full_response
 
+    @classmethod
+    def is_legacy_chat_template(cls, tmpl: str) -> bool:
+        """A fairly reliable heuristic for detecting templates that don't look like Jinja templates."""
+        return bool(re.search(r"%[12]\b", tmpl) or not cls.RE_JINJA_LIKE.search(tmpl)
+                    or not re.search(r"\bcontent\b", tmpl))
+
     @contextmanager
     def chat_session(
         self,
+        *,
         system_message: str | Literal[False] | None = None,
         chat_template: str | None = None,
+        warn_legacy: bool = True,
     ):
         """
         Context manager to hold an inference optimized chat session with a GPT4All model.
@@ -614,22 +638,43 @@ class GPT4All:
 
         if system_message is None:
             system_message = self.config.get("systemMessage", False)
+        elif system_message is not False and warn_legacy and (m := self.RE_LEGACY_SYSPROMPT.search(system_message)):
+            print(
+                "Warning: chat_session() was passed a system message that is not plain text. System messages "
+                f"containing {m.group()!r} or with any special prefix/suffix are no longer supported.\nTo disable this "
+                "warning, pass warn_legacy=False.",
+                file=sys.stderr,
+            )
 
         if chat_template is None:
-            if "name" not in self.config:
-                raise ValueError("For sideloaded models or with allow_download=False, you must specify a chat template.")
-            if "chatTemplate" not in self.config:
-                raise NotImplementedError("This model appears to have a built-in chat template, but loading it is not "
-                                          "currently implemented. Please pass a template to chat_session() directly.")
-            if (tmpl := self.config["chatTemplate"]) is None:
-                raise ValueError(f"The model {self.config['name']!r} does not support chat.")
-            chat_template = tmpl
+            if "chatTemplate" in self.config:
+                if (tmpl := self.config["chatTemplate"]) is None:
+                    raise ValueError(f"The model {self.config['name']!r} does not support chat.")
+                chat_template = tmpl
+            else:
+                try:
+                    chat_template = self.model.builtin_chat_template
+                except ValueError as e:
+                    if len(e.args) >= 2 and isinstance(err := e.args[1], str):
+                        msg = (f"Failed to load default chat template from model: {err}\n"
+                               "Please pass a template to chat_session() directly.")
+                        if not self._was_allow_download:
+                            msg += " If this is a built-in model, consider setting allow_download to True."
+                        raise ValueError(msg) from None
+                    raise
+        elif warn_legacy and self.is_legacy_chat_template(chat_template):
+            print(
+                "Warning: chat_session() was passed a chat template that is not in Jinja format. Old-style prompt "
+                "templates are no longer supported.\nTo disable this warning, pass warn_legacy=False.",
+                file=sys.stderr,
+            )
 
         history = []
         if system_message is not False:
             history.append(MessageType(role="system", content=system_message))
         self._chat_session = ChatSession(
             template=_jinja_env.from_string(chat_template),
+            template_source=chat_template,
             history=history,
         )
         try:
