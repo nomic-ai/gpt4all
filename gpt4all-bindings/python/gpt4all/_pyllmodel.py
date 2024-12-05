@@ -351,8 +351,6 @@ class LLModel:
             raise RuntimeError(f'Unable to count prompt tokens: {errmsg}')
         return n_tok
 
-    llmodel.llmodel_count_prompt_tokens.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-
     @staticmethod
     def list_gpus(mem_required: int = 0) -> list[str]:
         """
