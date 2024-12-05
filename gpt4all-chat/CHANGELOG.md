@@ -10,9 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add ability to attach text, markdown, and rst files to chat ([#3135](https://github.com/nomic-ai/gpt4all/pull/3135))
 - Add feature to minimize to system tray (by [@bgallois](https://github.com/bgallois) in ([#3109](https://github.com/nomic-ai/gpt4all/pull/3109))
 - Basic cache for faster prefill when the input shares a prefix with previous context ([#3073](https://github.com/nomic-ai/gpt4all/pull/3073))
+- Add ability to edit prompts and regenerate any response ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
 
 ### Changed
 - Implement Qt 6.8 compatibility ([#3121](https://github.com/nomic-ai/gpt4all/pull/3121))
+- Use Jinja for chat templates instead of per-message QString.arg-style templates ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
+
+### Removed
+- Remove option to save binary model state to disk ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
 
 ### Fixed
 - Fix bug in GUI when localdocs encounters binary data ([#3137](https://github.com/nomic-ai/gpt4all/pull/3137))
