@@ -28,6 +28,58 @@ You typically do not need to write your own chat template. The exception is mode
 [creating]: #advanced-how-do-chat-templates-work
 
 
+## How do I find a chat template?
+When in doubt, you can always ask the [Discord] community for help. Below are the instructions to find one on your own.
+
+The authoritative source for a model's chat template is the HuggingFace repo that the original (non-GGUF) model came from. First, you should find this page. If you just have a model file, you can try a google search for the model's name. If you know the page you downloaded the GGUF model from, its README usually links to the original non-GGUF model.
+
+Once you have located the original model, there are two methods you can use to extract its chat template. Pick whichever one you are most comfortable with.
+
+### Using the CLI (all models)
+1. Install `jq` using your preferred package manager - e.g. Chocolatey (Windows), Homebrew (macOS), or apt (Ubuntu).
+2. Download `tokenizer_config.json` from the model's "Files and versions" tab.
+3. Open a command prompt in the directory which you have downloaded the model file.
+4. Run `jq -r ".chat_template" tokenizer_config.json`. This shows the chat template in a human-readable form. You can copy this and paste it into the settings page.
+5. (Optional) You can save the output to a text file like this: `jq -r ".chat_template" tokenizer_config.json >chat_template.txt`
+
+If the output is "null", the model does not provide a chat template. See the [below instructions][creating] on creating a chat template.
+
+### Python (open models)
+1. Install `transformers` using your preferred python package manager, e.g. `pip install transformers`. Make sure it is at least version v4.43.0.
+2. Copy the ID of the HuggingFace model, using the clipboard icon next to the name. For example, if the URL is `https://huggingface.co/NousResearch/Hermes-2-Pro-Llama-3-8B`, the ID is `NousResearch/Hermes-2-Pro-Llama-3-8B`.
+3. Open a python interpreter (`python`) and run the following commands. Change the model ID in the example to the one you copied.
+```
+>>> from transformers import AutoTokenizer
+>>> tokenizer = AutoTokenizer.from_pretrained('NousResearch/Hermes-2-Pro-Llama-3-8B')
+>>> print(tokenizer.get_chat_template())
+```
+You can copy the output and paste it into the settings page.
+4. (Optional) You can save the output to a text file like this:
+```
+>>> open('chat_template.txt', 'w').write(tokenizer.get_chat_template())
+```
+
+If you get a ValueError exception, this model does not provide a chat template. See the [below instructions][creating] on creating a chat template.
+
+
+### Python (gated models)
+Some models, such as Llama and Mistral, do not allow public access to their chat template. You must either use the CLI method above, or follow the following instructions to use Python:
+
+1. For these steps, you must have git and git-lfs installed.
+2. You must have a HuggingFace account and be logged in.
+3. You must already have access to the gated model. Otherwise, request access.
+4. You must have an SSH key configured for git access to HuggingFace.
+5. `git clone` the model's HuggingFace repo using the SSH clone URL. There is no need to download the entire model, which is very large. A good way to do this on Linux is:
+```console
+$ GIT_LFS_SKIP_SMUDGE=1 git clone hf.co:meta-llama/Llama-3.1-8B-Instruct.git
+$ cd Llama-3.1-8B-Instruct
+$ git lfs pull -I "tokenizer.*"
+```
+6. Follow the above instructions for open models, but replace the model ID with the path to the directory containing `tokenizer\_config.json`:
+```
+>>> tokenizer = AutoTokenizer.from_pretrained('.')
+```
+
 ## What changed in GPT4All v3.5?
 GPT4All v3.5 overhauled the chat template system. There are three crucial differences:
 
@@ -101,59 +153,6 @@ If the button above the chat template on the Model Settings page says "Clear", s
 
 [above-3]: #error-no-chat-template-configured
 [chat-syntax-error]: #the-chat-template-has-a-syntax-error
-
-
-## How do I find a chat template?
-When in doubt, you can always ask the [Discord] community for help. Below are the instructions to find one on your own.
-
-The authoritative source for a model's chat template is the HuggingFace repo that the original (non-GGUF) model came from. First, you should find this page. If you just have a model file, you can try a google search for the model's name. If you know the page you downloaded the GGUF model from, its README usually links to the original non-GGUF model.
-
-Once you have located the original model, there are two methods you can use to extract its chat template. Pick whichever one you are most comfortable with.
-
-### Using the CLI (all models)
-1. Install `jq` using your preferred package manager - e.g. Chocolatey (Windows), Homebrew (macOS), or apt (Ubuntu).
-2. Download `tokenizer_config.json` from the model's "Files and versions" tab.
-3. Open a command prompt in the directory which you have downloaded the model file.
-4. Run `jq -r ".chat_template" tokenizer_config.json`. This shows the chat template in a human-readable form. You can copy this and paste it into the settings page.
-5. (Optional) You can save the output to a text file like this: `jq -r ".chat_template" tokenizer_config.json >chat_template.txt`
-
-If the output is "null", the model does not provide a chat template. See the [below instructions][creating] on creating a chat template.
-
-### Python (open models)
-1. Install `transformers` using your preferred python package manager, e.g. `pip install transformers`. Make sure it is at least version v4.43.0.
-2. Copy the ID of the HuggingFace model, using the clipboard icon next to the name. For example, if the URL is `https://huggingface.co/NousResearch/Hermes-2-Pro-Llama-3-8B`, the ID is `NousResearch/Hermes-2-Pro-Llama-3-8B`.
-3. Open a python interpreter (`python`) and run the following commands. Change the model ID in the example to the one you copied.
-```
->>> from transformers import AutoTokenizer
->>> tokenizer = AutoTokenizer.from_pretrained('NousResearch/Hermes-2-Pro-Llama-3-8B')
->>> print(tokenizer.get_chat_template())
-```
-You can copy the output and paste it into the settings page.
-4. (Optional) You can save the output to a text file like this:
-```
->>> open('chat_template.txt', 'w').write(tokenizer.get_chat_template())
-```
-
-If you get a ValueError exception, this model does not provide a chat template. See the [below instructions][creating] on creating a chat template.
-
-
-### Python (gated models)
-Some models, such as Llama and Mistral, do not allow public access to their chat template. You must either use the CLI method above, or follow the following instructions to use Python:
-
-1. For these steps, you must have git and git-lfs installed.
-2. You must have a HuggingFace account and be logged in.
-3. You must already have access to the gated model. Otherwise, request access.
-4. You must have an SSH key configured for git access to HuggingFace.
-5. `git clone` the model's HuggingFace repo using the SSH clone URL. There is no need to download the entire model, which is very large. A good way to do this on Linux is:
-```console
-$ GIT_LFS_SKIP_SMUDGE=1 git clone hf.co:meta-llama/Llama-3.1-8B-Instruct.git
-$ cd Llama-3.1-8B-Instruct
-$ git lfs pull -I "tokenizer.*"
-```
-6. Follow the above instructions for open models, but replace the model ID with the path to the directory containing `tokenizer\_config.json`:
-```
->>> tokenizer = AutoTokenizer.from_pretrained('.')
-```
 
 
 ## Advanced: How do chat templates work?
