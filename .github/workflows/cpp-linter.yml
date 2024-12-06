@@ -18,15 +18,15 @@ jobs:
       - name: Install dependencies
         run: |
           wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
-          sudo add-apt-repository -y 'deb http://apt.llvm.org/noble/  llvm-toolchain-noble-18 main'
+          sudo add-apt-repository -y 'deb http://apt.llvm.org/noble/  llvm-toolchain-noble-19 main'
           packages=(
-            clang-18 clang-format-18 clang-tidy-18 cmake git libgl-dev libopengl-dev libx11-6 libx11-xcb1 libxcb-glx0
+            clang-19 clang-format-19 clang-tidy-19 cmake git libgl-dev libopengl-dev libx11-6 libx11-xcb1 libxcb-glx0
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-render0 libxcb-shape0
             libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libxcb-xinput0 libxcb-xkb1 libxcb1 libxkbcommon-dev
             libxkbcommon-x11-0 libxkbcommon0 make
           )
           sudo apt-get update
-          sudo apt-get install -y "${packages[@]}"
+          sudo apt-get install -y "${packages[@]}" --no-install-recommends
       - name: Install Qt
         env:
           QT_EMAIL: ${{ secrets.QT_EMAIL }}
@@ -43,8 +43,8 @@ jobs:
           sed -i '/file(DOWNLOAD/,+4 s/^/#/' gpt4all-chat/CMakeLists.txt
           cmake -S gpt4all-chat -B gpt4all-chat/build \
             -DCMAKE_PREFIX_PATH=~/Qt/6.8.0/gcc_64/lib/cmake \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
             -DLLMODEL_CUDA=OFF \
             -DLLMODEL_KOMPUTE=OFF
       - uses: cpp-linter/cpp-linter-action@v2
@@ -54,7 +54,7 @@ jobs:
           extensions: 'c,cpp'
           tidy-checks: ''  # use .clang-tidy config
           database: gpt4all-chat/build
-          version: 18
+          version: 19
           files-changed-only: false
           ignore: 'gpt4all-chat/build/_deps|gpt4all-bindings'
       - name: Fail Fast
