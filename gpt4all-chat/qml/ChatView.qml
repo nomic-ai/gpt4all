@@ -793,7 +793,7 @@ Rectangle {
 
                     ColumnLayout {
                         anchors.fill: parent
-                        visible: ModelList.selectableModels.count !== 0 && chatModel.count !== 0
+                        visible: ModelList.selectableModels.count !== 0
                         ListView {
                             id: listView
                             Layout.maximumWidth: 1280
@@ -823,6 +823,16 @@ Rectangle {
                                     textInput.forceActiveFocus();
                                     textInput.cursorPosition = text.length;
                                 }
+                            }
+
+                            remove: Transition {
+                                ParallelAnimation {
+                                        NumberAnimation { property: "opacity"; to: 0; duration: 600 }
+                                }
+                            }
+
+                            removeDisplaced: Transition {
+                                NumberAnimation { property: "opacity"; to: 0; duration: 600 }
                             }
 
                             function scrollToEnd() {
