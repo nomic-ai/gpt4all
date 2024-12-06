@@ -18,12 +18,16 @@
 #include <QThread>
 #include <QUrl>
 #include <QVariant>
-#include <QtLogging>
+#include <QtGlobal>
 
 #include <algorithm>
 #include <string>
 #include <thread>
 #include <vector>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 
