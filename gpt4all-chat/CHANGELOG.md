@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.5.0-rc2] - 2024-12-06
+
+### Changed
+- Fade messages out with an animation when they are removed from the chat view ([#3227](https://github.com/nomic-ai/gpt4all/pull/3227))
+- Tweak wording of edit/redo confirmation dialogs ([#3228](https://github.com/nomic-ai/gpt4all/pull/3228))
+- Make edit/redo buttons disabled instead of invisible when they are temporarily unavailable ([#3228](https://github.com/nomic-ai/gpt4all/pull/3228))
+
 ## [3.5.0-rc1] - 2024-12-04
 
 ### Added
@@ -187,6 +194,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
+[3.5.0-rc2]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc1...v3.5.0-rc2
 [3.5.0-rc1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.2...v3.5.0-rc1
 [3.4.2]: https://github.com/nomic-ai/gpt4all/compare/v3.4.1...v3.4.2
 [3.4.1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.0...v3.4.1
