@@ -826,13 +826,7 @@ Rectangle {
                             }
 
                             remove: Transition {
-                                ParallelAnimation {
-                                        NumberAnimation { property: "opacity"; to: 0; duration: 600 }
-                                }
-                            }
-
-                            removeDisplaced: Transition {
-                                NumberAnimation { property: "opacity"; to: 0; duration: 600 }
+                                OpacityAnimator { to: 0; duration: 500 }
                             }
 
                             function scrollToEnd() {
