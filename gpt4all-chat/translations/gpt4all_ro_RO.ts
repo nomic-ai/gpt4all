@@ -557,13 +557,21 @@
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
-        <source>Save Chat Context</source>
-        <translation>Salvarea contextului conversaţiei</translation>
+        <source>Enable System Tray</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
+        <source>The application will minimize to the system tray when the window is closed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Chat Context</source>
+        <translation type="vanished">Salvarea contextului conversaţiei</translation>
+    </message>
+    <message>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
-        <translation>Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
+        <translation type="vanished">Salvează pe disc starea modelului pentru încărcare mai rapidă. ATENŢIE: Consumă ~2GB/conversaţie.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
@@ -604,13 +612,13 @@
 <context>
     <name>Chat</name>
     <message>
-        <location filename="../src/chat.cpp" line="24"/>
-        <location filename="../src/chat.h" line="74"/>
+        <location filename="../src/chat.cpp" line="22"/>
+        <location filename="../src/chat.h" line="78"/>
         <source>New Chat</source>
         <translation>Conversaţie Nouă</translation>
     </message>
     <message>
-        <location filename="../src/chat.cpp" line="37"/>
+        <location filename="../src/chat.cpp" line="35"/>
         <source>Server Chat</source>
         <translation>Conversaţie cu Serverul</translation>
     </message>
@@ -618,12 +626,12 @@
 <context>
     <name>ChatAPIWorker</name>
     <message>
-        <location filename="../src/chatapi.cpp" line="230"/>
+        <location filename="../src/chatapi.cpp" line="257"/>
         <source>ERROR: Network error occurred while connecting to the API server</source>
         <translation>EROARE: Eroare de reţea - conectarea la serverul API</translation>
     </message>
     <message>
-        <location filename="../src/chatapi.cpp" line="243"/>
+        <location filename="../src/chatapi.cpp" line="270"/>
         <source>ChatAPIWorker::handleFinished got HTTP Error %1 %2</source>
         <translation>ChatAPIWorker::handleFinished - eroare: HTTP Error %1 %2</translation>
     </message>
@@ -692,34 +700,181 @@
     </message>
 </context>
 <context>
+    <name>ChatItemView</name>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="75"/>
+        <source>GPT4All</source>
+        <translation type="unfinished">GPT4All</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="75"/>
+        <source>You</source>
+        <translation type="unfinished">Tu</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="97"/>
+        <source>response stopped ...</source>
+        <translation type="unfinished">replică întreruptă...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="98"/>
+        <source>retrieving localdocs: %1 ...</source>
+        <translation type="unfinished">se preia din LocalDocs: %1 ...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="99"/>
+        <source>searching localdocs: %1 ...</source>
+        <translation type="unfinished">se caută în LocalDocs: %1 ...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="100"/>
+        <source>processing ...</source>
+        <translation type="unfinished">procesare...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="101"/>
+        <source>generating response ...</source>
+        <translation type="unfinished">se generează replica...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="102"/>
+        <source>generating questions ...</source>
+        <translation type="unfinished">se generează întrebări...</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="212"/>
+        <location filename="../qml/ChatItemView.qml" line="610"/>
+        <source>Copy</source>
+        <translation type="unfinished">Copiere</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="218"/>
+        <source>Copy Message</source>
+        <translation type="unfinished">Copiez mesajul</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="228"/>
+        <source>Disable markdown</source>
+        <translation type="unfinished">Dezactivez markdown</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="228"/>
+        <source>Enable markdown</source>
+        <translation type="unfinished">Activez markdown</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/ChatItemView.qml" line="355"/>
+        <source>%n Source(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n Sursa</numerusform>
+            <numerusform>%n Surse</numerusform>
+            <numerusform>%n de Surse</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="502"/>
+        <source>LocalDocs</source>
+        <translation type="unfinished">LocalDocs</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="532"/>
+        <source>Edit this message?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="533"/>
+        <location filename="../qml/ChatItemView.qml" line="544"/>
+        <source>All following messages will be permanently erased.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="543"/>
+        <source>Redo this response?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="567"/>
+        <source>Cannot edit chat without a loaded model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="569"/>
+        <source>Cannot edit chat while the model is generating.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="578"/>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="589"/>
+        <source>Cannot redo response without a loaded model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="591"/>
+        <source>Cannot redo response while the model is generating.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="600"/>
+        <source>Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="632"/>
+        <source>Like response</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="661"/>
+        <source>Dislike response</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatItemView.qml" line="724"/>
+        <source>Suggested follow-ups</source>
+        <translation type="unfinished">Continuări sugerate</translation>
+    </message>
+</context>
+<context>
+    <name>ChatLLM</name>
+    <message>
+        <location filename="../src/chatllm.cpp" line="925"/>
+        <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ChatListModel</name>
     <message>
-        <location filename="../src/chatlistmodel.h" line="86"/>
+        <location filename="../src/chatlistmodel.h" line="85"/>
         <source>TODAY</source>
         <translation>ASTĂZI</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="88"/>
+        <location filename="../src/chatlistmodel.h" line="87"/>
         <source>THIS WEEK</source>
         <translation>SĂPTĂMÂNA ACEASTA</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="90"/>
+        <location filename="../src/chatlistmodel.h" line="89"/>
         <source>THIS MONTH</source>
         <translation>LUNA ACEASTA</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="92"/>
+        <location filename="../src/chatlistmodel.h" line="91"/>
         <source>LAST SIX MONTHS</source>
         <translation>ULTIMELE ŞASE LUNI</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="94"/>
+        <location filename="../src/chatlistmodel.h" line="93"/>
         <source>THIS YEAR</source>
         <translation>ANUL ACESTA</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="96"/>
+        <location filename="../src/chatlistmodel.h" line="95"/>
         <source>LAST YEAR</source>
         <translation>ANUL TRECUT</translation>
     </message>
@@ -727,118 +882,140 @@
 <context>
     <name>ChatView</name>
     <message>
-        <location filename="../qml/ChatView.qml" line="78"/>
+        <location filename="../qml/ChatView.qml" line="84"/>
         <source>&lt;h3&gt;Warning&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Atenţie&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="87"/>
         <source>Switch model dialog</source>
-        <translation>Schimbarea modelului</translation>
+        <translation type="vanished">Schimbarea modelului</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="88"/>
         <source>Warn the user if they switch models, then context will be erased</source>
-        <translation>Avertizează utilizatorul că la schimbarea modelului va fi şters contextul</translation>
+        <translation type="vanished">Avertizează utilizatorul că la schimbarea modelului va fi şters contextul</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="95"/>
+        <location filename="../qml/ChatView.qml" line="98"/>
         <source>Conversation copied to clipboard.</source>
         <translation>Conversaţia a fost plasată în Clipboard.</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="102"/>
+        <location filename="../qml/ChatView.qml" line="105"/>
         <source>Code copied to clipboard.</source>
         <translation>Codul a fost plasat în Clipboard.</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="232"/>
+        <location filename="../qml/ChatView.qml" line="112"/>
+        <source>The entire chat will be erased.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="245"/>
         <source>Chat panel</source>
         <translation>Secţiunea de chat</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="233"/>
+        <location filename="../qml/ChatView.qml" line="246"/>
         <source>Chat panel with options</source>
         <translation>Secţiunea de chat cu opţiuni</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="340"/>
+        <location filename="../qml/ChatView.qml" line="353"/>
         <source>Reload the currently loaded model</source>
         <translation>Reîncarcă modelul curent</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="354"/>
+        <location filename="../qml/ChatView.qml" line="367"/>
         <source>Eject the currently loaded model</source>
         <translation>Ejectează modelul curent</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="366"/>
+        <location filename="../qml/ChatView.qml" line="379"/>
         <source>No model installed.</source>
         <translation>Niciun model instalat.</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="368"/>
+        <location filename="../qml/ChatView.qml" line="381"/>
         <source>Model loading error.</source>
         <translation>Eroare la încărcarea modelului.</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="370"/>
+        <location filename="../qml/ChatView.qml" line="383"/>
         <source>Waiting for model...</source>
         <translation>Se aşteaptă modelul...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="372"/>
+        <location filename="../qml/ChatView.qml" line="385"/>
         <source>Switching context...</source>
         <translation>Se schimbă contextul...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="374"/>
+        <location filename="../qml/ChatView.qml" line="387"/>
         <source>Choose a model...</source>
         <translation>Selectează un model...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="376"/>
+        <location filename="../qml/ChatView.qml" line="389"/>
         <source>Not found: %1</source>
         <translation>Absent: %1</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="464"/>
+        <location filename="../qml/ChatView.qml" line="477"/>
         <source>The top item is the current model</source>
         <translation>Primul element e modelul curent</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="550"/>
-        <location filename="../qml/ChatView.qml" line="1375"/>
+        <location filename="../qml/ChatView.qml" line="563"/>
         <source>LocalDocs</source>
         <translation>LocalDocs</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="568"/>
+        <location filename="../qml/ChatView.qml" line="581"/>
         <source>Add documents</source>
         <translation>Adaug documente</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="569"/>
+        <location filename="../qml/ChatView.qml" line="582"/>
         <source>add collections of documents to the chat</source>
         <translation>adaugă Colecţii de documente la conversaţie</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="739"/>
+        <location filename="../qml/ChatView.qml" line="752"/>
         <source>Load the default model</source>
         <translation>Încarcă modelul implicit</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="740"/>
+        <location filename="../qml/ChatView.qml" line="753"/>
         <source>Loads the default model which can be changed in settings</source>
         <translation>Încarcă modelul implicit care poate fi stabilit în Configurare</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="751"/>
+        <location filename="../qml/ChatView.qml" line="764"/>
         <source>No Model Installed</source>
         <translation>Niciun model instalat</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="59"/>
+        <location filename="../qml/ChatView.qml" line="1092"/>
+        <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="1096"/>
+        <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="1099"/>
+        <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="1102"/>
+        <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="65"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
         <translation>&lt;h3&gt;EROARE la încărcarea
                 modelului:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Astfel
@@ -857,154 +1034,149 @@
                 se oferă ajutor</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="760"/>
+        <location filename="../qml/ChatView.qml" line="91"/>
+        <location filename="../qml/ChatView.qml" line="111"/>
+        <source>Erase conversation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="92"/>
+        <source>Changing the model will erase the current conversation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="773"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
         <translation>GPT4All necesită cel puţin un model pentru a putea rula</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="772"/>
+        <location filename="../qml/ChatView.qml" line="785"/>
         <source>Install a Model</source>
         <translation>Instalează un model</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="777"/>
+        <location filename="../qml/ChatView.qml" line="790"/>
         <source>Shows the add model view</source>
         <translation>Afişează secţiunea de adăugare a unui model</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="802"/>
+        <location filename="../qml/ChatView.qml" line="815"/>
         <source>Conversation with the model</source>
         <translation>Conversaţie cu modelul</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="803"/>
+        <location filename="../qml/ChatView.qml" line="816"/>
         <source>prompt / response pairs from the conversation</source>
         <translation>perechi prompt/replică din conversaţie</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="855"/>
         <source>GPT4All</source>
-        <translation>GPT4All</translation>
+        <translation type="vanished">GPT4All</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="855"/>
         <source>You</source>
-        <translation>Tu</translation>
+        <translation type="vanished">Tu</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="879"/>
         <source>response stopped ...</source>
-        <translation>replică întreruptă...</translation>
+        <translation type="vanished">replică întreruptă...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="882"/>
         <source>processing ...</source>
-        <translation>procesare...</translation>
+        <translation type="vanished">procesare...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="883"/>
         <source>generating response ...</source>
-        <translation>se generează replica...</translation>
+        <translation type="vanished">se generează replica...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="884"/>
         <source>generating questions ...</source>
-        <translation>se generează întrebări...</translation>
+        <translation type="vanished">se generează întrebări...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1011"/>
-        <location filename="../qml/ChatView.qml" line="2097"/>
+        <location filename="../qml/ChatView.qml" line="1290"/>
         <source>Copy</source>
         <translation>Copiere</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1017"/>
         <source>Copy Message</source>
-        <translation>Copiez mesajul</translation>
+        <translation type="vanished">Copiez mesajul</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1027"/>
         <source>Disable markdown</source>
-        <translation>Dezactivez markdown</translation>
+        <translation type="vanished">Dezactivez markdown</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1027"/>
         <source>Enable markdown</source>
-        <translation>Activez markdown</translation>
+        <translation type="vanished">Activez markdown</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1117"/>
         <source>Thumbs up</source>
-        <translation>Bravo</translation>
+        <translation type="vanished">Bravo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1118"/>
         <source>Gives a thumbs up to the response</source>
-        <translation>Dă un Bravo acestei replici</translation>
+        <translation type="vanished">Dă un Bravo acestei replici</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1151"/>
         <source>Thumbs down</source>
-        <translation>Aiurea</translation>
+        <translation type="vanished">Aiurea</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1152"/>
         <source>Opens thumbs down dialog</source>
-        <translation>Deschide reacţia Aiurea</translation>
+        <translation type="vanished">Deschide reacţia Aiurea</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1451"/>
         <source>Suggested follow-ups</source>
-        <translation>Continuări sugerate</translation>
+        <translation type="vanished">Continuări sugerate</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1717"/>
+        <location filename="../qml/ChatView.qml" line="918"/>
         <source>Erase and reset chat session</source>
         <translation>Şterge şi resetează sesiunea de chat</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1738"/>
+        <location filename="../qml/ChatView.qml" line="939"/>
         <source>Copy chat session to clipboard</source>
         <translation>Copiez sesiunea de chat (conversaţia) în Clipboard</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1766"/>
         <source>Redo last chat response</source>
-        <translation>Reface ultima replică</translation>
+        <translation type="vanished">Reface ultima replică</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2020"/>
+        <location filename="../qml/ChatView.qml" line="1213"/>
         <source>Add media</source>
         <translation>Adaugă media (un fişier)</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2021"/>
+        <location filename="../qml/ChatView.qml" line="1214"/>
         <source>Adds media to the prompt</source>
         <translation>Adaugă media (un fişier) la prompt</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2155"/>
+        <location filename="../qml/ChatView.qml" line="1348"/>
         <source>Stop generating</source>
         <translation>Opreşte generarea</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2156"/>
+        <location filename="../qml/ChatView.qml" line="1349"/>
         <source>Stop the current response generation</source>
         <translation>Opreşte generarea replicii curente</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2198"/>
+        <location filename="../qml/ChatView.qml" line="1392"/>
         <source>Attach</source>
         <translation>Ataşează</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2200"/>
+        <location filename="../qml/ChatView.qml" line="1394"/>
         <source>Single File</source>
         <translation>Un singur fişier</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1831"/>
+        <location filename="../qml/ChatView.qml" line="1004"/>
         <source>Reloads the model</source>
         <translation>Reîncarc modelul</translation>
     </message>
@@ -1039,82 +1211,78 @@ model to get started</source>
                 se oferă ajutor</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="378"/>
-        <location filename="../qml/ChatView.qml" line="1829"/>
+        <location filename="../qml/ChatView.qml" line="391"/>
+        <location filename="../qml/ChatView.qml" line="1002"/>
         <source>Reload · %1</source>
         <translation>Reîncărcare · %1</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="380"/>
+        <location filename="../qml/ChatView.qml" line="393"/>
         <source>Loading · %1</source>
         <translation>Încărcare · %1</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="715"/>
+        <location filename="../qml/ChatView.qml" line="728"/>
         <source>Load · %1 (default) →</source>
         <translation>Încarcă · %1 (implicit) →</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="877"/>
         <source>restoring from text ...</source>
-        <translation>restaurare din text...</translation>
+        <translation type="vanished">restaurare din text...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="880"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation>se preia din LocalDocs: %1 ...</translation>
+        <translation type="vanished">se preia din LocalDocs: %1 ...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="881"/>
         <source>searching localdocs: %1 ...</source>
-        <translation>se caută în LocalDocs: %1 ...</translation>
+        <translation type="vanished">se caută în LocalDocs: %1 ...</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ChatView.qml" line="1207"/>
         <source>%n Source(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n Sursa</numerusform>
             <numerusform>%n Surse</numerusform>
             <numerusform>%n de Surse</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2047"/>
+        <location filename="../qml/ChatView.qml" line="1240"/>
         <source>Send a message...</source>
         <translation>Trimite un mesaj...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2047"/>
+        <location filename="../qml/ChatView.qml" line="1240"/>
         <source>Load a model to continue...</source>
         <translation>Încarcă un model pentru a continua...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2050"/>
+        <location filename="../qml/ChatView.qml" line="1243"/>
         <source>Send messages/prompts to the model</source>
         <translation>Trimite mesaje/prompt-uri către model</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2091"/>
+        <location filename="../qml/ChatView.qml" line="1284"/>
         <source>Cut</source>
         <translation>Decupare (Cut)</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2103"/>
+        <location filename="../qml/ChatView.qml" line="1296"/>
         <source>Paste</source>
         <translation>Alipire (Paste)</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2107"/>
+        <location filename="../qml/ChatView.qml" line="1300"/>
         <source>Select All</source>
         <translation>Selectez tot</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2176"/>
+        <location filename="../qml/ChatView.qml" line="1370"/>
         <source>Send message</source>
         <translation>Trimit mesajul</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="2177"/>
+        <location filename="../qml/ChatView.qml" line="1371"/>
         <source>Sends the message/prompt contained in textfield to the model</source>
         <translation>Trimite modelului mesajul/prompt-ul din câmpul-text</translation>
     </message>
@@ -1161,39 +1329,52 @@ model to get started</source>
     </message>
 </context>
 <context>
+    <name>ConfirmationDialog</name>
+    <message>
+        <location filename="../qml/ConfirmationDialog.qml" line="42"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ConfirmationDialog.qml" line="49"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Anulare</translation>
+    </message>
+</context>
+<context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="278"/>
+        <location filename="../src/download.cpp" line="273"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="288"/>
+        <location filename="../src/download.cpp" line="283"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>EROARE: $MODEL_NAME absent.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="294"/>
+        <location filename="../src/download.cpp" line="289"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>EROARE: $API_KEY absentă</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="300"/>
+        <location filename="../src/download.cpp" line="295"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>EROARE: $API_KEY incorecta</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="306"/>
+        <location filename="../src/download.cpp" line="301"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>EROARE: Model &quot;%1 (%2)&quot; conflictual.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="325"/>
+        <location filename="../src/download.cpp" line="320"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Modelul &quot;%1 (%2)&quot; - instalat cu succes.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="349"/>
+        <location filename="../src/download.cpp" line="344"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Modelul &quot;%1&quot; - îndepărtat</translation>
     </message>
@@ -1359,52 +1540,52 @@ model to get started</source>
         <translation>Implicit</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="210"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="211"/>
         <source>Display</source>
         <translation>Vizualizare</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="223"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="224"/>
         <source>Show Sources</source>
         <translation>Afişarea Surselor</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="224"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="225"/>
         <source>Display the sources used for each response.</source>
         <translation>Afişează Sursele utilizate pentru fiecare replică.</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="241"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="242"/>
         <source>Advanced</source>
         <translation>Avansate</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="257"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="258"/>
         <source>Warning: Advanced usage only.</source>
         <translation>Atenţie: Numai pentru utilizare avansată.</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="258"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="259"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Valori prea mari pot cauza erori cu LocalDocs, replici foarte lente sau chiar absenţa lor. În mare, numărul {N caractere x N citate} este adăugat la Context Window/Size/Length a modelului. Mai multe informaţii: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;aici&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="267"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="268"/>
         <source>Number of characters per document snippet. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
         <translation>Numărul caracterelor din fiecare citat. Numere mari amplifică probabilitatea unor replici corecte, dar de asemenea cauzează generare lentă.</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="293"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="294"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
         <translation>Numărul maxim al citatelor ce corespund şi care vor fi adăugate la contextul pentru prompt. Numere mari amplifică probabilitatea unor replici corecte, dar de asemenea cauzează generare lentă.</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="266"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="267"/>
         <source>Document snippet size (characters)</source>
         <translation>Lungimea (în caractere) a citatelor din documente</translation>
     </message>
     <message>
-        <location filename="../qml/LocalDocsSettings.qml" line="292"/>
+        <location filename="../qml/LocalDocsSettings.qml" line="293"/>
         <source>Max document snippets per prompt</source>
         <translation>Numărul maxim de citate per prompt</translation>
     </message>
@@ -1568,78 +1749,78 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1226"/>
-        <location filename="../src/modellist.cpp" line="1277"/>
+        <location filename="../src/modellist.cpp" line="1270"/>
+        <location filename="../src/modellist.cpp" line="1321"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>nu se poate deschide „%1”: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1238"/>
+        <location filename="../src/modellist.cpp" line="1282"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>nu se poate crea „%1”: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1288"/>
+        <location filename="../src/modellist.cpp" line="1332"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1289"/>
+        <location filename="../src/modellist.cpp" line="1333"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Model API compatibil cu OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Cheia API: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Numele modelului: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1566"/>
+        <location filename="../src/modellist.cpp" line="1632"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită o cheie API OpenAI personală. &lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la OpenAI!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local) &lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu OpenAI&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aici.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1585"/>
+        <location filename="../src/modellist.cpp" line="1651"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul OpenAI&apos;s ChatGPT GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1598"/>
+        <location filename="../src/modellist.cpp" line="1664"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Chiar dacă plăteşti la OpenAI pentru ChatGPT-4, aceasta nu garantează accesul la cheia API. Contactează OpenAI pentru mai multe informaţii.</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1613"/>
+        <location filename="../src/modellist.cpp" line="1679"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;Modelul ChatGPT GPT-4 al OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1625"/>
+        <location filename="../src/modellist.cpp" line="1691"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită cheia personală Mistral API. &lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la Mistral!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu Mistral&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aici&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1644"/>
+        <location filename="../src/modellist.cpp" line="1710"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1669"/>
+        <location filename="../src/modellist.cpp" line="1735"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Small&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1695"/>
+        <location filename="../src/modellist.cpp" line="1761"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Medium&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1707"/>
+        <location filename="../src/modellist.cpp" line="1773"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită cheia personală API si base-URL a API.&lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la serverul API compatibil cu OpenAI specificat!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu serverul API compatibil cu OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1724"/>
+        <location filename="../src/modellist.cpp" line="1790"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Conectare la un server API compatibil cu OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2138"/>
+        <location filename="../src/modellist.cpp" line="2213"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Creat de către %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informaţii pot fi găsite la: &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
@@ -1652,214 +1833,302 @@ model to get started</source>
         <translation>Model</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="33"/>
+        <location filename="../qml/ModelSettings.qml" line="20"/>
+        <source>%1 system message?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="20"/>
+        <location filename="../qml/ModelSettings.qml" line="30"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="20"/>
+        <location filename="../qml/ModelSettings.qml" line="30"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="21"/>
+        <source>The system message will be %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="21"/>
+        <source>removed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="21"/>
+        <location filename="../qml/ModelSettings.qml" line="31"/>
+        <source>reset to the default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="30"/>
+        <source>%1 chat template?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="31"/>
+        <source>The chat template will be %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="31"/>
+        <source>erased</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="57"/>
         <source>Model Settings</source>
         <translation>Configurez modelul</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="83"/>
+        <location filename="../qml/ModelSettings.qml" line="108"/>
         <source>Clone</source>
         <translation>Clonez</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="93"/>
+        <location filename="../qml/ModelSettings.qml" line="118"/>
         <source>Remove</source>
         <translation>Şterg</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="107"/>
+        <location filename="../qml/ModelSettings.qml" line="132"/>
         <source>Name</source>
         <translation>Denumire</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="140"/>
+        <location filename="../qml/ModelSettings.qml" line="165"/>
         <source>Model File</source>
         <translation>Fişierul modelului</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="158"/>
         <source>System Prompt</source>
-        <translation>System Prompt</translation>
+        <translation type="vanished">System Prompt</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="205"/>
         <source>Prompt Template</source>
-        <translation>Prompt Template</translation>
+        <translation type="vanished">Prompt Template</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="206"/>
         <source>The template that wraps every prompt.</source>
-        <translation>Standardul de formulare a fiecărui prompt.</translation>
+        <translation type="vanished">Standardul de formulare a fiecărui prompt.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="255"/>
+        <location filename="../qml/ModelSettings.qml" line="409"/>
         <source>Chat Name Prompt</source>
         <translation>Denumirea conversaţiei</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="256"/>
+        <location filename="../qml/ModelSettings.qml" line="410"/>
         <source>Prompt used to automatically generate chat names.</source>
         <translation>Standardul de formulare a denumirii conversaţiilor.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="298"/>
+        <location filename="../qml/ModelSettings.qml" line="452"/>
         <source>Suggested FollowUp Prompt</source>
         <translation>Prompt-ul sugerat pentru a continua</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="299"/>
+        <location filename="../qml/ModelSettings.qml" line="453"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
         <translation>Prompt-ul folosit pentru generarea întrebărilor de continuare.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="352"/>
+        <location filename="../qml/ModelSettings.qml" line="506"/>
         <source>Context Length</source>
         <translation>Lungimea Contextului</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="353"/>
+        <location filename="../qml/ModelSettings.qml" line="507"/>
         <source>Number of input and output tokens the model sees.</source>
         <translation>Numărul token-urilor de input şi de output văzute de model.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="412"/>
+        <location filename="../qml/ModelSettings.qml" line="566"/>
         <source>Temperature</source>
         <translation>Temperatura</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="413"/>
+        <location filename="../qml/ModelSettings.qml" line="567"/>
         <source>Randomness of model output. Higher -&gt; more variation.</source>
         <translation>Libertatea/Confuzia din replica modelului. Mai mare -&gt; mai multă libertate.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="458"/>
+        <location filename="../qml/ModelSettings.qml" line="612"/>
         <source>Top-P</source>
         <translation>Top-P</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="459"/>
+        <location filename="../qml/ModelSettings.qml" line="613"/>
         <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
         <translation>Factorul de Nucleus Sampling. Mai mic -&gt; predictibilitate mai mare.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="159"/>
         <source>Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.</source>
-        <translation>Plasat la începutul fiecărei conversaţii. Trebuie să conţină token-uri(le) adecvate de încadrare.</translation>
+        <translation type="vanished">Plasat la începutul fiecărei conversaţii. Trebuie să conţină token-uri(le) adecvate de încadrare.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="210"/>
         <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
-        <translation>Trebuie să conţină textul &quot;%1&quot; care va fi înlocuit cu ceea ce scrie utilizatorul.</translation>
+        <translation type="vanished">Trebuie să conţină textul &quot;%1&quot; care va fi înlocuit cu ceea ce scrie utilizatorul.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="374"/>
+        <location filename="../qml/ModelSettings.qml" line="528"/>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
         <translation>Numărul maxim combinat al token-urilor în prompt+replică înainte de a se pierde informaţie. Utilizarea unui context mai mare decât cel cu care a fost instruit modelul va întoarce rezultate mai slabe. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="424"/>
+        <location filename="../qml/ModelSettings.qml" line="578"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
         <translation>Temperatura creşte probabilitatea de alegere a unor token-uri puţin probabile. NOTĂ: O temperatură tot mai înaltă determină replici tot mai creative şi mai puţin predictibile.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="469"/>
+        <location filename="../qml/ModelSettings.qml" line="623"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
         <translation>Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTĂ: Se evită selectarea token-urilor foarte improbabile.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="503"/>
+        <location filename="../qml/ModelSettings.qml" line="657"/>
         <source>Min-P</source>
         <translation>Min-P</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="504"/>
+        <location filename="../qml/ModelSettings.qml" line="658"/>
         <source>Minimum token probability. Higher -&gt; more predictable.</source>
         <translation>Probabilitatea mínimă a unui token. Mai mare -&gt; mai predictibil.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="514"/>
+        <location filename="../qml/ModelSettings.qml" line="668"/>
         <source>Sets the minimum relative probability for a token to be considered.</source>
         <translation>Stabileşte probabilitatea minimă relativă a unui token de luat în considerare.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="550"/>
+        <location filename="../qml/ModelSettings.qml" line="704"/>
         <source>Top-K</source>
         <translation>Top-K</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="551"/>
+        <location filename="../qml/ModelSettings.qml" line="705"/>
         <source>Size of selection pool for tokens.</source>
         <translation>Dimensiunea setului de token-uri.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="562"/>
+        <location filename="../qml/ModelSettings.qml" line="716"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
         <translation>Se va alege numai din cele mai probabile K token-uri.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="597"/>
+        <location filename="../qml/ModelSettings.qml" line="751"/>
         <source>Max Length</source>
         <translation>Lungimea maximă</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="598"/>
+        <location filename="../qml/ModelSettings.qml" line="752"/>
         <source>Maximum response length, in tokens.</source>
         <translation>Lungimea maximă - în token-uri - a replicii.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="643"/>
+        <location filename="../qml/ModelSettings.qml" line="797"/>
         <source>Prompt Batch Size</source>
         <translation>Prompt Batch Size</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="644"/>
+        <location filename="../qml/ModelSettings.qml" line="798"/>
         <source>The batch size used for prompt processing.</source>
         <translation>Dimensiunea setului de token-uri citite simultan din prompt.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="655"/>
+        <location filename="../qml/ModelSettings.qml" line="809"/>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <translation>Numărul token-urilor procesate simultan. NOTĂ: Valori tot mai mari pot accelera citirea prompt-urilor, dar şi utiliza mai multă RAM.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="793"/>
+        <location filename="../qml/ModelSettings.qml" line="947"/>
         <source>How many model layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.
 Lower values increase CPU load and RAM usage, and make inference slower.
 NOTE: Does not take effect until you reload the model.</source>
         <translation>Cât de multe layere ale modelului să fie încărcate în VRAM. Valori mici trebuie folosite dacă GPT4All rămâne fără VRAM în timp ce încarcă modelul. Valorile tot mai mici cresc utilizarea CPU şi a RAM şi încetinesc inferenţa. NOTĂ: Nu are efect până la reîncărcarea modelului.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="690"/>
+        <location filename="../qml/ModelSettings.qml" line="844"/>
         <source>Repeat Penalty</source>
         <translation>Penalizarea pentru repetare</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="691"/>
+        <location filename="../qml/ModelSettings.qml" line="190"/>
+        <source>System Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="191"/>
+        <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="218"/>
+        <source>System message is not &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;plain text&lt;/a&gt;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="288"/>
+        <source>Chat Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="289"/>
+        <source>This Jinja template turns the chat into input for the model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="371"/>
+        <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="375"/>
+        <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="379"/>
+        <source>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="383"/>
+        <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ModelSettings.qml" line="845"/>
         <source>Repetition penalty factor. Set to 1 to disable.</source>
         <translation>Factorul de penalizare a repetării ce se dezactivează cu valoarea 1.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="735"/>
+        <location filename="../qml/ModelSettings.qml" line="889"/>
         <source>Repeat Penalty Tokens</source>
         <translation>Token-uri pentru penalizare a repetării</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="736"/>
+        <location filename="../qml/ModelSettings.qml" line="890"/>
         <source>Number of previous tokens used for penalty.</source>
         <translation>Numărul token-urilor anterioare considerate pentru penalizare.</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="781"/>
+        <location filename="../qml/ModelSettings.qml" line="935"/>
         <source>GPU Layers</source>
         <translation>Layere în GPU</translation>
     </message>
     <message>
-        <location filename="../qml/ModelSettings.qml" line="782"/>
+        <location filename="../qml/ModelSettings.qml" line="936"/>
         <source>Number of model layers to load into VRAM.</source>
         <translation>Numărul layerelor modelului ce vor fi Încărcate în VRAM.</translation>
     </message>
@@ -2112,6 +2381,19 @@ NOTE: Does not take effect until you reload the model.</source>
     </message>
 </context>
 <context>
+    <name>MySettingsLabel</name>
+    <message>
+        <location filename="../qml/MySettingsLabel.qml" line="53"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MySettingsLabel.qml" line="53"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MySettingsStack</name>
     <message>
         <source>Please choose a directory</source>
@@ -2121,12 +2403,22 @@ NOTE: Does not take effect until you reload the model.</source>
 <context>
     <name>MySettingsTab</name>
     <message>
-        <location filename="../qml/MySettingsTab.qml" line="61"/>
+        <location filename="../qml/MySettingsTab.qml" line="24"/>
+        <source>Restore defaults?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MySettingsTab.qml" line="25"/>
+        <source>This page of settings will be reset to the defaults.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MySettingsTab.qml" line="69"/>
         <source>Restore Defaults</source>
         <translation>Restaurez valorile implicite</translation>
     </message>
     <message>
-        <location filename="../qml/MySettingsTab.qml" line="65"/>
+        <location filename="../qml/MySettingsTab.qml" line="73"/>
         <source>Restores settings dialog to a default state</source>
         <translation>Restaurez secţiunea de configurare la starea sa implicită</translation>
     </message>
@@ -2446,25 +2738,20 @@ care foloseşte datele tale!</translation>
 <context>
     <name>SwitchModelDialog</name>
     <message>
-        <location filename="../qml/SwitchModelDialog.qml" line="22"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
-        <translation>&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va şterge conversaţia curentă. Confirmi aceasta?</translation>
+        <translation type="vanished">&lt;b&gt;Atenţie:&lt;/b&gt; schimbarea modelului va şterge conversaţia curentă. Confirmi aceasta?</translation>
     </message>
     <message>
-        <location filename="../qml/SwitchModelDialog.qml" line="33"/>
         <source>Continue</source>
-        <translation>Continuă</translation>
+        <translation type="vanished">Continuă</translation>
     </message>
     <message>
-        <location filename="../qml/SwitchModelDialog.qml" line="34"/>
         <source>Continue with model loading</source>
-        <translation>Continuă încărcarea modelului</translation>
+        <translation type="vanished">Continuă încărcarea modelului</translation>
     </message>
     <message>
-        <location filename="../qml/SwitchModelDialog.qml" line="38"/>
-        <location filename="../qml/SwitchModelDialog.qml" line="39"/>
         <source>Cancel</source>
-        <translation>Anulare</translation>
+        <translation type="vanished">Anulare</translation>
     </message>
 </context>
 <context>
@@ -2503,125 +2790,135 @@ care foloseşte datele tale!</translation>
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.qml" line="23"/>
+        <location filename="../main.qml" line="24"/>
         <source>GPT4All v%1</source>
         <translation>GPT4All v%1</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="111"/>
+        <location filename="../main.qml" line="47"/>
+        <source>Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main.qml" line="51"/>
+        <source>Quit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main.qml" line="149"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
         <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="127"/>
+        <location filename="../main.qml" line="165"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
         <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="155"/>
+        <location filename="../main.qml" line="193"/>
         <source>Connection to datalake failed.</source>
         <translation>Conectarea la DataLake a eşuat.</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="166"/>
+        <location filename="../main.qml" line="204"/>
         <source>Saving chats.</source>
         <translation>Se salvează conversaţiile.</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="177"/>
+        <location filename="../main.qml" line="215"/>
         <source>Network dialog</source>
         <translation>Dialogul despre reţea</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="178"/>
+        <location filename="../main.qml" line="216"/>
         <source>opt-in to share feedback/conversations</source>
         <translation>acceptă partajarea (share) de comentarii/conversaţii</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="231"/>
+        <location filename="../main.qml" line="278"/>
         <source>Home view</source>
         <translation>Secţiunea de Început</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="232"/>
+        <location filename="../main.qml" line="279"/>
         <source>Home view of application</source>
         <translation>Secţiunea de Început a programului</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="240"/>
+        <location filename="../main.qml" line="287"/>
         <source>Home</source>
         <translation>Prima&lt;br&gt;pagină</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="266"/>
+        <location filename="../main.qml" line="313"/>
         <source>Chat view</source>
         <translation>Secţiunea conversaţiilor</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="267"/>
+        <location filename="../main.qml" line="314"/>
         <source>Chat view to interact with models</source>
         <translation>Secţiunea de chat pentru interacţiune cu modele</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="275"/>
+        <location filename="../main.qml" line="322"/>
         <source>Chats</source>
         <translation>Conversaţii</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="300"/>
-        <location filename="../main.qml" line="309"/>
+        <location filename="../main.qml" line="347"/>
+        <location filename="../main.qml" line="356"/>
         <source>Models</source>
         <translation>Modele</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="301"/>
+        <location filename="../main.qml" line="348"/>
         <source>Models view for installed models</source>
         <translation>Secţiunea modelelor instalate</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="334"/>
-        <location filename="../main.qml" line="343"/>
+        <location filename="../main.qml" line="381"/>
+        <location filename="../main.qml" line="390"/>
         <source>LocalDocs</source>
         <translation>LocalDocs</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="335"/>
+        <location filename="../main.qml" line="382"/>
         <source>LocalDocs view to configure and use local docs</source>
         <translation>Secţiunea LocalDocs de configurare şi folosire a Documentelor Locale</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="368"/>
-        <location filename="../main.qml" line="377"/>
+        <location filename="../main.qml" line="415"/>
+        <location filename="../main.qml" line="424"/>
         <source>Settings</source>
         <translation>Configurare</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="369"/>
+        <location filename="../main.qml" line="416"/>
         <source>Settings view for application configuration</source>
         <translation>Secţiunea de configurare a programului</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="422"/>
+        <location filename="../main.qml" line="469"/>
         <source>The datalake is enabled</source>
         <translation>DataLake: ACTIV</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="424"/>
+        <location filename="../main.qml" line="471"/>
         <source>Using a network model</source>
         <translation>Se foloseşte un model pe reţea</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="426"/>
+        <location filename="../main.qml" line="473"/>
         <source>Server mode is enabled</source>
         <translation>Modul Server: ACTIV</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="640"/>
+        <location filename="../main.qml" line="687"/>
         <source>Installed models</source>
         <translation>Modele instalate</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="641"/>
+        <location filename="../main.qml" line="688"/>
         <source>View of installed models</source>
         <translation>Secţiunea modelelor instalate</translation>
     </message>
