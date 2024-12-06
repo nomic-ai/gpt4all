@@ -6,12 +6,13 @@
 
 #include "llmodel.h"
 
+#include <expected>
 #include <memory>
 #include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 struct LLamaPrivate;
 struct EmbModelSpec;

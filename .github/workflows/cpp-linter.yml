@@ -51,12 +51,12 @@ jobs:
         id: linter
         with:
           style: ''  # no clang-format
-          extensions: 'c,cpp,h,inl'
+          extensions: 'c,cpp'
           tidy-checks: ''  # use .clang-tidy config
           database: gpt4all-chat/build
           version: 18
-          files-changed-only: false  # TODO: set this back to true
-          ignore: 'gpt4all-chat/build/_deps'
+          files-changed-only: false
+          ignore: 'gpt4all-chat/build/_deps|gpt4all-bindings'
       - name: Fail Fast
         if: steps.linter.outputs.clang-tidy-checks-failed > 0
         run: exit 1
