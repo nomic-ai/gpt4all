@@ -55,6 +55,7 @@ jobs:
           tidy-checks: ''  # use .clang-tidy config
           database: gpt4all-chat/build
           version: 18
+          files-changed-only: false  # TODO: set this back to true
       - name: Fail Fast
         if: steps.linter.outputs.clang-tidy-checks-failed > 0
         run: exit 1
