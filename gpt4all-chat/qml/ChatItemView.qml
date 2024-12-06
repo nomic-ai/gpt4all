@@ -529,8 +529,8 @@ GridLayout {
 
     ConfirmationDialog {
         id: editPromptDialog
-        dialogTitle: qsTr("Edit this prompt?")
-        description: qsTr("The existing response and all later messages will be permanently erased.")
+        dialogTitle: qsTr("Edit this message?")
+        description: qsTr("All following messages will be permanently erased.")
         onAccepted: {
             const msg = currentChat.popPrompt(index);
             if (msg !== null)
@@ -541,7 +541,7 @@ GridLayout {
     ConfirmationDialog {
         id: redoResponseDialog
         dialogTitle: qsTr("Redo this response?")
-        description: qsTr("The existing response and all later messages will be permanently erased.")
+        description: qsTr("All following messages will be permanently erased.")
         onAccepted: currentChat.regenerateResponse(index)
     }
 
@@ -556,33 +556,48 @@ GridLayout {
         visible: !isCurrentResponse || !currentChat.responseInProgress
         enabled: opacity > 0
         opacity: hoverArea.hovered
-        readonly property var canModify: !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
 
         Behavior on opacity {
             OpacityAnimator { duration: 30 }
         }
 
         ChatMessageButton {
-            visible: parent.canModify && model.name === "Prompt: "
+            readonly property var editingDisabledReason: {
+                if (!currentChat.isModelLoaded)
+                    return qsTr("Cannot edit chat without a loaded model.");
+                if (currentChat.responseInProgress)
+                    return qsTr("Cannot edit chat while the model is generating.");
+                return null;
+            }
+            visible: !currentChat.isServer && model.name === "Prompt: "
+            enabled: editingDisabledReason === null
             Layout.maximumWidth: 24
             Layout.maximumHeight: 24
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: false
+            name: editingDisabledReason ?? qsTr("Edit")
             source: "qrc:/gpt4all/icons/edit.svg"
             onClicked: {
                 if (inputBoxText === "")
                     editPromptDialog.open();
             }
-            name: qsTr("Edit")
         }
 
         ChatMessageButton {
-            visible: parent.canModify && model.name === "Response: "
+            readonly property var editingDisabledReason: {
+                if (!currentChat.isModelLoaded)
+                    return qsTr("Cannot redo response without a loaded model.");
+                if (currentChat.responseInProgress)
+                    return qsTr("Cannot redo response while the model is generating.");
+                return null;
+            }
+            visible: !currentChat.isServer && model.name === "Response: "
+            enabled: editingDisabledReason === null
             Layout.maximumWidth: 24
             Layout.maximumHeight: 24
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: false
-            name: qsTr("Redo")
+            name: editingDisabledReason ?? qsTr("Redo")
             source: "qrc:/gpt4all/icons/regenerate.svg"
             onClicked: redoResponseDialog.open()
         }
