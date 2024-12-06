@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Implement Qt 6.8 compatibility ([#3121](https://github.com/nomic-ai/gpt4all/pull/3121))
 - Use Jinja for chat templates instead of per-message QString.arg-style templates ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
+- API server: Use system message(s) from client instead of settings ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
+- API server: Accept messages in any order supported by the model instead of requiring user/assistant pairs ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
+- Remote models: Pass system message with "system" role instead of joining with user message ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
 
 ### Removed
 - Remove option to save binary model state to disk ([#3147](https://github.com/nomic-ai/gpt4all/pull/3147))
