@@ -49,7 +49,7 @@ Button {
         ColorOverlay {
             anchors.fill: image
             source: image
-            color: myButton.hovered ? backgroundColorHovered : backgroundColor
+            color: !myButton.enabled ? theme.mutedTextColor : myButton.hovered ? backgroundColorHovered : backgroundColor
         }
     }
     Accessible.role: Accessible.Button
