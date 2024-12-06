@@ -91,6 +91,7 @@ Checks:
 - '-performance-implicit-conversion-in-loop'
 - '-performance-move-const-arg'
 - '-performance-noexcept-move-constructor'
+- '-performance-no-automatic-move'
 - '-performance-unnecessary-copy-initialization'
 - '-performance-unnecessary-value-param'
 - '-readability-avoid-const-params-in-decls'
