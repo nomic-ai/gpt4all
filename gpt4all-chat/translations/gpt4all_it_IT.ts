@@ -2589,7 +2589,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/StartupDialog.qml" line="151"/>
         <source>Allow opt-in for anonymous usage statistics</source>
-        <translation>Consenti l&apos;attivazione di statistiche di utilizzo anonime</translation>
+        <translation>Consenti l&apos;attivazione delle statistiche di utilizzo anonime</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="189"/>
