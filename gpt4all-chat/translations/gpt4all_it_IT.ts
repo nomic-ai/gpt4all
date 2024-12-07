@@ -1804,7 +1804,7 @@ modello per iniziare</translation>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation>Il messaggio di sistema sarà %1.</translation>
+        <translation>Il messaggio di sistema verrà %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
@@ -1815,7 +1815,7 @@ modello per iniziare</translation>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>reset to the default</source>
-        <translation>ripristina il valore predefinito</translation>
+        <translation>ripristinato il valore predefinito</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
