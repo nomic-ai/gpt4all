@@ -357,7 +357,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="16"/>
         <source>Application</source>
-        <translation>Aplicaţie/Program</translation>
+        <translation>Program</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="25"/>
@@ -367,7 +367,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="26"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation>optional: partajarea (share) de comentarii/conversatii</translation>
+        <translation>optional: partajarea (share) de comentarii/conversaţii</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="39"/>
@@ -493,7 +493,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="340"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation>Generarea de întrebări pentru continuare, la finalul replicilor.</translation>
+        <translation>Generarea de întrebări în continuarea replicilor.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="353"/>
@@ -576,12 +576,12 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
         <source>Enable Local API Server</source>
-        <translation>Activează Serverul API local</translation>
+        <translation>Activez Serverul API local</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="509"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
-        <translation>Activează pe localhost un Server compatibil cu Open-AI. ATENŢIE: Creşte consumul de resurse.</translation>
+        <translation>Activează pe localhost un Server compatibil cu OpenAI. ATENŢIE: Creşte consumul de resurse.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="525"/>
@@ -656,12 +656,12 @@
     <message>
         <location filename="../qml/ChatDrawer.qml" line="50"/>
         <source>Create a new chat</source>
-        <translation>Creează o Conversaţie nouă</translation>
+        <translation>Creează o Conversaţie</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="199"/>
         <source>Select the current chat or edit the chat when in edit mode</source>
-        <translation>Selectează conversaţia curentă sau editeaz-o când eşti în modul editare</translation>
+        <translation>Selectează conversaţia curentă sau editeaz-o în modul editare</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="216"/>
@@ -681,12 +681,12 @@
     <message>
         <location filename="../qml/ChatDrawer.qml" line="283"/>
         <source>Confirm chat deletion</source>
-        <translation>CONFIRMĂ ştergerea conversaţiei</translation>
+        <translation>CONFIRM ştergerea conversaţiei</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="305"/>
         <source>Cancel chat deletion</source>
-        <translation>ANULEAZĂ ştergerea conversaţiei</translation>
+        <translation>ANULEZ ştergerea conversaţiei</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="317"/>
@@ -1389,7 +1389,7 @@ model to get started</source>
     <message>
         <location filename="../qml/HomeView.qml" line="56"/>
         <source>The privacy-first LLM chat application</source>
-        <translation>Programul ce prioritizează confidenţialitatea (privacy)</translation>
+        <translation>Programul ce Prioritizează Confidenţialitatea (Privacy)</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="66"/>
@@ -1502,7 +1502,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="112"/>
         <source>Use Nomic Embed API</source>
-        <translation>Folosesc Nomic Embed API</translation>
+        <translation>Folosesc API: Nomic Embed</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="130"/>
@@ -1625,7 +1625,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="129"/>
         <source>＋ Add Doc Collection</source>
-        <translation>＋ Adaugă o Colecţie de documente</translation>
+        <translation>＋ Adaug o Colecţie de documente</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="134"/>
@@ -1650,7 +1650,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="261"/>
         <source>INDEXING</source>
-        <translation>...SE INDEXEAZĂ...</translation>
+        <translation>...INDEXARE...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="265"/>
@@ -1675,7 +1675,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="300"/>
         <source>Indexing in progress</source>
-        <translation>Se Indexează...</translation>
+        <translation>...Se Indexează...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="303"/>
@@ -1685,7 +1685,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="306"/>
         <source>This collection requires an update after version change</source>
-        <translation>Această Colecţie necesită update după schimbarea versiunii</translation>
+        <translation>Colecţia necesită update după schimbarea versiunii</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="309"/>
@@ -1992,7 +1992,7 @@ NOTE: Higher temperature gives more creative but less predictable outputs.</sour
         <location filename="../qml/ModelSettings.qml" line="623"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTĂ: Se evită selectarea token-urilor foarte improbabile.</translation>
+        <translation>Pot fi alese numai cele mai probabile token-uri a căror probabilitate totală este Top-P. NOTĂ: Evită selectarea token-urilor foarte improbabile.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="657"/>
@@ -2164,7 +2164,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="89"/>
         <source>Locally installed chat models</source>
-        <translation>Modele conversaţionale instalate local</translation>
+        <translation>Modele conversaţionale instalate</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="147"/>
@@ -2215,7 +2215,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="237"/>
         <location filename="../qml/ModelsView.qml" line="271"/>
         <source>Install</source>
-        <translation>Instalează</translation>
+        <translation>Instalez</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="272"/>
@@ -2420,7 +2420,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="73"/>
         <source>Restores settings dialog to a default state</source>
-        <translation>Restaurez secţiunea de configurare la starea sa implicită</translation>
+        <translation>Restaurez secţiunea Configurare la starea sa implicită</translation>
     </message>
 </context>
 <context>
@@ -2428,7 +2428,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="39"/>
         <source>Contribute data to the GPT4All Opensource Datalake.</source>
-        <translation>Contribuie cu date/informaţii la componenta Open-source DataLake a GPT4All.</translation>
+        <translation>Contribui cu date/informaţii la componenta Open-source DataLake a GPT4All.</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="55"/>
@@ -2446,7 +2446,7 @@ NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la comp
     <message>
         <location filename="../qml/NetworkDialog.qml" line="70"/>
         <source>Terms for opt-in</source>
-        <translation>Termenii pentru participare</translation>
+        <translation>Termenii participării</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="71"/>
@@ -2456,7 +2456,7 @@ NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la comp
     <message>
         <location filename="../qml/NetworkDialog.qml" line="79"/>
         <source>Please provide a name for attribution (optional)</source>
-        <translation>Specifică o denumire pentru această apreciere (opţional)</translation>
+        <translation>Specifică un nume pentru această apreciere (opţional)</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="81"/>
@@ -2476,7 +2476,7 @@ NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la comp
     <message>
         <location filename="../qml/NetworkDialog.qml" line="96"/>
         <source>Enable opt-in</source>
-        <translation>Activează participarea</translation>
+        <translation>Activez participarea</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="100"/>
@@ -2486,7 +2486,7 @@ NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la comp
     <message>
         <location filename="../qml/NetworkDialog.qml" line="101"/>
         <source>Cancel opt-in</source>
-        <translation>Anulează participarea</translation>
+        <translation>Anulez participarea</translation>
     </message>
 </context>
 <context>
@@ -2504,7 +2504,7 @@ NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la comp
     <message>
         <location filename="../qml/NewVersionDialog.qml" line="48"/>
         <source>Update to new version</source>
-        <translation>Actualizează la noua versiune</translation>
+        <translation>Actualizez la noua versiune</translation>
     </message>
 </context>
 <context>
@@ -2655,7 +2655,7 @@ un răspuns e Aiurea. poţi sugera un răspuns alternativ. Aceste date vor fi co
 componenta DataLake a GPT4All.
 
 NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta DataLake a GPT4All.
-Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi această funcţionalitate.
+Atunci nu te vei putea aştepta la confidenţialitatea (privacy) conversaţiei dacă activezi această funcţionalitate.
 Totuşi, te poţi aştepta la a beneficia de apreciere - 
 opţional, dacă doreşti. Datele din conversaţie vor fi disponibile 
 pentru oricine vrea să le descarce şi vor fi utilizate de către Nomic AI
@@ -2895,7 +2895,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="416"/>
         <source>Settings view for application configuration</source>
-        <translation>Secţiunea de configurare a programului</translation>
+        <translation>Secţiunea de Configurare a programului</translation>
     </message>
     <message>
         <location filename="../main.qml" line="469"/>
