@@ -599,7 +599,14 @@ GridLayout {
             Layout.fillWidth: false
             name: editingDisabledReason ?? qsTr("Redo")
             source: "qrc:/gpt4all/icons/regenerate.svg"
-            onClicked: redoResponseDialog.open()
+            onClicked: {
+                if (index == chatModel.count - 1) {
+                    // regenerate last message without confirmation
+                    currentChat.regenerateResponse(index);
+                    return;
+                }
+                redoResponseDialog.open();
+            }
         }
 
         ChatMessageButton {
