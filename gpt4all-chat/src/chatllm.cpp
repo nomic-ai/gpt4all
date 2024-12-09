@@ -13,6 +13,7 @@
 #include <jinja2cpp/error_info.h>
 #include <jinja2cpp/template.h>
 #include <jinja2cpp/template_env.h>
+#include <jinja2cpp/user_callable.h>
 #include <jinja2cpp/value.h>
 
 #include <QDataStream>
@@ -70,19 +71,23 @@ static jinja2::TemplateEnv *jinjaEnv()
         settings.lstripBlocks = true;
         env.AddGlobal("raise_exception", jinja2::UserCallable(
             /*callable*/ [](auto &params) -> jinja2::Value {
-                auto &message = params.args.at("message").asString();
-                throw std::runtime_error(fmt::format("Jinja template error: {}", message));
+                auto messageArg = params.args.find("message");
+                if (messageArg == params.args.end() || !messageArg->second.isString())
+                    throw std::runtime_error("'message' argument to raise_exception() must be a string");
+                throw std::runtime_error(fmt::format("Jinja template error: {}", messageArg->second.asString()));
             },
             /*argsInfo*/ { jinja2::ArgInfo("message", /*isMandatory*/ true) }
         ));
         env.AddGlobal("strftime_now", jinja2::UserCallable(
             /*callable*/ [](auto &params) -> jinja2::Value {
                 using Clock = std::chrono::system_clock;
-                auto &format = params.args.at("format").asString();
+                auto formatArg = params.args.find("format");
+                if (formatArg == params.args.end() || !formatArg->second.isString())
+                    throw std::runtime_error("'format' argument to strftime_now() must be a string");
                 time_t nowUnix = Clock::to_time_t(Clock::now());
                 auto localDate = *std::localtime(&nowUnix);
                 std::ostringstream ss;
-                ss << std::put_time(&localDate, format.c_str());
+                ss << std::put_time(&localDate, formatArg->second.asString().c_str());
                 return ss.str();
             },
             /*argsInfo*/ { jinja2::ArgInfo("format", /*isMandatory*/ true) }
