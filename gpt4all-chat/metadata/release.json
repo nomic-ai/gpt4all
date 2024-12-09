@@ -228,5 +228,10 @@
     "version": "3.4.2",
     "notes": "* **LocalDocs Fixes:** Several issues with LocalDocs, some of which were introduced in v3.4.0, have been fixed.\n  * Fixed the possible use of references from unselected collections.\n  * Fixed unnecessary reindexing of files with uppercase extensions.\n  * Fixed hybrid search failure due to inconsistent database state.\n  * Fully fixed the blank Embeddings Device selection in LocalDocs settings.\n  * Fixed LocalDocs indexing of large PDFs making very slow progress or even stalling.\n",
     "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)"
+  },
+  {
+    "version": "3.5.0",
+    "notes": "* **Message Editing:**\n  * You can now edit your any message you sent by clicking the pencil icon below it.\n  * You can now redo earlier responses in the conversation.\n* **Templates:** Chat templates have been completely overhauled! They now use Jinja-style syntax. You may notice warnings or errors in the UI. Read the linked docs, and if you have any questions, please ask on the Discord.\n* **File Attachments:**\n  * Markdown and plain text files are now supported as file attachments.\n* **System Tray:**\n  * There is now an option in Application Settings to allow GPT4All to minimize to the system tray instead of closing.\n* **Local API Server:**\n  * The API server now supports system messages from the client and no longer uses the system message in settings.\n  * You can now send messages to the API server in any order supported by the model instead of just user/assistant pairs.\n* **Translations:** The Italian and Romanian translations have been improved.\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Benjamin Gallois (`@bgallois`)\n* Riccardo Giovanetti (`@Harvester62`)\n* Victor Emanuel (`@SINAPSA-IC`)"
   }
 ]
