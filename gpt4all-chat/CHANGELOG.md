@@ -7,8 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
-- Update Italian translation ([#3236](https://github.com/nomic-ai/gpt4all/pull/3236))
-- Update Romanian translation ([#3232](https://github.com/nomic-ai/gpt4all/pull/3232))
+- Update Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#3236](https://github.com/nomic-ai/gpt4all/pull/3236))
+- Update Romanian translation (by [@SINAPSA-IC](https://github.com/SINAPSA-IC) in [#3232](https://github.com/nomic-ai/gpt4all/pull/3232))
 
 ### Fixed
 - Fix a few more problems with the Jinja changes ([#3239](https://github.com/nomic-ai/gpt4all/pull/3239))
