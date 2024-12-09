@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Update Italian translation ([#3236](https://github.com/nomic-ai/gpt4all/pull/3236))
 
+### Fixed
+- Fix a few more problems with the Jinja changes ([#3239](https://github.com/nomic-ai/gpt4all/pull/3239))
+
 ## [3.5.0-rc2] - 2024-12-06
 
 ### Changed
