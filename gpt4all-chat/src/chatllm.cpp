@@ -923,7 +923,7 @@ auto ChatLLM::promptInternal(
         if (auto limit = nCtx - 4; lastMessageLength > limit) {
             throw std::invalid_argument(
                 tr("Your message was too long and could not be processed (%1 > %2). "
-                   "Please try again with something shorter.").arg(lastMessageLength, limit).toUtf8().constData()
+                   "Please try again with something shorter.").arg(lastMessageLength).arg(limit).toUtf8().constData()
             );
         }
     }
