@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.5.0] - 2024-12-09
 
 ### Changed
 - Update Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#3236](https://github.com/nomic-ai/gpt4all/pull/3236))
@@ -203,7 +203,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc2...HEAD
+[3.5.0]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc2...v3.5.0
 [3.5.0-rc2]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc1...v3.5.0-rc2
 [3.5.0-rc1]: https://github.com/nomic-ai/gpt4all/compare/v3.4.2...v3.5.0-rc1
 [3.4.2]: https://github.com/nomic-ai/gpt4all/compare/v3.4.1...v3.4.2
