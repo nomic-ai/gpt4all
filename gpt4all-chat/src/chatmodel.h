@@ -193,9 +193,6 @@ public:
         NameRole = Qt::UserRole + 1,
         ValueRole,
 
-        // prompts and responses
-        PeerRole,
-
         // prompts
         PromptAttachmentsRole,
 
@@ -266,18 +263,6 @@ public:
                 return item->name;
             case ValueRole:
                 return item->value;
-            case PeerRole:
-                switch (item->type()) {
-                    using enum ChatItem::Type;
-                case Prompt:
-                case Response:
-                    {
-                        auto peer = getPeerUnlocked(item);
-                        return peer ? QVariant::fromValue(**peer) : QVariant::fromValue(nullptr);
-                    }
-                default:
-                    return QVariant();
-                }
             case PromptAttachmentsRole:
                 return QVariant::fromValue(item->promptAttachments);
             case SourcesRole:
@@ -320,7 +305,6 @@ public:
         return {
             { NameRole,                "name"                },
             { ValueRole,               "value"               },
-            { PeerRole,                "peer"                },
             { PromptAttachmentsRole,   "promptAttachments"   },
             { SourcesRole,             "sources"             },
             { ConsolidatedSourcesRole, "consolidatedSources" },
@@ -362,18 +346,13 @@ public:
             count = m_chatItems.count();
         }
 
-        int promptIndex = 0;
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.emplace_back(ChatItem::response_tag, promptIndex);
-            if (auto pi = getPeerUnlocked(m_chatItems.size() - 1))
-                promptIndex = *pi;
+            m_chatItems.emplace_back(ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
-        if (promptIndex >= 0)
-            emit dataChanged(createIndex(promptIndex, 0), createIndex(promptIndex, 0), {PeerRole});
     }
 
     // Used by Server to append a new conversation to the chat log.
