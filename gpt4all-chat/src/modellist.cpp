@@ -47,7 +47,32 @@ using namespace Qt::Literals::StringLiterals;
 
 #define MODELS_JSON_VERSION "3"
 
+
 static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmodel"_s };
+
+static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
+{%- set loop_messages = messages %}
+{%- for message in loop_messages %}
+    {{- raise_exception('Unknown role: ' + messages['role']) }}
+    {{- '<' + message['role'] + '>' }}
+    {%- if message['role'] == 'user' %}
+        {%- for source in message.sources %}
+            {%- if loop.first %}
+                {{- '### Context:\n' }}
+            {%- endif %}
+            {{- 'Collection: ' + source.collection + '\n'   +
+                'Path: '       + source.path       + '\n'   +
+                'Excerpt: '    + source.text       + '\n\n' }}
+        {%- endfor %}
+    {%- endif %}
+    {%- for attachment in message.prompt_attachments %}
+        {{- attachment.processed_content + '\n\n' }}
+    {%- endfor %}
+    {{- message.content }}
+    {{- '</' + message['role'] + '>' }}
+{%- endfor %}
+</chat>)"_s;
+
 
 QString ModelInfo::id() const
 {
@@ -1367,6 +1392,7 @@ void ModelList::processModelDirectory(const QString &path)
                 // The description is hard-coded into "GPT4All.ini" due to performance issue.
                 // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
                 data.append({ DescriptionRole, description });
+                data.append({ ChatTemplateRole, RMODEL_CHAT_TEMPLATE });
             }
             updateData(id, data);
         }
@@ -1655,7 +1681,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "GPT" },
-            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions"},
+            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
@@ -1683,7 +1710,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "GPT" },
-            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions"},
+            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
@@ -1714,7 +1742,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "Mistral" },
-            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
@@ -1739,7 +1768,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "Mistral" },
-            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
@@ -1765,7 +1795,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "Mistral" },
-            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
@@ -1794,6 +1825,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "NA" },
+            { ModelList::ChatTemplateRole, RMODEL_CHAT_TEMPLATE },
         };
         updateData(id, data);
     }
