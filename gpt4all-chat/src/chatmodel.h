@@ -366,7 +366,7 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            m_chatItems.emplace_back(ChatItem::response_tag, promptIndex);
+            m_chatItems.emplace_back(ChatItem::response_tag);
             if (auto pi = getPeerUnlocked(m_chatItems.size() - 1))
                 promptIndex = *pi;
         }
