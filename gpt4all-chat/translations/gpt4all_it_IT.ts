@@ -19,10 +19,6 @@
         <translation>Aggiungi una cartella contenente file di testo semplice, PDF o Markdown. Configura estensioni aggiuntive in Settaggi.</translation>
     </message>
     <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">Scegli una cartella</translation>
-    </message>
-    <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
         <source>Name</source>
         <translation>Nome</translation>
@@ -460,10 +456,6 @@
         <translation>Dispositivo</translation>
     </message>
     <message>
-        <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or Metal.</source>
-        <translation type="vanished">Il dispositivo di calcolo utilizzato per la generazione del testo. &quot;Auto&quot; utilizza Vulkan o Metal.</translation>
-    </message>
-    <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
         <translation>Il dispositivo di calcolo utilizzato per la generazione del testo.</translation>
@@ -566,21 +558,9 @@
         <translation>Quando la finestra viene chiusa, l&apos;applicazione verrà ridotta a icona nella barra delle applicazioni.</translation>
     </message>
     <message>
-        <source>Save Chat Context</source>
-        <translation type="vanished">Salva il contesto della chat</translation>
-    </message>
-    <message>
-        <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
-        <translation type="vanished">Salva lo stato del modello di chat su disco per un caricamento più rapido. ATTENZIONE: utilizza circa 2 GB per chat.</translation>
-    </message>
-    <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
         <source>Enable Local API Server</source>
         <translation>Abilita il server API locale</translation>
-    </message>
-    <message>
-        <source>Enable Local Server</source>
-        <translation type="vanished">Abilita server locale</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="509"/>
@@ -890,14 +870,6 @@
         <translation>&lt;h3&gt;Avviso&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>Switch model dialog</source>
-        <translation type="vanished">Finestra di dialogo Cambia modello</translation>
-    </message>
-    <message>
-        <source>Warn the user if they switch models, then context will be erased</source>
-        <translation type="vanished">Avvisa l&apos;utente che se cambia modello, il contesto verrà cancellato</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="98"/>
         <source>Conversation copied to clipboard.</source>
         <translation>Conversazione copiata negli appunti.</translation>
@@ -1045,61 +1017,9 @@ modello per iniziare</translation>
         <translation>Il prompt del sistema precedente deve essere &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;aggiornato&lt;/a&gt; nei Settaggi.</translation>
     </message>
     <message>
-        <source>You</source>
-        <translation type="vanished">Tu</translation>
-    </message>
-    <message>
-        <source>response stopped ...</source>
-        <translation type="vanished">risposta interrotta ...</translation>
-    </message>
-    <message>
-        <source>processing ...</source>
-        <translation type="vanished">elaborazione ...</translation>
-    </message>
-    <message>
-        <source>generating response ...</source>
-        <translation type="vanished">generazione risposta ...</translation>
-    </message>
-    <message>
-        <source>generating questions ...</source>
-        <translation type="vanished">generarzione domande ...</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1290"/>
         <source>Copy</source>
         <translation>Copia</translation>
-    </message>
-    <message>
-        <source>Copy Message</source>
-        <translation type="vanished">Copia messaggio</translation>
-    </message>
-    <message>
-        <source>Disable markdown</source>
-        <translation type="vanished">Disabilita Markdown</translation>
-    </message>
-    <message>
-        <source>Enable markdown</source>
-        <translation type="vanished">Abilita Markdown</translation>
-    </message>
-    <message>
-        <source>Thumbs up</source>
-        <translation type="vanished">Mi piace</translation>
-    </message>
-    <message>
-        <source>Gives a thumbs up to the response</source>
-        <translation type="vanished">Dà un mi piace alla risposta</translation>
-    </message>
-    <message>
-        <source>Thumbs down</source>
-        <translation type="vanished">Non mi piace</translation>
-    </message>
-    <message>
-        <source>Opens thumbs down dialog</source>
-        <translation type="vanished">Apre la finestra di dialogo &quot;Non mi piace&quot;</translation>
-    </message>
-    <message>
-        <source>Suggested follow-ups</source>
-        <translation type="vanished">Approfondimenti suggeriti</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="918"/>
@@ -1110,10 +1030,6 @@ modello per iniziare</translation>
         <location filename="../qml/ChatView.qml" line="939"/>
         <source>Copy chat session to clipboard</source>
         <translation>Copia la sessione di chat negli appunti</translation>
-    </message>
-    <message>
-        <source>Redo last chat response</source>
-        <translation type="vanished">Riesegui l&apos;ultima risposta della chat</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1213"/>
@@ -1181,25 +1097,6 @@ modello per iniziare</translation>
         <location filename="../qml/ChatView.qml" line="728"/>
         <source>Load · %1 (default) →</source>
         <translation>Carica · %1 (predefinito) →</translation>
-    </message>
-    <message>
-        <source>restoring from text ...</source>
-        <translation type="vanished">ripristino dal testo ...</translation>
-    </message>
-    <message>
-        <source>retrieving localdocs: %1 ...</source>
-        <translation type="vanished">recupero documenti locali: %1 ...</translation>
-    </message>
-    <message>
-        <source>searching localdocs: %1 ...</source>
-        <translation type="vanished">ricerca in documenti locali: %1 ...</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n Source(s)</source>
-        <translation type="vanished">
-            <numerusform>%n Fonte</numerusform>
-            <numerusform>%n Fonti</numerusform>
-        </translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1240"/>
@@ -1858,26 +1755,6 @@ modello per iniziare</translation>
         <translation>File del modello</translation>
     </message>
     <message>
-        <source>System Prompt</source>
-        <translation type="vanished">Prompt di sistema</translation>
-    </message>
-    <message>
-        <source>Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.</source>
-        <translation type="vanished">Prefisso all&apos;inizio di ogni conversazione. Deve contenere i token di inquadramento appropriati.</translation>
-    </message>
-    <message>
-        <source>Prompt Template</source>
-        <translation type="vanished">Schema del prompt</translation>
-    </message>
-    <message>
-        <source>The template that wraps every prompt.</source>
-        <translation type="vanished">Lo schema che incorpora ogni prompt.</translation>
-    </message>
-    <message>
-        <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
-        <translation type="vanished">Deve contenere la stringa &quot;%1&quot; da sostituire con l&apos;input dell&apos;utente.</translation>
-    </message>
-    <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
         <translation>Messaggio di sistema</translation>
@@ -2353,13 +2230,6 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
     </message>
 </context>
 <context>
-    <name>MySettingsStack</name>
-    <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">Scegli una cartella</translation>
-    </message>
-</context>
-<context>
     <name>MySettingsTab</name>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="24"/>
@@ -2632,25 +2502,6 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../qml/StartupDialog.qml" line="308"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
         <translation>Consenti la non adesione alla condivisione anonima delle chat nel GPT4All Datalake</translation>
-    </message>
-</context>
-<context>
-    <name>SwitchModelDialog</name>
-    <message>
-        <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
-        <translation type="vanished">&lt;b&gt;Avviso:&lt;/b&gt; la modifica del modello cancellerà la conversazione corrente. Vuoi continuare?</translation>
-    </message>
-    <message>
-        <source>Continue</source>
-        <translation type="vanished">Continua</translation>
-    </message>
-    <message>
-        <source>Continue with model loading</source>
-        <translation type="vanished">Continuare con il caricamento del modello</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Annulla</translation>
     </message>
 </context>
 <context>
