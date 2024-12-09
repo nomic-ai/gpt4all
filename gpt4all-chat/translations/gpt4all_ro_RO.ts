@@ -558,12 +558,12 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
         <source>Enable System Tray</source>
-        <translation type="unfinished"></translation>
+        <translation>Trimit pe SysTray (pe bara)</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Programul va fi minimizat pe bara de jos</translation>
     </message>
     <message>
         <source>Save Chat Context</source>
@@ -704,68 +704,68 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="75"/>
         <source>GPT4All</source>
-        <translation type="unfinished">GPT4All</translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="75"/>
         <source>You</source>
-        <translation type="unfinished">Tu</translation>
+        <translation>Tu</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="97"/>
         <source>response stopped ...</source>
-        <translation type="unfinished">replică întreruptă...</translation>
+        <translation>replică întreruptă...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="98"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation type="unfinished">se preia din LocalDocs: %1 ...</translation>
+        <translation>se preia din LocalDocs: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="99"/>
         <source>searching localdocs: %1 ...</source>
-        <translation type="unfinished">se caută în LocalDocs: %1 ...</translation>
+        <translation>se caută în LocalDocs: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="100"/>
         <source>processing ...</source>
-        <translation type="unfinished">procesare...</translation>
+        <translation>procesare...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="101"/>
         <source>generating response ...</source>
-        <translation type="unfinished">se generează replica...</translation>
+        <translation>se generează replica...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="102"/>
         <source>generating questions ...</source>
-        <translation type="unfinished">se generează întrebări...</translation>
+        <translation>se generează întrebări...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="212"/>
         <location filename="../qml/ChatItemView.qml" line="610"/>
         <source>Copy</source>
-        <translation type="unfinished">Copiere</translation>
+        <translation>Copiere</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="218"/>
         <source>Copy Message</source>
-        <translation type="unfinished">Copiez mesajul</translation>
+        <translation>Copiez mesajul</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="228"/>
         <source>Disable markdown</source>
-        <translation type="unfinished">Dezactivez markdown</translation>
+        <translation>Dezactivez markdown</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="228"/>
         <source>Enable markdown</source>
-        <translation type="unfinished">Activez markdown</translation>
+        <translation>Activez markdown</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/ChatItemView.qml" line="355"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n Sursa</numerusform>
             <numerusform>%n Surse</numerusform>
             <numerusform>%n de Surse</numerusform>
@@ -774,68 +774,68 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="502"/>
         <source>LocalDocs</source>
-        <translation type="unfinished">LocalDocs</translation>
+        <translation>LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="532"/>
         <source>Edit this message?</source>
-        <translation type="unfinished"></translation>
+        <translation>Editez mesajul</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="533"/>
         <location filename="../qml/ChatItemView.qml" line="544"/>
         <source>All following messages will be permanently erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>Toate aceste mesajevor fi şterse</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="543"/>
         <source>Redo this response?</source>
-        <translation type="unfinished"></translation>
+        <translation>Refă raspunsul</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="567"/>
         <source>Cannot edit chat without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu se poate edita conversaţia fără un model incărcat</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="569"/>
         <source>Cannot edit chat while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu se poate edita conversaţia când un model generează text</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="578"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Editare</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="589"/>
         <source>Cannot redo response without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu se poate reface un răspuns fără un model incărcat</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="591"/>
         <source>Cannot redo response while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu se poate reface un răspuns când un model generează text</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="600"/>
         <source>Redo</source>
-        <translation type="unfinished"></translation>
+        <translation>Refacere</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="632"/>
         <source>Like response</source>
-        <translation type="unfinished"></translation>
+        <translation>Imi Place râspunsul</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="661"/>
         <source>Dislike response</source>
-        <translation type="unfinished"></translation>
+        <translation>NU Îmi Place râspunsul</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="724"/>
         <source>Suggested follow-ups</source>
-        <translation type="unfinished">Continuări sugerate</translation>
+        <translation>Continuări sugerate</translation>
     </message>
 </context>
 <context>
@@ -843,7 +843,7 @@
     <message>
         <location filename="../src/chatllm.cpp" line="925"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mesajul tău e prea lung şi nu poate fi procesat.  (%1 &gt; %2). Încearca iar cu un mesaj mai scurt</translation>
     </message>
 </context>
 <context>
@@ -907,7 +907,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="112"/>
         <source>The entire chat will be erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>Toată conversaţia va fi ŞTEARSĂ</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="245"/>
@@ -997,22 +997,22 @@
     <message>
         <location filename="../qml/ChatView.qml" line="1092"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vechiul Prompt-Template trebuie să fie &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;actualizat&lt;/a&gt; în Configurare.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1096"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu e configurat niciun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;model de conversaţie&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1099"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Modelul de conversaţie&lt;/a&gt; nu poate lipsi.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1102"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vechiul System Prompt trebuie să fie &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;actualizat&lt;/a&gt; în Configurare.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="65"/>
@@ -1037,12 +1037,12 @@
         <location filename="../qml/ChatView.qml" line="91"/>
         <location filename="../qml/ChatView.qml" line="111"/>
         <source>Erase conversation?</source>
-        <translation type="unfinished"></translation>
+        <translation>ŞTERG conversaţia</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="92"/>
         <source>Changing the model will erase the current conversation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schimbarea modelului va ŞTERGE conversaţia curenta.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="773"/>
@@ -1333,12 +1333,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="42"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="49"/>
         <source>Cancel</source>
-        <translation type="unfinished">Anulare</translation>
+        <translation>Anulare</translation>
     </message>
 </context>
 <context>
@@ -1835,50 +1835,50 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <source>%1 system message?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 mesajul de la sistem?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Ştergere</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Resetare</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mesajul de la sistem va fi %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>removed</source>
-        <translation type="unfinished"></translation>
+        <translation>îndepărtat</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>reset to the default</source>
-        <translation type="unfinished"></translation>
+        <translation>resetare la valoarea implicită</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>%1 chat template?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 modelul de conversaţie?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Modelul de conversaţie va fi %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>erased</source>
-        <translation type="unfinished"></translation>
+        <translation>şters</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="57"/>
@@ -2065,47 +2065,47 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
-        <translation type="unfinished"></translation>
+        <translation>Mesaj de la Sistem</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
         <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Un mesaj pentru stabilirea contextului sau ghidarea comportamentului modelului. Poate fi nespecificat.  NOTĂ: De la GPT4All 3.5, acesta nu trebuie să conţină tokenuri de control.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="218"/>
         <source>System message is not &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;plain text&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mesajul de la Sistem nu e &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;text-simplu&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="288"/>
         <source>Chat Template</source>
-        <translation type="unfinished"></translation>
+        <translation>Model de conversaţie</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Acest model Jinja transformă conversaţia în input pentru model.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nu e configurat niciun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;model de conversaţie&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Modelul de conversaţie&lt;/a&gt; nu poate lipsi.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="379"/>
         <source>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="383"/>
         <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Modelul de conversaţie nu este in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;format Jinja&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="845"/>
@@ -2385,12 +2385,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Ştergere</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Resetare</translation>
     </message>
 </context>
 <context>
@@ -2405,12 +2405,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="24"/>
         <source>Restore defaults?</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurare la implicite</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="25"/>
         <source>This page of settings will be reset to the defaults.</source>
-        <translation type="unfinished"></translation>
+        <translation>Setările de pe această pagină vor fi resetate la valorile implicite.</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="69"/>
@@ -2797,12 +2797,12 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="47"/>
         <source>Restore</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurare</translation>
     </message>
     <message>
         <location filename="../main.qml" line="51"/>
         <source>Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>Abandon</translation>
     </message>
     <message>
         <location filename="../main.qml" line="149"/>
