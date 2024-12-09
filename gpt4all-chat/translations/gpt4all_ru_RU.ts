@@ -226,7 +226,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="502"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#ошибка&quot;&gt;Ошибка&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#ошибка&quot;&gt;Ошибка&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="521"/>
@@ -403,7 +403,8 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="39"/>
         <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
-        <translation type="unfinished"></translation>
+        <translation>ОШИБКА: Система обновлений не смогла найти MaintenanceTool&lt;br&gt;используемый для обновлений!&lt;br&gt;&lt;br&gt; Вы установили это приложение с помощью онлайн-установщика? Если да,&lt;br&gt;исполняемый файл MaintenanceTool должен располагаться на один каталог выше того, где находится это приложение.&lt;br&gt;&lt;br&gt;Если вы не можете запустить его вручную, вам придется
+переустановить.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="114"/>
@@ -549,12 +550,12 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
         <source>Enable System Tray</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить в SysTray</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
-        <translation type="unfinished"></translation>
+        <translation>При закрытии окна программа свернется в SysTray.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
@@ -687,68 +688,68 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="75"/>
         <source>GPT4All</source>
-        <translation type="unfinished">GPT4All</translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="75"/>
         <source>You</source>
-        <translation type="unfinished">Ты</translation>
+        <translation>Ты</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="97"/>
         <source>response stopped ...</source>
-        <translation type="unfinished">ответ остановлен...</translation>
+        <translation>ответ остановлен...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="98"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation type="unfinished">извлечение из LocalDocs: %1 ...</translation>
+        <translation>извлечение из LocalDocs: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="99"/>
         <source>searching localdocs: %1 ...</source>
-        <translation type="unfinished">поиск в LocalDocs: %1 ...</translation>
+        <translation>поиск в LocalDocs: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="100"/>
         <source>processing ...</source>
-        <translation type="unfinished">обработка...</translation>
+        <translation>обработка...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="101"/>
         <source>generating response ...</source>
-        <translation type="unfinished">создание ответа...</translation>
+        <translation>создание ответа...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="102"/>
         <source>generating questions ...</source>
-        <translation type="unfinished">порождая вопросы...</translation>
+        <translation>порождая вопросы...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="212"/>
         <location filename="../qml/ChatItemView.qml" line="610"/>
         <source>Copy</source>
-        <translation type="unfinished">Копировать</translation>
+        <translation>Копировать</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="218"/>
         <source>Copy Message</source>
-        <translation type="unfinished">Копировать сообщение</translation>
+        <translation>Копировать сообщение</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="228"/>
         <source>Disable markdown</source>
-        <translation type="unfinished">Отключить markdown</translation>
+        <translation>Отключить markdown</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="228"/>
         <source>Enable markdown</source>
-        <translation type="unfinished">Включить markdown</translation>
+        <translation>Включить markdown</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/ChatItemView.qml" line="355"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n Источник</numerusform>
             <numerusform>%n Источники</numerusform>
             <numerusform>%n Источники</numerusform>
@@ -757,68 +758,68 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="502"/>
         <source>LocalDocs</source>
-        <translation type="unfinished">LocalDocs</translation>
+        <translation>LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="532"/>
         <source>Edit this message?</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменить это сообщение?</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="533"/>
         <location filename="../qml/ChatItemView.qml" line="544"/>
         <source>All following messages will be permanently erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>Все последующие сообщения будут удалены навсегда.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="543"/>
         <source>Redo this response?</source>
-        <translation type="unfinished"></translation>
+        <translation>Повторить этот ответ?</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="567"/>
         <source>Cannot edit chat without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно редактировать чат без загруженной модели.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="569"/>
         <source>Cannot edit chat while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно редактировать чат во время генерации модели.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="578"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="589"/>
         <source>Cannot redo response without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать Невозможно повторить ответ без загруженной модели.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="591"/>
         <source>Cannot redo response while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно повторить ответ во время генерации модели.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="600"/>
         <source>Redo</source>
-        <translation type="unfinished"></translation>
+        <translation>Переделай.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="632"/>
         <source>Like response</source>
-        <translation type="unfinished"></translation>
+        <translation>Мне нравится! ответ</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="661"/>
         <source>Dislike response</source>
-        <translation type="unfinished"></translation>
+        <translation>Мне не нравится! этот ответ</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="724"/>
         <source>Suggested follow-ups</source>
-        <translation type="unfinished">Предлагаемые последующие действия</translation>
+        <translation>Предлагаемые последующие действия</translation>
     </message>
 </context>
 <context>
@@ -826,7 +827,7 @@
     <message>
         <location filename="../src/chatllm.cpp" line="925"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ваше сообщение слишком длинное и не может быть обработано (%1 &gt; %2). Попробуйте еще раз с чем-то более коротким.</translation>
     </message>
 </context>
 <context>
@@ -882,7 +883,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="112"/>
         <source>The entire chat will be erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>Весь чат будет УДАЛЕН!</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="245"/>
@@ -972,42 +973,42 @@
     <message>
         <location filename="../qml/ChatView.qml" line="1092"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Этот старый шаблон приглашения необходимо &lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;обновить&lt;/a&gt; в Настройках.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1096"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не настроен &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;шаблон чата&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1099"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;Шаблон чата&lt;/a&gt; не может быть пустым.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1102"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Эту старую системную подсказку необходимо &lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;обновить&lt;/a&gt; в Настройках.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1213"/>
         <source>Add media</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить медиа.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1214"/>
         <source>Adds media to the prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавляет медиа в приглашение</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1392"/>
         <source>Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>Прикреплять.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1394"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>Один файл</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="65"/>
@@ -1018,18 +1019,19 @@
         <location filename="../qml/ChatView.qml" line="91"/>
         <location filename="../qml/ChatView.qml" line="111"/>
         <source>Erase conversation?</source>
-        <translation type="unfinished"></translation>
+        <translation>УДАЛИТЬ разговор?</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="92"/>
         <source>Changing the model will erase the current conversation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменение модели приведет к УДАЛЕНИЮ текущего разговора.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="773"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All требует установки хотя бы одной
+модели для начала работы</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="785"/>
@@ -1184,12 +1186,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="42"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="49"/>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -1373,7 +1375,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="131"/>
         <source>API key to use for Nomic Embed. Get one from the Atlas &lt;a href=&quot;https://atlas.nomic.ai/cli-login&quot;&gt;API keys page&lt;/a&gt;. Requires restart.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ключ API для Nomic Embed. Получите его на &lt;a href=&quot;https://atlas.nomic.ai/cli-login&quot;&gt;/a&gt;странице ключей API Atlas&lt;/a&gt;. Требуется перезапуск.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="165"/>
@@ -1686,50 +1688,50 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <source>%1 system message?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 системное сообщение?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезагрузить</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Системное сообщение будет %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>removed</source>
-        <translation type="unfinished"></translation>
+        <translation>удален</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>reset to the default</source>
-        <translation type="unfinished"></translation>
+        <translation>сброшен до значения по умолчанию</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>%1 chat template?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 шаблон чата?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаблон чата будет %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>erased</source>
-        <translation type="unfinished"></translation>
+        <translation>удален</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="57"/>
@@ -1759,53 +1761,54 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
-        <translation type="unfinished"></translation>
+        <translation>Системное сообщение</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
         <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сообщение для установки контекста или руководства поведением модели. Оставьте пустым, если нет. ПРИМЕЧАНИЕ: Начиная с GPT4All 3.5, это не должно содержать токены управления.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="218"/>
         <source>System message is not &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;plain text&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Системное сообщение не является &lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;простым текстом&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="288"/>
         <source>Chat Template</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаблон чата</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Этот шаблон Jinja превращает чат в входные данные для модели.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не настроен ни один &lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;шаблон чата&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;Шаблон чата&lt;/a&gt; не может быть пустым.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="379"/>
         <source>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href="https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html"&gt;Ошибка синтаксиса&lt;/a&gt;: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="383"/>
         <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаблон чата не в &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;формате Jinja&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="623"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Можно выбрать только наиболее вероятные токены с общей вероятностью до top_p. 
+    ПРИМЕЧАНИЕ: предотвращает выбор крайне маловероятных токенов.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="409"/>
@@ -2200,7 +2203,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFileDialog.qml" line="7"/>
         <source>Please choose a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл</translation>
     </message>
 </context>
 <context>
@@ -2208,7 +2211,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MyFolderDialog.qml" line="7"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите каталог</translation>
     </message>
 </context>
 <context>
@@ -2216,12 +2219,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезагрузить</translation>
     </message>
 </context>
 <context>
@@ -2229,12 +2232,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="24"/>
         <source>Restore defaults?</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить по-умолчанию?</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="25"/>
         <source>This page of settings will be reset to the defaults.</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки на этой странице будут сброшены до значений по умолчанию.</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="69"/>
@@ -2555,12 +2558,12 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="47"/>
         <source>Restore</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location filename="../main.qml" line="51"/>
         <source>Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>Покидать</translation>
     </message>
     <message>
         <location filename="../main.qml" line="149"/>
