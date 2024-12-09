@@ -51,12 +51,14 @@ auto JinjaMessage::keys() const -> const std::unordered_set<std::string_view> &
     static const std::unordered_set<std::string_view> userKeys
         { "role", "content", "sources", "prompt_attachments" };
     switch (m_item->type()) {
-        using enum ChatItem::Type;
+        using enum MessageItem::Type;
     case System:
     case Response:
+    case ToolResponse:
         return baseKeys;
     case Prompt:
         return userKeys;
+        break;
     }
     Q_UNREACHABLE();
 }
@@ -67,16 +69,18 @@ bool operator==(const JinjaMessage &a, const JinjaMessage &b)
         return true;
     const auto &[ia, ib] = std::tie(*a.m_item, *b.m_item);
     auto type = ia.type();
-    if (type != ib.type() || ia.value != ib.value)
+    if (type != ib.type() || ia.content() != ib.content())
         return false;
 
     switch (type) {
-        using enum ChatItem::Type;
+        using enum MessageItem::Type;
     case System:
     case Response:
+    case ToolResponse:
         return true;
     case Prompt:
-        return ia.sources == ib.sources && ia.promptAttachments == ib.promptAttachments;
+        return ia.sources() == ib.sources() && ia.promptAttachments() == ib.promptAttachments();
+        break;
     }
     Q_UNREACHABLE();
 }
@@ -84,26 +88,28 @@ bool operator==(const JinjaMessage &a, const JinjaMessage &b)
 const JinjaFieldMap<JinjaMessage> JinjaMessage::s_fields = {
     { "role", [](auto &m) {
         switch (m.item().type()) {
-            using enum ChatItem::Type;
+            using enum MessageItem::Type;
             case System:   return "system"sv;
             case Prompt:   return "user"sv;
             case Response: return "assistant"sv;
+            case ToolResponse: return "tool"sv;
+                break;
         }
         Q_UNREACHABLE();
     } },
     { "content", [](auto &m) {
-        if (m.version() == 0 && m.item().type() == ChatItem::Type::Prompt)
+        if (m.version() == 0 && m.item().type() == MessageItem::Type::Prompt)
             return m.item().bakedPrompt().toStdString();
-        return m.item().value.toStdString();
+        return m.item().content().toStdString();
     } },
     { "sources", [](auto &m) {
-        auto sources = m.item().sources | views::transform([](auto &r) {
+        auto sources = m.item().sources() | views::transform([](auto &r) {
             return jinja2::GenericMap([map = std::make_shared<JinjaResultInfo>(r)] { return map.get(); });
         });
         return jinja2::ValuesList(sources.begin(), sources.end());
     } },
     { "prompt_attachments", [](auto &m) {
-        auto attachments = m.item().promptAttachments | views::transform([](auto &pa) {
+        auto attachments = m.item().promptAttachments() | views::transform([](auto &pa) {
             return jinja2::GenericMap([map = std::make_shared<JinjaPromptAttachment>(pa)] { return map.get(); });
         });
         return jinja2::ValuesList(attachments.begin(), attachments.end());
