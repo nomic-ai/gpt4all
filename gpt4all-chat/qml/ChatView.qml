@@ -668,6 +668,7 @@ Rectangle {
                         id: homePage
                         color: "transparent"
                         anchors.fill: parent
+                        z: 200
                         visible: !currentChat.isModelLoaded && (ModelList.selectableModels.count === 0 || currentModelName() === "") && !currentChat.isServer
 
                         ColumnLayout {
