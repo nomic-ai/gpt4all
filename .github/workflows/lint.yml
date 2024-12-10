@@ -1,0 +1,46 @@
+---
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+jobs:
+  codespell:
+    name: Codespell
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.1
+      - name: Codespell
+        uses: codespell-project/actions-codespell@v2.1
+
+  clazy:
+    name: Clazy
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.1
+        with:
+          submodules: "recursive"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libopengl-dev qt6-base-private-dev qt6-declarative-dev qt6-httpserver-dev qt6-pdf-dev qt6-svg-dev qt6-tools-dev qt6-websockets-dev
+      - name: Configure
+        run: |
+          cmake -S gpt4all-chat -B gpt4all-chat/build \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DLLMODEL_CUDA=OFF \
+            -DLLMODEL_KOMPUTE=OFF
+      - name: Clazy
+        uses: nomic-ai/clazy-action@009a6378b899ab6d20f26647e624f3038384378e
+        with:
+          version: '1.12'
+          checks: "level0,no-container-anti-pattern,no-qstring-arg,no-qstring-ref,no-strict-iterators,no-unused-non-trivial-variable"
+          database: gpt4all-chat/build
+          path-regex: "gpt4all-(chat|backend)/src"
