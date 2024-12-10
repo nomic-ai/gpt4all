@@ -3,7 +3,7 @@
 GPT4All v3.5.0 was released on December 9th. Changes include:
 
 * **Message Editing:**
-  * You can now edit your any message you sent by clicking the pencil icon below it.
+  * You can now edit any message you've sent by clicking the pencil icon below it.
   * You can now redo earlier responses in the conversation.
 * **Templates:** Chat templates have been completely overhauled! They now use Jinja-style syntax. You may notice warnings or errors in the UI. Read the linked docs, and if you have any questions, please ask on the Discord.
 * **File Attachments:**
