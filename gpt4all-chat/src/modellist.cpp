@@ -53,7 +53,9 @@ static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmod
 static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
 {%- set loop_messages = messages %}
 {%- for message in loop_messages %}
-    {{- raise_exception('Unknown role: ' + messages['role']) }}
+    {%- if not message['role'] in ['user', 'assistant', 'system'] %}
+        {{- raise_exception('Unknown role: ' + message['role']) }}
+    {%- endif %}
     {{- '<' + message['role'] + '>' }}
     {%- if message['role'] == 'user' %}
         {%- for source in message.sources %}
