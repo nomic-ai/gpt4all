@@ -233,5 +233,10 @@
     "version": "3.5.0",
     "notes": "* **Message Editing:**\n  * You can now edit any message you've sent by clicking the pencil icon below it.\n  * You can now redo earlier responses in the conversation.\n* **Templates:** Chat templates have been completely overhauled! They now use Jinja-style syntax. You may notice warnings or errors in the UI. Read the linked docs, and if you have any questions, please ask on the Discord.\n* **File Attachments:** Markdown and plain text files are now supported as file attachments.\n* **System Tray:** There is now an option in Application Settings to allow GPT4All to minimize to the system tray instead of closing.\n* **Local API Server:**\n  * The API server now supports system messages from the client and no longer uses the system message in settings.\n  * You can now send messages to the API server in any order supported by the model instead of just user/assistant pairs.\n* **Translations:** The Italian and Romanian translations have been improved.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Benjamin Gallois (`@bgallois`)\n* Riccardo Giovanetti (`@Harvester62`)\n* Victor Emanuel (`@SINAPSA-IC`)"
+  },
+  {
+    "version": "3.5.1",
+    "notes": "* **Chat template fixes:** Llama 3.2 models, Nous Hermes 2 Mistral, Mistral OpenOrca, Qwen 2 and remote models\n* **Bugfix:** Fix the default model button so it works again after 3.5.0\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)"
   }
 ]
