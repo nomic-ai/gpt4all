@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix an incorrect value for currentResponse ([#3245](https://github.com/nomic-ai/gpt4all/pull/3245))
 - Fix the default model button so it works again after 3.5.0 ([#3246](https://github.com/nomic-ai/gpt4all/pull/3246))
 - Fix chat templates for Nous Hermes 2 Mistral, Mistral OpenOrca, Qwen 2, and remote models ([#3250](https://github.com/nomic-ai/gpt4all/pull/3250))
+- Fix chat templates for Llama 3.2 models ([#3251](https://github.com/nomic-ai/gpt4all/pull/3251))
 
 ## [3.5.0] - 2024-12-09
 
