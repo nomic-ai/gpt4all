@@ -111,8 +111,13 @@ public:
     ChatItem(prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
         : name(u"Prompt: "_s), value(value), promptAttachments(attachments) {}
 
-    ChatItem(response_tag_t, bool isCurrentResponse = true)
-        : name(u"Response: "_s), isCurrentResponse(isCurrentResponse) {}
+    // A new response, to be filled in
+    ChatItem(response_tag_t)
+        : name(u"Response: "_s), isCurrentResponse(true) {}
+
+    // An existing response, from Server
+    ChatItem(response_tag_t, const QString &value)
+        : name(u"Response: "_s), value(value) {}
 
     Type type() const
     {
