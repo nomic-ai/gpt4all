@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Fix mishandling of default chat template and system message of cloned models in 3.5.0 ([#3262](https://github.com/nomic-ai/gpt4all/pull/3262))
+
 ## [3.5.1] - 2024-12-10
 
 ### Fixed
@@ -211,6 +216,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.5.1...HEAD
 [3.5.1]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc2...v3.5.0
 [3.5.0-rc2]: https://github.com/nomic-ai/gpt4all/compare/v3.5.0-rc1...v3.5.0-rc2
