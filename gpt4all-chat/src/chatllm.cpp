@@ -866,19 +866,17 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) cons
 }
 
 auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx,
-                                 std::optional<std::pair<int, int>> subrange) -> ChatPromptResult
+                                 qsizetype startOffset) -> ChatPromptResult
 {
     Q_ASSERT(isModelLoaded());
     Q_ASSERT(m_chatModel);
 
     // Return a vector of relevant messages for this chat.
-    // "subrange" is used to select only local server messages from the current chat session.
+    // "startOffset" is used to select only local server messages from the current chat session.
     auto getChat = [&]() {
         auto items = m_chatModel->messageItems();
-        if (subrange) {
-            items.erase(items.begin(),                    items.begin() + subrange->first);
-            items.erase(items.begin() + subrange->second, items.end()                    );
-        }
+        if (startOffset > 0)
+            items.erase(items.begin(), items.begin() + startOffset);
         Q_ASSERT(items.size() >= 2);
         return items;
     };
