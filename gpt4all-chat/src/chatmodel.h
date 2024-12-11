@@ -163,57 +163,49 @@ public:
     static inline constexpr tool_call_tag_t     tool_call_tag     = tool_call_tag_t     {};
     static inline constexpr tool_response_tag_t tool_response_tag = tool_response_tag_t {};
 
+private:
+    ChatItem(QObject *parent)
+        : QObject(nullptr)
+    {
+        moveToThread(parent->thread());
+        setParent(parent);
+    }
+
+public:
     // NOTE: system messages are currently never stored in the model or serialized
     ChatItem(QObject *parent, system_tag_t, const QString &value)
-        : QObject(nullptr), name(u"System: "_s), value(value)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent)
+    { this->name = u"System: "_s; this->value = value; }
 
     ChatItem(QObject *parent, prompt_tag_t, const QString &value, const QList<PromptAttachment> &attachments = {})
-        : QObject(nullptr), name(u"Prompt: "_s), value(value), promptAttachments(attachments)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent)
+    { this->name = u"Prompt: "_s; this->value = value; this->promptAttachments = attachments; }
 
+private:
+    ChatItem(QObject *parent, response_tag_t, bool isCurrentResponse, const QString &value = {})
+        : ChatItem(parent)
+    { this->name = u"Response: "_s; this->value = value; this->isCurrentResponse = isCurrentResponse; }
+
+public:
     // A new response, to be filled in
     ChatItem(QObject *parent, response_tag_t)
-        : QObject(nullptr), name(u"Response: "_s), isCurrentResponse(true)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent, response_tag, true) {}
 
     // An existing response, from Server
     ChatItem(QObject *parent, response_tag_t, const QString &value)
-        : QObject(nullptr), name(u"Response: "_s), value(value)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent, response_tag, false, value) {}
 
     ChatItem(QObject *parent, text_tag_t, const QString &value)
-        : QObject(nullptr), name(u"Text: "_s), value(value)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent)
+    { this->name = u"Text: "_s; this->value = value; }
 
     ChatItem(QObject *parent, tool_call_tag_t, const QString &value)
-        : QObject(nullptr), name(u"ToolCall: "_s), value(value)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent)
+    { this->name = u"ToolCall: "_s; this->value = value; }
 
     ChatItem(QObject *parent, tool_response_tag_t, const QString &value)
-        : QObject(nullptr), name(u"ToolResponse: "_s), value(value)
-    {
-        moveToThread(parent->thread());
-        setParent(parent);
-    }
+        : ChatItem(parent)
+    { this->name = u"ToolResponse: "_s; this->value = value; }
 
     Type type() const
     {
