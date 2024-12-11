@@ -579,8 +579,7 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            ChatItem *item = new ChatItem(this, ChatItem::prompt_tag, value, attachments);
-            m_chatItems.emplace_back(item);
+            m_chatItems << new ChatItem(this, ChatItem::prompt_tag, value, attachments);
         }
         endInsertRows();
         emit countChanged();
@@ -599,8 +598,7 @@ public:
         beginInsertRows(QModelIndex(), count, count);
         {
             QMutexLocker locker(&m_mutex);
-            ChatItem *item = new ChatItem(this, ChatItem::response_tag);
-            m_chatItems.emplace_back(item);
+            m_chatItems << new ChatItem(this, ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
