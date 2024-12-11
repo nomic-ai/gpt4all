@@ -75,6 +75,14 @@ public:
 };
 Q_DECLARE_METATYPE(PromptAttachment)
 
+// Used by Server to represent a message from the client.
+struct MessageInput
+{
+    enum class Type { System, Prompt, Response };
+    Type    type;
+    QString content;
+};
+
 class MessageItem
 {
     Q_GADGET
@@ -172,7 +180,8 @@ private:
     }
 
 public:
-    // NOTE: system messages are currently never stored in the model or serialized
+    // NOTE: System messages are currently never serialized and only *stored* by the local server.
+    //       ChatLLM prepends a system MessageItem on-the-fly.
     ChatItem(QObject *parent, system_tag_t, const QString &value)
         : ChatItem(parent)
     { this->name = u"System: "_s; this->value = value; }
@@ -348,6 +357,18 @@ public:
         return toolCallInfo.error != ToolEnums::Error::NoError;
     }
 
+    // NB: Assumes response is not current.
+    static ChatItem *fromMessageInput(QObject *parent, const MessageInput &message)
+    {
+        switch (message.type) {
+            using enum MessageInput::Type;
+            case Prompt:   return new ChatItem(parent, prompt_tag,   message.content);
+            case Response: return new ChatItem(parent, response_tag, message.content);
+            case System:   return new ChatItem(parent, system_tag,   message.content);
+        }
+        Q_UNREACHABLE();
+    }
+
     MessageItem asMessageItem() const
     {
         MessageItem::Type msgType;
@@ -361,7 +382,6 @@ public:
             case ToolCall:
                 throw std::invalid_argument(fmt::format("cannot convert ChatItem type {} to message item", int(typ)));
         }
-
         return { msgType, flattenedContent() };
     }
 
@@ -605,8 +625,8 @@ public:
     }
 
     // Used by Server to append a new conversation to the chat log.
-    // Returns an (offset, count) pair representing the indices of the appended items, including the new response.
-    std::pair<int, int> appendResponseWithHistory(std::span<const MessageItem> history)
+    // Returns the offset of the appended items.
+    qsizetype appendResponseWithHistory(std::span<const MessageInput> history)
     {
         if (history.empty())
             throw std::invalid_argument("at least one message is required");
@@ -615,28 +635,26 @@ public:
         qsizetype startIndex = m_chatItems.size();
         m_mutex.unlock();
 
-        qsizetype endIndex = startIndex + history.size();
+        qsizetype nNewItems = history.size() + 1;
+        qsizetype endIndex  = startIndex + nNewItems;
         beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
         bool hadError;
         QList<ChatItem> newItems;
-        std::pair<int, int> subrange;
         {
             QMutexLocker locker(&m_mutex);
+            startIndex = m_chatItems.size(); // just in case
             hadError = hasErrorUnlocked();
-            subrange = { m_chatItems.size(), history.size() };
-            m_chatItems.reserve(m_chatItems.size() + history.size());
-#if 0 // FIXME
-            for (auto &item : history)
-                m_chatItems << item;
-            m_chatItems.emplace_back(ChatItem::response_tag);
-#endif
+            m_chatItems.reserve(m_chatItems.count() + nNewItems);
+            for (auto &message : history)
+                m_chatItems << ChatItem::fromMessageInput(this, message);
+            m_chatItems << new ChatItem(this, ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
         // Server can add messages when there is an error because each call is a new conversation
         if (hadError)
             emit hasErrorChanged(false);
-        return subrange;
+        return startIndex;
     }
 
     void truncate(qsizetype size)

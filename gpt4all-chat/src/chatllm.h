@@ -251,7 +251,7 @@ protected:
     };
 
     ChatPromptResult promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx,
-                                        std::optional<std::pair<int, int>> subrange = {});
+                                        qsizetype startOffset = 0);
     // passing a string_view directly skips templating and uses the raw string
     PromptResult promptInternal(const std::variant<std::span<const MessageItem>, std::string_view> &prompt,
                                 const LLModel::PromptContext &ctx,

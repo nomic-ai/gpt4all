@@ -773,16 +773,16 @@ auto Server::handleChatRequest(const ChatRequest &request)
     Q_ASSERT(!request.messages.isEmpty());
 
     // adds prompt/response items to GUI
-    std::vector<MessageItem> messageItems;
+    std::vector<MessageInput> messages;
     for (auto &message : request.messages) {
         using enum ChatRequest::Message::Role;
         switch (message.role) {
-            case System:    messageItems.emplace_back(MessageItem(MessageItem::Type::System, message.content)); break;
-            case User:      messageItems.emplace_back(MessageItem(MessageItem::Type::Prompt, message.content)); break;
-            case Assistant: messageItems.emplace_back(MessageItem(MessageItem::Type::Response, message.content)); break;
+            case System:    messages.push_back({ MessageInput::Type::System,   message.content }); break;
+            case User:      messages.push_back({ MessageInput::Type::Prompt,   message.content }); break;
+            case Assistant: messages.push_back({ MessageInput::Type::Response, message.content }); break;
         }
     }
-    auto subrange = m_chatModel->appendResponseWithHistory(messageItems);
+    auto startOffset = m_chatModel->appendResponseWithHistory(messages);
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {
@@ -802,7 +802,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
     for (int i = 0; i < request.n; ++i) {
         ChatPromptResult result;
         try {
-            result = promptInternalChat(m_collections, promptCtx, subrange);
+            result = promptInternalChat(m_collections, promptCtx, startOffset);
         } catch (const std::exception &e) {
             m_chatModel->setResponseValue(e.what());
             m_chatModel->setError();
