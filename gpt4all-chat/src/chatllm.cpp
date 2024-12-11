@@ -933,7 +933,7 @@ auto ChatLLM::promptInternal(
         }
     }
 
-    PromptResult result;
+    PromptResult result {};
 
     auto handlePrompt = [this, &result](std::span<const LLModel::Token> batch, bool cached) -> bool {
         Q_UNUSED(cached)
