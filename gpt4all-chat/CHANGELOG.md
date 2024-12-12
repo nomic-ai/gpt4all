@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - Fix API server ignoring assistant messages in history after v3.5.0 ([#3256](https://github.com/nomic-ai/gpt4all/pull/3256))
 - Fix API server replying with incorrect token counts and stop reason after v3.5.0 ([#3256](https://github.com/nomic-ai/gpt4all/pull/3256))
+- Fix API server remembering previous, unrelated conversations after v3.5.0 ([#3256](https://github.com/nomic-ai/gpt4all/pull/3256))
 
 ## [3.5.1] - 2024-12-10
 
