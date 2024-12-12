@@ -771,7 +771,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
     Q_ASSERT(!request.messages.isEmpty());
 
     // adds prompt/response items to GUI
-    std::vector<ChatItem> chatItems;
+    QList<ChatItem> chatItems;
     for (auto &message : request.messages) {
         using enum ChatRequest::Message::Role;
         switch (message.role) {
@@ -800,7 +800,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
     for (int i = 0; i < request.n; ++i) {
         ChatPromptResult result;
         try {
-            result = promptInternalChat(m_collections, promptCtx);
+            result = promptInternalChat(m_collections, promptCtx, chatItems);
         } catch (const std::exception &e) {
             emit responseChanged(e.what());
             emit responseStopped(0);

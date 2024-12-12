@@ -170,9 +170,9 @@ public:
 };
 Q_DECLARE_METATYPE(ChatItem)
 
-class ChatModelAccessor : public ranges::subrange<QList<ChatItem>::const_iterator> {
+class ChatModelAccessor : public std::span<const ChatItem> {
 private:
-    using Super = ranges::subrange<QList<ChatItem>::const_iterator>;
+    using Super = std::span<const ChatItem>;
 
 public:
     template <typename... T>
@@ -224,37 +224,37 @@ public:
 
     /* a "peer" is a bidirectional 1:1 link between a prompt and the response that would cite its LocalDocs
      * sources. Return std::nullopt if there is none, which is possible for e.g. server chats. */
-    auto getPeerUnlocked(QList<ChatItem>::const_iterator item) const
-        -> std::optional<QList<ChatItem>::const_iterator>
+    static std::optional<qsizetype> getPeer(const ChatItem *arr, qsizetype size, qsizetype index)
     {
-        switch (item->type()) {
+        Q_ASSERT(index >= 0);
+        Q_ASSERT(index < size);
+        qsizetype peer;
+        ChatItem::Type expected;
+        switch (arr[index].type()) {
             using enum ChatItem::Type;
-        case Prompt:
-            {
-                auto peer = std::next(item);
-                if (peer < m_chatItems.cend() && peer->type() == Response)
-                    return peer;
-                break;
-            }
-        case Response:
-            {
-                if (item > m_chatItems.cbegin()) {
-                    if (auto peer = std::prev(item); peer->type() == Prompt)
-                        return peer;
-                }
-                break;
-            }
-        default:
-            throw std::invalid_argument("getPeer() called on item that is not a prompt or response");
+            case Prompt:   peer = index + 1; expected = Response; break;
+            case Response: peer = index - 1; expected = Prompt;   break;
+            default: throw std::invalid_argument("getPeer() called on item that is not a prompt or response");
         }
+        if (peer >= 0 && peer < size && arr[peer].type() == expected)
+            return peer;
         return std::nullopt;
     }
 
-    auto getPeerUnlocked(int index) const -> std::optional<int>
+    template <ranges::contiguous_range R>
+        requires std::same_as<ranges::range_value_t<R>, ChatItem>
+    static auto getPeer(R &&range, ranges::iterator_t<R> item) -> std::optional<ranges::iterator_t<R>>
     {
-        return getPeerUnlocked(m_chatItems.cbegin() + index)
-            .transform([&](auto &&i) { return i - m_chatItems.cbegin(); } );
+        auto begin = ranges::begin(range);
+        return getPeer(ranges::data(range), ranges::size(range), item - begin)
+            .transform([&](auto i) { return begin + i; });
     }
+
+    auto getPeerUnlocked(QList<ChatItem>::const_iterator item) const -> std::optional<QList<ChatItem>::const_iterator>
+    { return getPeer(m_chatItems, item); }
+
+    std::optional<qsizetype> getPeerUnlocked(qsizetype index) const
+    { return getPeer(m_chatItems.constData(), m_chatItems.size(), index); }
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
@@ -361,26 +361,29 @@ public:
     }
 
     // Used by Server to append a new conversation to the chat log.
-    void appendResponseWithHistory(std::span<const ChatItem> history)
+    // Appends a new, blank response to the end of the input list.
+    void appendResponseWithHistory(QList<ChatItem> &history)
     {
         if (history.empty())
             throw std::invalid_argument("at least one message is required");
 
+        // add an empty response to prepare for generation
+        history.emplace_back(ChatItem::response_tag);
+
         m_mutex.lock();
-        qsizetype startIndex = m_chatItems.count();
+        qsizetype startIndex = m_chatItems.size();
         m_mutex.unlock();
 
-        qsizetype nNewItems = history.size() + 1;
-        qsizetype endIndex  = startIndex + nNewItems;
+        qsizetype endIndex = startIndex + history.size();
         beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
         bool hadError;
+        QList<ChatItem> newItems;
         {
             QMutexLocker locker(&m_mutex);
             hadError = hasErrorUnlocked();
-            m_chatItems.reserve(m_chatItems.count() + nNewItems);
+            m_chatItems.reserve(m_chatItems.size() + history.size());
             for (auto &item : history)
                 m_chatItems << item;
-            m_chatItems.emplace_back(ChatItem::response_tag);
         }
         endInsertRows();
         emit countChanged();
