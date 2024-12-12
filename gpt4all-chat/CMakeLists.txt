@@ -221,6 +221,8 @@ qt_add_qml_module(chat
       main.qml
       qml/AddCollectionView.qml
       qml/AddModelView.qml
+      qml/AddGPT4AllModelView.qml
+      qml/AddHFModelView.qml
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
       qml/ChatItemView.qml
@@ -244,6 +246,7 @@ qt_add_qml_module(chat
       qml/ToastManager.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
+      qml/MyTabButton.qml
       qml/MyCheckBox.qml
       qml/MyComboBox.qml
       qml/MyDialog.qml

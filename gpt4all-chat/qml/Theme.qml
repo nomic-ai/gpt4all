@@ -1017,6 +1017,17 @@ QtObject {
         }
     }
 
+    property color styledTextColorLighter: {
+        switch (MySettings.chatTheme) {
+            case MySettingsEnums.ChatTheme.LegacyDark:
+                return purple50
+            case MySettingsEnums.ChatTheme.Dark:
+                return yellow0
+            default:
+                return grayRed400
+        }
+    }
+
     property color styledTextColor2: {
         switch (MySettings.chatTheme) {
             case MySettingsEnums.ChatTheme.LegacyDark:
