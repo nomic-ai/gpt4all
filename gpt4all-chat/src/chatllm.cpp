@@ -851,39 +851,44 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
     return *maybeRendered;
 }
 
-auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx)
-    -> ChatPromptResult
+auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx,
+                                 std::optional<QList<ChatItem>> chat) -> ChatPromptResult
 {
     Q_ASSERT(isModelLoaded());
     Q_ASSERT(m_chatModel);
 
-    QList<ResultInfo> databaseResults;
-    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    if (!enabledCollections.isEmpty()) {
-        std::optional<std::pair<int, QString>> query;
-        {
-            // Find the prompt that represents the query. Server chats are flexible and may not have one.
-            auto items = m_chatModel->chatItems(); // holds lock
-            Q_ASSERT(items);
-            auto response = items.end() - 1;
-            if (auto peer = m_chatModel->getPeerUnlocked(response))
-                query = {*peer - items.begin(), (*peer)->value};
-        }
-        if (query) {
-            auto &[promptIndex, queryStr] = *query;
-            emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
-            m_chatModel->updateSources(promptIndex, databaseResults);
-            emit databaseResultsChanged(databaseResults);
-        }
-    }
-
     // copy messages for safety (since we can't hold the lock the whole time)
+    std::optional<std::pair<int, QString>> query;
     std::vector<ChatItem> chatItems;
     {
-        auto items = m_chatModel->chatItems(); // holds lock
-        Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
-        chatItems.assign(items.begin(), items.end() - 1); // exclude last
+        std::optional<ChatModelAccessor> items;
+        std::span<const ChatItem> view;
+        if (chat) {
+            view = *chat;
+        } else {
+            items = m_chatModel->chatItems(); // holds lock
+            Q_ASSERT(!items->empty());
+            view = *items;
+        }
+        Q_ASSERT(view.size() >= 2); // should be prompt/response pairs
+
+        // Find the prompt that represents the query. Server chats are flexible and may not have one.
+        auto response = view.end() - 1;
+        if (auto peer = m_chatModel->getPeer(view, response))
+            query = { *peer - view.begin(), (*peer)->value };
+
+        chatItems.assign(view.begin(), view.end() - 1); // exclude last
     }
+
+    QList<ResultInfo> databaseResults;
+    if (query && !enabledCollections.isEmpty()) {
+        auto &[promptIndex, queryStr] = *query;
+        const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
+        emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
+        m_chatModel->updateSources(promptIndex, databaseResults);
+        emit databaseResultsChanged(databaseResults);
+    }
+
     auto result = promptInternal(chatItems, ctx, !databaseResults.isEmpty());
     return {
         /*PromptResult*/ {
@@ -933,7 +938,7 @@ auto ChatLLM::promptInternal(
         }
     }
 
-    PromptResult result;
+    PromptResult result {};
 
     auto handlePrompt = [this, &result](std::span<const LLModel::Token> batch, bool cached) -> bool {
         Q_UNUSED(cached)

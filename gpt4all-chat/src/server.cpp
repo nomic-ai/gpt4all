@@ -771,13 +771,13 @@ auto Server::handleChatRequest(const ChatRequest &request)
     Q_ASSERT(!request.messages.isEmpty());
 
     // adds prompt/response items to GUI
-    std::vector<ChatItem> chatItems;
+    QList<ChatItem> chatItems;
     for (auto &message : request.messages) {
         using enum ChatRequest::Message::Role;
         switch (message.role) {
-            case System:    chatItems.emplace_back(ChatItem::system_tag, message.content); break;
-            case User:      chatItems.emplace_back(ChatItem::prompt_tag, message.content); break;
-            case Assistant: chatItems.emplace_back(ChatItem::response_tag, /*currentResponse*/ false); break;
+            case System:    chatItems.emplace_back(ChatItem::system_tag,   message.content); break;
+            case User:      chatItems.emplace_back(ChatItem::prompt_tag,   message.content); break;
+            case Assistant: chatItems.emplace_back(ChatItem::response_tag, message.content); break;
         }
     }
     m_chatModel->appendResponseWithHistory(chatItems);
@@ -800,7 +800,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
     for (int i = 0; i < request.n; ++i) {
         ChatPromptResult result;
         try {
-            result = promptInternalChat(m_collections, promptCtx);
+            result = promptInternalChat(m_collections, promptCtx, chatItems);
         } catch (const std::exception &e) {
             emit responseChanged(e.what());
             emit responseStopped(0);

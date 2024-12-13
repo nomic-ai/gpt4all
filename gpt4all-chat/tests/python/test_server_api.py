@@ -252,8 +252,8 @@ def test_with_models(chat_server_with_model: None) -> None:
     assert response == EXPECTED_COMPLETIONS_RESPONSE
 
 
-@pytest.mark.xfail(reason='Assertion failure in GPT4All. See nomic-ai/gpt4all#3133')
 def test_with_models_temperature(chat_server_with_model: None) -> None:
+    """Fixed by nomic-ai/gpt4all#3202."""
     data = {
         'model': 'Llama 3.2 1B Instruct',
         'prompt': 'The quick brown fox',
