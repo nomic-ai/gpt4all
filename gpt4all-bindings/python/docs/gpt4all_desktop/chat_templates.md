@@ -207,7 +207,7 @@ For standard templates, GPT4All combines the user message, sources, and attachme
 
 # List of known working chat templates for various model families
 ## Google/gemma-2-9b-it
-See issue https://github.com/nomic-ai/gpt4all/issues/3282
+See issue [3282](https://github.com/nomic-ai/gpt4all/issues/3282)
 ```jinja
 {{ bos_token }}
 {% if messages[0]['role'] == 'system' %}
@@ -227,5 +227,20 @@ See issue https://github.com/nomic-ai/gpt4all/issues/3282
 
 {% if add_generation_prompt %}
 	 {{'<start_of_turn>model\n' }}
+{% endif %}
+```
+
+## Qwen/Qwen2-1.5B-Instruct
+See issue [3263](https://github.com/nomic-ai/gpt4all/issues/3263)
+```jinja
+{% for message in messages %}
+    {% if loop.first and messages[0]['role'] != 'system' %}
+        {{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}
+    {% endif %}
+        {{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n' }}
+{% endfor %}
+
+{% if add_generation_prompt %}
+    {{ '<|im_start|>assistant\n' }}
 {% endif %}
 ```
