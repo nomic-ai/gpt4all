@@ -73,23 +73,23 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished">Eroare de reţea: nu se poate prelua %1</translation>
+        <translation>Eroare de reţea: nu se poate prelua %1</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="343"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">Indicator de activitate</translation>
+        <translation>Indicator de activitate</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="56"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation type="unfinished">Afişat în timpul solicitării modelului</translation>
+        <translation>Afişat în timpul solicitării modelului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="96"/>
         <source>Model file</source>
-        <translation type="unfinished">Fişierul modelului</translation>
+        <translation>Fişierul modelului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="97"/>
@@ -99,27 +99,27 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="120"/>
         <source>Description</source>
-        <translation type="unfinished">Descriere</translation>
+        <translation>Descriere</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="121"/>
         <source>File description</source>
-        <translation type="unfinished">Descrierea fişierului</translation>
+        <translation>Descrierea fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Cancel</source>
-        <translation type="unfinished">Anulare</translation>
+        <translation>Anulare</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Resume</source>
-        <translation type="unfinished">Continuare</translation>
+        <translation>Continuare</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Download</source>
-        <translation type="unfinished">Download</translation>
+        <translation>Download</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="162"/>
@@ -145,7 +145,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="230"/>
         <source>Install online model</source>
-        <translation type="unfinished">Instalez un model din online</translation>
+        <translation>Instalez un model din online</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
@@ -175,17 +175,17 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">Afişează progresia descărcării</translation>
+        <translation>Afişează progresia descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="314"/>
         <source>Download speed</source>
-        <translation type="unfinished">Viteza de download</translation>
+        <translation>Viteza de download</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="315"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
+        <translation>Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
@@ -213,7 +213,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="363"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished">introdu cheia $API_KEY</translation>
+        <translation>introdu cheia $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
@@ -223,7 +223,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="384"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">introdu $BASE_URL</translation>
+        <translation>introdu $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="399"/>
@@ -238,38 +238,38 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="427"/>
         <source>File size</source>
-        <translation type="unfinished">Dimensiunea fişierului</translation>
+        <translation>Dimensiunea fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="449"/>
         <source>RAM required</source>
-        <translation type="unfinished">RAM necesară</translation>
+        <translation>RAM necesară</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
         <source>%1 GB</source>
-        <translation type="unfinished">%1 GB</translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="476"/>
         <source>?</source>
-        <translation type="unfinished">?</translation>
+        <translation>?</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="471"/>
         <source>Parameters</source>
-        <translation type="unfinished">Parametri</translation>
+        <translation>Parametri</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="493"/>
         <source>Quant</source>
-        <translation type="unfinished">Quant(ificare)</translation>
+        <translation>Quant(ificare)</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="515"/>
         <source>Type</source>
-        <translation type="unfinished">Tip</translation>
+        <translation>Tip</translation>
     </message>
 </context>
 <context>
@@ -282,82 +282,82 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="52"/>
         <source>Discover and download models by keyword search...</source>
-        <translation type="unfinished">Caută şi descarcă modele după un cuvânt-cheie...</translation>
+        <translation>Caută şi descarcă modele după un cuvânt-cheie...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="55"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation type="unfinished">Câmp pentru căutarea şi filtrarea modelelor ce pot fi descărcate</translation>
+        <translation>Câmp pentru căutarea şi filtrarea modelelor ce pot fi descărcate</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="61"/>
         <source>Searching · %1</source>
-        <translation type="unfinished">Căutare · %1</translation>
+        <translation>Căutare · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="131"/>
         <source>Initiate model discovery and filtering</source>
-        <translation type="unfinished">Iniţiază căutarea şi filtrarea modelelor</translation>
+        <translation>Iniţiază căutarea şi filtrarea modelelor</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="132"/>
         <source>Triggers discovery and filtering of models</source>
-        <translation type="unfinished">Activează căutarea şi filtrarea modelelor</translation>
+        <translation>Activează căutarea şi filtrarea modelelor</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="151"/>
         <source>Default</source>
-        <translation type="unfinished">Implicit</translation>
+        <translation>Implicit</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="152"/>
         <source>Likes</source>
-        <translation type="unfinished">Likes</translation>
+        <translation>Likes</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="153"/>
         <source>Downloads</source>
-        <translation type="unfinished">Download-uri</translation>
+        <translation>Download-uri</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="154"/>
         <source>Recent</source>
-        <translation type="unfinished">Recent/e</translation>
+        <translation>Recent/e</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="162"/>
         <source>Sort by: %1</source>
-        <translation type="unfinished">Ordonare după: %1</translation>
+        <translation>Ordonare după: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="176"/>
         <source>Asc</source>
-        <translation type="unfinished">Asc. (A-&gt;Z)</translation>
+        <translation>Asc. (A-&gt;Z)</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="177"/>
         <source>Desc</source>
-        <translation type="unfinished">Desc. (Z-&gt;A)</translation>
+        <translation>Desc. (Z-&gt;A)</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="190"/>
         <source>Sort dir: %1</source>
-        <translation type="unfinished">Sensul ordonării: %1</translation>
+        <translation>Sensul ordonării: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="212"/>
         <source>None</source>
-        <translation type="unfinished">Niciunul</translation>
+        <translation>Niciunul</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="234"/>
         <source>Limit: %1</source>
-        <translation type="unfinished">Límită: %1</translation>
+        <translation>Límită: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="297"/>
         <source>Model file</source>
-        <translation type="unfinished">Fişierul modelului</translation>
+        <translation>Fişierul modelului</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="298"/>
@@ -367,27 +367,27 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="321"/>
         <source>Description</source>
-        <translation type="unfinished">Descriere</translation>
+        <translation>Descriere</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="322"/>
         <source>File description</source>
-        <translation type="unfinished">Descrierea fişierului</translation>
+        <translation>Descrierea fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Cancel</source>
-        <translation type="unfinished">Anulare</translation>
+        <translation>Anulare</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Resume</source>
-        <translation type="unfinished">Continuare</translation>
+        <translation>Continuare</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Download</source>
-        <translation type="unfinished">Download</translation>
+        <translation>Download</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="363"/>
@@ -408,12 +408,12 @@
         <location filename="../qml/AddHFModelView.qml" line="396"/>
         <location filename="../qml/AddHFModelView.qml" line="430"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Instalare</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="431"/>
         <source>Install online model</source>
-        <translation type="unfinished">Instalez un model din online</translation>
+        <translation>Instalez un model din online</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="441"/>
@@ -423,17 +423,17 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="447"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>Descrie o eroare aparută la download</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="460"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="466"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished"></translation>
+        <translation>Eroare - hardware incompatibil</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="504"/>
@@ -443,17 +443,17 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="505"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">Afişează progresia descărcării</translation>
+        <translation>Afişează progresia descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="515"/>
         <source>Download speed</source>
-        <translation type="unfinished">Viteza de download</translation>
+        <translation>Viteza de download</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="516"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
+        <translation>Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="533"/>
@@ -466,17 +466,17 @@
         <location filename="../qml/AddHFModelView.qml" line="588"/>
         <location filename="../qml/AddHFModelView.qml" line="609"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Dacă se calculează hash-ul fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="544"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">Indicator de activitate</translation>
+        <translation>Indicator de activitate</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="545"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Afişat la calcularea hash-ului fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="558"/>
@@ -486,7 +486,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="564"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished">introdu cheia $API_KEY</translation>
+        <translation>introdu cheia $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="579"/>
@@ -506,22 +506,22 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="606"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">introdu $MODEL_NAME</translation>
+        <translation>introdu $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="628"/>
         <source>File size</source>
-        <translation type="unfinished">Dimensiunea fişierului</translation>
+        <translation>Dimensiunea fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="650"/>
         <source>Quant</source>
-        <translation type="unfinished">Quant(ificare)</translation>
+        <translation>Quant(ificare)</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="672"/>
         <source>Type</source>
-        <translation type="unfinished">Tip</translation>
+        <translation>Tip</translation>
     </message>
 </context>
 <context>
