@@ -64,7 +64,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
         <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Questi modelli sono stati specificamente configurati per l'uso in GPT4All. I primi modelli dell'elenco sono noti per funzionare meglio, ma dovresti utilizzare solo modelli che possano rientrare nella memoria disponibile.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
@@ -156,7 +156,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVISO: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
@@ -244,13 +244,13 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="476"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>?</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="471"/>
@@ -273,7 +273,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="32"/>
         <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Usa la ricerca per trovare e scaricare modelli da HuggingFace. NON C'È ALCUNA GARANZIA che funzioneranno. Molti richiederanno configurazioni aggiuntive prima di poter essere utilizzati.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="52"/>
@@ -424,7 +424,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="460"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVISO: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="466"/>
@@ -535,12 +535,12 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="86"/>
         <source>GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
         <source>HuggingFace</source>
-        <translation type="unfinished"></translation>
+        <translation>HuggingFace</translation>
     </message>
     <message>
         <source>Discover and download models by keyword search...</source>
@@ -661,10 +661,6 @@
     <message>
         <source>Install online model</source>
         <translation type="vanished">Installa il modello online</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVERTENZA: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <source>ERROR: $API_KEY is empty.</source>
@@ -2850,7 +2846,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/StartupDialog.qml" line="118"/>
         <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>Acconsenti all'analisi anonima dell'uso per migliorare GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
@@ -2888,7 +2884,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/StartupDialog.qml" line="232"/>
         <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>Acconsenti alla condivisione anonima delle chat con il GPT4All Datalake</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
