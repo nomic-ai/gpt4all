@@ -735,7 +735,7 @@
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="212"/>
-        <location filename="../qml/ChatItemView.qml" line="610"/>
+        <location filename="../qml/ChatItemView.qml" line="617"/>
         <source>Copy</source>
         <translation type="unfinished">複製</translation>
     </message>
@@ -813,17 +813,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="632"/>
+        <location filename="../qml/ChatItemView.qml" line="639"/>
         <source>Like response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="661"/>
+        <location filename="../qml/ChatItemView.qml" line="668"/>
         <source>Dislike response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="724"/>
+        <location filename="../qml/ChatItemView.qml" line="731"/>
         <source>Suggested follow-ups</source>
         <translation type="unfinished">後續建議</translation>
     </message>
@@ -831,7 +831,7 @@
 <context>
     <name>ChatLLM</name>
     <message>
-        <location filename="../src/chatllm.cpp" line="925"/>
+        <location filename="../src/chatllm.cpp" line="935"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -951,7 +951,7 @@
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="391"/>
-        <location filename="../qml/ChatView.qml" line="1002"/>
+        <location filename="../qml/ChatView.qml" line="1003"/>
         <source>Reload · %1</source>
         <translation>重新載入 · %1</translation>
     </message>
@@ -961,27 +961,27 @@
         <translation>載入中 · %1</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="728"/>
+        <location filename="../qml/ChatView.qml" line="729"/>
         <source>Load · %1 (default) →</source>
         <translation>載入 · %1 (預設) →</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1092"/>
+        <location filename="../qml/ChatView.qml" line="1093"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1096"/>
+        <location filename="../qml/ChatView.qml" line="1097"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1099"/>
+        <location filename="../qml/ChatView.qml" line="1100"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1102"/>
+        <location filename="../qml/ChatView.qml" line="1103"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1017,44 +1017,44 @@
         <translation>將文件集合新增至交談中</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="752"/>
+        <location filename="../qml/ChatView.qml" line="753"/>
         <source>Load the default model</source>
         <translation>載入預設模型</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="753"/>
+        <location filename="../qml/ChatView.qml" line="754"/>
         <source>Loads the default model which can be changed in settings</source>
         <translation>預設模型可於設定中變更</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="764"/>
+        <location filename="../qml/ChatView.qml" line="765"/>
         <source>No Model Installed</source>
         <translation>沒有已安裝的模型</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="773"/>
+        <location filename="../qml/ChatView.qml" line="774"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
         <translation>GPT4All 要求您至少安裝一個
 模型開始</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="785"/>
+        <location filename="../qml/ChatView.qml" line="786"/>
         <source>Install a Model</source>
         <translation>安裝一個模型</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="790"/>
+        <location filename="../qml/ChatView.qml" line="791"/>
         <source>Shows the add model view</source>
         <translation>顯示新增模型視圖</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="815"/>
+        <location filename="../qml/ChatView.qml" line="816"/>
         <source>Conversation with the model</source>
         <translation>與模型對話</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="816"/>
+        <location filename="../qml/ChatView.qml" line="817"/>
         <source>prompt / response pairs from the conversation</source>
         <translation>對話中的提示詞 / 回覆組合</translation>
     </message>
@@ -1091,7 +1091,7 @@ model to get started</source>
         <translation type="vanished">生成問題......</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1290"/>
+        <location filename="../qml/ChatView.qml" line="1291"/>
         <source>Copy</source>
         <translation>複製</translation>
     </message>
@@ -1128,12 +1128,12 @@ model to get started</source>
         <translation type="vanished">後續建議</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="918"/>
+        <location filename="../qml/ChatView.qml" line="919"/>
         <source>Erase and reset chat session</source>
         <translation>刪除並重置交談會話</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="939"/>
+        <location filename="../qml/ChatView.qml" line="940"/>
         <source>Copy chat session to clipboard</source>
         <translation>複製交談會議到剪貼簿</translation>
     </message>
@@ -1142,37 +1142,37 @@ model to get started</source>
         <translation type="vanished">復原上一個交談回覆</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1213"/>
+        <location filename="../qml/ChatView.qml" line="1214"/>
         <source>Add media</source>
         <translation>附加媒體文件</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1214"/>
+        <location filename="../qml/ChatView.qml" line="1215"/>
         <source>Adds media to the prompt</source>
         <translation>附加媒體文件到提示詞</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1348"/>
+        <location filename="../qml/ChatView.qml" line="1349"/>
         <source>Stop generating</source>
         <translation>停止生成</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1349"/>
+        <location filename="../qml/ChatView.qml" line="1350"/>
         <source>Stop the current response generation</source>
         <translation>停止當前回覆生成</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1392"/>
+        <location filename="../qml/ChatView.qml" line="1393"/>
         <source>Attach</source>
         <translation>附加</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1394"/>
+        <location filename="../qml/ChatView.qml" line="1395"/>
         <source>Single File</source>
         <translation>單一文件</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1004"/>
+        <location filename="../qml/ChatView.qml" line="1005"/>
         <source>Reloads the model</source>
         <translation>重新載入模型</translation>
     </message>
@@ -1192,42 +1192,42 @@ model to get started</source>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1240"/>
+        <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Send a message...</source>
         <translation>傳送一則訊息......</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1240"/>
+        <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Load a model to continue...</source>
         <translation>載入模型以繼續......</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1243"/>
+        <location filename="../qml/ChatView.qml" line="1244"/>
         <source>Send messages/prompts to the model</source>
         <translation>向模型傳送訊息/提示詞</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1284"/>
+        <location filename="../qml/ChatView.qml" line="1285"/>
         <source>Cut</source>
         <translation>剪下</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1296"/>
+        <location filename="../qml/ChatView.qml" line="1297"/>
         <source>Paste</source>
         <translation>貼上</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1300"/>
+        <location filename="../qml/ChatView.qml" line="1301"/>
         <source>Select All</source>
         <translation>全選</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1370"/>
+        <location filename="../qml/ChatView.qml" line="1371"/>
         <source>Send message</source>
         <translation>傳送訊息</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1371"/>
+        <location filename="../qml/ChatView.qml" line="1372"/>
         <source>Sends the message/prompt contained in textfield to the model</source>
         <translation>將文字欄位中包含的訊息/提示詞傳送到模型</translation>
     </message>
@@ -1686,78 +1686,78 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1270"/>
-        <location filename="../src/modellist.cpp" line="1321"/>
+        <location filename="../src/modellist.cpp" line="1309"/>
+        <location filename="../src/modellist.cpp" line="1360"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>無法開啟“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1282"/>
+        <location filename="../src/modellist.cpp" line="1321"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>無法建立“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1332"/>
+        <location filename="../src/modellist.cpp" line="1371"/>
         <source>%1 (%2)</source>
         <translation>%1（%2）</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1333"/>
+        <location filename="../src/modellist.cpp" line="1372"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL：%2&lt;/li&gt;&lt;li&gt;模型名稱：%3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1632"/>
+        <location filename="../src/modellist.cpp" line="1672"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 OpenAI API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 OpenAI&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 OpenAI 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1651"/>
+        <location filename="../src/modellist.cpp" line="1691"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1664"/>
+        <location filename="../src/modellist.cpp" line="1705"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您已向 OpenAI 付費購買了 ChatGPT 的 GPT-4 模型使用權，但這也不能保證您能擁有 API 金鑰的使用權限。請聯繫 OpenAI 以查閱更多資訊。</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1679"/>
+        <location filename="../src/modellist.cpp" line="1720"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1691"/>
+        <location filename="../src/modellist.cpp" line="1733"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 Mistral API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 Mistral！&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 Mistral 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1710"/>
+        <location filename="../src/modellist.cpp" line="1752"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 迷你模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1735"/>
+        <location filename="../src/modellist.cpp" line="1778"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 小型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1761"/>
+        <location filename="../src/modellist.cpp" line="1805"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 中型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1773"/>
+        <location filename="../src/modellist.cpp" line="1818"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的基底 URL（Base URL）。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI API 相容伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI API 相容伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1790"/>
+        <location filename="../src/modellist.cpp" line="1835"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;連線到 OpenAI API 相容伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2213"/>
+        <location filename="../src/modellist.cpp" line="2259"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;模型作者：%1&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發佈日期：%2&lt;li&gt;累積讚數：%3 個讚&lt;li&gt;下載次數：%4 次&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
