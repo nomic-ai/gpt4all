@@ -319,6 +319,8 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
+            # Prevent apt-get from interactively prompting for service restart
+            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
             wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
             wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
@@ -395,6 +397,8 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
+            # Prevent apt-get from interactively prompting for service restart
+            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
             wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
             wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
@@ -732,6 +736,8 @@ jobs:
       - run:
           name: Setup Linux and Dependencies
           command: |
+            # Prevent apt-get from interactively prompting for service restart
+            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
             wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
             wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
