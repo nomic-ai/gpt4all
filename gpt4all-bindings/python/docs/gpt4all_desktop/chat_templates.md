@@ -204,3 +204,5 @@ For standard templates, GPT4All combines the user message, sources, and attachme
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %}
 ```
+
+# List of known working chat templates for various model families
