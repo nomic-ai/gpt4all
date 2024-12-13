@@ -1017,6 +1017,17 @@ QtObject {
         }
     }
 
+    property color styledTextColorLighter: {
+        switch (MySettings.chatTheme) {
+            case MySettingsEnums.ChatTheme.LegacyDark:
+                return purple50
+            case MySettingsEnums.ChatTheme.Dark:
+                return yellow0
+            default:
+                return grayRed400
+        }
+    }
+
     property color styledTextColor2: {
         switch (MySettings.chatTheme) {
             case MySettingsEnums.ChatTheme.LegacyDark:
@@ -1256,5 +1267,6 @@ QtObject {
     property real fontSizeLarger:      14 * fontScale
     property real fontSizeLargest:     18 * fontScale
     property real fontSizeBannerSmall: 24 * fontScale**.8
-    property real fontSizeBanner:      48 * fontScale**.8
+    property real fontSizeBanner:      32 * fontScale**.8
+    property real fontSizeBannerLarge: 48 * fontScale**.8
 }

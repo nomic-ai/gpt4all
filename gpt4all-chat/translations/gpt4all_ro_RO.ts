@@ -64,6 +64,467 @@
     </message>
 </context>
 <context>
+    <name>AddGPT4AllModelView</name>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
+        <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
+        <translation>Aceste modele au fost configurate special pentru utilizarea în GPT4All. Primele câteva modele din listă sunt cunoscute ca fiind cele mai bune, dar ar trebui să încercați să utilizați doar modele care se încadrează în RAM.</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
+        <source>Network error: could not retrieve %1</source>
+        <translation>Eroare de reţea: nu se poate prelua %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="343"/>
+        <source>Busy indicator</source>
+        <translation>Indicator de activitate</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="56"/>
+        <source>Displayed when the models request is ongoing</source>
+        <translation>Afişat în timpul solicitării modelului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="96"/>
+        <source>Model file</source>
+        <translation>Fişierul modelului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="97"/>
+        <source>Model file to be downloaded</source>
+        <translation>Fişierul modelului ce va fi descărcat</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="120"/>
+        <source>Description</source>
+        <translation>Descriere</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="121"/>
+        <source>File description</source>
+        <translation>Descrierea fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Cancel</source>
+        <translation>Anulare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Resume</source>
+        <translation>Continuare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Download</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="162"/>
+        <source>Stop/restart/start the download</source>
+        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="174"/>
+        <source>Remove</source>
+        <translation>Şterg</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="181"/>
+        <source>Remove model from filesystem</source>
+        <translation>Şterg modelul din sistemul de fişiere</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="195"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="229"/>
+        <source>Install</source>
+        <translation type="vanished">Instalare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="230"/>
+        <source>Install online model</source>
+        <translation>Instalez un model din online</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="246"/>
+        <source>Describes an error that occurred when downloading</source>
+        <translation>Descrie eroarea apărută în timpul descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
+        <source>Error for incompatible hardware</source>
+        <translation>Eroare: hardware incompatibil</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="303"/>
+        <source>Download progressBar</source>
+        <translation>Progresia descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
+        <source>Shows the progress made in the download</source>
+        <translation>Afişează progresia descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="314"/>
+        <source>Download speed</source>
+        <translation>Viteza de download</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="315"/>
+        <source>Download speed in bytes/kilobytes/megabytes per second</source>
+        <translation>Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
+        <source>Calculating...</source>
+        <translation>Calculare...</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="336"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="366"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="387"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="408"/>
+        <source>Whether the file hash is being calculated</source>
+        <translation>Dacă se calculează hash-ul fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="344"/>
+        <source>Displayed when the file hash is being calculated</source>
+        <translation>Se afişează când se calculează hash-ul fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="357"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation>EROARE: $API_KEY absentă.</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="363"/>
+        <source>enter $API_KEY</source>
+        <translation>introdu cheia $API_KEY</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
+        <source>ERROR: $BASE_URL is empty.</source>
+        <translation>EROARE: $BASE_URL absentă.</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="384"/>
+        <source>enter $BASE_URL</source>
+        <translation>introdu $BASE_URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="399"/>
+        <source>ERROR: $MODEL_NAME is empty.</source>
+        <translation>EROARE: $MODEL_NAME absent</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="405"/>
+        <source>enter $MODEL_NAME</source>
+        <translation>introdu $MODEL_NAME</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="427"/>
+        <source>File size</source>
+        <translation>Dimensiunea fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="449"/>
+        <source>RAM required</source>
+        <translation>RAM necesară</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
+        <source>%1 GB</source>
+        <translation>%1 GB</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="476"/>
+        <source>?</source>
+        <translation>?</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="471"/>
+        <source>Parameters</source>
+        <translation>Parametri</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="493"/>
+        <source>Quant</source>
+        <translation>Quant(ificare)</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="515"/>
+        <source>Type</source>
+        <translation>Tip</translation>
+    </message>
+</context>
+<context>
+    <name>AddHFModelView</name>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="32"/>
+        <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
+        <translation>Utilizați funcția de căutare pentru a găsi și descărca modele de pe HuggingFace. NU E GARANTAT că acestea vor funcționa. Multe dintre ele vor necesita configurări suplimentare înainte de a putea fi utilizate.</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="52"/>
+        <source>Discover and download models by keyword search...</source>
+        <translation>Caută şi descarcă modele după un cuvânt-cheie...</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="55"/>
+        <source>Text field for discovering and filtering downloadable models</source>
+        <translation>Câmp pentru căutarea şi filtrarea modelelor ce pot fi descărcate</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="61"/>
+        <source>Searching · %1</source>
+        <translation>Căutare · %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="131"/>
+        <source>Initiate model discovery and filtering</source>
+        <translation>Iniţiază căutarea şi filtrarea modelelor</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="132"/>
+        <source>Triggers discovery and filtering of models</source>
+        <translation>Activează căutarea şi filtrarea modelelor</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="151"/>
+        <source>Default</source>
+        <translation>Implicit</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="152"/>
+        <source>Likes</source>
+        <translation>Likes</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="153"/>
+        <source>Downloads</source>
+        <translation>Download-uri</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="154"/>
+        <source>Recent</source>
+        <translation>Recent/e</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="162"/>
+        <source>Sort by: %1</source>
+        <translation>Ordonare după: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="176"/>
+        <source>Asc</source>
+        <translation>Asc. (A-&gt;Z)</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="177"/>
+        <source>Desc</source>
+        <translation>Desc. (Z-&gt;A)</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="190"/>
+        <source>Sort dir: %1</source>
+        <translation>Sensul ordonării: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="212"/>
+        <source>None</source>
+        <translation>Niciunul</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="234"/>
+        <source>Limit: %1</source>
+        <translation>Límită: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="297"/>
+        <source>Model file</source>
+        <translation>Fişierul modelului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="298"/>
+        <source>Model file to be downloaded</source>
+        <translation>Fişierul modelului ce va fi descărcat</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="321"/>
+        <source>Description</source>
+        <translation>Descriere</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="322"/>
+        <source>File description</source>
+        <translation>Descrierea fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Cancel</source>
+        <translation>Anulare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Resume</source>
+        <translation>Continuare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Download</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="363"/>
+        <source>Stop/restart/start the download</source>
+        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="375"/>
+        <source>Remove</source>
+        <translation>Şterg</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="382"/>
+        <source>Remove model from filesystem</source>
+        <translation>Şterg modelul din sistemul de fişiere</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="396"/>
+        <location filename="../qml/AddHFModelView.qml" line="430"/>
+        <source>Install</source>
+        <translation>Instalare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="431"/>
+        <source>Install online model</source>
+        <translation>Instalez un model din online</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="441"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="447"/>
+        <source>Describes an error that occurred when downloading</source>
+        <translation>Descrie o eroare aparută la download</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="460"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="466"/>
+        <source>Error for incompatible hardware</source>
+        <translation>Eroare - hardware incompatibil</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="504"/>
+        <source>Download progressBar</source>
+        <translation>Bara de progresie a descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="505"/>
+        <source>Shows the progress made in the download</source>
+        <translation>Afişează progresia descărcării</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="515"/>
+        <source>Download speed</source>
+        <translation>Viteza de download</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="516"/>
+        <source>Download speed in bytes/kilobytes/megabytes per second</source>
+        <translation>Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="533"/>
+        <source>Calculating...</source>
+        <translation>Calculare...</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="537"/>
+        <location filename="../qml/AddHFModelView.qml" line="567"/>
+        <location filename="../qml/AddHFModelView.qml" line="588"/>
+        <location filename="../qml/AddHFModelView.qml" line="609"/>
+        <source>Whether the file hash is being calculated</source>
+        <translation>Dacă se calculează hash-ul fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="544"/>
+        <source>Busy indicator</source>
+        <translation>Indicator de activitate</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="545"/>
+        <source>Displayed when the file hash is being calculated</source>
+        <translation>Afişat la calcularea hash-ului fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="558"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation>EROARE: $API_KEY absentă</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="564"/>
+        <source>enter $API_KEY</source>
+        <translation>introdu cheia $API_KEY</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="579"/>
+        <source>ERROR: $BASE_URL is empty.</source>
+        <translation>EROARE: $BASE_URL absentă</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="585"/>
+        <source>enter $BASE_URL</source>
+        <translation>introdu $BASE_URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="600"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation>EROARE: $API_KEY absentă</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="606"/>
+        <source>enter $MODEL_NAME</source>
+        <translation>introdu $MODEL_NAME</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="628"/>
+        <source>File size</source>
+        <translation>Dimensiunea fişierului</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="650"/>
+        <source>Quant</source>
+        <translation>Quant(ificare)</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="672"/>
+        <source>Type</source>
+        <translation>Tip</translation>
+    </message>
+</context>
+<context>
     <name>AddModelView</name>
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
@@ -76,280 +537,142 @@
         <translation>Caută modele</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="92"/>
+        <location filename="../qml/AddModelView.qml" line="86"/>
+        <source>GPT4All</source>
+        <translation>GPT4All</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddModelView.qml" line="93"/>
+        <source>HuggingFace</source>
+        <translation>HuggingFace</translation>
+    </message>
+    <message>
         <source>Discover and download models by keyword search...</source>
-        <translation>Caută şi descarcă modele după un cuvânt-cheie...</translation>
+        <translation type="vanished">Caută şi descarcă modele după un cuvânt-cheie...</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="95"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation>Câmp pentru căutarea şi filtrarea modelelor ce pot fi descărcate</translation>
+        <translation type="vanished">Câmp pentru căutarea şi filtrarea modelelor ce pot fi descărcate</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="171"/>
         <source>Initiate model discovery and filtering</source>
-        <translation>Iniţiază căutarea şi filtrarea modelelor</translation>
+        <translation type="vanished">Iniţiază căutarea şi filtrarea modelelor</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="172"/>
         <source>Triggers discovery and filtering of models</source>
-        <translation>Activează căutarea şi filtrarea modelelor</translation>
+        <translation type="vanished">Activează căutarea şi filtrarea modelelor</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="191"/>
         <source>Default</source>
-        <translation>Implicit</translation>
+        <translation type="vanished">Implicit</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="192"/>
         <source>Likes</source>
-        <translation>Likes</translation>
+        <translation type="vanished">Likes</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="193"/>
         <source>Downloads</source>
-        <translation>Download-uri</translation>
+        <translation type="vanished">Download-uri</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="194"/>
         <source>Recent</source>
-        <translation>Recent/e</translation>
+        <translation type="vanished">Recent/e</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="216"/>
         <source>Asc</source>
-        <translation>Asc. (A-&gt;Z)</translation>
+        <translation type="vanished">Asc. (A-&gt;Z)</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="217"/>
         <source>Desc</source>
-        <translation>Desc. (Z-&gt;A)</translation>
+        <translation type="vanished">Desc. (Z-&gt;A)</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="252"/>
         <source>None</source>
-        <translation>Niciunul</translation>
+        <translation type="vanished">Niciunul</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="101"/>
         <source>Searching · %1</source>
-        <translation>Căutare · %1</translation>
+        <translation type="vanished">Căutare · %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="202"/>
         <source>Sort by: %1</source>
-        <translation>Ordonare după: %1</translation>
+        <translation type="vanished">Ordonare după: %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="230"/>
         <source>Sort dir: %1</source>
-        <translation>Sensul ordonării: %1</translation>
+        <translation type="vanished">Sensul ordonării: %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="274"/>
         <source>Limit: %1</source>
-        <translation>Límită: %1</translation>
+        <translation type="vanished">Límită: %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="307"/>
         <source>Network error: could not retrieve %1</source>
-        <translation>Eroare de reţea: nu se poate prelua %1</translation>
+        <translation type="vanished">Eroare de reţea: nu se poate prelua %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="317"/>
-        <location filename="../qml/AddModelView.qml" line="605"/>
         <source>Busy indicator</source>
-        <translation>Indicator de activitate</translation>
+        <translation type="vanished">Indicator de activitate</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="318"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation>Afişat în timpul solicitării modelului</translation>
+        <translation type="vanished">Afişat în timpul solicitării modelului</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="358"/>
         <source>Model file</source>
-        <translation>Fişierul modelului</translation>
+        <translation type="vanished">Fişierul modelului</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="359"/>
         <source>Model file to be downloaded</source>
-        <translation>Fişierul modelului de descărcat</translation>
+        <translation type="vanished">Fişierul modelului de descărcat</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="382"/>
-        <source>Description</source>
-        <translation>Descriere</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="383"/>
-        <source>File description</source>
-        <translation>Descrierea fişierului</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
-        <source>Cancel</source>
-        <translation>Anulare</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
-        <source>Resume</source>
-        <translation>Continuare</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
-        <source>Download</source>
-        <translation>Download</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="424"/>
-        <source>Stop/restart/start the download</source>
-        <translation>Opreşte/Reporneşte/Începe descărcarea</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="436"/>
-        <source>Remove</source>
-        <translation>Şterge</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="443"/>
-        <source>Remove model from filesystem</source>
-        <translation>Şterge modelul din sistemul de fişiere</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="457"/>
-        <location filename="../qml/AddModelView.qml" line="491"/>
-        <source>Install</source>
-        <translation>Instalare</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="492"/>
         <source>Install online model</source>
-        <translation>Instalez un model din online</translation>
+        <translation type="vanished">Instalez un model din online</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="502"/>
-        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="521"/>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="716"/>
         <source>%1 GB</source>
-        <translation>%1 GB</translation>
+        <translation type="vanished">%1 GB</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="716"/>
-        <location filename="../qml/AddModelView.qml" line="738"/>
         <source>?</source>
-        <translation>?</translation>
+        <translation type="vanished">?</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="508"/>
-        <source>Describes an error that occurred when downloading</source>
-        <translation>Descrie eroarea apărută în timpul descărcării</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="527"/>
-        <source>Error for incompatible hardware</source>
-        <translation>Eroare: hardware incompatibil</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="565"/>
-        <source>Download progressBar</source>
-        <translation>Progresia descărcării</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="566"/>
         <source>Shows the progress made in the download</source>
-        <translation>Afişează progresia descărcării</translation>
+        <translation type="vanished">Afişează progresia descărcării</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="576"/>
         <source>Download speed</source>
-        <translation>Viteza de download</translation>
+        <translation type="vanished">Viteza de download</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="577"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation>Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
+        <translation type="vanished">Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="594"/>
-        <source>Calculating...</source>
-        <translation>Calculare...</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="598"/>
-        <location filename="../qml/AddModelView.qml" line="628"/>
-        <location filename="../qml/AddModelView.qml" line="649"/>
-        <location filename="../qml/AddModelView.qml" line="670"/>
-        <source>Whether the file hash is being calculated</source>
-        <translation>Dacă se calculează hash-ul fişierului</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="606"/>
-        <source>Displayed when the file hash is being calculated</source>
-        <translation>Se afişează când se calculează hash-ul fişierului</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="619"/>
-        <source>ERROR: $API_KEY is empty.</source>
-        <translation>EROARE: $API_KEY absentă</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="625"/>
         <source>enter $API_KEY</source>
-        <translation>introdu cheia $API_KEY</translation>
+        <translation type="vanished">introdu cheia $API_KEY</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="640"/>
-        <source>ERROR: $BASE_URL is empty.</source>
-        <translation>EROARE: $BASE_URL absentă</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="646"/>
-        <source>enter $BASE_URL</source>
-        <translation>introdu $BASE_URL</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="661"/>
-        <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation>EROARE: $MODEL_NAME absent</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="667"/>
-        <source>enter $MODEL_NAME</source>
-        <translation>introdu $MODEL_NAME</translation>
-    </message>
-    <message>
-        <location filename="../qml/AddModelView.qml" line="689"/>
         <source>File size</source>
-        <translation>Dimensiunea fişierului</translation>
+        <translation type="vanished">Dimensiunea fişierului</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="711"/>
         <source>RAM required</source>
-        <translation>RAM necesară</translation>
+        <translation type="vanished">RAM necesară</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="733"/>
         <source>Parameters</source>
-        <translation>Parametri</translation>
+        <translation type="vanished">Parametri</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="755"/>
         <source>Quant</source>
-        <translation>Quant(ificare)</translation>
+        <translation type="vanished">Quant(ificare)</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="777"/>
         <source>Type</source>
-        <translation>Tip</translation>
+        <translation type="vanished">Tip</translation>
     </message>
 </context>
 <context>
@@ -1749,78 +2072,78 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1309"/>
-        <location filename="../src/modellist.cpp" line="1360"/>
+        <location filename="../src/modellist.cpp" line="1318"/>
+        <location filename="../src/modellist.cpp" line="1369"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>nu se poate deschide „%1”: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1321"/>
+        <location filename="../src/modellist.cpp" line="1330"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>nu se poate crea „%1”: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1371"/>
+        <location filename="../src/modellist.cpp" line="1380"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1372"/>
+        <location filename="../src/modellist.cpp" line="1381"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Model API compatibil cu OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Cheia API: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Numele modelului: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1672"/>
+        <location filename="../src/modellist.cpp" line="1681"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită o cheie API OpenAI personală. &lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la OpenAI!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local) &lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu OpenAI&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aici.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1691"/>
+        <location filename="../src/modellist.cpp" line="1700"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul OpenAI&apos;s ChatGPT GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1705"/>
+        <location filename="../src/modellist.cpp" line="1714"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Chiar dacă plăteşti la OpenAI pentru ChatGPT-4, aceasta nu garantează accesul la cheia API. Contactează OpenAI pentru mai multe informaţii.</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1720"/>
+        <location filename="../src/modellist.cpp" line="1729"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;Modelul ChatGPT GPT-4 al OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1733"/>
+        <location filename="../src/modellist.cpp" line="1742"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită cheia personală Mistral API. &lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la Mistral!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu Mistral&lt;/li&gt;&lt;li&gt;Poţi solicita o cheie API aici: &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aici&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1752"/>
+        <location filename="../src/modellist.cpp" line="1761"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1778"/>
+        <location filename="../src/modellist.cpp" line="1787"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Small&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1805"/>
+        <location filename="../src/modellist.cpp" line="1814"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelul Mistral Medium&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1818"/>
+        <location filename="../src/modellist.cpp" line="1827"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Necesită cheia personală API si base-URL a API.&lt;/li&gt;&lt;li&gt;ATENŢIE: Conversaţiile tale vor fi trimise la serverul API compatibil cu OpenAI specificat!&lt;/li&gt;&lt;li&gt;Cheia ta API va fi stocată pe disc (local)&lt;/li&gt;&lt;li&gt;Va fi utilizată numai pentru comunicarea cu serverul API compatibil cu OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1835"/>
+        <location filename="../src/modellist.cpp" line="1844"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Conectare la un server API compatibil cu OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2259"/>
+        <location filename="../src/modellist.cpp" line="2268"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Creat de către %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicat in: %2.&lt;li&gt;Acest model are %3 Likes.&lt;li&gt;Acest model are %4 download-uri.&lt;li&gt;Mai multe informaţii pot fi găsite la: &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aici.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
@@ -2678,7 +3001,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="118"/>
         <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>Optați pentru trimiterea anonimă a evidenței utilizării, folosite pentru a îmbunătăți GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
@@ -2716,7 +3039,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="232"/>
         <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>Optați pentru partajarea anonimă a conversațiilor în GPT4All Datalake</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
@@ -2923,12 +3246,12 @@ care foloseşte datele tale!</translation>
         <translation>Modul Server: ACTIV</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="687"/>
+        <location filename="../main.qml" line="684"/>
         <source>Installed models</source>
         <translation>Modele instalate</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="688"/>
+        <location filename="../main.qml" line="685"/>
         <source>View of installed models</source>
         <translation>Secţiunea modelelor instalate</translation>
     </message>

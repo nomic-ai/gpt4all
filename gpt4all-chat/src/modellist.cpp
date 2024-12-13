@@ -465,47 +465,54 @@ bool InstalledModels::filterAcceptsRow(int sourceRow,
     return (isInstalled || (!m_selectable && isDownloading)) && !isEmbeddingModel;
 }
 
-DownloadableModels::DownloadableModels(QObject *parent)
+GPT4AllDownloadableModels::GPT4AllDownloadableModels(QObject *parent)
     : QSortFilterProxyModel(parent)
-    , m_expanded(false)
-    , m_limit(5)
 {
-    connect(this, &DownloadableModels::rowsInserted, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::rowsRemoved, this, &DownloadableModels::countChanged);
-    connect(this, &DownloadableModels::modelReset, this, &DownloadableModels::countChanged);
+    connect(this, &GPT4AllDownloadableModels::rowsInserted, this, &GPT4AllDownloadableModels::countChanged);
+    connect(this, &GPT4AllDownloadableModels::rowsRemoved, this, &GPT4AllDownloadableModels::countChanged);
+    connect(this, &GPT4AllDownloadableModels::modelReset, this, &GPT4AllDownloadableModels::countChanged);
 }
 
-bool DownloadableModels::filterAcceptsRow(int sourceRow,
+bool GPT4AllDownloadableModels::filterAcceptsRow(int sourceRow,
                                           const QModelIndex &sourceParent) const
 {
-    // FIXME We can eliminate the 'expanded' code as the UI no longer uses this
-    bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool hasDescription = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
-    return withinLimit && hasDescription && !isClone;
+    bool isDiscovered = sourceModel()->data(index, ModelList::IsDiscoveredRole).toBool();
+    return !isDiscovered && hasDescription && !isClone;
 }
 
-int DownloadableModels::count() const
+int GPT4AllDownloadableModels::count() const
 {
     return rowCount();
 }
 
-bool DownloadableModels::isExpanded() const
+HuggingFaceDownloadableModels::HuggingFaceDownloadableModels(QObject *parent)
+    : QSortFilterProxyModel(parent)
+    , m_limit(5)
 {
-    return m_expanded;
+    connect(this, &HuggingFaceDownloadableModels::rowsInserted, this, &HuggingFaceDownloadableModels::countChanged);
+    connect(this, &HuggingFaceDownloadableModels::rowsRemoved, this, &HuggingFaceDownloadableModels::countChanged);
+    connect(this, &HuggingFaceDownloadableModels::modelReset, this, &HuggingFaceDownloadableModels::countChanged);
 }
 
-void DownloadableModels::setExpanded(bool expanded)
+bool HuggingFaceDownloadableModels::filterAcceptsRow(int sourceRow,
+                                          const QModelIndex &sourceParent) const
 {
-    if (m_expanded != expanded) {
-        m_expanded = expanded;
-        invalidateFilter();
-        emit expandedChanged(m_expanded);
-    }
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    bool hasDescription = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
+    bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
+    bool isDiscovered = sourceModel()->data(index, ModelList::IsDiscoveredRole).toBool();
+    return isDiscovered && hasDescription && !isClone;
 }
 
-void DownloadableModels::discoverAndFilter(const QString &discover)
+int HuggingFaceDownloadableModels::count() const
+{
+    return rowCount();
+}
+
+void HuggingFaceDownloadableModels::discoverAndFilter(const QString &discover)
 {
     m_discoverFilter = discover;
     ModelList *ml = qobject_cast<ModelList*>(parent());
@@ -523,7 +530,8 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_selectableModels(new InstalledModels(this, /*selectable*/ true))
-    , m_downloadableModels(new DownloadableModels(this))
+    , m_gpt4AllDownloadableModels(new GPT4AllDownloadableModels(this))
+    , m_huggingFaceDownloadableModels(new HuggingFaceDownloadableModels(this))
     , m_asyncModelRequestOngoing(false)
     , m_discoverLimit(20)
     , m_discoverSortDirection(-1)
@@ -536,7 +544,8 @@ ModelList::ModelList()
 
     m_installedModels->setSourceModel(this);
     m_selectableModels->setSourceModel(this);
-    m_downloadableModels->setSourceModel(this);
+    m_gpt4AllDownloadableModels->setSourceModel(this);
+    m_huggingFaceDownloadableModels->setSourceModel(this);
 
     auto *mySettings = MySettings::globalInstance();
     connect(mySettings, &MySettings::nameChanged,                this, &ModelList::updateDataForSettings     );

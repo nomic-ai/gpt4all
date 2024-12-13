@@ -294,17 +294,28 @@ private:
     bool m_selectable;
 };
 
-class DownloadableModels : public QSortFilterProxyModel
+class GPT4AllDownloadableModels : public QSortFilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(bool expanded READ isExpanded WRITE setExpanded NOTIFY expandedChanged)
 public:
-    explicit DownloadableModels(QObject *parent);
+    explicit GPT4AllDownloadableModels(QObject *parent);
     int count() const;
 
-    bool isExpanded() const;
-    void setExpanded(bool expanded);
+Q_SIGNALS:
+    void countChanged();
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+};
+
+class HuggingFaceDownloadableModels : public QSortFilterProxyModel
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+public:
+    explicit HuggingFaceDownloadableModels(QObject *parent);
+    int count() const;
 
     Q_INVOKABLE void discoverAndFilter(const QString &discover);
 
@@ -314,11 +325,7 @@ Q_SIGNALS:
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
-Q_SIGNALS:
-    void expandedChanged(bool expanded);
-
 private:
-    bool m_expanded;
     int m_limit;
     QString m_discoverFilter;
 };
@@ -329,7 +336,8 @@ class ModelList : public QAbstractListModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(InstalledModels* selectableModels READ selectableModels NOTIFY selectableModelsChanged)
-    Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
+    Q_PROPERTY(GPT4AllDownloadableModels* gpt4AllDownloadableModels READ gpt4AllDownloadableModels CONSTANT)
+    Q_PROPERTY(HuggingFaceDownloadableModels* huggingFaceDownloadableModels READ huggingFaceDownloadableModels CONSTANT)
     Q_PROPERTY(QList<ModelInfo> selectableModelList READ selectableModelList NOTIFY  selectableModelListChanged)
     Q_PROPERTY(bool asyncModelRequestOngoing READ asyncModelRequestOngoing NOTIFY asyncModelRequestOngoingChanged)
     Q_PROPERTY(int discoverLimit READ discoverLimit WRITE setDiscoverLimit NOTIFY discoverLimitChanged)
@@ -482,7 +490,8 @@ public:
 
     InstalledModels *installedModels() const { return m_installedModels; }
     InstalledModels *selectableModels() const { return m_selectableModels; }
-    DownloadableModels *downloadableModels() const { return m_downloadableModels; }
+    GPT4AllDownloadableModels *gpt4AllDownloadableModels() const { return m_gpt4AllDownloadableModels; }
+    HuggingFaceDownloadableModels *huggingFaceDownloadableModels() const { return m_huggingFaceDownloadableModels; }
 
     static inline QString toFileSize(quint64 sz) {
         if (sz < 1024) {
@@ -520,7 +529,6 @@ Q_SIGNALS:
     void countChanged();
     void installedModelsChanged();
     void selectableModelsChanged();
-    void downloadableModelsChanged();
     void selectableModelListChanged();
     void asyncModelRequestOngoingChanged();
     void discoverLimitChanged();
@@ -570,7 +578,8 @@ private:
     QNetworkAccessManager m_networkManager;
     InstalledModels *m_installedModels;
     InstalledModels *m_selectableModels;
-    DownloadableModels *m_downloadableModels;
+    GPT4AllDownloadableModels *m_gpt4AllDownloadableModels;
+    HuggingFaceDownloadableModels *m_huggingFaceDownloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
     bool m_asyncModelRequestOngoing;

@@ -47,7 +47,7 @@ Rectangle {
                     id: welcome
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr("Welcome to GPT4All")
-                    font.pixelSize: theme.fontSizeBanner
+                    font.pixelSize: theme.fontSizeBannerLarge
                     color: theme.titleTextColor
                 }
 
