@@ -1,6 +1,7 @@
 #include "server.h"
 
 #include "chat.h"
+#include "chatmodel.h"
 #include "modellist.h"
 #include "mysettings.h"
 #include "utils.h"
