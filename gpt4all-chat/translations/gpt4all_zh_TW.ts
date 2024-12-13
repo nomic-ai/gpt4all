@@ -60,6 +60,467 @@
     </message>
 </context>
 <context>
+    <name>AddGPT4AllModelView</name>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
+        <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
+        <source>Network error: could not retrieve %1</source>
+        <translation type="unfinished">網路錯誤：無法取得 %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="343"/>
+        <source>Busy indicator</source>
+        <translation type="unfinished">忙線指示器</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="56"/>
+        <source>Displayed when the models request is ongoing</source>
+        <translation type="unfinished">當模型請求正在進行時顯示</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="96"/>
+        <source>Model file</source>
+        <translation type="unfinished">模型檔案</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="97"/>
+        <source>Model file to be downloaded</source>
+        <translation type="unfinished">即將下載的模型檔案</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="120"/>
+        <source>Description</source>
+        <translation type="unfinished">描述</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="121"/>
+        <source>File description</source>
+        <translation type="unfinished">檔案描述</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Resume</source>
+        <translation type="unfinished">恢復</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
+        <source>Download</source>
+        <translation type="unfinished">下載</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="162"/>
+        <source>Stop/restart/start the download</source>
+        <translation type="unfinished">停止/重啟/開始下載</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="174"/>
+        <source>Remove</source>
+        <translation type="unfinished">移除</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="181"/>
+        <source>Remove model from filesystem</source>
+        <translation type="unfinished">從檔案系統移除模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="195"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="229"/>
+        <source>Install</source>
+        <translation type="unfinished">安裝</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="230"/>
+        <source>Install online model</source>
+        <translation type="unfinished">安裝線上模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="246"/>
+        <source>Describes an error that occurred when downloading</source>
+        <translation type="unfinished">解釋下載時發生的錯誤</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
+        <source>Error for incompatible hardware</source>
+        <translation type="unfinished">錯誤，不相容的硬體</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="303"/>
+        <source>Download progressBar</source>
+        <translation type="unfinished">下載進度條</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
+        <source>Shows the progress made in the download</source>
+        <translation type="unfinished">顯示下載進度</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="314"/>
+        <source>Download speed</source>
+        <translation type="unfinished">下載速度</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="315"/>
+        <source>Download speed in bytes/kilobytes/megabytes per second</source>
+        <translation type="unfinished">下載速度每秒 bytes/kilobytes/megabytes</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
+        <source>Calculating...</source>
+        <translation type="unfinished">計算中......</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="336"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="366"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="387"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="408"/>
+        <source>Whether the file hash is being calculated</source>
+        <translation type="unfinished">是否正在計算檔案雜湊</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="344"/>
+        <source>Displayed when the file hash is being calculated</source>
+        <translation type="unfinished">計算檔案雜湊值時顯示</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="357"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation type="unfinished">錯誤：$API_KEY 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="363"/>
+        <source>enter $API_KEY</source>
+        <translation type="unfinished">請輸入 $API_KEY</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
+        <source>ERROR: $BASE_URL is empty.</source>
+        <translation type="unfinished">錯誤：$BASE_URL 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="384"/>
+        <source>enter $BASE_URL</source>
+        <translation type="unfinished">請輸入 $BASE_URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="399"/>
+        <source>ERROR: $MODEL_NAME is empty.</source>
+        <translation type="unfinished">錯誤：$MODEL_NAME 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="405"/>
+        <source>enter $MODEL_NAME</source>
+        <translation type="unfinished">請輸入 $MODEL_NAME</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="427"/>
+        <source>File size</source>
+        <translation type="unfinished">檔案大小</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="449"/>
+        <source>RAM required</source>
+        <translation type="unfinished">所需的記憶體</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
+        <source>%1 GB</source>
+        <translation type="unfinished">%1 GB</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="476"/>
+        <source>?</source>
+        <translation type="unfinished">？</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="471"/>
+        <source>Parameters</source>
+        <translation type="unfinished">參數</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="493"/>
+        <source>Quant</source>
+        <translation type="unfinished">量化</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="515"/>
+        <source>Type</source>
+        <translation type="unfinished">類型</translation>
+    </message>
+</context>
+<context>
+    <name>AddHFModelView</name>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="32"/>
+        <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="52"/>
+        <source>Discover and download models by keyword search...</source>
+        <translation type="unfinished">透過關鍵字搜尋探索並下載模型......</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="55"/>
+        <source>Text field for discovering and filtering downloadable models</source>
+        <translation type="unfinished">用於探索與過濾可下載模型的文字字段</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="61"/>
+        <source>Searching · %1</source>
+        <translation type="unfinished">搜尋 · %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="131"/>
+        <source>Initiate model discovery and filtering</source>
+        <translation type="unfinished">探索與過濾模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="132"/>
+        <source>Triggers discovery and filtering of models</source>
+        <translation type="unfinished">觸發探索與過濾模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="151"/>
+        <source>Default</source>
+        <translation type="unfinished">預設</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="152"/>
+        <source>Likes</source>
+        <translation type="unfinished">讚</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="153"/>
+        <source>Downloads</source>
+        <translation type="unfinished">下載次數</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="154"/>
+        <source>Recent</source>
+        <translation type="unfinished">最新</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="162"/>
+        <source>Sort by: %1</source>
+        <translation type="unfinished">排序依據：%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="176"/>
+        <source>Asc</source>
+        <translation type="unfinished">升序</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="177"/>
+        <source>Desc</source>
+        <translation type="unfinished">降序</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="190"/>
+        <source>Sort dir: %1</source>
+        <translation type="unfinished">排序順序：%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="212"/>
+        <source>None</source>
+        <translation type="unfinished">無</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="234"/>
+        <source>Limit: %1</source>
+        <translation type="unfinished">上限：%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="297"/>
+        <source>Model file</source>
+        <translation type="unfinished">模型檔案</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="298"/>
+        <source>Model file to be downloaded</source>
+        <translation type="unfinished">即將下載的模型檔案</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="321"/>
+        <source>Description</source>
+        <translation type="unfinished">描述</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="322"/>
+        <source>File description</source>
+        <translation type="unfinished">檔案描述</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Resume</source>
+        <translation type="unfinished">恢復</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="355"/>
+        <source>Download</source>
+        <translation type="unfinished">下載</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="363"/>
+        <source>Stop/restart/start the download</source>
+        <translation type="unfinished">停止/重啟/開始下載</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="375"/>
+        <source>Remove</source>
+        <translation type="unfinished">移除</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="382"/>
+        <source>Remove model from filesystem</source>
+        <translation type="unfinished">從檔案系統移除模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="396"/>
+        <location filename="../qml/AddHFModelView.qml" line="430"/>
+        <source>Install</source>
+        <translation type="unfinished">安裝</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="431"/>
+        <source>Install online model</source>
+        <translation type="unfinished">安裝線上模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="441"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="447"/>
+        <source>Describes an error that occurred when downloading</source>
+        <translation type="unfinished">解釋下載時發生的錯誤</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="460"/>
+        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
+        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="466"/>
+        <source>Error for incompatible hardware</source>
+        <translation type="unfinished">錯誤，不相容的硬體</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="504"/>
+        <source>Download progressBar</source>
+        <translation type="unfinished">下載進度條</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="505"/>
+        <source>Shows the progress made in the download</source>
+        <translation type="unfinished">顯示下載進度</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="515"/>
+        <source>Download speed</source>
+        <translation type="unfinished">下載速度</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="516"/>
+        <source>Download speed in bytes/kilobytes/megabytes per second</source>
+        <translation type="unfinished">下載速度每秒 bytes/kilobytes/megabytes</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="533"/>
+        <source>Calculating...</source>
+        <translation type="unfinished">計算中......</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="537"/>
+        <location filename="../qml/AddHFModelView.qml" line="567"/>
+        <location filename="../qml/AddHFModelView.qml" line="588"/>
+        <location filename="../qml/AddHFModelView.qml" line="609"/>
+        <source>Whether the file hash is being calculated</source>
+        <translation type="unfinished">是否正在計算檔案雜湊</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="544"/>
+        <source>Busy indicator</source>
+        <translation type="unfinished">忙線指示器</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="545"/>
+        <source>Displayed when the file hash is being calculated</source>
+        <translation type="unfinished">計算檔案雜湊值時顯示</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="558"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation type="unfinished">錯誤：$API_KEY 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="564"/>
+        <source>enter $API_KEY</source>
+        <translation type="unfinished">請輸入 $API_KEY</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="579"/>
+        <source>ERROR: $BASE_URL is empty.</source>
+        <translation type="unfinished">錯誤：$BASE_URL 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="585"/>
+        <source>enter $BASE_URL</source>
+        <translation type="unfinished">請輸入 $BASE_URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="600"/>
+        <source>ERROR: $MODEL_NAME is empty.</source>
+        <translation type="unfinished">錯誤：$MODEL_NAME 未填寫。</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="606"/>
+        <source>enter $MODEL_NAME</source>
+        <translation type="unfinished">請輸入 $MODEL_NAME</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="628"/>
+        <source>File size</source>
+        <translation type="unfinished">檔案大小</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="650"/>
+        <source>Quant</source>
+        <translation type="unfinished">量化</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddHFModelView.qml" line="672"/>
+        <source>Type</source>
+        <translation type="unfinished">類型</translation>
+    </message>
+</context>
+<context>
     <name>AddModelView</name>
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
@@ -72,281 +533,231 @@
         <translation>探索模型</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="92"/>
+        <location filename="../qml/AddModelView.qml" line="86"/>
+        <source>GPT4All</source>
+        <translation type="unfinished">GPT4All</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddModelView.qml" line="93"/>
+        <source>HuggingFace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Discover and download models by keyword search...</source>
-        <translation>透過關鍵字搜尋探索並下載模型......</translation>
+        <translation type="vanished">透過關鍵字搜尋探索並下載模型......</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="95"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation>用於探索與過濾可下載模型的文字字段</translation>
+        <translation type="vanished">用於探索與過濾可下載模型的文字字段</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="101"/>
         <source>Searching · %1</source>
-        <translation>搜尋 · %1</translation>
+        <translation type="vanished">搜尋 · %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="171"/>
         <source>Initiate model discovery and filtering</source>
-        <translation>探索與過濾模型</translation>
+        <translation type="vanished">探索與過濾模型</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="172"/>
         <source>Triggers discovery and filtering of models</source>
-        <translation>觸發探索與過濾模型</translation>
+        <translation type="vanished">觸發探索與過濾模型</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="191"/>
         <source>Default</source>
-        <translation>預設</translation>
+        <translation type="vanished">預設</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="192"/>
         <source>Likes</source>
-        <translation>讚</translation>
+        <translation type="vanished">讚</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="193"/>
         <source>Downloads</source>
-        <translation>下載次數</translation>
+        <translation type="vanished">下載次數</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="194"/>
         <source>Recent</source>
-        <translation>最新</translation>
+        <translation type="vanished">最新</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="202"/>
         <source>Sort by: %1</source>
-        <translation>排序依據：%1</translation>
+        <translation type="vanished">排序依據：%1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="216"/>
         <source>Asc</source>
-        <translation>升序</translation>
+        <translation type="vanished">升序</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="217"/>
         <source>Desc</source>
-        <translation>降序</translation>
+        <translation type="vanished">降序</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="230"/>
         <source>Sort dir: %1</source>
-        <translation>排序順序：%1</translation>
+        <translation type="vanished">排序順序：%1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="252"/>
         <source>None</source>
-        <translation>無</translation>
+        <translation type="vanished">無</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="274"/>
         <source>Limit: %1</source>
-        <translation>上限：%1</translation>
+        <translation type="vanished">上限：%1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="307"/>
         <source>Network error: could not retrieve %1</source>
-        <translation>網路錯誤：無法取得 %1</translation>
+        <translation type="vanished">網路錯誤：無法取得 %1</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="502"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;錯誤&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="521"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推薦在您的硬體上運作。模型需要比較多的記憶體（%1 GB），但您的系統記憶體空間不足（%2）。&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="716"/>
         <source>%1 GB</source>
-        <translation>%1 GB</translation>
+        <translation type="vanished">%1 GB</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="716"/>
-        <location filename="../qml/AddModelView.qml" line="738"/>
         <source>?</source>
-        <translation>？</translation>
+        <translation type="vanished">？</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="317"/>
-        <location filename="../qml/AddModelView.qml" line="605"/>
         <source>Busy indicator</source>
         <translatorcomment>參考自 https://terms.naer.edu.tw</translatorcomment>
-        <translation>忙線指示器</translation>
+        <translation type="vanished">忙線指示器</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="318"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation>當模型請求正在進行時顯示</translation>
+        <translation type="vanished">當模型請求正在進行時顯示</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="358"/>
         <source>Model file</source>
-        <translation>模型檔案</translation>
+        <translation type="vanished">模型檔案</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="359"/>
         <source>Model file to be downloaded</source>
-        <translation>即將下載的模型檔案</translation>
+        <translation type="vanished">即將下載的模型檔案</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="382"/>
         <source>Description</source>
-        <translation>描述</translation>
+        <translation type="vanished">描述</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="383"/>
         <source>File description</source>
-        <translation>檔案描述</translation>
+        <translation type="vanished">檔案描述</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
         <source>Cancel</source>
-        <translation>取消</translation>
+        <translation type="vanished">取消</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
         <source>Resume</source>
-        <translation>恢復</translation>
+        <translation type="vanished">恢復</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="416"/>
         <source>Download</source>
-        <translation>下載</translation>
+        <translation type="vanished">下載</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="424"/>
         <source>Stop/restart/start the download</source>
-        <translation>停止/重啟/開始下載</translation>
+        <translation type="vanished">停止/重啟/開始下載</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="436"/>
         <source>Remove</source>
-        <translation>移除</translation>
+        <translation type="vanished">移除</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="443"/>
         <source>Remove model from filesystem</source>
-        <translation>從檔案系統移除模型</translation>
+        <translation type="vanished">從檔案系統移除模型</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="457"/>
-        <location filename="../qml/AddModelView.qml" line="491"/>
         <source>Install</source>
-        <translation>安裝</translation>
+        <translation type="vanished">安裝</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="492"/>
         <source>Install online model</source>
-        <translation>安裝線上模型</translation>
+        <translation type="vanished">安裝線上模型</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="508"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation>解釋下載時發生的錯誤</translation>
+        <translation type="vanished">解釋下載時發生的錯誤</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="527"/>
         <source>Error for incompatible hardware</source>
-        <translation>錯誤，不相容的硬體</translation>
+        <translation type="vanished">錯誤，不相容的硬體</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="565"/>
         <source>Download progressBar</source>
-        <translation>下載進度條</translation>
+        <translation type="vanished">下載進度條</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="566"/>
         <source>Shows the progress made in the download</source>
-        <translation>顯示下載進度</translation>
+        <translation type="vanished">顯示下載進度</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="576"/>
         <source>Download speed</source>
-        <translation>下載速度</translation>
+        <translation type="vanished">下載速度</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="577"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation>下載速度每秒 bytes/kilobytes/megabytes</translation>
+        <translation type="vanished">下載速度每秒 bytes/kilobytes/megabytes</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="594"/>
         <source>Calculating...</source>
-        <translation>計算中......</translation>
+        <translation type="vanished">計算中......</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="598"/>
-        <location filename="../qml/AddModelView.qml" line="628"/>
-        <location filename="../qml/AddModelView.qml" line="649"/>
-        <location filename="../qml/AddModelView.qml" line="670"/>
         <source>Whether the file hash is being calculated</source>
-        <translation>是否正在計算檔案雜湊</translation>
+        <translation type="vanished">是否正在計算檔案雜湊</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="606"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation>計算檔案雜湊值時顯示</translation>
+        <translation type="vanished">計算檔案雜湊值時顯示</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="619"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation>錯誤：$API_KEY 未填寫。</translation>
+        <translation type="vanished">錯誤：$API_KEY 未填寫。</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="625"/>
         <source>enter $API_KEY</source>
-        <translation>請輸入 $API_KEY</translation>
+        <translation type="vanished">請輸入 $API_KEY</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="640"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation>錯誤：$BASE_URL 未填寫。</translation>
+        <translation type="vanished">錯誤：$BASE_URL 未填寫。</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="646"/>
         <source>enter $BASE_URL</source>
-        <translation>請輸入 $BASE_URL</translation>
+        <translation type="vanished">請輸入 $BASE_URL</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="661"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation>錯誤：$MODEL_NAME 未填寫。</translation>
+        <translation type="vanished">錯誤：$MODEL_NAME 未填寫。</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="667"/>
         <source>enter $MODEL_NAME</source>
-        <translation>請輸入 $MODEL_NAME</translation>
+        <translation type="vanished">請輸入 $MODEL_NAME</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="689"/>
         <source>File size</source>
-        <translation>檔案大小</translation>
+        <translation type="vanished">檔案大小</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="711"/>
         <source>RAM required</source>
-        <translation>所需的記憶體</translation>
+        <translation type="vanished">所需的記憶體</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="733"/>
         <source>Parameters</source>
-        <translation>參數</translation>
+        <translation type="vanished">參數</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="755"/>
         <source>Quant</source>
-        <translation>量化</translation>
+        <translation type="vanished">量化</translation>
     </message>
     <message>
-        <location filename="../qml/AddModelView.qml" line="777"/>
         <source>Type</source>
-        <translation>類型</translation>
+        <translation type="vanished">類型</translation>
     </message>
 </context>
 <context>
@@ -1686,78 +2097,78 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1309"/>
-        <location filename="../src/modellist.cpp" line="1360"/>
+        <location filename="../src/modellist.cpp" line="1318"/>
+        <location filename="../src/modellist.cpp" line="1369"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>無法開啟“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1321"/>
+        <location filename="../src/modellist.cpp" line="1330"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>無法建立“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1371"/>
+        <location filename="../src/modellist.cpp" line="1380"/>
         <source>%1 (%2)</source>
         <translation>%1（%2）</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1372"/>
+        <location filename="../src/modellist.cpp" line="1381"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;OpenAI API 相容模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 金鑰：%1&lt;/li&gt;&lt;li&gt;基底 URL：%2&lt;/li&gt;&lt;li&gt;模型名稱：%3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1672"/>
+        <location filename="../src/modellist.cpp" line="1681"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 OpenAI API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 OpenAI&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 OpenAI 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1691"/>
+        <location filename="../src/modellist.cpp" line="1700"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1705"/>
+        <location filename="../src/modellist.cpp" line="1714"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您已向 OpenAI 付費購買了 ChatGPT 的 GPT-4 模型使用權，但這也不能保證您能擁有 API 金鑰的使用權限。請聯繫 OpenAI 以查閱更多資訊。</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1720"/>
+        <location filename="../src/modellist.cpp" line="1729"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;OpenAI 的 ChatGPT 模型 GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1733"/>
+        <location filename="../src/modellist.cpp" line="1742"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 Mistral API 金鑰。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到 Mistral！&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與 Mistral 進行通訊&lt;/li&gt;&lt;li&gt;您可以在&lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;此處&lt;/a&gt;申請一個 API 金鑰。&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1752"/>
+        <location filename="../src/modellist.cpp" line="1761"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 迷你模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1778"/>
+        <location filename="../src/modellist.cpp" line="1787"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 小型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1805"/>
+        <location filename="../src/modellist.cpp" line="1814"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral 中型模型&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1818"/>
+        <location filename="../src/modellist.cpp" line="1827"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要個人的 API 金鑰和 API 的基底 URL（Base URL）。&lt;/li&gt;&lt;li&gt;警告：這將會傳送您的交談紀錄到您所指定的 OpenAI API 相容伺服器&lt;/li&gt;&lt;li&gt;您的 API 金鑰將被儲存在硬碟上&lt;/li&gt;&lt;li&gt;它只被用於與其 OpenAI API 相容伺服器進行通訊&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1835"/>
+        <location filename="../src/modellist.cpp" line="1844"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;連線到 OpenAI API 相容伺服器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2259"/>
+        <location filename="../src/modellist.cpp" line="2268"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;模型作者：%1&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發佈日期：%2&lt;li&gt;累積讚數：%3 個讚&lt;li&gt;下載次數：%4 次&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
@@ -2812,12 +3223,12 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>伺服器模式已啟用</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="687"/>
+        <location filename="../main.qml" line="684"/>
         <source>Installed models</source>
         <translation>已安裝的模型</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="688"/>
+        <location filename="../main.qml" line="685"/>
         <source>View of installed models</source>
         <translation>已安裝的模型視圖</translation>
     </message>
