@@ -68,7 +68,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
         <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceste modele au fost configurate special pentru utilizarea în GPT4All. Primele câteva modele din listă sunt cunoscute ca fiind cele mai bune, dar ar trebui să încercați să utilizați doar modele care se încadrează în RAM.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
@@ -94,7 +94,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="97"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Fişierul modelului ce va fi descărcat</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="120"/>
@@ -124,23 +124,23 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="162"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished"></translation>
+        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="174"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Şterg</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="181"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished"></translation>
+        <translation>Şterg modelul din sistemul de fişiere</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="195"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="229"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Instalare</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="230"/>
@@ -150,27 +150,27 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="246"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>Descrie eroarea apărută în timpul descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished"></translation>
+        <translation>Eroare: hardware incompatibil</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="303"/>
         <source>Download progressBar</source>
-        <translation type="unfinished"></translation>
+        <translation>Progresia descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
@@ -190,7 +190,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>Calculare...</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="336"/>
@@ -198,17 +198,17 @@
         <location filename="../qml/AddGPT4AllModelView.qml" line="387"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="408"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Dacă se calculează hash-ul fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="344"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Se afişează când se calculează hash-ul fişierului</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="357"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>EROARE: $API_KEY absentă.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="363"/>
@@ -218,7 +218,7 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>EROARE: $BASE_URL absentă.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="384"/>
@@ -228,12 +228,12 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="399"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>EROARE: $MODEL_NAME absent</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="405"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">introdu $MODEL_NAME</translation>
+        <translation>introdu $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="427"/>
@@ -277,7 +277,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="32"/>
         <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilizați funcția de căutare pentru a găsi și descărca modele de pe HuggingFace. NU E GARANTAT că acestea vor funcționa. Multe dintre ele vor necesita configurări suplimentare înainte de a putea fi utilizate.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="52"/>
@@ -362,7 +362,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="298"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Fişierul modelului ce va fi descărcat</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="321"/>
@@ -392,17 +392,17 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="363"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished"></translation>
+        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="375"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Şterg</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="382"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished"></translation>
+        <translation>Şterg modelul din sistemul de fişiere</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="396"/>
@@ -418,7 +418,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="441"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="447"/>
@@ -438,7 +438,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="504"/>
         <source>Download progressBar</source>
-        <translation type="unfinished"></translation>
+        <translation>Bara de progresie a descărcării</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="505"/>
@@ -458,7 +458,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="533"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>Calculare...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="537"/>
@@ -481,7 +481,7 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="558"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>EROARE: $API_KEY absentă</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="564"/>
@@ -491,17 +491,17 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="579"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>EROARE: $BASE_URL absentă</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="585"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">introdu $BASE_URL</translation>
+        <translation>introdu $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="600"/>
-        <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation>EROARE: $API_KEY absentă</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="606"/>
@@ -539,12 +539,12 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="86"/>
         <source>GPT4All</source>
-        <translation type="unfinished">GPT4All</translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
         <source>HuggingFace</source>
-        <translation type="unfinished"></translation>
+        <translation>HuggingFace</translation>
     </message>
     <message>
         <source>Discover and download models by keyword search...</source>
@@ -627,52 +627,8 @@
         <translation type="vanished">Fişierul modelului de descărcat</translation>
     </message>
     <message>
-        <source>Description</source>
-        <translation type="vanished">Descriere</translation>
-    </message>
-    <message>
-        <source>File description</source>
-        <translation type="vanished">Descrierea fişierului</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Anulare</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation type="vanished">Continuare</translation>
-    </message>
-    <message>
-        <source>Download</source>
-        <translation type="vanished">Download</translation>
-    </message>
-    <message>
-        <source>Stop/restart/start the download</source>
-        <translation type="vanished">Opreşte/Reporneşte/Începe descărcarea</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="vanished">Şterge</translation>
-    </message>
-    <message>
-        <source>Remove model from filesystem</source>
-        <translation type="vanished">Şterge modelul din sistemul de fişiere</translation>
-    </message>
-    <message>
-        <source>Install</source>
-        <translation type="vanished">Instalare</translation>
-    </message>
-    <message>
         <source>Install online model</source>
         <translation type="vanished">Instalez un model din online</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Eroare&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ATENŢIE: Nerecomandat pentru acest hardware. Modelul necesită mai multă memorie (%1 GB) decât are acest sistem (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <source>%1 GB</source>
@@ -681,18 +637,6 @@
     <message>
         <source>?</source>
         <translation type="vanished">?</translation>
-    </message>
-    <message>
-        <source>Describes an error that occurred when downloading</source>
-        <translation type="vanished">Descrie eroarea apărută în timpul descărcării</translation>
-    </message>
-    <message>
-        <source>Error for incompatible hardware</source>
-        <translation type="vanished">Eroare: hardware incompatibil</translation>
-    </message>
-    <message>
-        <source>Download progressBar</source>
-        <translation type="vanished">Progresia descărcării</translation>
     </message>
     <message>
         <source>Shows the progress made in the download</source>
@@ -707,40 +651,8 @@
         <translation type="vanished">Viteza de download în bytes/kilobytes/megabytes pe secundă</translation>
     </message>
     <message>
-        <source>Calculating...</source>
-        <translation type="vanished">Calculare...</translation>
-    </message>
-    <message>
-        <source>Whether the file hash is being calculated</source>
-        <translation type="vanished">Dacă se calculează hash-ul fişierului</translation>
-    </message>
-    <message>
-        <source>Displayed when the file hash is being calculated</source>
-        <translation type="vanished">Se afişează când se calculează hash-ul fişierului</translation>
-    </message>
-    <message>
-        <source>ERROR: $API_KEY is empty.</source>
-        <translation type="vanished">EROARE: $API_KEY absentă</translation>
-    </message>
-    <message>
         <source>enter $API_KEY</source>
         <translation type="vanished">introdu cheia $API_KEY</translation>
-    </message>
-    <message>
-        <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="vanished">EROARE: $BASE_URL absentă</translation>
-    </message>
-    <message>
-        <source>enter $BASE_URL</source>
-        <translation type="vanished">introdu $BASE_URL</translation>
-    </message>
-    <message>
-        <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="vanished">EROARE: $MODEL_NAME absent</translation>
-    </message>
-    <message>
-        <source>enter $MODEL_NAME</source>
-        <translation type="vanished">introdu $MODEL_NAME</translation>
     </message>
     <message>
         <source>File size</source>
@@ -3089,7 +3001,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="118"/>
         <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>Optați pentru trimiterea anonimă a evidenței utilizării, folosite pentru a îmbunătăți GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
@@ -3127,7 +3039,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="232"/>
         <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>Optați pentru partajarea anonimă a conversațiilor în GPT4All Datalake</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
