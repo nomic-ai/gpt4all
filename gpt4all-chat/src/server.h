@@ -2,7 +2,6 @@
 #define SERVER_H
 
 #include "chatllm.h"
-#include "chatmodel.h"
 #include "database.h"
 
 #include <QHttpServer>
