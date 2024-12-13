@@ -2445,6 +2445,11 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <translation>Descrive cosa accadrà quando effettuerai l&apos;adesione</translation>
     </message>
     <message>
+        <location filename="../qml/StartupDialog.qml" line="118"/>
+        <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
         <location filename="../qml/StartupDialog.qml" line="150"/>
         <source>Opt-in for anonymous usage statistics</source>
@@ -2476,6 +2481,11 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../qml/StartupDialog.qml" line="193"/>
         <source>Allow opt-out for anonymous usage statistics</source>
         <translation>Consenti la disattivazione per le statistiche di utilizzo anonime</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="232"/>
+        <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>

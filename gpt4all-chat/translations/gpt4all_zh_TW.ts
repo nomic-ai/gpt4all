@@ -2554,6 +2554,11 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>解釋當您加入計畫後，會發生什麼事情</translation>
     </message>
     <message>
+        <location filename="../qml/StartupDialog.qml" line="118"/>
+        <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/StartupDialog.qml" line="147"/>
         <location filename="../qml/StartupDialog.qml" line="262"/>
         <source>Yes</source>
@@ -2596,6 +2601,11 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../qml/StartupDialog.qml" line="193"/>
         <source>Allow opt-out for anonymous usage statistics</source>
         <translation>終止並退出匿名使用統計計畫</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="232"/>
+        <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>

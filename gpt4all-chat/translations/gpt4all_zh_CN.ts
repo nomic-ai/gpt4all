@@ -2574,6 +2574,11 @@ model release that uses your data!</source>
         <translation>描述选择加入时会发生的情况</translation>
     </message>
     <message>
+        <location filename="../qml/StartupDialog.qml" line="118"/>
+        <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
         <location filename="../qml/StartupDialog.qml" line="150"/>
         <source>Opt-in for anonymous usage statistics</source>
@@ -2605,6 +2610,11 @@ model release that uses your data!</source>
         <location filename="../qml/StartupDialog.qml" line="193"/>
         <source>Allow opt-out for anonymous usage statistics</source>
         <translation>允许选择退出匿名使用统计数据</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="232"/>
+        <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
