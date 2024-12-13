@@ -740,7 +740,7 @@
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="212"/>
-        <location filename="../qml/ChatItemView.qml" line="610"/>
+        <location filename="../qml/ChatItemView.qml" line="617"/>
         <source>Copy</source>
         <translation type="unfinished">Copiar</translation>
     </message>
@@ -819,17 +819,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="632"/>
+        <location filename="../qml/ChatItemView.qml" line="639"/>
         <source>Like response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="661"/>
+        <location filename="../qml/ChatItemView.qml" line="668"/>
         <source>Dislike response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatItemView.qml" line="724"/>
+        <location filename="../qml/ChatItemView.qml" line="731"/>
         <source>Suggested follow-ups</source>
         <translation type="unfinished">Perguntas relacionadas</translation>
     </message>
@@ -837,7 +837,7 @@
 <context>
     <name>ChatLLM</name>
     <message>
-        <location filename="../src/chatllm.cpp" line="925"/>
+        <location filename="../src/chatllm.cpp" line="935"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -976,64 +976,64 @@
         <translation>Adicionar Coleção de Documentos</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="752"/>
+        <location filename="../qml/ChatView.qml" line="753"/>
         <source>Load the default model</source>
         <translation>Carregar o modelo padrão</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="753"/>
+        <location filename="../qml/ChatView.qml" line="754"/>
         <source>Loads the default model which can be changed in settings</source>
         <translation>Carrega o modelo padrão (personalizável nas configurações)</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="764"/>
+        <location filename="../qml/ChatView.qml" line="765"/>
         <source>No Model Installed</source>
         <translation>Nenhum Modelo Instalado</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="773"/>
+        <location filename="../qml/ChatView.qml" line="774"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
         <translation>O GPT4All precisa de pelo menos um modelo
 modelo instalado para funcionar</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="785"/>
+        <location filename="../qml/ChatView.qml" line="786"/>
         <source>Install a Model</source>
         <translation>Instalar um Modelo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="790"/>
+        <location filename="../qml/ChatView.qml" line="791"/>
         <source>Shows the add model view</source>
         <translation>Mostra a visualização para adicionar modelo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="815"/>
+        <location filename="../qml/ChatView.qml" line="816"/>
         <source>Conversation with the model</source>
         <translation>Conversa com o modelo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="816"/>
+        <location filename="../qml/ChatView.qml" line="817"/>
         <source>prompt / response pairs from the conversation</source>
         <translation>Pares de pergunta/resposta da conversa</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1092"/>
+        <location filename="../qml/ChatView.qml" line="1093"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1096"/>
+        <location filename="../qml/ChatView.qml" line="1097"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1099"/>
+        <location filename="../qml/ChatView.qml" line="1100"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1102"/>
+        <location filename="../qml/ChatView.qml" line="1103"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1062,7 +1062,7 @@ modelo instalado para funcionar</translation>
         <translation type="vanished">gerando perguntas...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1290"/>
+        <location filename="../qml/ChatView.qml" line="1291"/>
         <source>Copy</source>
         <translation>Copiar</translation>
     </message>
@@ -1099,12 +1099,12 @@ modelo instalado para funcionar</translation>
         <translation type="vanished">Perguntas relacionadas</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="918"/>
+        <location filename="../qml/ChatView.qml" line="919"/>
         <source>Erase and reset chat session</source>
         <translation>Apagar e redefinir sessão de chat</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="939"/>
+        <location filename="../qml/ChatView.qml" line="940"/>
         <source>Copy chat session to clipboard</source>
         <translation>Copiar histórico da conversa</translation>
     </message>
@@ -1113,37 +1113,37 @@ modelo instalado para funcionar</translation>
         <translation type="vanished">Refazer última resposta</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1213"/>
+        <location filename="../qml/ChatView.qml" line="1214"/>
         <source>Add media</source>
         <translation>Adicionar mídia</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1214"/>
+        <location filename="../qml/ChatView.qml" line="1215"/>
         <source>Adds media to the prompt</source>
         <translation>Adiciona mídia ao prompt</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1348"/>
+        <location filename="../qml/ChatView.qml" line="1349"/>
         <source>Stop generating</source>
         <translation>Parar de gerar</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1349"/>
+        <location filename="../qml/ChatView.qml" line="1350"/>
         <source>Stop the current response generation</source>
         <translation>Parar a geração da resposta atual</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1392"/>
+        <location filename="../qml/ChatView.qml" line="1393"/>
         <source>Attach</source>
         <translation>Anexar</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1394"/>
+        <location filename="../qml/ChatView.qml" line="1395"/>
         <source>Single File</source>
         <translation>Arquivo Único</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1004"/>
+        <location filename="../qml/ChatView.qml" line="1005"/>
         <source>Reloads the model</source>
         <translation>Recarrega modelo</translation>
     </message>
@@ -1165,7 +1165,7 @@ modelo instalado para funcionar</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="391"/>
-        <location filename="../qml/ChatView.qml" line="1002"/>
+        <location filename="../qml/ChatView.qml" line="1003"/>
         <source>Reload · %1</source>
         <translation>Recarregar · %1</translation>
     </message>
@@ -1175,7 +1175,7 @@ modelo instalado para funcionar</translation>
         <translation>Carregando · %1</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="728"/>
+        <location filename="../qml/ChatView.qml" line="729"/>
         <source>Load · %1 (default) →</source>
         <translation>Carregar · %1 (padrão) →</translation>
     </message>
@@ -1199,42 +1199,42 @@ modelo instalado para funcionar</translation>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1240"/>
+        <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Send a message...</source>
         <translation>Enviar uma mensagem...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1240"/>
+        <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Load a model to continue...</source>
         <translation>Carregue um modelo para continuar...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1243"/>
+        <location filename="../qml/ChatView.qml" line="1244"/>
         <source>Send messages/prompts to the model</source>
         <translation>Enviar mensagens/prompts para o modelo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1284"/>
+        <location filename="../qml/ChatView.qml" line="1285"/>
         <source>Cut</source>
         <translation>Recortar</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1296"/>
+        <location filename="../qml/ChatView.qml" line="1297"/>
         <source>Paste</source>
         <translation>Colar</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1300"/>
+        <location filename="../qml/ChatView.qml" line="1301"/>
         <source>Select All</source>
         <translation>Selecionar tudo</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1370"/>
+        <location filename="../qml/ChatView.qml" line="1371"/>
         <source>Send message</source>
         <translation>Enviar mensagem</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="1371"/>
+        <location filename="../qml/ChatView.qml" line="1372"/>
         <source>Sends the message/prompt contained in textfield to the model</source>
         <translation>Envia a mensagem/prompt contida no campo de texto para o modelo</translation>
     </message>
@@ -1698,78 +1698,78 @@ modelo instalado para funcionar</translation>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1632"/>
+        <location filename="../src/modellist.cpp" line="1672"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;É necessária uma chave de API da OpenAI.&lt;/li&gt;&lt;li&gt;AVISO: Seus chats serão enviados para a OpenAI!&lt;/li&gt;&lt;li&gt;Sua chave de API será armazenada localmente&lt;/li&gt;&lt;li&gt;Ela será usada apenas para comunicação com a OpenAI&lt;/li&gt;&lt;li&gt;Você pode solicitar uma chave de API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;aqui.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1651"/>
+        <location filename="../src/modellist.cpp" line="1691"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo ChatGPT GPT-3.5 Turbo da OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1679"/>
+        <location filename="../src/modellist.cpp" line="1720"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;Modelo ChatGPT GPT-4 da OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1710"/>
+        <location filename="../src/modellist.cpp" line="1752"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1735"/>
+        <location filename="../src/modellist.cpp" line="1778"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Small&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1761"/>
+        <location filename="../src/modellist.cpp" line="1805"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Modelo Mistral Medium&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1664"/>
+        <location filename="../src/modellist.cpp" line="1705"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Mesmo que você pague pelo ChatGPT-4 da OpenAI, isso não garante acesso à chave de API. Contate a OpenAI para mais informações.</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1270"/>
-        <location filename="../src/modellist.cpp" line="1321"/>
+        <location filename="../src/modellist.cpp" line="1309"/>
+        <location filename="../src/modellist.cpp" line="1360"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>não é possível abrir &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1282"/>
+        <location filename="../src/modellist.cpp" line="1321"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>não é possível criar &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1332"/>
+        <location filename="../src/modellist.cpp" line="1371"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1333"/>
+        <location filename="../src/modellist.cpp" line="1372"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Modelo de API Compatível com OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Chave da API: %1&lt;/li&gt;&lt;li&gt;URL Base: %2&lt;/li&gt;&lt;li&gt;Nome do Modelo: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1691"/>
+        <location filename="../src/modellist.cpp" line="1733"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;É necessária uma chave de API da Mistral.&lt;/li&gt;&lt;li&gt;AVISO: Seus chats serão enviados para a Mistral!&lt;/li&gt;&lt;li&gt;Sua chave de API será armazenada localmente&lt;/li&gt;&lt;li&gt;Ela será usada apenas para comunicação com a Mistral&lt;/li&gt;&lt;li&gt;Você pode solicitar uma chave de API &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;aqui&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1773"/>
+        <location filename="../src/modellist.cpp" line="1818"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;É necessária uma chave de API e a URL da API.&lt;/li&gt;&lt;li&gt;AVISO: Seus chats serão enviados para o servidor de API compatível com OpenAI que você especificou!&lt;/li&gt;&lt;li&gt;Sua chave de API será armazenada no disco&lt;/li&gt;&lt;li&gt;Será usada apenas para comunicação com o servidor de API compatível com OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1790"/>
+        <location filename="../src/modellist.cpp" line="1835"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Conectar a um servidor de API compatível com OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2213"/>
+        <location filename="../src/modellist.cpp" line="2259"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Criado por %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Publicado em %2.&lt;li&gt;Este modelo tem %3 curtidas.&lt;li&gt;Este modelo tem %4 downloads.&lt;li&gt;Mais informações podem ser encontradas &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;aqui.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
@@ -2582,6 +2582,11 @@ versão do modelo GPT4All que utilize seus dados!</translation>
         <translation>Descrição do que acontece ao participar</translation>
     </message>
     <message>
+        <location filename="../qml/StartupDialog.qml" line="118"/>
+        <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
         <location filename="../qml/StartupDialog.qml" line="150"/>
         <source>Opt-in for anonymous usage statistics</source>
@@ -2613,6 +2618,11 @@ versão do modelo GPT4All que utilize seus dados!</translation>
         <location filename="../qml/StartupDialog.qml" line="193"/>
         <source>Allow opt-out for anonymous usage statistics</source>
         <translation>Permitir recusar envio de estatísticas de uso anônimas</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="232"/>
+        <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
