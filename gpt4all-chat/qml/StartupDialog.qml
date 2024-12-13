@@ -115,7 +115,7 @@ model release that uses your data!")
             anchors.right: parent.right
             Label {
                 id: optInStatistics
-                text: "Opt-in to anonymous usage analytics used to improve GPT4All"
+                text: qsTr("Opt-in to anonymous usage analytics used to improve GPT4All")
                 Layout.row: 0
                 Layout.column: 0
                 color: theme.textColor
@@ -229,7 +229,7 @@ model release that uses your data!")
 
             Label {
                 id: optInNetwork
-                text: "Opt-in to anonymous sharing of chats to the GPT4All Datalake"
+                text: qsTr("Opt-in to anonymous sharing of chats to the GPT4All Datalake")
                 Layout.row: 1
                 Layout.column: 0
                 color: theme.textColor
