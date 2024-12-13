@@ -18,7 +18,6 @@ MySettingsButton {
         Rectangle {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 3
             anchors.right: parent.right
             height: 3
             color: isSelected ? theme.titleTextColor : theme.styledTextColorLighter

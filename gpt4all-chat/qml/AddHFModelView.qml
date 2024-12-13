@@ -20,7 +20,21 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.fillHeight: true
     Layout.alignment: Qt.AlignTop
-    spacing: 30
+    spacing: 5
+
+    Label {
+        Layout.topMargin: 0
+        Layout.bottomMargin: 25
+        Layout.rightMargin: 150 * theme.fontScale
+        Layout.alignment: Qt.AlignTop
+        Layout.fillWidth: true
+        verticalAlignment: Text.AlignTop
+        text: qsTr("Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these " +
+                   "will work. Many will require additional configuration before they can be used.")
+        font.pixelSize: theme.fontSizeLarger
+        color: theme.textColor
+        wrapMode: Text.WordWrap
+    }
 
     RowLayout {
         Layout.fillWidth: true

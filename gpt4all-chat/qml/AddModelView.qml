@@ -42,12 +42,12 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.margins: 30
-        spacing: 30
+        spacing: 10
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
-            spacing: 30
+            spacing: 10
 
             MyButton {
                 id: backButton

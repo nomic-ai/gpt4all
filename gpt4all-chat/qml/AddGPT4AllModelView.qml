@@ -19,7 +19,22 @@ import localdocs
 ColumnLayout {
     Layout.fillWidth: true
     Layout.alignment: Qt.AlignTop
-    spacing: 30
+    spacing: 5
+
+    Label {
+        Layout.topMargin: 0
+        Layout.bottomMargin: 25
+        Layout.rightMargin: 150 * theme.fontScale
+        Layout.alignment: Qt.AlignTop
+        Layout.fillWidth: true
+        verticalAlignment: Text.AlignTop
+        text: qsTr("These models have been specifically configured for use in GPT4All. The first few models on the " +
+                   "list are known to work the best, but you should only attempt to use models that will fit in your " +
+                   "available memory.")
+        font.pixelSize: theme.fontSizeLarger
+        color: theme.textColor
+        wrapMode: Text.WordWrap
+    }
 
     Label {
         visible: !ModelList.gpt4AllDownloadableModels.count && !ModelList.asyncModelRequestOngoing
