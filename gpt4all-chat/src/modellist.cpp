@@ -1141,18 +1141,20 @@ bool ModelList::isUniqueName(const QString &name) const
 
 QString ModelList::clone(const ModelInfo &model)
 {
+    auto *mySettings = MySettings::globalInstance();
+
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
-    QString chatTemplate, systemMessage;
+    QString tmplSetting, sysmsgSetting;
     if (auto tmpl = model.chatTemplate().asModern()) {
-        chatTemplate = *tmpl;
+        tmplSetting = *tmpl;
     } else {
         qWarning("ModelList Warning: attempted to clone model with legacy chat template");
         return {};
     }
     if (auto msg = model.systemMessage().asModern()) {
-        systemMessage = *msg;
+        sysmsgSetting = *msg;
     } else {
         qWarning("ModelList Warning: attempted to clone model with legacy system message");
         return {};
@@ -1177,12 +1179,22 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::GpuLayersRole, model.gpuLayers() },
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
-        { ModelList::ChatTemplateRole,  chatTemplate  },
-        { ModelList::SystemMessageRole, systemMessage },
+        { ModelList::SystemMessageRole, model.m_systemMessage },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };
+    if (auto tmpl = model.m_chatTemplate)
+        data.emplace_back(ModelList::ChatTemplateRole, *tmpl); // copy default chat template, if known
     updateData(id, data);
+
+    // Ensure setting overrides are copied in case the base model overrides change.
+    // This is necessary because setting these roles on ModelInfo above does not write to settings.
+    auto cloneInfo = modelInfo(id);
+    if (mySettings->isModelChatTemplateSet (model))
+        mySettings->setModelChatTemplate (cloneInfo, tmplSetting  );
+    if (mySettings->isModelSystemMessageSet(model))
+        mySettings->setModelSystemMessage(cloneInfo, sysmsgSetting);
+
     return id;
 }
 
