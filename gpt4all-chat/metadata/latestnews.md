@@ -1,5 +1,7 @@
 ## Latest News
 
+GPT4All v3.5.2 was released on December 13th. It changes the "Explore Models" page and fixes issues with the API server and cloned models.
+
 GPT4All v3.5.1 was released on December 10th and fixes several issues with the new chat templates. Additionally, it fixes a bug with the default model button as well an issue with remote models.
 
 ---
