@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Differentiate between curated models and those downloaded directly via HF ([#3269](https://github.com/nomic-ai/gpt4all/pull/3269))
+- Create separate download pages for built-in and HuggingFace models ([#3269](https://github.com/nomic-ai/gpt4all/pull/3269))
 
 ### Fixed
 - Fix API server ignoring assistant messages in history after v3.5.0 ([#3256](https://github.com/nomic-ai/gpt4all/pull/3256))
