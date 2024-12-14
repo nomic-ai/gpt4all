@@ -155,7 +155,7 @@
         <location filename="../qml/AddModelView.qml" line="317"/>
         <location filename="../qml/AddModelView.qml" line="605"/>
         <source>Busy indicator</source>
-        <translation>&quot;Besetzt&quot;-Anzeige</translation>
+        <translation>&quot;Beschäftigt&quot;-Anzeige</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="318"/>
