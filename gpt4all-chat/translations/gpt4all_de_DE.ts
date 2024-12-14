@@ -398,7 +398,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
-        <translation>Helles</translation>
+        <translation>Hell</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="39"/>
