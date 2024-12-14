@@ -64,7 +64,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
         <source>← Existing Models</source>
-        <translation>← Aktuelle Modelle</translation>
+        <translation>← Installierte Modelle</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="75"/>
