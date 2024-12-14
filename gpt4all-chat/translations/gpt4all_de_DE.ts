@@ -247,7 +247,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="508"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation>Beschreibt einen Fehler, der beim Herunterladen aufgetreten ist</translation>
+        <translation>Beschreibt einen Fehler, der beim Herunterladen auftrat</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="527"/>
