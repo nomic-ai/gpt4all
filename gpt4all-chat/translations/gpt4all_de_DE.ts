@@ -433,7 +433,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="152"/>
         <source>Medium</source>
-        <translation>Mittelgroß</translation>
+        <translation>Mittel</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="153"/>
