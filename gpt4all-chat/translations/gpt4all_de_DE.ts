@@ -423,7 +423,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="223"/>
         <source>Device</source>
-        <translation>Gerät/Device</translation>
+        <translation>Gerät</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="151"/>
