@@ -299,7 +299,7 @@
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="625"/>
-        <source>enter $API_KEY</source>
+        <source>Enter $API_KEY</source>
         <translation>geben Sie den $API_KEY ein</translation>
     </message>
     <message>
