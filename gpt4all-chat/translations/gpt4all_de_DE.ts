@@ -149,7 +149,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="307"/>
         <source>Network error: could not retrieve %1</source>
-        <translation>Netzwerkfehler: konnte nicht %1 abgerufen</translation>
+        <translation>Netzwerkfehler: konnte %1 nicht abrufen</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="317"/>
