@@ -320,7 +320,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="667"/>
         <source>enter $MODEL_NAME</source>
-        <translation>geben Sie den $MODEL_NAME ein</translation>
+        <translation>Geben Sie $MODEL_NAME ein</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="689"/>
