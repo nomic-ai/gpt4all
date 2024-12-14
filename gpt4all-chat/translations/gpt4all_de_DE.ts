@@ -257,7 +257,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="565"/>
         <source>Download progressBar</source>
-        <translation>Herunterladen-progressBar</translation>
+        <translation>Fortschrittsanzeige des Herunterladens</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="566"/>
