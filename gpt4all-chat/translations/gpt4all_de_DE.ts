@@ -134,7 +134,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="202"/>
         <source>Sort by: %1</source>
-        <translation>Sortieren nach:: %1</translation>
+        <translation>Sortieren nach: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="230"/>
