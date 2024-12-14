@@ -160,7 +160,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="318"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation>Angezeigt, wenn die Modellanfrage noch läuft</translation>
+        <translation>Wird angezeigt, während die Modellanfrage läuft</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="358"/>
