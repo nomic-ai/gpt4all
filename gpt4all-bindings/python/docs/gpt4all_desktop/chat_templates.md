@@ -235,7 +235,7 @@ See issue [3263](https://github.com/nomic-ai/gpt4all/issues/3263)
 ```jinja
 {%- for message in messages %}
     {%- if loop.first and messages[0]['role'] != 'system' %}
-        {{  '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}
+        {{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}
     {%- endif %}
         {{ '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n' }}
 {%- endfor %}
