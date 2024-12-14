@@ -310,7 +310,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="646"/>
         <source>enter $BASE_URL</source>
-        <translation>geben Sie den $BASE_URL ein</translation>
+        <translation>Geben Sie $BASE_URL ein</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="661"/>
