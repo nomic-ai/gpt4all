@@ -144,7 +144,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="274"/>
         <source>Limit: %1</source>
-        <translation>Límit: %1</translation>
+        <translation>Limit: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="307"/>
