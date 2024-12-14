@@ -290,7 +290,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="606"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation>Angezeigt, wenn der Datei-Hash berechnet wird</translation>
+        <translation>Wird angezeigt, während der Datei-Hash berechnet wird</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="619"/>
