@@ -474,7 +474,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="276"/>
         <source>The preferred model for new chats. Also used as the local server fallback.</source>
-        <translation>Das bevorzugte Modell für neue Chats. Wird auch als Fallback für den lokalen Server verwendet.</translation>
+        <translation>Das bevorzugte Modell für neue Chats. Wird auch im Falle eines Rückfalls für den lokalen Server verwendet.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="339"/>
