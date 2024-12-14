@@ -74,7 +74,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="92"/>
         <source>Discover and download models by keyword search...</source>
-        <translation>Entdecken und laden Sie Modelle per Stichwortsuche herunter...</translation>
+        <translation>Entdecken Sie Modelle per Stichwortsuche und laden Sie sie herunter...</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="95"/>
