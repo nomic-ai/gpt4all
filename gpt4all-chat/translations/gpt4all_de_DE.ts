@@ -16,7 +16,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Fügen Sie einen Ordner hinzu, der reine Textdateien, PDFs oder Markdown enthält. Konfigurieren Sie zusätzliche Erweiterungen in den Einstellungen.</translation>
+        <translation>Fügen Sie einen Ordner hinzu, der reine Text-, PDF- oder Markdown-Dateien enthält. Zusätzliche Dateinaamenerweiterungen in den Einstellungen konfigurierbar.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
@@ -26,7 +26,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="114"/>
         <source>Collection name...</source>
-        <translation>Name diese Sammlung</translation>
+        <translation>Name der Sammlung</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="116"/>
@@ -46,7 +46,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="152"/>
         <source>Folder path to documents (Required)</source>
-        <translation>Ordnerpfad zu Dokumenten (erforderlich)</translation>
+        <translation>Ordnerpfad zu den Dokumenten (erforderlich)</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="164"/>
@@ -64,7 +64,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
         <source>← Existing Models</source>
-        <translation>← Aktuelle Modelle</translation>
+        <translation>← Installierte Modelle</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="75"/>
@@ -408,7 +408,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="114"/>
         <source>LegacyDark</source>
-        <translation>Alte Dunkel</translation>
+        <translation>Dunkel (Ehemalig)</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="136"/>
@@ -423,7 +423,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="223"/>
         <source>Device</source>
-        <translation>Gerät/Device</translation>
+        <translation>Gerät</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="151"/>
@@ -433,7 +433,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="152"/>
         <source>Medium</source>
-        <translation>Mittelgroß</translation>
+        <translation>Mittel</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="153"/>
@@ -458,7 +458,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
-        <translation>Das zur Textgenerierung verwendete Gerät.</translation>
+        <translation>Der zur Textgenerierung verwendete Prozessor.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="242"/>
@@ -474,7 +474,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="276"/>
         <source>The preferred model for new chats. Also used as the local server fallback.</source>
-        <translation>Das bevorzugte Modell für neue Chats. Wird auch als Fallback für den lokalen Server verwendet.</translation>
+        <translation>Das bevorzugte Modell für neue Chats. Wird auch im Falle eines Rückfalls für den lokalen Server verwendet.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="339"/>
@@ -1375,7 +1375,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <source>The compute device used for embeddings. Requires restart.</source>
-        <translation>Das für Embeddings verwendete Rechengerät. Neustart erforderlich.</translation>
+        <translation>Der zur Embeddings verwendete Prozessor. Neustart erforderlich.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="131"/>
@@ -2570,12 +2570,12 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="149"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
+        <translation>&lt;h3&gt;Beim Starten ist ein Fehler aufgetreten:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inkompatible Hardware erkannt.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Leider erfüllt Ihre CPU nicht die Mindestanforderungen zum Ausführen dieses Programms. Insbesondere unterstützt sie keine AVX-Intrinsics, die dieses Programm zum erfolgreichen Ausführen eines modernen großen Sprachmodells benötigt. Die einzige Lösung besteht derzeit darin, Ihre Hardware auf eine modernere CPU aufzurüsten.&lt;br&gt;&lt;br&gt;Weitere Informationen finden Sie hier: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="165"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
+        <translation>&lt;h3&gt;Beim Starten ist ein Fehler aufgetreten: &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Kein Zugriff auf die Einstellungsdatei möglich.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Leider verhindert etwas, dass das Programm auf die Einstellungsdatei zugreifen kann. Dies könnte durch falsche Berechtigungen im lokalen App-Konfigurationsverzeichnis verursacht werden, in dem sich die Einstellungsdatei befindet. Weitere Hilfe erhalten Sie in unserem &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord-Kanal&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="193"/>
