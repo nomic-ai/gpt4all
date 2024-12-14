@@ -277,7 +277,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="594"/>
         <source>Calculating...</source>
-        <translation>Berechnung…</translation>
+        <translation>Berechne…</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="598"/>
