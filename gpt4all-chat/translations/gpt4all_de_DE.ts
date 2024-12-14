@@ -408,7 +408,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="114"/>
         <source>LegacyDark</source>
-        <translation>Alte Dunkel</translation>
+        <translation>Dunkel (Ehemalig)</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="136"/>
