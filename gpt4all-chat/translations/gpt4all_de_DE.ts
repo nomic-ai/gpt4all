@@ -26,7 +26,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="114"/>
         <source>Collection name...</source>
-        <translation>Name diese Sammlung</translation>
+        <translation>Name der Sammlung</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="116"/>
