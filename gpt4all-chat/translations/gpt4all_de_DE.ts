@@ -109,7 +109,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="194"/>
         <source>Recent</source>
-        <translation>Jüngste</translation>
+        <translation>Jüngsten</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="216"/>
