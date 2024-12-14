@@ -330,7 +330,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="711"/>
         <source>RAM required</source>
-        <translation>benötigter RAM</translation>
+        <translation>Benötigter RAM</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="733"/>
