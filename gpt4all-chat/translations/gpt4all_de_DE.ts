@@ -46,7 +46,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="152"/>
         <source>Folder path to documents (Required)</source>
-        <translation>Ordnerpfad zu Dokumenten (erforderlich)</translation>
+        <translation>Ordnerpfad zu den Dokumenten (erforderlich)</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="164"/>
