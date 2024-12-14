@@ -241,7 +241,7 @@
   },
   {
     "version": "3.5.2",
-    "notes": "* **Model Search:** There are now separate tabs for official and third-party models.\n* **Local Server Fixes:** Several mistakes in v3.5's changes to the API server have been corrected.\n* **Cloned Model Fixes:** The chat template and system message of clones models now manage their defaults correctly.\n* **Translation Improvements:** The Romanian and Italian translations have been updated.\n",
+    "notes": "* **Model Search:** There are now separate tabs for official and third-party models.\n* **Local Server Fixes:** Several mistakes in v3.5's changes to the API server have been corrected.\n* **Cloned Model Fixes:** The chat template and system message of cloned models now manage their defaults correctly.\n* **Translation Improvements:** The Romanian and Italian translations have been updated.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* Riccardo Giovanetti (`@Harvester62`)\n* Victor Emanuel (`@SINAPSA-IC`)"
   }
 ]
