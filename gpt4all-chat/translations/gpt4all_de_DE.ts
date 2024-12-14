@@ -124,7 +124,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="252"/>
         <source>None</source>
-        <translation>Keiner</translation>
+        <translation>Keines</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="101"/>
