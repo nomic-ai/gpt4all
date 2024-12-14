@@ -458,7 +458,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
-        <translation>Das zur Textgenerierung verwendete Gerät.</translation>
+        <translation>Der zur Textgenerierung verwendete Prozessor.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="242"/>
