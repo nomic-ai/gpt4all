@@ -16,7 +16,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Fügen Sie einen Ordner hinzu, der reine Textdateien, PDFs oder Markdown enthält. Konfigurieren Sie zusätzliche Erweiterungen in den Einstellungen.</translation>
+        <translation>Fügen Sie einen Ordner hinzu, der reine Text-, PDF- oder Markdown-Dateien enthält. Zusätzliche Dateinamenerweiterungen sind in den Einstellungen konfigurierbar.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
