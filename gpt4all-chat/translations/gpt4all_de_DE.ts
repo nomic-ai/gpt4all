@@ -1623,7 +1623,7 @@ model to get started</source>
     <message>
         <location filename="../src/modellist.cpp" line="1651"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation>&lt;strong&gt;Modell OpenAI&apos;s ChatGPT GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
+        <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT Modell GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1664"/>
