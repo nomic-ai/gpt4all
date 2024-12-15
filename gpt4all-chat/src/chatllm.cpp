@@ -852,32 +852,29 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const ChatItem> items) const
 }
 
 auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx,
-                                 std::optional<QList<ChatItem>> chat) -> ChatPromptResult
+                                 std::optional<std::pair<int, int>> subrange) -> ChatPromptResult
 {
     Q_ASSERT(isModelLoaded());
     Q_ASSERT(m_chatModel);
 
+    // Return a (ChatModelAccessor, std::span) pair where the span represents the relevant messages for this chat.
+    // "subrange" is used to select only local server messages from the current chat session.
+    auto getChat = [&]() {
+        auto items = m_chatModel->chatItems(); // holds lock
+        std::span view(items);
+        if (subrange)
+            view = view.subspan(subrange->first, subrange->second);
+        Q_ASSERT(view.size() >= 2);
+        return std::pair(std::move(items), view);
+    };
+
     // copy messages for safety (since we can't hold the lock the whole time)
     std::optional<std::pair<int, QString>> query;
-    std::vector<ChatItem> chatItems;
     {
-        std::optional<ChatModelAccessor> items;
-        std::span<const ChatItem> view;
-        if (chat) {
-            view = *chat;
-        } else {
-            items = m_chatModel->chatItems(); // holds lock
-            Q_ASSERT(!items->empty());
-            view = *items;
-        }
-        Q_ASSERT(view.size() >= 2); // should be prompt/response pairs
-
         // Find the prompt that represents the query. Server chats are flexible and may not have one.
-        auto response = view.end() - 1;
-        if (auto peer = m_chatModel->getPeer(view, response))
+        auto [_, view] = getChat(); // holds lock
+        if (auto peer = m_chatModel->getPeer(view, view.end() - 1)) // peer of response
             query = { *peer - view.begin(), (*peer)->value };
-
-        chatItems.assign(view.begin(), view.end() - 1); // exclude last
     }
 
     QList<ResultInfo> databaseResults;
@@ -887,6 +884,13 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
         emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
         m_chatModel->updateSources(promptIndex, databaseResults);
         emit databaseResultsChanged(databaseResults);
+    }
+
+    // copy messages for safety (since we can't hold the lock the whole time)
+    std::vector<ChatItem> chatItems;
+    {
+        auto [_, view] = getChat(); // holds lock
+        chatItems.assign(view.begin(), view.end() - 1); // exclude new response
     }
 
     auto result = promptInternal(chatItems, ctx, !databaseResults.isEmpty());
