@@ -1638,7 +1638,7 @@ model to get started</source>
     <message>
         <location filename="../src/modellist.cpp" line="1691"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
-        <translation>&lt;ul&gt;&lt;li&gt;Erfordert persönlichen Mistral-API-Schlüssel. &lt;/li&gt;&lt;li&gt;ACHTUNG: Ihre Chats werden an Mistral gesendet!&lt;/li&gt;&lt;li&gt;Ihre API-Schlüssel wird auf der Festplatte gespeichert&lt;/li&gt;&lt;li&gt;Es wird nur zur Kommunikation mit Mistral verwendet&lt;/li&gt;&lt;li&gt;Einen API-Schlüssel können Sie &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;hier beantragen.&lt;/a&gt;.&lt;/li&gt;</translation>
+        <translation>&lt;ul&gt;&lt;li&gt;Erfordert persönlichen Mistral-API-Schlüssel. &lt;/li&gt;&lt;li&gt;ACHTUNG: Ihre Chats werden an Mistral gesendet!&lt;/li&gt;&lt;li&gt;Ihre API-Schlüssel werden auf der Festplatte gespeichert&lt;/li&gt;&lt;li&gt;Sie werden nur zur Kommunikation mit Mistral verwendet&lt;/li&gt;&lt;li&gt;Einen API-Schlüssel können Sie &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;hier beantragen.&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1710"/>
