@@ -1633,7 +1633,7 @@ model to get started</source>
     <message>
         <location filename="../src/modellist.cpp" line="1679"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
-        <translation>&lt;strong&gt;Modell ChatGPT GPT-4 des OpenAI&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
+        <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT Modell GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1691"/>
