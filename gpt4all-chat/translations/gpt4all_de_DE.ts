@@ -1643,7 +1643,7 @@ model to get started</source>
     <message>
         <location filename="../src/modellist.cpp" line="1710"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation>&lt;strong&gt;Modell Mistral Tiny&lt;/strong&gt;&lt;br&gt; %1</translation>
+        <translation>&lt;strong&gt;Mistral Tiny Modell&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1735"/>
