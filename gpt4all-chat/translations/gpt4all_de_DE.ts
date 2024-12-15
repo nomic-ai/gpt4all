@@ -484,22 +484,22 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="340"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation>am Ende der Antworten, Vorschläge für Folgefragen generieren.</translation>
+        <translation>Generiert Vorschläge für Folgefragen am Ende der Erwiderungen.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="353"/>
         <source>When chatting with LocalDocs</source>
-        <translation>beim Chatten mit LocalDocs</translation>
+        <translation>Beim Chatten mit LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="354"/>
         <source>Whenever possible</source>
-        <translation>wann immer möglich</translation>
+        <translation>Wann immer möglich</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="355"/>
         <source>Never</source>
-        <translation>niemals</translation>
+        <translation>Niemals</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="368"/>
@@ -534,7 +534,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="447"/>
         <source>Advanced</source>
-        <translation>Erweiterte</translation>
+        <translation>Erweitert</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="459"/>
@@ -544,17 +544,17 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="460"/>
         <source>The number of CPU threads used for inference and embedding.</source>
-        <translation>Die Anzahl der für Inferenz und Embedding verwendeten CPU-Threads.</translation>
+        <translation>Die Anzahl der für Inferenz und Einbettung verwendeten CPU-Threads.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
         <source>Enable System Tray</source>
-        <translation>In die Taskleiste minimieren</translation>
+        <translation>Aktiviere Taskleiste</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
-        <translation>Das Programm wird in die Taskleiste minimiert.</translation>
+        <translation>Das Programm wird in die Taskleiste minimiert, wenn das Fenster geschlossen wird.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
@@ -579,17 +579,17 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="578"/>
         <source>Check For Updates</source>
-        <translation>Nach Updates suchen</translation>
+        <translation>Aktualisierung</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="579"/>
         <source>Manually check for an update to GPT4All.</source>
-        <translation>Nach einem Update für GPT4All, manuell suchen.</translation>
+        <translation>Manuell nach einer Aktualisierung für GPT4All suchen.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="588"/>
         <source>Updates</source>
-        <translation>Aktualisierungen/Updates</translation>
+        <translation>Aktualisieren</translation>
     </message>
 </context>
 <context>
@@ -611,12 +611,12 @@
     <message>
         <location filename="../src/chatapi.cpp" line="257"/>
         <source>ERROR: Network error occurred while connecting to the API server</source>
-        <translation>FEHLER: Netzwerkfehler aufgetreten, beim Verbinden mit dem API-Server</translation>
+        <translation>FEHLER: Beim Verbinden mit dem API-Server ist ein Netzwerkfehler aufgetreten</translation>
     </message>
     <message>
         <location filename="../src/chatapi.cpp" line="270"/>
         <source>ChatAPIWorker::handleFinished got HTTP Error %1 %2</source>
-        <translation>ChatAPIWorker::handleFinished - Fehler: HTTP Error %1 %2</translation>
+        <translation>ChatAPIWorker::handleFinished empfing folgenden Fehler: HTTP Error %1 %2</translation>
     </message>
 </context>
 <context>
@@ -644,7 +644,7 @@
     <message>
         <location filename="../qml/ChatDrawer.qml" line="199"/>
         <source>Select the current chat or edit the chat when in edit mode</source>
-        <translation>Wählen Sie den aktuellen Chat aus, oder bearbeiten Sie den Chat im Bearbeitungsmodus</translation>
+        <translation>Wählen Sie den aktuellen Chat aus oder bearbeiten Sie den Chat im Bearbeitungsmodus</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="216"/>
@@ -697,7 +697,7 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="97"/>
         <source>response stopped ...</source>
-        <translation>Antwort gestoppt ...</translation>
+        <translation>Erwiderung gestoppt ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="98"/>
@@ -707,7 +707,7 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="99"/>
         <source>searching localdocs: %1 ...</source>
-        <translation>in LocalDocs suchen: %1 ...</translation>
+        <translation>sucht in LocalDocs: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="100"/>
@@ -772,7 +772,7 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="543"/>
         <source>Redo this response?</source>
-        <translation>Diese Antwort wiederholen?</translation>
+        <translation>Diese Erwiderung regenerieren?</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="567"/>
@@ -792,27 +792,27 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="589"/>
         <source>Cannot redo response without a loaded model.</source>
-        <translation>Die Antwort kann ohne geladenes Modell nicht wiederholt werden.</translation>
+        <translation>Die Erwiderung kann ohne geladenes Modell nicht regeneriert werden.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="591"/>
         <source>Cannot redo response while the model is generating.</source>
-        <translation>Während das Modell generiert wird, kann die Antwort nicht wiederholt werden.</translation>
+        <translation>Während das Modell generiert, kann die Erwiderung nicht regeneriert werden.</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="600"/>
         <source>Redo</source>
-        <translation>Wiederholen</translation>
+        <translation>Regeneriere</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="632"/>
         <source>Like response</source>
-        <translation>Gefällt Mir! die Antwort</translation>
+        <translation>Diese Erwiderung gefällt mir!</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="661"/>
         <source>Dislike response</source>
-        <translation>Gefällt mir nicht! die Antwort</translation>
+        <translation>Diese Erwiderung gefällt mir nicht!</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="724"/>
@@ -825,7 +825,7 @@
     <message>
         <location filename="../src/chatllm.cpp" line="925"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
-        <translation>Ihre Nachricht war zu lang und konnte nicht verarbeitet werden (%1 &gt; %2). Versuchen Sie es erneut mit einer kürzeren Nachricht.</translation>
+        <translation>Ihre Nachricht war zu lang und konnte nicht verarbeitet werden (%1 &gt; %2). Versuchen Sie es bitte erneut mit einer kürzeren Nachricht.</translation>
     </message>
 </context>
 <context>
@@ -871,12 +871,12 @@
     <message>
         <location filename="../qml/ChatView.qml" line="98"/>
         <source>Conversation copied to clipboard.</source>
-        <translation>Konversation in die Clipboard kopiert.</translation>
+        <translation>Konversation in die Zwischenablage kopiert.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="105"/>
         <source>Code copied to clipboard.</source>
-        <translation>Code in die Clipboard kopiert.</translation>
+        <translation>Code in die Zwischenablage kopiert.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="112"/>
@@ -891,7 +891,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="246"/>
         <source>Chat panel with options</source>
-        <translation>Chat-Panel mit Optionen</translation>
+        <translation>Chat-Bereich mit Optionen</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="353"/>
@@ -901,7 +901,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="367"/>
         <source>Eject the currently loaded model</source>
-        <translation>Das aktuell geladene Modell aus werfen</translation>
+        <translation>Das aktuell geladene Modell auswerfen</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="379"/>
@@ -936,7 +936,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="477"/>
         <source>The top item is the current model</source>
-        <translation>Oberste Artikel ist das aktuelle Modell</translation>
+        <translation>Das oberste Element ist das aktuelle Modell</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="563"/>
@@ -961,7 +961,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="753"/>
         <source>Loads the default model which can be changed in settings</source>
-        <translation>Standardmodell lädt, das in Einstellungen geändert werden kann</translation>
+        <translation>Lädt das Standardmodell (Das erwählte Modell kann in den Einstellungen vorkonfiguriert werden)</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="764"/>
@@ -971,7 +971,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="1092"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation>Diese alte Prompt Template muss in den Einstellungen &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;aktualisiert&lt;/a&gt; werden.</translation>
+        <translation>Dieses veraltete Prompt Template muss in den Einstellungen &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;aktualisiert&lt;/a&gt; werden.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1096"/>
@@ -986,7 +986,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="1102"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation>Diese alte System-Prompt muss in den Einstellungen &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;aktualisiert&lt;/a&gt; werden.</translation>
+        <translation>Dieser veraltete System-Prompt muss in den Einstellungen &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;aktualisiert&lt;/a&gt; werden.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1213"/>
@@ -1001,7 +1001,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="1392"/>
         <source>Attach</source>
-        <translation>Befestigen</translation>
+        <translation>Hinzufügen</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1394"/>
@@ -1048,7 +1048,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="816"/>
         <source>prompt / response pairs from the conversation</source>
-        <translation>Prompt-/Antwort-Paare aus dem Gespräch</translation>
+        <translation>Prompt-/Erwiderungs-Paare aus dem Gespräch</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1290"/>
@@ -1063,7 +1063,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="939"/>
         <source>Copy chat session to clipboard</source>
-        <translation>Chat-Sitzung in die Clipboard kopieren</translation>
+        <translation>Chat-Sitzung in die Zwischenablage kopieren</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1348"/>
@@ -1073,7 +1073,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1349"/>
         <source>Stop the current response generation</source>
-        <translation>Aktuelle Antwortgenerierung stoppen</translation>
+        <translation>Aktuelle Erwiderungsgenerierung stoppen</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1004"/>
@@ -1094,7 +1094,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="728"/>
         <source>Load · %1 (default) →</source>
-        <translation>Jetzt laden · %1 (implicit) →</translation>
+        <translation>Jetzt laden · %1 (Standard) →</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1240"/>
@@ -1114,12 +1114,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1284"/>
         <source>Cut</source>
-        <translation>Schneiden (Cut)</translation>
+        <translation>Ausschneiden</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1296"/>
         <source>Paste</source>
-        <translation>Verbinden (Paste)</translation>
+        <translation>Einfügen</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1300"/>
@@ -1237,7 +1237,7 @@ model to get started</source>
     <message>
         <location filename="../qml/HomeView.qml" line="56"/>
         <source>The privacy-first LLM chat application</source>
-        <translation>Die datenschutzorientierte LLM-Chat-Programm</translation>
+        <translation>Das datenschutzorientierte LLM-Chat-Programm</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="66"/>
@@ -1340,17 +1340,17 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="51"/>
         <source>Allowed File Extensions</source>
-        <translation>Erlaubte Dateierweiterungen</translation>
+        <translation>Erlaubte Dateinamenerweiterungen</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="52"/>
         <source>Comma-separated list. LocalDocs will only attempt to process files with these extensions.</source>
-        <translation>Durch-Kommas getrennte Liste. LocalDocs versucht nur, Dateien mit diesen Erweiterungen zu verarbeiten.</translation>
+        <translation>Durch-Kommas getrennte Liste. LocalDocs wird nur versuchen, Dateien mit diesen Erweiterungen zu verarbeiten.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="100"/>
         <source>Embedding</source>
-        <translation>Embedding</translation>
+        <translation>Einbettung</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="112"/>
@@ -1360,22 +1360,22 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="113"/>
         <source>Embed documents using the fast Nomic API instead of a private local model. Requires restart.</source>
-        <translation>Embedding von Dokumente mithilfe der schnellen Nomic-API, statt mithilfe eines privaten lokalen Modells. Neustart erforderlich.</translation>
+        <translation>Einbettung von Dokumente mithilfe der schnellen Nomic-API, statt eines privaten lokalen Modells. Neustart erforderlich.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="130"/>
         <source>Nomic API Key</source>
-        <translation>Nomic API-Schlüssel</translation>
+        <translation>Schlüssel für Nomic API</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="165"/>
         <source>Embeddings Device</source>
-        <translation>Embeddings-Gerät</translation>
+        <translation>Einbettungsgerät</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <source>The compute device used for embeddings. Requires restart.</source>
-        <translation>Das für Embeddings verwendete Rechengerät. Neustart erforderlich.</translation>
+        <translation>Das für Einbettungen verwendete Rechengerät. Neustart erforderlich.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="131"/>
@@ -1405,37 +1405,37 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="242"/>
         <source>Advanced</source>
-        <translation>Erweiterte</translation>
+        <translation>Erweitert</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
         <source>Warning: Advanced usage only.</source>
-        <translation>Warnung: Nur für erweiterte Verwendung.</translation>
+        <translation>Warnung: Nur für fortgeschrittene Nutzung.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="259"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Zu große Werte können zu Fehlern bei LocalDocs, extrem langsamen Antworten oder gar keinen Antworten führen. Grob gesagt werden die {N Zeichen x N Snippets} zum Kontextfenster des Modells hinzugefügt. Mehr Infos: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;hier&lt;/a&gt;.</translation>
+        <translation>Zu große Werte können zu Fehlern bei LocalDocs, extrem langsamen Erwiderungen oder gar keinen Erwiderungen führen. Grob gesagt werden die {N Zeichen x N Snippets} zum Kontextfenster des Modells hinzugefügt. Mehr Infos: &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;hier&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="268"/>
         <source>Number of characters per document snippet. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Anzahl der Zeichen pro Dokumentausschnitt. Höhere Zahlen erhöhen die Wahrscheinlichkeit sachlicher Antworten, führen aber auch zu einer langsameren Generierung.</translation>
+        <translation>Anzahl der Zeichen pro Dokumentschnipsel. Höhere Zahlen erhöhen die Wahrscheinlichkeit sachlicher Antworten, führen aber auch zu einer langsameren Generierung.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="294"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>Maximal besten N Übereinstimmungen der abgerufenen Dokumentausschnitte, die dem Kontext für die Eingabeaufforderung hinzugefügt werden sollen. Größere Zahlen erhöhen die Wahrscheinlichkeit sachlicher Antworten, führen aber auch zu einer langsameren Generierung.</translation>
+        <translation>Maximal besten N Übereinstimmungen der abgerufenen Dokumentschnipsel, die dem Kontext für die Eingabeaufforderung hinzugefügt werden sollen. Größere Zahlen erhöhen die Wahrscheinlichkeit sachlicher Antworten, führen aber auch zu einer langsameren Generierung.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="267"/>
         <source>Document snippet size (characters)</source>
-        <translation>Größe des Dokumentausschnitts (in Zeichen)</translation>
+        <translation>Größe des Dokumentschnipsels (in Zeichen)</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="293"/>
         <source>Max document snippets per prompt</source>
-        <translation>Maximale Anzahl an Dokumentausschnitten pro Eingabeaufforderung</translation>
+        <translation>Maximale Anzahl an Dokumentschnipsel pro Eingabeaufforderung</translation>
     </message>
 </context>
 <context>
@@ -1503,12 +1503,12 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="265"/>
         <source>EMBEDDING</source>
-        <translation>...EMBEDDINGs...</translation>
+        <translation>...Einbettungen...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="268"/>
         <source>REQUIRES UPDATE</source>
-        <translation>ERFORDERT UPDATE</translation>
+        <translation>ERFORDERT AKTUALISIERUNG</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="271"/>
@@ -1523,12 +1523,12 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="300"/>
         <source>Indexing in progress</source>
-        <translation>...Indizierung läuft...</translation>
+        <translation>...Indizierung wird durchgeführt...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="303"/>
         <source>Embedding in progress</source>
-        <translation>...Embedding läuft...</translation>
+        <translation>...Einbettung wird durchgeführt...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="306"/>
@@ -1543,7 +1543,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="311"/>
         <source>Installation in progress</source>
-        <translation>...Installation läuft...</translation>
+        <translation>...Installation wird durchgeführt...</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="325"/>
@@ -1579,7 +1579,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="423"/>
         <source>Reindex this folder from scratch. This is slow and usually not needed.</source>
-        <translation>Indizieren Sie diesen Ordner von Grund auf neu. Langsam und normalerweise nicht erforderlich.</translation>
+        <translation>Indizieren Sie diesen Ordner von Grund auf neu. Dies ist langsam und normalerweise nicht erforderlich.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="430"/>
@@ -1589,7 +1589,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="433"/>
         <source>Update the collection to the new version. This is a slow operation.</source>
-        <translation>Sammlung aktualisieren, auf die neue Version. Dies ist ein langsamer Vorgang.</translation>
+        <translation>Sammlung auf die neue Version aktualisieren. Dies ist ein langsamer Vorgang.</translation>
     </message>
 </context>
 <context>
@@ -1598,12 +1598,12 @@ model to get started</source>
         <location filename="../src/modellist.cpp" line="1270"/>
         <location filename="../src/modellist.cpp" line="1321"/>
         <source>cannot open &quot;%1&quot;: %2</source>
-        <translation>kann nicht öffnen &quot;%1&quot;: %2</translation>
+        <translation>kann &quot;%1&quot;: %2 nicht öffnen</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1282"/>
         <source>cannot create &quot;%1&quot;: %2</source>
-        <translation>kann nicht erstellen: &quot;%1&quot;: %2</translation>
+        <translation>kann &quot;%1&quot;: %2 nicht erstellen</translation>
     </message>
     <message>
         <location filename="../src/modellist.cpp" line="1332"/>
