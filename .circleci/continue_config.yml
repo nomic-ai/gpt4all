@@ -462,6 +462,7 @@ jobs:
 
   build-offline-chat-installer-windows:
     machine:
+      # we use 2024.04.01 because nvcc complains about the MSVC ver if we use anything newer
       image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
