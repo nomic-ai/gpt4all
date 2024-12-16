@@ -528,7 +528,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     bool actualDeviceIsCPU = true;
 
 #if defined(Q_OS_MAC) && defined(__aarch64__)
-    if (m_llModelInfo.model->implementation().buildVariant() == "metal")
+    if (m_llModelInfo.model->implementation().buildBackend() == "metal")
         actualDeviceIsCPU = false;
 #else
     if (requestedDevice != "CPU") {
