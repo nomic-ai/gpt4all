@@ -462,7 +462,7 @@ jobs:
 
   build-offline-chat-installer-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -553,7 +553,7 @@ jobs:
 
   sign-offline-chat-installer-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -586,7 +586,7 @@ jobs:
 
   build-online-chat-installer-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -684,7 +684,7 @@ jobs:
 
   sign-online-chat-installer-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -784,7 +784,7 @@ jobs:
 
   build-gpt4all-chat-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -1047,7 +1047,7 @@ jobs:
 
   build-py-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
@@ -1244,7 +1244,7 @@ jobs:
 
   build-bindings-backend-windows:
     machine:
-      image: windows-server-2022-gui:current
+      image: windows-server-2022-gui:2024.04.1
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
