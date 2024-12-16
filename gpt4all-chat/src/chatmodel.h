@@ -362,7 +362,8 @@ public:
 
     // Used by Server to append a new conversation to the chat log.
     // Appends a new, blank response to the end of the input list.
-    void appendResponseWithHistory(QList<ChatItem> &history)
+    // Returns an (offset, count) pair representing the indices of the appended items, including the new response.
+    std::pair<int, int> appendResponseWithHistory(QList<ChatItem> &history)
     {
         if (history.empty())
             throw std::invalid_argument("at least one message is required");
@@ -378,9 +379,11 @@ public:
         beginInsertRows(QModelIndex(), startIndex, endIndex - 1 /*inclusive*/);
         bool hadError;
         QList<ChatItem> newItems;
+        std::pair<int, int> subrange;
         {
             QMutexLocker locker(&m_mutex);
             hadError = hasErrorUnlocked();
+            subrange = { m_chatItems.size(), history.size() };
             m_chatItems.reserve(m_chatItems.size() + history.size());
             for (auto &item : history)
                 m_chatItems << item;
@@ -390,6 +393,7 @@ public:
         // Server can add messages when there is an error because each call is a new conversation
         if (hadError)
             emit hasErrorChanged(false);
+        return subrange;
     }
 
     void truncate(qsizetype size)

@@ -781,7 +781,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
             case Assistant: chatItems.emplace_back(ChatItem::response_tag, message.content); break;
         }
     }
-    m_chatModel->appendResponseWithHistory(chatItems);
+    auto subrange = m_chatModel->appendResponseWithHistory(chatItems);
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {
@@ -801,7 +801,7 @@ auto Server::handleChatRequest(const ChatRequest &request)
     for (int i = 0; i < request.n; ++i) {
         ChatPromptResult result;
         try {
-            result = promptInternalChat(m_collections, promptCtx, chatItems);
+            result = promptInternalChat(m_collections, promptCtx, subrange);
         } catch (const std::exception &e) {
             emit responseChanged(e.what());
             emit responseStopped(0);
