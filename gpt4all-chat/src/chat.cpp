@@ -243,7 +243,6 @@ void Chat::responseStopped(qint64 promptResponseMs)
     const int index = m_chatModel->count() - 1;
     ChatItem *item = m_chatModel->get(index);
 
-    // FIXME
     const QString possibleToolcall = item->toolCallValue();
 
     ToolCallParser parser;
