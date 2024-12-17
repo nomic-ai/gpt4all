@@ -256,13 +256,12 @@ public:
             if (parser.startIndex() < 0)
                 return value;
 
-            // Otherwise we only return the text before and any partial code interpreter code
+            // Otherwise we only return the text before and any partial tool call
             const QString beforeToolCall = value.left(parser.startIndex());
-            const QString toolCallString = value.mid(parser.startIndex());
-            return beforeToolCall + codeInterpreterContent(toolCallString);
+            return beforeToolCall;
         }
 
-        // For complete tool calls we only return content if it is code interpreter
+        // For tool calls we only return content if it is the code interpreter
         if (type() == Type::ToolCall)
             return codeInterpreterContent(value);
 
@@ -275,23 +274,11 @@ public:
 
     QString codeInterpreterContent(const QString &value) const
     {
-        // Constants for identifying and formatting the code interpreter tool call
-        static const QString prefix = ToolCallConstants::CodeInterpreterTag;
-
-        // Check if the tool call is a code interpreter tool call
-        if (!value.startsWith(prefix))
-            return QString();
-
-        // Regex to remove the tag and any surrounding whitespace
-        static const QRegularExpression regex("^"
-            + ToolCallConstants::CodeInterpreterTag
-            + "\\s*|\\s*"
-            + ToolCallConstants::CodeInterpreterEndTag
-            + "$");
+        ToolCallParser parser;
+        parser.update(value);
 
         // Extract the code
-        QString code = value;
-        code.remove(regex);
+        QString code = parser.toolCall();
         code = code.trimmed();
 
         QString result;
