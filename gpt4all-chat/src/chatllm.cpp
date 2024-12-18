@@ -647,27 +647,10 @@ bool isAllSpace(R &&r)
 void ChatLLM::regenerateResponse(int index)
 {
     Q_ASSERT(m_chatModel);
-#if 0 // FIXME
-    int promptIdx;
-    {
-        auto items = m_chatModel->chatItems(); // holds lock
-        if (index < 1 || index >= items.size() || items[index].type() != ChatItem::Type::Response)
-            return;
-        promptIdx = m_chatModel->getPeerUnlocked(index).value_or(-1);
+    if (m_chatModel->regenerateResponse(index)) {
+        emit responseChanged();
+        prompt(m_chat->collectionList());
     }
-
-    emit responseChanged({});
-    m_chatModel->truncate(index + 1);
-    m_chatModel->updateCurrentResponse(index, true );
-    m_chatModel->updateNewResponse    (index, {}   );
-    m_chatModel->updateStopped        (index, false);
-    m_chatModel->updateThumbsUpState  (index, false);
-    m_chatModel->updateThumbsDownState(index, false);
-    m_chatModel->setError(false);
-    if (promptIdx >= 0)
-        m_chatModel->updateSources(promptIdx, {});
-#endif
-    prompt(m_chat->collectionList());
 }
 
 std::optional<QString> ChatLLM::popPrompt(int index)

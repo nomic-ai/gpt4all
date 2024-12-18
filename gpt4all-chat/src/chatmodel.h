@@ -671,6 +671,31 @@ public:
             emit hasErrorChanged(false);
     }
 
+    bool regenerateResponse(int index)
+    {
+        int promptIdx;
+        {
+            QMutexLocker locker(&m_mutex);
+            auto items = m_chatItems; // holds lock
+            if (index < 1 || index >= items.size() || items[index]->type() != ChatItem::Type::Response)
+                return false;
+            promptIdx = getPeerUnlocked(index).value_or(-1);
+        }
+
+        truncate(index + 1);
+        clearSubItems(index);
+        setResponseValue({});
+        updateCurrentResponse(index, true );
+        updateNewResponse    (index, {}   );
+        updateStopped        (index, false);
+        updateThumbsUpState  (index, false);
+        updateThumbsDownState(index, false);
+        setError(false);
+        if (promptIdx >= 0)
+            updateSources(promptIdx, {});
+        return true;
+    }
+
     Q_INVOKABLE void clear()
     {
         {
@@ -889,16 +914,15 @@ public:
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ChildItemsRole, ContentRole});
     }
 
-    Q_INVOKABLE void clearSubItems()
+    void clearSubItems(int index)
     {
-        qsizetype index;
         bool changed = false;
         {
             QMutexLocker locker(&m_mutex);
-            if (m_chatItems.isEmpty() || m_chatItems.cend()[-1]->type() != ChatItem::Type::Response)
+            if (index < 0 || index >= m_chatItems.size()) return;
+            if (m_chatItems.isEmpty() || m_chatItems[index]->type() != ChatItem::Type::Response)
                 throw std::logic_error("can only clear subitems on a chat that ends with a response");
 
-            index = m_chatItems.count() - 1;
             ChatItem *item = m_chatItems.back();
             if (!item->subItems.empty()) {
                 item->subItems.clear();
@@ -906,7 +930,6 @@ public:
             }
         }
         if (changed) {
-            qDebug() << "signaling we've cleared the subitems.";
             emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ChildItemsRole, ContentRole});
         }
     }
