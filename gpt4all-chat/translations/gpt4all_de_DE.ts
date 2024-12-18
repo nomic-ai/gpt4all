@@ -1584,7 +1584,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="430"/>
         <source>Update</source>
-        <translation>Update/Aktualisieren</translation>
+        <translation>Aktualisieren</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="433"/>
