@@ -37,9 +37,9 @@ DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 ConfigType: TypeAlias = "dict[str, Any]"
 
-# Environment setup adapted from HF transformers
 @_operator_call
 def _jinja_env() -> ImmutableSandboxedEnvironment:
+    # Environment setup adapted from HF transformers
     def raise_exception(message: str) -> NoReturn:
         raise jinja2.exceptions.TemplateError(message)
 
@@ -56,14 +56,17 @@ def _jinja_env() -> ImmutableSandboxedEnvironment:
     return env
 
 
-class MessageType(TypedDict):
+class Message(TypedDict):
+    """A message in a chat with a GPT4All model."""
+
     role: str
     content: str
 
 
-class ChatSession(NamedTuple):
-    template: jinja2.Template
-    history: list[MessageType]
+class _ChatSession(NamedTuple):
+    template:        jinja2.Template
+    template_source: str
+    history:         list[Message]
 
 
 class Embed4All:
@@ -193,6 +196,17 @@ class GPT4All:
     Python class that handles instantiation, downloading, generation and chat with GPT4All models.
     """
 
+    RE_LEGACY_SYSPROMPT = re.compile(
+        r"(?:^|\s)(?:### *System\b|S(?:ystem|YSTEM):)|"
+        r"<\|(?:im_(?:start|end)|(?:start|end)_header_id|eot_id|SYSTEM_TOKEN)\|>|<<SYS>>",
+        re.MULTILINE,
+    )
+
+    RE_JINJA_LIKE = re.compile(
+        r"\{%.*%\}.*\{\{.*\}\}.*\{%.*%\}",
+        re.DOTALL,
+    )
+
     def __init__(
         self,
         model_name: str,
@@ -233,7 +247,7 @@ class GPT4All:
         """
 
         self.model_type = model_type
-        self._chat_session: ChatSession | None = None
+        self._chat_session: _ChatSession | None = None
 
         device_init = None
         if sys.platform == "darwin":
@@ -260,6 +274,7 @@ class GPT4All:
 
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
+        self._was_allow_download = allow_download
         self.model = LLModel(self.config["path"], n_ctx, ngl, backend)
         if device_init is not None:
             self.model.init_gpu(device_init)
@@ -291,14 +306,19 @@ class GPT4All:
         return self.model.device
 
     @property
-    def current_chat_session(self) -> list[MessageType] | None:
+    def current_chat_session(self) -> list[Message] | None:
+        """The message history of the current chat session."""
         return None if self._chat_session is None else self._chat_session.history
 
     @current_chat_session.setter
-    def current_chat_session(self, history: list[MessageType]) -> None:
+    def current_chat_session(self, history: list[Message]) -> None:
         if self._chat_session is None:
             raise ValueError("current_chat_session may only be set when there is an active chat session")
         self._chat_session.history[:] = history
+
+    @property
+    def current_chat_template(self) -> str | None:
+        return None if self._chat_session is None else self._chat_session.template_source
 
     @staticmethod
     def list_models() -> list[ConfigType]:
@@ -569,13 +589,13 @@ class GPT4All:
         last_msg_rendered = prompt
         if self._chat_session is not None:
             session = self._chat_session
-            def render(messages: list[MessageType]) -> str:
+            def render(messages: list[Message]) -> str:
                 return session.template.render(
                     messages=messages,
                     add_generation_prompt=True,
                     **self.model.special_tokens_map,
                 )
-            session.history.append(MessageType(role="user", content=prompt))
+            session.history.append(Message(role="user", content=prompt))
             prompt = render(session.history)
             if len(session.history) > 1:
                 last_msg_rendered = render(session.history[-1:])
@@ -590,46 +610,73 @@ class GPT4All:
             def stream() -> Iterator[str]:
                 yield from self.model.prompt_model_streaming(prompt, _callback_wrapper, **generate_kwargs)
                 if self._chat_session is not None:
-                    self._chat_session.history.append(MessageType(role="assistant", content=full_response))
+                    self._chat_session.history.append(Message(role="assistant", content=full_response))
             return stream()
 
         self.model.prompt_model(prompt, _callback_wrapper, **generate_kwargs)
         if self._chat_session is not None:
-            self._chat_session.history.append(MessageType(role="assistant", content=full_response))
+            self._chat_session.history.append(Message(role="assistant", content=full_response))
         return full_response
 
     @contextmanager
     def chat_session(
         self,
+        *,
         system_message: str | Literal[False] | None = None,
         chat_template: str | None = None,
+        warn_legacy: bool = True,
     ):
         """
         Context manager to hold an inference optimized chat session with a GPT4All model.
 
         Args:
-            system_message: An initial instruction for the model, None to use the model default, or False to disable. Defaults to None.
+            system_message: An initial instruction for the model, None to use the model default, or False to disable.
+                Defaults to None.
             chat_template: Jinja template for the conversation, or None to use the model default. Defaults to None.
-        """
+            warn_legacy: Whether to warn about legacy system prompts or prompt templates. Defaults to True.
 
+        Raises:
+            ValueError: If no valid chat template was found.
+        """
         if system_message is None:
             system_message = self.config.get("systemMessage", False)
+        elif system_message is not False and warn_legacy and (m := self.RE_LEGACY_SYSPROMPT.search(system_message)):
+            print(
+                "Warning: chat_session() was passed a system message that is not plain text. System messages "
+                f"containing {m.group()!r} or with any special prefix/suffix are no longer supported.\nTo disable this "
+                "warning, pass warn_legacy=False.",
+                file=sys.stderr,
+            )
 
         if chat_template is None:
-            if "name" not in self.config:
-                raise ValueError("For sideloaded models or with allow_download=False, you must specify a chat template.")
-            if "chatTemplate" not in self.config:
-                raise NotImplementedError("This model appears to have a built-in chat template, but loading it is not "
-                                          "currently implemented. Please pass a template to chat_session() directly.")
-            if (tmpl := self.config["chatTemplate"]) is None:
-                raise ValueError(f"The model {self.config['name']!r} does not support chat.")
-            chat_template = tmpl
+            if "chatTemplate" in self.config:
+                if (tmpl := self.config["chatTemplate"]) is None:
+                    raise ValueError(f"The model {self.config['name']!r} does not support chat.")
+                chat_template = tmpl
+            else:
+                try:
+                    chat_template = self.model.builtin_chat_template
+                except ValueError as e:
+                    if len(e.args) >= 2 and isinstance(err := e.args[1], str):
+                        msg = (f"Failed to load default chat template from model: {err}\n"
+                               "Please pass a template to chat_session() directly.")
+                        if not self._was_allow_download:
+                            msg += " If this is a built-in model, consider setting allow_download to True."
+                        raise ValueError(msg) from None
+                    raise
+        elif warn_legacy and self._is_legacy_chat_template(chat_template):
+            print(
+                "Warning: chat_session() was passed a chat template that is not in Jinja format. Old-style prompt "
+                "templates are no longer supported.\nTo disable this warning, pass warn_legacy=False.",
+                file=sys.stderr,
+            )
 
         history = []
         if system_message is not False:
-            history.append(MessageType(role="system", content=system_message))
-        self._chat_session = ChatSession(
+            history.append(Message(role="system", content=system_message))
+        self._chat_session = _ChatSession(
             template=_jinja_env.from_string(chat_template),
+            template_source=chat_template,
             history=history,
         )
         try:
@@ -646,6 +693,12 @@ class GPT4All:
             A list of strings representing the names of the available GPU devices.
         """
         return LLModel.list_gpus()
+
+    @classmethod
+    def _is_legacy_chat_template(cls, tmpl: str) -> bool:
+        # check if tmpl does not look like a Jinja template
+        return bool(re.search(r"%[12]\b", tmpl) or not cls.RE_JINJA_LIKE.search(tmpl)
+                    or not re.search(r"\bcontent\b", tmpl))
 
 
 def append_extension_if_missing(model_name):
