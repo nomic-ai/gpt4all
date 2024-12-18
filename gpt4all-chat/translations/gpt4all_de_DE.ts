@@ -1533,7 +1533,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="306"/>
         <source>This collection requires an update after version change</source>
-        <translation>Diese Sammlung erfordert nach Versionswechsel ein Update</translation>
+        <translation>Diese Sammlung erfordert nach dem Versionswechsel eine Aktualisierung</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="309"/>
@@ -1681,7 +1681,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <source>%1 system message?</source>
-        <translation>Systemmeldung %1</translation>
+        <translation>Systemnachricht: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
@@ -1698,7 +1698,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation>Systemmeldung wird %1</translation>
+        <translation>Systemnachricht: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
@@ -1719,7 +1719,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation>Chat-Vorlage wird %1.</translation>
+        <translation>Chat-Vorlage: %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
@@ -1734,7 +1734,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="108"/>
         <source>Clone</source>
-        <translation>Klonen Sie es</translation>
+        <translation>Klonen</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="118"/>
@@ -1754,7 +1754,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
-        <translation>Systemmeldung</translation>
+        <translation>Systemnachricht</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
@@ -1774,12 +1774,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation>Diese Jinja-Vorlage wandelt den Chat in eine Eingabe für das Modell um.</translation>
+        <translation>Diese Jinja-Vorlage wandelt den Chat um und führt Sie dem Modell zu.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation>Keine <lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Chat-Vorlage&lt;/a&gt; konfiguriert.</translation>
+        <translation>Keine &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Chat-Vorlage&lt;/a&gt; konfiguriert.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
@@ -1851,7 +1851,7 @@ model to get started</source>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation>Maximale Anzahl kombinierter Eingabeaufforderungs-/Antworttoken, bevor Informationen verloren gehen. Die Verwendung von mehr Kontext, als das Modell trainiert wurde, führt zu schlechten Ergebnissen. HINWEIS: Wird erst wirksam, wenn Sie das Modell neu laden.</translation>
+        <translation>Maximale Anzahl kombinierter Systemnachrichtstoken, Eingabeaufforderungstoken und Erwiderungstoken, bevor Informationen verloren gehen. Die Verwendung von mehr Kontext, als dem, an dem das Modell trainiert wurde, führt zu schlechten Ergebnissen. HINWEIS: Wird erst wirksam, wenn Sie das Modell neu laden.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="578"/>
@@ -1888,7 +1888,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="705"/>
         <source>Size of selection pool for tokens.</source>
-        <translation>Größe des Auswahlpools für Token.</translation>
+        <translation>Größe des Auswahlsets für Token.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="716"/>
@@ -1908,12 +1908,12 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="797"/>
         <source>Prompt Batch Size</source>
-        <translation>Prompt Batch Size</translation>
+        <translation>Eingabeaufforderungsbündelgröße</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="798"/>
         <source>The batch size used for prompt processing.</source>
-        <translation>Die für die sofortige Verarbeitung verwendete Batchgröße.</translation>
+        <translation>Die für die sofortige Verarbeitung verwendete Bündelgröße.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="809"/>
@@ -2000,7 +2000,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="148"/>
         <source>Model file to be downloaded</source>
-        <translation>Fişierul modelului ce va fi descărcat</translation>
+        <translation>Modelldatei die heruntergeladen werden soll</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="170"/>
@@ -2025,17 +2025,17 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="204"/>
         <source>Stop/restart/start the download</source>
-        <translation>Oprirea/Repornirea/Iniţierea descărcării</translation>
+        <translation>Stop/Neustart/Starte den Download</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="216"/>
         <source>Remove</source>
-        <translation>Şterg</translation>
+        <translation>Entfernen</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="223"/>
         <source>Remove model from filesystem</source>
-        <translation>Şterg modelul din sistemul de fişiere</translation>
+        <translation>Entferne Modell vom Dateisystem</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="237"/>
@@ -2101,7 +2101,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="374"/>
         <source>Calculating...</source>
-        <translation>Berechnung…</translation>
+        <translation>Berechne…</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="378"/>
@@ -2114,12 +2114,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="385"/>
         <source>Busy indicator</source>
-        <translation>&quot;Besetzt&quot;-Anzeige</translation>
+        <translation>&quot;Beschäftigt&quot;-Anzeige</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="386"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation>Angezeigt, wenn der Datei-Hash berechnet wird</translation>
+        <translation>Wird angezeigt, wenn der Datei-Hash berechnet wird</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="399"/>
@@ -2139,7 +2139,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="426"/>
         <source>enter $BASE_URL</source>
-        <translation>geben Sie den $BASE_URL ein</translation>
+        <translation>Geben Sie $BASE_URL ein</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="441"/>
@@ -2149,7 +2149,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="447"/>
         <source>enter $MODEL_NAME</source>
-        <translation>geben Sie den $MODEL_NAME ein</translation>
+        <translation>geben Sie $MODEL_NAME ein</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="469"/>
@@ -2159,7 +2159,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="491"/>
         <source>RAM required</source>
-        <translation>benötigter RAM</translation>
+        <translation>Benötigter RAM</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="513"/>
@@ -2239,7 +2239,7 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="73"/>
         <source>Restores settings dialog to a default state</source>
-        <translation>Setzt die &quot;Einstellungen&quot; Dialog auf den Standardzustand zurück</translation>
+        <translation>Setzt die &quot;Einstellungsdialog&quot; auf den Standardzustand zurück</translation>
     </message>
 </context>
 <context>
@@ -2256,21 +2256,11 @@ NOTE: Does not take effect until you reload the model.</source>
 When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation>Dacă activezi această funcţionalitate, vei participa la procesul democratic
-                de instruire a unui model LLM prin contribuţia ta cu date la îmbunătăţirea modelului.
+        <translation>Wenn Sie diese Funktion aktivieren, können Sie am demokratischen Prozess des Trainings eines großen Sprachmodells teilnehmen, indem Sie Daten für zukünftige Modellverbesserungen beisteuern.
 
-                Când un model în GPT4All îţi răspunde şi îi accepţi replica, atunci conversaţia va fi
-                trimisă la componenta Open-source DataLake a GPT4All. Mai mult - îi poţi aprecia replica,
-                Dacă răspunsul Nu Îti Place, poţi sugera unul alternativ. 
-                Aceste date vor fi colectate şi agregate în componenta DataLake a GPT4All.
+Wenn ein GPT4All-Modell Ihnen erwidert und Sie sich dafür entschieden haben, wird Ihre Konversation an den GPT4All Open Source Datalake gesendet. Außerdem können Sie die Erwiderung des Modells mögen oder ablehnen. Wenn Sie eine Erwiderung nicht mögen, können Sie eine alternative Erwiderung vorschlagen. Diese Daten werden im GPT4All-DataLake gesammelt und aggregiert.
 
-                NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta
-                DataLake a GPT4All. Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi
-                această funcţionalitate. Totuşi, te poţi aştepta la a beneficia de apreciere - opţional, dacă doreşti.
-                Datele din conversaţie vor fi disponibile pentru oricine vrea să le descarce şi vor fi
-                utilizate de către Nomic AI pentru a îmbunătăţi modele viitoare în GPT4All. Nomic AI va păstra
-                toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-                participant contribuitor la orice lansare a unui model GPT4All care foloseşte datele tale!</translation>
+HINWEIS: Wenn Sie diese Funktion aktivieren, senden Sie Ihre Daten an den GPT4All Open Source DataLake. Wenn diese Funktion aktiviert ist, sollten Sie nicht erwarten, dass Ihr Chat privat bleibt. Sie sollten jedoch eine optionale Namensnennung erwarten können, wenn Sie dies wünschen. Ihre Chat-Daten sind für jedermann frei zugänglich und werden von Nomic AI verwendet, um zukünftige GPT4All-Modelle zu verbessern. Nomic AI behält alle Informationen, die mit Ihren Daten verknüpft sind, und Sie werden in jeder GPT4All-Modellversion, die Ihre Daten verwendet, als Mitwirkender genannt!</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="70"/>
@@ -2295,7 +2285,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/NetworkDialog.qml" line="82"/>
         <source>Provide attribution</source>
-        <translation>Geben Sie (An)Erkennung</translation>
+        <translation>Teilen Sie uns ihre Erkennungsdaten mit.</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="95"/>
@@ -2328,12 +2318,12 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/NewVersionDialog.qml" line="46"/>
         <source>Update</source>
-        <translation>Update/Aktualisieren</translation>
+        <translation>Aktualisieren</translation>
     </message>
     <message>
         <location filename="../qml/NewVersionDialog.qml" line="48"/>
         <source>Update to new version</source>
-        <translation>Update auf die neue Version</translation>
+        <translation>Aktualisiere auf die neue Version</translation>
     </message>
 </context>
 <context>
@@ -2346,12 +2336,12 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/PopupDialog.qml" line="48"/>
         <source>Busy indicator</source>
-        <translation>&quot;Besetzt&quot;-Anzeige</translation>
+        <translation>&quot;Beschäftigt&quot;-Anzeige</translation>
     </message>
     <message>
         <location filename="../qml/PopupDialog.qml" line="49"/>
         <source>Displayed when the popup is showing busy</source>
-        <translation>Wird angezeigt, wenn ein Prozess ausgeführt wird.</translation>
+        <translation>Wird angezeigt, wenn ein Popup angezeigt wird.</translation>
     </message>
 </context>
 <context>
@@ -2398,7 +2388,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/StartupDialog.qml" line="72"/>
         <source>Release notes for this version</source>
-        <translation>Versionshinweise zu diese Version</translation>
+        <translation>Versionshinweise für diese Version</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="67"/>
@@ -2427,41 +2417,29 @@ an expectation of an optional attribution if you wish. Your chat data will be op
 to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
 attribution information attached to your data and you will be credited as a contributor to any GPT4All
 model release that uses your data!</source>
-        <translation>### Acordul pentru analizarea utilizării anonime şi pentru DataLake
-                Activând aceste functionalităţi vei putea participa la procesul democratic de instruire 
-a unui model conversaţional prin contribuirea cu date/informaţii pentru îmbunătăţirea unor modele.
+        <translation>### Einverständniserklärung zur anonymen Nutzungsanalyse und dem Senden von Daten an den Datalake
 
-Când un model în GPT4All îţi răspunde şi îi accepţi răspunsul, conversaţia este
-trimisă la componenta Open-source DataLake a GPT4All. Mai mult - poţi aprecia (Bravo/Aiurea) răspunsul. Dacă
-un răspuns e Aiurea. poţi sugera un răspuns alternativ. Aceste date vor fi colectate şi agregate în
-componenta DataLake a GPT4All.
+Wenn Sie diese Funktionen aktivieren, können Sie am demokratischen Prozess des Trainings eines großen Sprachmodells teilnehmen, indem Sie Daten für zukünftige Modellverbesserungen beisteuern.
 
-NOTĂ: Dacă activezi această funcţionalitate, vei trimite datele tale la componenta DataLake a GPT4All.
-Atunci nu te vei putea aştepta la intimitatea (privacy) conversaţiei dacă activezi această funcţionalitate.
-Totuşi, te poţi aştepta la a beneficia de apreciere - 
-opţional, dacă doreşti. Datele din conversaţie vor fi disponibile 
-pentru oricine vrea să le descarce şi vor fi utilizate de către Nomic AI
-pentru a îmbunătăţi modele viitoare în GPT4All.
-Nomic AI va păstra 
-toate informaţiile despre atribuire asociate datelor tale şi vei fi menţionat ca
-participant contribuitor la orice lansare a unui model GPT4All
-care foloseşte datele tale!</translation>
+Wenn ein GPT4All-Modell Ihnen erwidert und Sie sich dafür entschieden haben, wird Ihre Konversation an den GPT4All Open Source Datalake gesendet. Außerdem können Sie die Erwiderung des Modells mögen oder ablehnen. Wenn Sie eine Erwiderung nicht mögen, können Sie eine alternative Erwiderung vorschlagen. Diese Daten werden im GPT4All-DataLake gesammelt und aggregiert.
+
+HINWEIS: Wenn Sie diese Funktion aktivieren, senden Sie Ihre Daten an die GPT4All Open Source Datalake. Wenn diese Funktion aktiviert ist, sollten Sie nicht erwarten, dass Ihr Chat privat bleibt. Sie sollten jedoch eine optionale Namensnennung erwarten können, wenn Sie dies wünschen. Ihre Chat-Daten sind für jedermann frei zugänglich und werden von Nomic AI verwendet, um zukünftige GPT4All-Modelle zu verbessern. Nomic AI behält alle Informationen, die mit Ihren Daten verknüpft sind, und Sie werden in jeder GPT4All-Modellversion, die Ihre Daten verwendet, als Mitwirkender genannt!</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="106"/>
         <source>Terms for opt-in</source>
-        <translation>Bedingungen für Opt-in (Anmelden)</translation>
+        <translation>Bedingungen der Einverständniserklärung</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="107"/>
         <source>Describes what will happen when you opt-in</source>
-        <translation>Beschreibt, was passiert, wenn Sie sich Anmelden</translation>
+        <translation>Beschreibt, was passiert, wenn Sie zustimmen</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
         <location filename="../qml/StartupDialog.qml" line="150"/>
         <source>Opt-in for anonymous usage statistics</source>
-        <translation>Sie Opt-in (Anmelden) für anonyme Nutzungsstatistiken</translation>
+        <translation>Ausdrückliche Zustimmung zu anonymen Nutzungsstatistiken</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="147"/>
@@ -2472,7 +2450,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="151"/>
         <source>Allow opt-in for anonymous usage statistics</source>
-        <translation>Sie das Opt-in für anonyme Nutzungsstatistiken zulassen</translation>
+        <translation>(Opt-in) Ich stimme anonymen Nutzungsstatistiken ausdrücklich zu</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="189"/>
@@ -2483,7 +2461,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/StartupDialog.qml" line="192"/>
         <source>Opt-out for anonymous usage statistics</source>
-        <translation>Opt-out (Ich melde mich ab) für anonyme Nutzungsstatistiken</translation>
+        <translation>(Opt-out) Ich lehne anonyme Nutzungsstatistiken ausdrücklich ab</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="193"/>
@@ -2494,27 +2472,27 @@ care foloseşte datele tale!</translation>
         <location filename="../qml/StartupDialog.qml" line="238"/>
         <location filename="../qml/StartupDialog.qml" line="265"/>
         <source>Opt-in for network</source>
-        <translation>Ich stimme zu für Netzwerk</translation>
+        <translation>Zugriff auf Netzwerk zulassen</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="239"/>
         <source>Allow opt-in for network</source>
-        <translation>Opt-in für Netzwerk zulassen</translation>
+        <translation>Zugriff auf Netzwerk zulassen</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="266"/>
         <source>Allow opt-in anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>Erlauben Sie die anonyme Freigabe von Chats an den GPT4All-DataLake.</translation>
+        <translation>(Opt-In) Ausdrückliche Zustimmung zur anonymen Freigabe von Chats an den GPT4All-DataLake.</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="307"/>
         <source>Opt-out for network</source>
-        <translation>Ich melde mich ab für Netzwerk</translation>
+        <translation>Zugriff auf Netzwerk verhindern</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="308"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>Erlauben Sie nicht die anonyme Freigabe von Chats an den GPT4All-DataLake.</translation>
+        <translation>(Opt-out) Ausdrückliche Ablehnung der anonymen Freigabe von Chats an den GPT4All-DataLake.</translation>
     </message>
 </context>
 <context>
@@ -2522,17 +2500,17 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="39"/>
         <source>Please edit the text below to provide a better response. (optional)</source>
-        <translation>Bitte bearbeiten Sie den folgenden Text, um eine bessere Antwort zu geben. (optional)</translation>
+        <translation>Bitte bearbeiten Sie den folgenden Text, um eine bessere Erwiderung zu erhalten (optional)</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="54"/>
         <source>Please provide a better response...</source>
-        <translation>Bitte geben Sie eine bessere Antwort...</translation>
+        <translation>Bitte geben Sie eine bessere Erwiderung...</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="64"/>
         <source>Submit</source>
-        <translation>Senden Sie es</translation>
+        <translation>Absenden</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="65"/>
@@ -2547,7 +2525,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="70"/>
         <source>Closes the response dialog</source>
-        <translation>Schließt den Antwortdialog</translation>
+        <translation>Schließt den Erwiderungsdialog</translation>
     </message>
 </context>
 <context>
@@ -2565,17 +2543,17 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="51"/>
         <source>Quit</source>
-        <translation>Aufhören</translation>
+        <translation>Beenden</translation>
     </message>
     <message>
         <location filename="../main.qml" line="149"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Hardware incompatibil. &quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, procesorul (CPU) nu întruneşte condiţiile minime pentru a rula acest program. În particular, nu suportă instrucţiunile AVX pe care programul le necesită pentru a integra un model conversaţional modern. În acest moment, unica soluţie este să îţi aduci la zi sistemul hardware cu un CPU mai recent.&lt;br&gt;&lt;br&gt;Aici sunt mai multe informaţii: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
+        <translation>&lt;h3&gt;Beim Hochfahren trat ein Fehler auf:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inkompatible Hardware entdeckt.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unglücklicherweise, besitzt Ihre CPU nicht die Mindestanforderungen die für dieses Programm erforderlich sind. Insbesondere, supported es keine AVX Instruktionen, welche erforderlich sind um ein modernes Großes Sprachmodell auszuführen. Die einzige Lösung ist zurzeit auf eine modernere CPU auzurüsten.&lt;br&gt;&lt;br&gt;Sehen Sie hier für mehr Informationen: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="165"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation>&lt;h3&gt;A apărut o eroare la iniţializare:; &lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Nu poate fi accesat fişierul de configurare a programului.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Din păcate, ceva împiedică programul în a accesa acel fişier. Cauza poate fi un set de permisiuni incorecte pe directorul/folderul local de configurare unde se află acel fişier. Poţi parcurge canalul nostru &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord&lt;/a&gt; unde vei putea primi asistenţă.</translation>
+        <translation>&lt;h3&gt;Beim start trat ein Fehler auf:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Unfähig auf die Einstellungsdatei zuzugreifen.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unglücklicherweise hindert etwas das Programm daran auf die Datei zuzugreifen. Dies könnte durch inkorrekte Berechtigungen im lokalen Konfigurationsordner, in der die Einstellungsdatei abgespeichert ist zustandekommen. Bitte überprüfen Sie die Berechtigungen der Datei oder besuchen Sie diesen &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord channel&lt;/a&gt; für Hilfe.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="193"/>
@@ -2595,7 +2573,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="216"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation>opt-in zum Teilen von Feedback/Gesprächen</translation>
+        <translation>Ausdrückliche Zustimmung zum Teilen von Feedback/Gesprächen</translation>
     </message>
     <message>
         <location filename="../main.qml" line="278"/>
@@ -2625,7 +2603,7 @@ care foloseşte datele tale!</translation>
     <message>
         <location filename="../main.qml" line="322"/>
         <source>Chats</source>
-        <translation>Chats/Gespräche</translation>
+        <translation>Chats</translation>
     </message>
     <message>
         <location filename="../main.qml" line="347"/>
