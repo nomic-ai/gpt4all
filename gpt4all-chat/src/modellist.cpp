@@ -64,7 +64,7 @@ static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
             {%- endif %}
             {{- ('Collection: ' + source.collection + '\n'    +
                  'Path: '       + source.path       + '\n'    +
-                 'Excerpt: '    + source.text       + '\n\n') - escape }}
+                 'Excerpt: '    + source.text       + '\n\n') | escape }}
         {%- endfor %}
     {%- endif %}
     {%- for attachment in message.prompt_attachments %}
