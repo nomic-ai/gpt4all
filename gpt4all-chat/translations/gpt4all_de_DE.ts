@@ -63,7 +63,7 @@
     <name>AddModelView</name>
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
-        <source>← Existing Models</source>
+        <source>← Installed Models</source>
         <translation>← Installierte Modelle</translation>
     </message>
     <message>
