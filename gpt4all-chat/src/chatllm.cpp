@@ -979,7 +979,6 @@ auto ChatLLM::promptInternal(
         emit promptProcessing();
         m_llModelInfo.model->setThreadCount(mySettings->threadCount());
         m_stopGenerating = false;
-        // qDebug().noquote() << conversation;
         m_llModelInfo.model->prompt(conversation, handlePrompt, handleResponse, ctx);
     } catch (...) {
         m_timer->stop();
