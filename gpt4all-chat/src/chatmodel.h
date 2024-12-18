@@ -376,7 +376,19 @@ public:
 
     static QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources);
 
+    void serializeResponse(QDataStream &stream, int version);
+    void serializeToolCall(QDataStream &stream, int version);
+    void serializeToolResponse(QDataStream &stream, int version);
+    void serializeText(QDataStream &stream, int version);
+    void serializeSubItems(QDataStream &stream, int version); // recursive
     void serialize(QDataStream &stream, int version);
+
+
+    bool deserializeResponse(QDataStream &stream, int version);
+    bool deserializeToolCall(QDataStream &stream, int version);
+    bool deserializeToolResponse(QDataStream &stream, int version);
+    bool deserializeText(QDataStream &stream, int version);
+    bool deserializeSubItems(QDataStream &stream, int version); // recursive
     bool deserialize(QDataStream &stream, int version);
 
 Q_SIGNALS:
@@ -868,7 +880,6 @@ public:
             Q_ASSERT(!split.second.isEmpty());
             ChatItem *toolCallItem = new ChatItem(this, ChatItem::tool_call_tag, split.second);
             toolCallItem->isCurrentResponse = true;
-            // toolCallItem.toolCallInfo = toolCallInfo;
             newResponse->subItems.push_back(toolCallItem);
 
             // Add new response and reset our value
@@ -997,7 +1008,6 @@ public:
 
     bool deserialize(QDataStream &stream, int version)
     {
-        // FIXME: need to deserialize new chatitem tree
         clear(); // reset to known state
 
         int size;
@@ -1006,7 +1016,10 @@ public:
         QList<ChatItem*> chatItems;
         for (int i = 0; i < size; ++i) {
             ChatItem *c = new ChatItem(this);
-            c->deserialize(stream, version);
+            if (!c->deserialize(stream, version)) {
+                delete c;
+                return false;
+            }
             if (version < 11 && c->type() == ChatItem::Type::Response) {
                 // move sources from the response to their last prompt
                 if (lastPromptIndex >= 0) {
