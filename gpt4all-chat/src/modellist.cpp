@@ -62,15 +62,15 @@ static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
             {%- if loop.first %}
                 {{- '### Context:\n' }}
             {%- endif %}
-            {{- 'Collection: ' + source.collection + '\n'   +
-                'Path: '       + source.path       + '\n'   +
-                'Excerpt: '    + source.text       + '\n\n' }}
+            {{- ('Collection: ' + source.collection + '\n'    +
+                 'Path: '       + source.path       + '\n'    +
+                 'Excerpt: '    + source.text       + '\n\n') | escape }}
         {%- endfor %}
     {%- endif %}
     {%- for attachment in message.prompt_attachments %}
-        {{- attachment.processed_content + '\n\n' }}
+        {{- (attachment.processed_content + '\n\n') | escape }}
     {%- endfor %}
-    {{- message.content }}
+    {{- message.content | escape }}
     {{- '</' + message['role'] + '>' }}
 {%- endfor %}
 </chat>)"_s;
