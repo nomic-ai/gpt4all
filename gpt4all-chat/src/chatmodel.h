@@ -171,7 +171,7 @@ public:
     static inline constexpr tool_call_tag_t     tool_call_tag     = tool_call_tag_t     {};
     static inline constexpr tool_response_tag_t tool_response_tag = tool_response_tag_t {};
 
-private:
+public:
     ChatItem(QObject *parent)
         : QObject(nullptr)
     {
@@ -179,7 +179,6 @@ private:
         setParent(parent);
     }
 
-public:
     // NOTE: System messages are currently never serialized and only *stored* by the local server.
     //       ChatLLM prepends a system MessageItem on-the-fly.
     ChatItem(QObject *parent, system_tag_t, const QString &value)
@@ -971,25 +970,24 @@ public:
 
     bool serialize(QDataStream &stream, int version) const
     {
-#if 0
-        // FIXME: need to serialize the toolcall info
+        // FIXME: need to serialize new chatitem tree
         QMutexLocker locker(&m_mutex);
         stream << int(m_chatItems.size());
         for (auto itemIt = m_chatItems.cbegin(); itemIt < m_chatItems.cend(); ++itemIt) {
             auto c = *itemIt; // NB: copies
             if (version < 11) {
                 // move sources from their prompt to the next response
-                switch (c.type()) {
+                switch (c->type()) {
                     using enum ChatItem::Type;
                 case Prompt:
-                    c.sources.clear();
-                    c.consolidatedSources.clear();
+                    c->sources.clear();
+                    c->consolidatedSources.clear();
                     break;
                 case Response:
                     // note: we drop sources for responseless prompts
                     if (auto peer = getPeerUnlocked(itemIt)) {
-                        c.sources             = (*peer)->sources;
-                        c.consolidatedSources = (*peer)->consolidatedSources;
+                        c->sources             = (**peer)->sources;
+                        c->consolidatedSources = (**peer)->consolidatedSources;
                     }
                 default:
                     ;
@@ -1000,18 +998,18 @@ public:
             // (Jared) This was apparently never used.
             int id = 0;
             stream << id;
-            stream << c.name;
-            stream << c.value;
-            stream << c.newResponse;
-            stream << c.isCurrentResponse;
-            stream << c.stopped;
-            stream << c.thumbsUpState;
-            stream << c.thumbsDownState;
-            if (version >= 11 && c.type() == ChatItem::Type::Response)
-                stream << c.isError;
+            stream << c->name;
+            stream << c->value;
+            stream << c->newResponse;
+            stream << c->isCurrentResponse;
+            stream << c->stopped;
+            stream << c->thumbsUpState;
+            stream << c->thumbsDownState;
+            if (version >= 11 && c->type() == ChatItem::Type::Response)
+                stream << c->isError;
             if (version >= 8) {
-                stream << c.sources.size();
-                for (const ResultInfo &info : c.sources) {
+                stream << c->sources.size();
+                for (const ResultInfo &info : c->sources) {
                     Q_ASSERT(!info.file.isEmpty());
                     stream << info.collection;
                     stream << info.path;
@@ -1028,7 +1026,7 @@ public:
                 QList<QString> references;
                 QList<QString> referencesContext;
                 int validReferenceNumber = 1;
-                for (const ResultInfo &info : c.sources) {
+                for (const ResultInfo &info : c->sources) {
                     if (info.file.isEmpty())
                         continue;
 
@@ -1061,8 +1059,8 @@ public:
                 stream << referencesContext;
             }
             if (version >= 10) {
-                stream << c.promptAttachments.size();
-                for (const PromptAttachment &a : c.promptAttachments) {
+                stream << c->promptAttachments.size();
+                for (const PromptAttachment &a : c->promptAttachments) {
                     Q_ASSERT(!a.url.isEmpty());
                     stream << a.url;
                     stream << a.content;
@@ -1070,45 +1068,42 @@ public:
             }
         }
         return stream.status() == QDataStream::Ok;
-#else
-        return false;
-#endif
     }
 
     bool deserialize(QDataStream &stream, int version)
     {
-#if 0
+        // FIXME: need to deserialize new chatitem tree
         clear(); // reset to known state
 
         int size;
         stream >> size;
         int lastPromptIndex = -1;
-        QList<ChatItem> chatItems;
+        QList<ChatItem*> chatItems;
         for (int i = 0; i < size; ++i) {
-            ChatItem c;
+            ChatItem *c = new ChatItem(this);
             // FIXME: see comment in serialization about id
             int id;
             stream >> id;
-            stream >> c.name;
+            stream >> c->name;
             try {
-                c.type(); // check name
+                c->type(); // check name
             } catch (const std::exception &e) {
                 qWarning() << "ChatModel ERROR:" << e.what();
                 return false;
             }
-            stream >> c.value;
+            stream >> c->value;
             if (version < 10) {
                 // This is deprecated and no longer used
                 QString prompt;
                 stream >> prompt;
             }
-            stream >> c.newResponse;
-            stream >> c.isCurrentResponse;
-            stream >> c.stopped;
-            stream >> c.thumbsUpState;
-            stream >> c.thumbsDownState;
-            if (version >= 11 && c.type() == ChatItem::Type::Response)
-                stream >> c.isError;
+            stream >> c->newResponse;
+            stream >> c->isCurrentResponse;
+            stream >> c->stopped;
+            stream >> c->thumbsUpState;
+            stream >> c->thumbsDownState;
+            if (version >= 11 && c->type() == ChatItem::Type::Response)
+                stream >> c->isError;
             if (version >= 8) {
                 qsizetype count;
                 stream >> count;
@@ -1127,8 +1122,8 @@ public:
                     stream >> info.to;
                     sources.append(info);
                 }
-                c.sources = sources;
-                c.consolidatedSources = consolidateSources(sources);
+                c->sources = sources;
+                c->consolidatedSources = consolidateSources(sources);
             } else if (version >= 3) {
                 QString references;
                 QList<QString> referencesContext;
@@ -1209,8 +1204,8 @@ public:
                         sources.append(info);
                     }
 
-                    c.sources = sources;
-                    c.consolidatedSources = consolidateSources(sources);
+                    c->sources = sources;
+                    c->consolidatedSources = consolidateSources(sources);
                 }
             }
             if (version >= 10) {
@@ -1223,25 +1218,25 @@ public:
                     stream >> a.content;
                     attachments.append(a);
                 }
-                c.promptAttachments = attachments;
+                c->promptAttachments = attachments;
             }
 
-            if (version < 11 && c.type() == ChatItem::Type::Response) {
+            if (version < 11 && c->type() == ChatItem::Type::Response) {
                 // move sources from the response to their last prompt
                 if (lastPromptIndex >= 0) {
                     auto &prompt = chatItems[lastPromptIndex];
-                    prompt.sources             = std::move(c.sources            );
-                    prompt.consolidatedSources = std::move(c.consolidatedSources);
+                    prompt->sources             = std::move(c->sources            );
+                    prompt->consolidatedSources = std::move(c->consolidatedSources);
                     lastPromptIndex = -1;
                 } else {
                     // drop sources for promptless responses
-                    c.sources.clear();
-                    c.consolidatedSources.clear();
+                    c->sources.clear();
+                    c->consolidatedSources.clear();
                 }
             }
 
             chatItems << c;
-            if (c.type() == ChatItem::Type::Prompt)
+            if (c->type() == ChatItem::Type::Prompt)
                 lastPromptIndex = chatItems.size() - 1;
         }
 
@@ -1257,9 +1252,6 @@ public:
         if (hasError)
             emit hasErrorChanged(true);
         return stream.status() == QDataStream::Ok;
-#else
-        return false;
-#endif
     }
 
 Q_SIGNALS:

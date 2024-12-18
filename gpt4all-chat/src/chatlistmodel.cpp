@@ -21,6 +21,7 @@
 
 static constexpr quint32 CHAT_FORMAT_MAGIC   = 0xF5D553CC;
 static constexpr qint32  CHAT_FORMAT_VERSION = 11;
+// FIXME: need to bump format for new chatmodel chatitem tree
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
