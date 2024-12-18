@@ -880,12 +880,8 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
         }
     }
 
-    // copy messages for safety (since we can't hold the lock the whole time)
-    std::vector<MessageItem> messageItems;
-    {
-        auto items = getChat();
-        messageItems.assign(items.begin(), items.end() - 1); // exclude new response
-    }
+    auto messageItems = getChat();
+    messageItems.pop_back(); // exclude new response
 
     auto result = promptInternal(messageItems, ctx, !databaseResults.isEmpty());
     return {
