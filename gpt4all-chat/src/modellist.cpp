@@ -56,7 +56,7 @@ static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
     {%- if not message['role'] in ['user', 'assistant', 'system'] %}
         {{- raise_exception('Unknown role: ' + message['role']) }}
     {%- endif %}
-    {{- '<' + message['role'] + '>' }}
+    {{- '<' + message['role'] + '><![CDATA[' }}
     {%- if message['role'] == 'user' %}
         {%- for source in message.sources %}
             {%- if loop.first %}
@@ -71,7 +71,7 @@ static const QString RMODEL_CHAT_TEMPLATE = uR"(<chat>
         {{- attachment.processed_content + '\n\n' }}
     {%- endfor %}
     {{- message.content }}
-    {{- '</' + message['role'] + '>' }}
+    {{- ']]></' + message['role'] + '>' }}
 {%- endfor %}
 </chat>)"_s;
 
