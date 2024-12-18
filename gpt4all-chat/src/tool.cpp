@@ -41,3 +41,34 @@ jinja2::Value Tool::jinjaValue() const
     };
     return params;
 }
+
+void ToolCallInfo::serialize(QDataStream &stream, int version)
+{
+    stream << name;
+    stream << params.size();
+    for (auto param : params) {
+        stream << param.name;
+        stream << param.type;
+        stream << param.value;
+    }
+    stream << result;
+    stream << error;
+    stream << errorString;
+}
+
+bool ToolCallInfo::deserialize(QDataStream &stream, int version)
+{
+    stream >> name;
+    qsizetype count;
+    stream >> count;
+    for (int i = 0; i < count; ++i) {
+        ToolParam p;
+        stream >> p.name;
+        stream >> p.type;
+        stream >> p.value;
+    }
+    stream >> result;
+    stream >> error;
+    stream >> errorString;
+    return true;
+}

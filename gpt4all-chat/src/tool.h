@@ -60,6 +60,10 @@ struct ToolCallInfo
     QString result;
     ToolEnums::Error error = ToolEnums::Error::NoError;
     QString errorString;
+
+    void serialize(QDataStream &stream, int version);
+    bool deserialize(QDataStream &stream, int version);
+
     bool operator==(const ToolCallInfo& other) const
     {
         return name == other.name && result == other.result && params == other.params

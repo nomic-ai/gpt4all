@@ -14,12 +14,48 @@ QList<ResultInfo> ChatItem::consolidateSources(const QList<ResultInfo> &sources)
     return consolidatedSources;
 }
 
+void ChatItem::serializeResponse(QDataStream &stream, int version)
+{
+    stream << value;
+}
+
+void ChatItem::serializeToolCall(QDataStream &stream, int version)
+{
+    stream << value;
+    toolCallInfo.serialize(stream, version);
+}
+
+void ChatItem::serializeToolResponse(QDataStream &stream, int version)
+{
+    stream << value;
+}
+
+void ChatItem::serializeText(QDataStream &stream, int version)
+{
+    stream << value;
+}
+
+void ChatItem::serializeSubItems(QDataStream &stream, int version)
+{
+    stream << name;
+    switch (auto typ = type()) {
+        using enum ChatItem::Type;
+        case Response:      { serializeResponse(stream, version);       break; }
+        case ToolCall:      { serializeToolCall(stream, version);       break; }
+        case ToolResponse:  { serializeToolResponse(stream, version);   break; }
+        case Text:          { serializeText(stream, version);           break; }
+        case System:
+        case Prompt:
+            throw std::invalid_argument(fmt::format("cannot serialize subitem type {}", int(typ)));
+    }
+
+    stream << qsizetype(subItems.size());
+    for (ChatItem *item :subItems)
+        item->serializeSubItems(stream, version);
+}
+
 void ChatItem::serialize(QDataStream &stream, int version)
 {
-    // FIXME: This 'id' should be eliminated the next time we bump serialization version.
-    // (Jared) This was apparently never used.
-    int id = 0;
-    stream << id;
     stream << name;
     stream << value;
     stream << newResponse;
@@ -88,13 +124,78 @@ void ChatItem::serialize(QDataStream &stream, int version)
             stream << a.content;
         }
     }
+
+    if (version >= 12) {
+        stream << qsizetype(subItems.size());
+        for (ChatItem *item :subItems)
+            item->serializeSubItems(stream, version);
+    }
+}
+
+bool ChatItem::deserializeToolCall(QDataStream &stream, int version)
+{
+    stream >> value;
+    return toolCallInfo.deserialize(stream, version);;
+}
+
+bool ChatItem::deserializeToolResponse(QDataStream &stream, int version)
+{
+    stream >> value;
+    return true;
+}
+
+bool ChatItem::deserializeText(QDataStream &stream, int version)
+{
+    stream >> value;
+    return true;
+}
+
+bool ChatItem::deserializeResponse(QDataStream &stream, int version)
+{
+    stream >> value;
+    return true;
+}
+
+bool ChatItem::deserializeSubItems(QDataStream &stream, int version)
+{
+    stream >> name;
+    try {
+        type(); // check name
+    } catch (const std::exception &e) {
+        qWarning() << "ChatModel ERROR:" << e.what();
+        return false;
+    }
+    switch (auto typ = type()) {
+        using enum ChatItem::Type;
+        case Response:      { deserializeResponse(stream, version); break; }
+        case ToolCall:      { deserializeToolCall(stream, version); break; }
+        case ToolResponse:  { deserializeToolResponse(stream, version); break; }
+        case Text:          { deserializeText(stream, version); break; }
+        case System:
+        case Prompt:
+            throw std::invalid_argument(fmt::format("cannot serialize subitem type {}", int(typ)));
+    }
+
+    qsizetype count;
+    stream >> count;
+    for (int i = 0; i < count; ++i) {
+        ChatItem *c = new ChatItem(this);
+        if (!c->deserializeSubItems(stream, version)) {
+            delete c;
+            return false;
+        }
+        subItems.push_back(c);
+    }
+
+    return true;
 }
 
 bool ChatItem::deserialize(QDataStream &stream, int version)
 {
-    // FIXME: see comment in serialization about id
-    int id;
-    stream >> id;
+    if (version < 12) {
+        int id;
+        stream >> id;
+    }
     stream >> name;
     try {
         type(); // check name
@@ -226,6 +327,19 @@ bool ChatItem::deserialize(QDataStream &stream, int version)
             attachments.append(a);
         }
         promptAttachments = attachments;
+    }
+
+    if (version >= 12) {
+        qsizetype count;
+        stream >> count;
+        for (int i = 0; i < count; ++i) {
+            ChatItem *c = new ChatItem(this);
+            if (!c->deserializeSubItems(stream, version)) {
+                delete c;
+                return false;
+            }
+            subItems.push_back(c);
+        }
     }
     return true;
 }
