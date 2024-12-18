@@ -957,6 +957,7 @@ public:
     std::vector<MessageItem> messageItems() const
     {
         // A flattened version of the chat item tree used by the backend and jinja
+        QMutexLocker locker(&m_mutex);
         std::vector<MessageItem> chatItems;
         for (const ChatItem *item : m_chatItems) {
             chatItems.reserve(chatItems.size() + item->subItems.size() + 1);
