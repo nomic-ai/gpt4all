@@ -95,6 +95,9 @@ public:
     MessageItem(Type type, QString content)
         : m_type(type), m_content(std::move(content)) {}
 
+    MessageItem(Type type, QString content, const QList<ResultInfo> &sources, const QList<PromptAttachment> &promptAttachments)
+        : m_type(type), m_content(std::move(content)), m_sources(sources), m_promptAttachments(promptAttachments) {}
+
     Type           type()    const { return m_type;    }
     const QString &content() const { return m_content; }
 
@@ -368,7 +371,7 @@ public:
             case ToolCall:
                 throw std::invalid_argument(fmt::format("cannot convert ChatItem type {} to message item", int(typ)));
         }
-        return { msgType, flattenedContent() };
+        return { msgType, flattenedContent(), sources, promptAttachments };
     }
 
 Q_SIGNALS:
