@@ -658,7 +658,7 @@ std::optional<QString> ChatLLM::popPrompt(int index)
     Q_ASSERT(m_chatModel);
     QString content;
     {
-        auto items = m_chatModel->messageItems(); // holds lock
+        auto items = m_chatModel->messageItems();
         if (index < 0 || index >= items.size() || items[index].type() != MessageItem::Type::Prompt)
             return std::nullopt;
         content = items[index].content();
@@ -731,9 +731,6 @@ void ChatLLM::prompt(const QStringList &enabledCollections)
     }
 }
 
-// FIXME(jared): We can avoid this potentially expensive copy if we use ChatItem pointers, but this is only safe if we
-// hold the lock while generating. We can't do that now because Chat is actually in charge of updating the response, not
-// ChatLLM.
 std::vector<MessageItem> ChatLLM::forkConversation(const QString &prompt) const
 {
     Q_ASSERT(m_chatModel);
