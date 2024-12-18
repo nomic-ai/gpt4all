@@ -302,11 +302,16 @@ public:
     explicit GPT4AllDownloadableModels(QObject *parent);
     int count() const;
 
+    Q_INVOKABLE void filter(const QVector<QString> &keywords);
+
 Q_SIGNALS:
     void countChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    QVector<QString> m_keywords;
 };
 
 class HuggingFaceDownloadableModels : public QSortFilterProxyModel
