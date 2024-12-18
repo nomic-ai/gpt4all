@@ -51,11 +51,6 @@ Thiago Ramos ([@thiagojramos](https://github.com/thiagojramos))<br/>
 E-mail: thiagojramos@outlook.com<br/>
 - pt\_BR translation
 
-Victor Emanuel ([@SINAPSA-IC](https://github.com/SINAPSA-IC))<br/>
-E-mail: contact@sinapsaro.ro<br/>
-Discord: `@sinapsa_ic_56124_99632`
-- ro\_RO translation
-
 不知火 Shiranui ([@supersonictw](https://github.com/supersonictw))<br/>
 E-mail: supersonic@livemail.tw<br/>
 Discord: `@supersonictw`
