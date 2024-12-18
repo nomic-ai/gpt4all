@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Fix remote model template to allow for XML in messages ([#3318](https://github.com/nomic-ai/gpt4all/pull/3318))
+
 ## [3.5.3] - 2024-12-16
 
 ### Fixed
