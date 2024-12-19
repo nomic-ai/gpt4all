@@ -690,6 +690,19 @@ public:
             emit hasErrorChanged(false);
     }
 
+    QString popPrompt(int index)
+    {
+        QString content;
+        {
+            QMutexLocker locker(&m_mutex);
+            if (index < 0 || index >= m_chatItems.size() || m_chatItems[index]->type() != ChatItem::Type::Prompt)
+                throw std::logic_error("attempt to pop a prompt, but this is not a prompt");
+            content = m_chatItems[index]->content();
+        }
+        truncate(index);
+        return content;
+    }
+
     bool regenerateResponse(int index)
     {
         int promptIdx;

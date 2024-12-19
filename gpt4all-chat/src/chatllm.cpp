@@ -656,15 +656,7 @@ void ChatLLM::regenerateResponse(int index)
 std::optional<QString> ChatLLM::popPrompt(int index)
 {
     Q_ASSERT(m_chatModel);
-    QString content;
-    {
-        auto items = m_chatModel->messageItems();
-        if (index < 0 || index >= items.size() || items[index].type() != MessageItem::Type::Prompt)
-            return std::nullopt;
-        content = items[index].content();
-    }
-    m_chatModel->truncate(index);
-    return content;
+    return m_chatModel->popPrompt(index);
 }
 
 ModelInfo ChatLLM::modelInfo() const
