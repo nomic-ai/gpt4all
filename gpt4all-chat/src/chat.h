@@ -161,8 +161,7 @@ Q_SIGNALS:
     void generatedQuestionsChanged();
 
 private Q_SLOTS:
-    void handleResponseChanged(const QString &response);
-    void handleResponseFailed(const QString &error);
+    void handleResponseChanged();
     void handleModelLoadingPercentageChanged(float);
     void promptProcessing();
     void generatingQuestions();
@@ -205,6 +204,7 @@ private:
     // - The chat was freshly created during this launch.
     // - The chat was changed after loading it from disk.
     bool m_needsSave = true;
+    int m_consecutiveToolCalls = 0;
 };
 
 #endif // CHAT_H

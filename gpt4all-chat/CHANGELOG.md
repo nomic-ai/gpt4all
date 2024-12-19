@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Built-in javascript code interpreter tool plus model ([#3173](https://github.com/nomic-ai/gpt4all/pull/3173))
+
 ### Fixed
 - Fix remote model template to allow for XML in messages ([#3318](https://github.com/nomic-ai/gpt4all/pull/3318))
 - Fix Jinja2Cpp bug that broke system message detection in chat templates ([#3325](https://github.com/nomic-ai/gpt4all/pull/3325))
