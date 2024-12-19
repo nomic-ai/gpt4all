@@ -694,7 +694,8 @@ auto Server::handleCompletionRequest(const CompletionRequest &request)
                                     promptCtx,
                                     /*usedLocalDocs*/ false);
         } catch (const std::exception &e) {
-            emit responseChanged(e.what());
+            m_chatModel->setResponseValue(e.what());
+            m_chatModel->setError();
             emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }
@@ -772,16 +773,16 @@ auto Server::handleChatRequest(const ChatRequest &request)
     Q_ASSERT(!request.messages.isEmpty());
 
     // adds prompt/response items to GUI
-    QList<ChatItem> chatItems;
+    std::vector<MessageInput> messages;
     for (auto &message : request.messages) {
         using enum ChatRequest::Message::Role;
         switch (message.role) {
-            case System:    chatItems.emplace_back(ChatItem::system_tag,   message.content); break;
-            case User:      chatItems.emplace_back(ChatItem::prompt_tag,   message.content); break;
-            case Assistant: chatItems.emplace_back(ChatItem::response_tag, message.content); break;
+            case System:    messages.push_back({ MessageInput::Type::System,   message.content }); break;
+            case User:      messages.push_back({ MessageInput::Type::Prompt,   message.content }); break;
+            case Assistant: messages.push_back({ MessageInput::Type::Response, message.content }); break;
         }
     }
-    auto subrange = m_chatModel->appendResponseWithHistory(chatItems);
+    auto startOffset = m_chatModel->appendResponseWithHistory(messages);
 
     // FIXME(jared): taking parameters from the UI inhibits reproducibility of results
     LLModel::PromptContext promptCtx {
@@ -801,9 +802,10 @@ auto Server::handleChatRequest(const ChatRequest &request)
     for (int i = 0; i < request.n; ++i) {
         ChatPromptResult result;
         try {
-            result = promptInternalChat(m_collections, promptCtx, subrange);
+            result = promptInternalChat(m_collections, promptCtx, startOffset);
         } catch (const std::exception &e) {
-            emit responseChanged(e.what());
+            m_chatModel->setResponseValue(e.what());
+            m_chatModel->setError();
             emit responseStopped(0);
             return makeError(QHttpServerResponder::StatusCode::InternalServerError);
         }

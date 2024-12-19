@@ -56,6 +56,52 @@ ColumnLayout {
         Accessible.description: qsTr("Displayed when the models request is ongoing")
     }
 
+    RowLayout {
+        ButtonGroup {
+            id: buttonGroup
+            exclusive: true
+        }
+        MyButton {
+            text: qsTr("All")
+            checked: true
+            borderWidth: 0
+            backgroundColor: checked ? theme.lightButtonBackground : "transparent"
+            backgroundColorHovered: theme.lighterButtonBackgroundHovered
+            backgroundRadius: 5
+            padding: 15
+            topPadding: 8
+            bottomPadding: 8
+            textColor: theme.lighterButtonForeground
+            fontPixelSize: theme.fontSizeLarge
+            fontPixelBold: true
+            checkable: true
+            ButtonGroup.group: buttonGroup
+            onClicked: {
+                ModelList.gpt4AllDownloadableModels.filter("");
+            }
+
+        }
+        MyButton {
+            text: qsTr("Reasoning")
+            borderWidth: 0
+            backgroundColor: checked ? theme.lightButtonBackground : "transparent"
+            backgroundColorHovered: theme.lighterButtonBackgroundHovered
+            backgroundRadius: 5
+            padding: 15
+            topPadding: 8
+            bottomPadding: 8
+            textColor: theme.lighterButtonForeground
+            fontPixelSize: theme.fontSizeLarge
+            fontPixelBold: true
+            checkable: true
+            ButtonGroup.group: buttonGroup
+            onClicked: {
+                ModelList.gpt4AllDownloadableModels.filter("#reasoning");
+            }
+        }
+        Layout.bottomMargin: 10
+    }
+
     ScrollView {
         id: scrollView
         ScrollBar.vertical.policy: ScrollBar.AsNeeded

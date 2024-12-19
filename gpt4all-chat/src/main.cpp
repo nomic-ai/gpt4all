@@ -7,6 +7,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
+#include "toolmodel.h"
 
 #include <gpt4all-backend/llmodel.h>
 #include <singleapplication.h>
@@ -116,6 +117,8 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
     qmlRegisterSingletonInstance("localdocs", 1, 0, "LocalDocs", LocalDocs::globalInstance());
+    qmlRegisterSingletonInstance("toollist", 1, 0, "ToolList", ToolModel::globalInstance());
+    qmlRegisterUncreatableMetaObject(ToolEnums::staticMetaObject, "toolenums", 1, 0, "ToolEnums", "Error: only enums");
     qmlRegisterUncreatableMetaObject(MySettingsEnums::staticMetaObject, "mysettingsenums", 1, 0, "MySettingsEnums", "Error: only enums");
 
     {
