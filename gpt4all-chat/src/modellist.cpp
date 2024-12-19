@@ -485,14 +485,24 @@ GPT4AllDownloadableModels::GPT4AllDownloadableModels(QObject *parent)
     connect(this, &GPT4AllDownloadableModels::modelReset, this, &GPT4AllDownloadableModels::countChanged);
 }
 
+void GPT4AllDownloadableModels::filter(const QVector<QString> &keywords)
+{
+    m_keywords = keywords;
+    invalidateFilter();
+}
+
 bool GPT4AllDownloadableModels::filterAcceptsRow(int sourceRow,
                                           const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    bool hasDescription = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
+    const QString description = sourceModel()->data(index, ModelList::DescriptionRole).toString();
+    bool hasDescription = !description.isEmpty();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
     bool isDiscovered = sourceModel()->data(index, ModelList::IsDiscoveredRole).toBool();
-    return !isDiscovered && hasDescription && !isClone;
+    bool satisfiesKeyword = m_keywords.isEmpty();
+    for (const QString &k : m_keywords)
+        satisfiesKeyword = description.contains(k) ? true : satisfiesKeyword;
+    return !isDiscovered && hasDescription && !isClone && satisfiesKeyword;
 }
 
 int GPT4AllDownloadableModels::count() const

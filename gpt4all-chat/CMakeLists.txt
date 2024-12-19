@@ -193,8 +193,9 @@ qt_add_executable(chat
     src/chatapi.cpp               src/chatapi.h
     src/chatlistmodel.cpp         src/chatlistmodel.h
     src/chatllm.cpp               src/chatllm.h
-    src/chatmodel.h
+    src/chatmodel.h               src/chatmodel.cpp
     src/chatviewtextprocessor.cpp src/chatviewtextprocessor.h
+    src/codeinterpreter.cpp       src/codeinterpreter.h
     src/database.cpp              src/database.h
     src/download.cpp              src/download.h
     src/embllm.cpp                src/embllm.h
@@ -208,6 +209,9 @@ qt_add_executable(chat
     src/mysettings.cpp            src/mysettings.h
     src/network.cpp               src/network.h
     src/server.cpp                src/server.h
+    src/tool.cpp                  src/tool.h
+    src/toolcallparser.cpp        src/toolcallparser.h
+    src/toolmodel.cpp             src/toolmodel.h
     src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
     ${MACOS_SOURCES}
@@ -226,8 +230,10 @@ qt_add_qml_module(chat
       qml/AddHFModelView.qml
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
+      qml/ChatCollapsibleItem.qml
       qml/ChatItemView.qml
       qml/ChatMessageButton.qml
+      qml/ChatTextItem.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
       qml/HomeView.qml
