@@ -18,12 +18,15 @@
 #include <QXmlStreamReader>
 #include <Qt>
 #include <QtGlobal>
-#include <QtLogging>
 
 #include <expected>
 #include <functional>
 #include <iostream>
 #include <utility>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 

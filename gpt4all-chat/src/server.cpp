@@ -27,7 +27,6 @@
 #include <Qt>
 #include <QtCborCommon>
 #include <QtGlobal>
-#include <QtLogging>
 
 #include <cstdint>
 #include <iostream>
@@ -38,6 +37,9 @@
 #include <unordered_map>
 #include <utility>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #   include <QTcpServer>
 #endif

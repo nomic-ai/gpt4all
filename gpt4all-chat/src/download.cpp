@@ -27,12 +27,15 @@
 #include <QVariant>
 #include <QVector>
 #include <Qt>
-#include <QtLogging>
 
 #include <algorithm>
 #include <compare>
 #include <cstddef>
 #include <utility>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 

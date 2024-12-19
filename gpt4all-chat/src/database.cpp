@@ -24,12 +24,15 @@
 #include <QUtf8StringView>
 #include <QVariant>
 #include <Qt>
-#include <QtLogging>
 
 #include <algorithm>
 #include <cmath>
 #include <optional>
 #include <stdexcept>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#   include <QtLogging>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 namespace ranges = std::ranges;
