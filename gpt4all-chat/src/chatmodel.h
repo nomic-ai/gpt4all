@@ -305,10 +305,10 @@ public:
         return items;
     }
 
-    QString toolCallValue() const
+    QString possibleToolCall() const
     {
         if (!subItems.empty())
-            return subItems.back()->toolCallValue();
+            return subItems.back()->possibleToolCall();
         if (type() == Type::ToolCall)
             return value;
         else
@@ -735,11 +735,11 @@ public:
             emit hasErrorChanged(false);
     }
 
-    Q_INVOKABLE ChatItem *get(int index)
+    Q_INVOKABLE QString possibleToolcall() const
     {
         QMutexLocker locker(&m_mutex);
-        if (index < 0 || index >= m_chatItems.size()) return nullptr;
-        return m_chatItems.at(index);
+        if (m_chatItems.empty()) return QString();
+        return m_chatItems.back()->possibleToolCall();
     }
 
     Q_INVOKABLE void updateCurrentResponse(int index, bool b)

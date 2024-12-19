@@ -240,15 +240,12 @@ void Chat::responseStopped(qint64 promptResponseMs)
     emit responseInProgressChanged();
     emit responseStateChanged();
 
-    const int index = m_chatModel->count() - 1;
-    ChatItem *item = m_chatModel->get(index);
-
-    const QString possibleToolcall = item->toolCallValue();
+    const QString possibleToolcall = m_chatModel->possibleToolcall();
 
     ToolCallParser parser;
     parser.update(possibleToolcall);
 
-    if (item->type() == ChatItem::Type::Response && parser.state() == ToolEnums::ParseState::Complete) {
+    if (parser.state() == ToolEnums::ParseState::Complete) {
         const QString toolCall = parser.toolCall();
 
         // Regex to remove the formatting around the code
