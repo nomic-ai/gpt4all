@@ -3,7 +3,7 @@
 GPT4All v3.6.0 was released on December 19th. Changes include:
 
 * **Reasoner v1:**
-  * Added a built-in javascript code interpreter tool.
+  * Built-in javascript code interpreter tool.
   * Custom curated model that utilizes the code interpreter to break down, analyze, perform, and verify complex reasoning tasks.
 * **Templates:** Automatically substitute chat templates that are not compatible with Jinja2Cpp in GGUFs.
 * **Fixes:**
