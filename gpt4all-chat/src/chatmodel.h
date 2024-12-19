@@ -9,9 +9,11 @@
 
 #include <fmt/format.h>
 
+#include <QApplication>
 #include <QAbstractListModel>
 #include <QBuffer>
 #include <QByteArray>
+#include <QClipboard>
 #include <QDataStream>
 #include <QJsonDocument>
 #include <QHash>
@@ -291,6 +293,15 @@ public:
 
         // Return the formatted code and the result if available
         return code + result;
+    }
+
+    QString clipboardContent() const
+    {
+        QStringList clipContent;
+        for (const ChatItem *item : subItems)
+            clipContent << item->clipboardContent();
+        clipContent << content();
+        return clipContent.join("");
     }
 
     QList<ChatItem *> childItems() const
@@ -969,6 +980,16 @@ public:
         }
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsErrorRole});
         emit hasErrorChanged(value);
+    }
+
+    Q_INVOKABLE void copyToClipboard(int index)
+    {
+        QMutexLocker locker(&m_mutex);
+        if (index < 0 || index >= m_chatItems.size())
+            return;
+        ChatItem *item = m_chatItems.at(index);
+        QClipboard *clipboard = QGuiApplication::clipboard();
+        clipboard->setText(item->clipboardContent(), QClipboard::Clipboard);
     }
 
     qsizetype count() const { QMutexLocker locker(&m_mutex); return m_chatItems.size(); }

@@ -534,9 +534,7 @@ GridLayout {
             name: qsTr("Copy")
             source: "qrc:/gpt4all/icons/copy.svg"
             onClicked: {
-                myTextArea.selectAll();
-                myTextArea.copy();
-                myTextArea.deselect();
+                chatModel.copyToClipboard(index);
             }
         }
 
