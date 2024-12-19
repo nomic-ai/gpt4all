@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Automatically substitute chat templates that are not compatible with Jinja2Cpp in GGUFs ([#3327](https://github.com/nomic-ai/gpt4all/pull/3327))
 - Built-in javascript code interpreter tool plus model ([#3173](https://github.com/nomic-ai/gpt4all/pull/3173))
 
 ### Fixed
