@@ -5,7 +5,7 @@
     "name": "Reasoner v1",
     "filename": "qwen2.5-coder-7b-instruct-q4_0.gguf",
     "filesize": "4431390720",
-    "requires": "3.5.4-dev0",
+    "requires": "3.6.0",
     "ramrequired": "8",
     "parameters": "8 billion",
     "quant": "q4_0",
