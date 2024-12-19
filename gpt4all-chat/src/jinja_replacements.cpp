@@ -27,6 +27,31 @@
 // compatibility with older versions of GPT4All.
 
 const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBSTITUTIONS {
+    // calme-2.1-phi3.5-4b.Q6_K.gguf (reported by ThilotE on Discord)
+    {
+        R"TEMPLATE({% for message in messages %}{% if message['role'] == 'system' and message['content'] %}{{'<|system|>
+' + message['content'] + '<|end|>
+'}}{% elif message['role'] == 'user' %}{{'<|user|>
+' + message['content'] + '<|end|>
+'}}{% elif message['role'] == 'assistant' %}{{'<|assistant|>
+' + message['content'] + '<|end|>
+'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|assistant|>
+' }}{% else %}{{ eos_token }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- for message in messages %}
+    {%- if message['role'] == 'system' and message['content'] %}
+        {{- '<|system|>\n' + message['content'] + '<|end|>\n' }}
+    {%- elif message['role'] == 'user' %}
+        {{- '<|user|>\n' + message['content'] + '<|end|>\n' }}
+    {%- elif message['role'] == 'assistant' %}
+        {{- '<|assistant|>\n' + message['content'] + '<|end|>\n' }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|assistant|>\n' }}
+{%- else %}
+    {{- eos_token }}
+{%- endif %})TEMPLATE",
+    },
     // gemma-2-9b-it-Q4_0.gguf (nomic-ai/gpt4all#3282)
     {
         R"TEMPLATE({{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '
