@@ -414,7 +414,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
     },
-    // mistral-7b-openorca.gguf2.Q4_0.gguf
+    // mistral-7b-openorca.gguf2.Q4_0.gguf, Hermes-3-Llama-3.2-3B.Q4_0.gguf
     {
         R"TEMPLATE({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
@@ -459,7 +459,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- eos_token }}
 {%- endif %})TEMPLATE",
     },
-    // qwen2-1_5b-instruct-q4_0.gguf, Qwen2-1.5B-Instruct.Q6_K.gguf (nomic-ai/gpt4all#3263)
+    // qwen2-1_5b-instruct-q4_0.gguf, Qwen2-1.5B-Instruct.Q6_K.gguf (nomic-ai/gpt4all#3263), Qwen2-72B-Instruct.Q4_K_M.gguf
     {
         R"TEMPLATE({% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system
 You are a helpful assistant.<|im_end|>
