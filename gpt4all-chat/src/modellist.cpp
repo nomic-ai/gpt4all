@@ -1,6 +1,7 @@
 #include "modellist.h"
 
 #include "download.h"
+#include "jinja_replacements.h"
 #include "mysettings.h"
 #include "network.h"
 
@@ -352,7 +353,18 @@ QVariant ModelInfo::defaultChatTemplate() const
             auto path = (dirpath + filename()).toUtf8();
             auto res = LLModel::Implementation::chatTemplate(path.constData());
             if (res) {
-                m_modelChatTemplate = QString::fromStdString(*res);
+                std::string ggufTmpl(std::move(*res));
+                if (ggufTmpl.size() >= 2 && ggufTmpl.end()[-2] != '\n' && ggufTmpl.end()[-1] == '\n')
+                    ggufTmpl.erase(ggufTmpl.end() - 1); // strip trailing newline for e.g. Llama-3.2-3B-Instruct
+                if (
+                    auto replacement = CHAT_TEMPLATE_SUBSTITUTIONS.find(ggufTmpl);
+                    replacement != CHAT_TEMPLATE_SUBSTITUTIONS.end()
+                ) {
+                    qWarning() << "automatically substituting chat template for" << filename();
+                    auto &[badTemplate, goodTemplate] = *replacement;
+                    ggufTmpl = goodTemplate;
+                }
+                m_modelChatTemplate = QString::fromStdString(ggufTmpl);
             } else {
                 qWarning().nospace() << "failed to get chat template for " << filename() << ": " << res.error().c_str();
                 m_modelChatTemplate = QString(); // do not retry
