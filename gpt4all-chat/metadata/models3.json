@@ -29,7 +29,8 @@
     "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3/license/\">Meta Llama 3 Community License</a></li></ul>",
     "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2<|eot_id|>",
-    "systemPrompt": ""
+    "systemPrompt": "",
+    "chatTemplate": "{%- set loop_messages = messages %}\n{%- for message in loop_messages %}\n    {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' %}\n    {{- content }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}"
   },
   {
     "order": "b",
@@ -113,7 +114,8 @@
     "description": "<ul><li><strong>For advanced users only. Not recommended for use on Windows or Linux without selecting CUDA due to speed issues.</strong></li><li>Fast responses</li><li>Chat based model</li><li>Large context size of 128k</li><li>Accepts agentic system prompts in Llama 3.1 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_1/license/\">Meta Llama 3.1 Community License</a></li></ul>",
     "url": "https://huggingface.co/GPT4All-Community/Meta-Llama-3.1-8B-Instruct-128k/resolve/main/Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
-    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>",
+    "chatTemplate": "{%- set loop_messages = messages %}\n{%- for message in loop_messages %}\n    {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' %}\n    {%- if loop.index0 == 0 %}\n        {%- set content = bos_token + content %}\n    {%- endif %}\n    {{- content }}\n{%- endfor %}\n{{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}"
   },
   {
     "order": "g",
@@ -213,6 +215,7 @@
     "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/ghost-7b-v0.9.1-Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
     "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>",
+    "chatTemplate": "{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '<|user|>\\n' + message['content'] + eos_token }}\n    {%- elif message['role'] == 'system' %}\n        {{- '<|system|>\\n' + message['content'] + eos_token }}\n    {%- elif message['role'] == 'assistant' %}\n        {{- '<|assistant|>\\n'  + message['content'] + eos_token }}\n    {%- endif %}\n    {%- if loop.last and add_generation_prompt %}\n        {{- '<|assistant|>' }}\n    {%- endif %}\n{%- endfor %}",
     "systemMessage": "You are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior."
   },
   {
@@ -298,7 +301,8 @@
     "description": "<ul><li>Very fast responses</li><li>Chat based model</li><li>Accepts system prompts in Phi-3 format</li><li>Trained by Microsoft</li><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
     "url": "https://gpt4all.io/models/gguf/Phi-3-mini-4k-instruct.Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1<|end|>\n<|assistant|>\n%2<|end|>\n",
-    "systemPrompt": ""
+    "systemPrompt": "",
+    "chatTemplate": "{{- bos_token }}\n{%- for message in messages %}\n    {{- '<|' + message['role'] + '|>\\n' + message['content'] + '<|end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|assistant|>\\n' }}\n{%- else %}\n    {{- eos_token }}\n{%- endif %}"
   },
   {
     "order": "r",
@@ -476,6 +480,6 @@
     "url": "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>",
     "systemPrompt": "<|im_start|>system\nBelow is an instruction that describes a task. Write a response that appropriately completes the request.<|im_end|>\n",
-    "chatTemplate": "{%- for message in messages %}\n    {%- if loop.first and messages[0]['role'] != 'system' %}\n        {{- '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
+    "chatTemplate": "{%- for message in messages %}\n    {%- if loop.first and messages[0]['role'] != 'system' %}\n        {{- '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   }
 ]
