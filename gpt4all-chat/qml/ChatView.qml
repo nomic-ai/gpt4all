@@ -824,6 +824,8 @@ Rectangle {
                                     textInput.forceActiveFocus();
                                     textInput.cursorPosition = text.length;
                                 }
+                                height: visible ? implicitHeight : 0
+                                visible: name !== "ToolResponse: "
                             }
 
                             remove: Transition {
