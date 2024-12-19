@@ -29,11 +29,11 @@
 const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBSTITUTIONS {
     // gemma-2-9b-it-Q4_0.gguf (nomic-ai/gpt4all#3282)
     {
-        R"({{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '
+        R"TEMPLATE({{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '
 ' + message['content'] | trim + '<end_of_turn>
 ' }}{% endfor %}{% if add_generation_prompt %}{{'<start_of_turn>model
-'}}{% endif %})",
-        R"({{- bos_token }}
+'}}{% endif %})TEMPLATE",
+        R"TEMPLATE({{- bos_token }}
 {%- if messages[0]['role'] == 'system' %}
     {{- raise_exception('System role not supported') }}
 {%- endif %}
@@ -50,11 +50,11 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<start_of_turn>model\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
     // ghost-7b-v0.9.1-Q4_0.gguf
     {
-        R"({% for message in messages %}
+        R"TEMPLATE({% for message in messages %}
 {% if message['role'] == 'user' %}
 {{ '<|user|>
 ' + message['content'] + eos_token }}
@@ -68,8 +68,8 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {% if loop.last and add_generation_prompt %}
 {{ '<|assistant|>' }}
 {% endif %}
-{% endfor %})",
-        R"({%- for message in messages %}
+{% endfor %})TEMPLATE",
+        R"TEMPLATE({%- for message in messages %}
     {%- if message['role'] == 'user' %}
         {{- '<|user|>\n' + message['content'] + eos_token }}
     {%- elif message['role'] == 'system' %}
@@ -80,11 +80,11 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {%- if loop.last and add_generation_prompt %}
         {{- '<|assistant|>' }}
     {%- endif %}
-{%- endfor %})",
+{%- endfor %})TEMPLATE",
     },
     // Llama-3.2-1B-Instruct-Q4_0.gguf, Llama-3.2-3B-Instruct-Q4_0.gguf, SummLlama3.2-3B-Q4_0.gguf (nomic-ai/gpt4all#3309)
     {
-        R"({{- bos_token }}
+        R"TEMPLATE({{- bos_token }}
 {%- if custom_tools is defined %}
     {%- set tools = custom_tools %}
 {%- endif %}
@@ -176,8 +176,8 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
-{%- endif %})",
-        R"({{- bos_token }}
+{%- endif %})TEMPLATE",
+        R"TEMPLATE({{- bos_token }}
 {%- if not date_string is defined %}
     {%- if strftime_now is defined %}
         {%- set date_string = strftime_now('%d %b %Y') %}
@@ -209,16 +209,161 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
+    },
+    // Llama-3.3-70B-Instruct-Q4_0.gguf (nomic-ai/gpt4all#3305)
+    {
+        R"TEMPLATE({{- bos_token }}
+{%- if custom_tools is defined %}
+    {%- set tools = custom_tools %}
+{%- endif %}
+{%- if not tools_in_user_message is defined %}
+    {%- set tools_in_user_message = true %}
+{%- endif %}
+{%- if not date_string is defined %}
+    {%- set date_string = "26 Jul 2024" %}
+{%- endif %}
+{%- if not tools is defined %}
+    {%- set tools = none %}
+{%- endif %}
+
+{#- This block extracts the system message, so we can slot it into the right place. #}
+{%- if messages[0]['role'] == 'system' %}
+    {%- set system_message = messages[0]['content']|trim %}
+    {%- set messages = messages[1:] %}
+{%- else %}
+    {%- set system_message = "" %}
+{%- endif %}
+
+{#- System message + builtin tools #}
+{{- "<|start_header_id|>system<|end_header_id|>\n\n" }}
+{%- if builtin_tools is defined or tools is not none %}
+    {{- "Environment: ipython\n" }}
+{%- endif %}
+{%- if builtin_tools is defined %}
+    {{- "Tools: " + builtin_tools | reject('equalto', 'code_interpreter') | join(", ") + "\n\n"}}
+{%- endif %}
+{{- "Cutting Knowledge Date: December 2023\n" }}
+{{- "Today Date: " + date_string + "\n\n" }}
+{%- if tools is not none and not tools_in_user_message %}
+    {{- "You have access to the following functions. To call a function, please respond with JSON for a function call." }}
+    {{- 'Respond in the format {"name": function name, "parameters": dictionary of argument name and its value}.' }}
+    {{- "Do not use variables.\n\n" }}
+    {%- for t in tools %}
+        {{- t | tojson(indent=4) }}
+        {{- "\n\n" }}
+    {%- endfor %}
+{%- endif %}
+{{- system_message }}
+{{- "<|eot_id|>" }}
+
+{#- Custom tools are passed in a user message with some extra guidance #}
+{%- if tools_in_user_message and not tools is none %}
+    {#- Extract the first user message so we can plug it in here #}
+    {%- if messages | length != 0 %}
+        {%- set first_user_message = messages[0]['content']|trim %}
+        {%- set messages = messages[1:] %}
+    {%- else %}
+        {{- raise_exception("Cannot put tools in the first user message when there's no first user message!") }}
+{%- endif %}
+    {{- '<|start_header_id|>user<|end_header_id|>\n\n' -}}
+    {{- "Given the following functions, please respond with a JSON for a function call " }}
+    {{- "with its proper arguments that best answers the given prompt.\n\n" }}
+    {{- 'Respond in the format {"name": function name, "parameters": dictionary of argument name and its value}.' }}
+    {{- "Do not use variables.\n\n" }}
+    {%- for t in tools %}
+        {{- t | tojson(indent=4) }}
+        {{- "\n\n" }}
+    {%- endfor %}
+    {{- first_user_message + "<|eot_id|>"}}
+{%- endif %}
+
+{%- for message in messages %}
+    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}
+        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' }}
+    {%- elif 'tool_calls' in message %}
+        {%- if not message.tool_calls|length == 1 %}
+            {{- raise_exception("This model only supports single tool-calls at once!") }}
+        {%- endif %}
+        {%- set tool_call = message.tool_calls[0].function %}
+        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}
+            {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' -}}
+            {{- "<|python_tag|>" + tool_call.name + ".call(" }}
+            {%- for arg_name, arg_val in tool_call.arguments | items %}
+                {{- arg_name + '="' + arg_val + '"' }}
+                {%- if not loop.last %}
+                    {{- ", " }}
+                {%- endif %}
+                {%- endfor %}
+            {{- ")" }}
+        {%- else  %}
+            {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' -}}
+            {{- '{"name": "' + tool_call.name + '", ' }}
+            {{- '"parameters": ' }}
+            {{- tool_call.arguments | tojson }}
+            {{- "}" }}
+        {%- endif %}
+        {%- if builtin_tools is defined %}
+            {#- This means we're in ipython mode #}
+            {{- "<|eom_id|>" }}
+        {%- else %}
+            {{- "<|eot_id|>" }}
+        {%- endif %}
+    {%- elif message.role == "tool" or message.role == "ipython" %}
+        {{- "<|start_header_id|>ipython<|end_header_id|>\n\n" }}
+        {%- if message.content is mapping or message.content is iterable %}
+            {{- message.content | tojson }}
+        {%- else %}
+            {{- message.content }}
+        {%- endif %}
+        {{- "<|eot_id|>" }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
+{%- endif %})TEMPLATE",
+        R"TEMPLATE({{- bos_token }}
+{%- if not date_string is defined %}
+    {%- if strftime_now is defined %}
+        {%- set date_string = strftime_now("%d %b %Y") %}
+    {%- else %}
+        {%- set date_string = "26 Jul 2024" %}
+    {%- endif %}
+{%- endif %}
+
+{#- This block extracts the system message, so we can slot it into the right place. #}
+{%- if messages[0]['role'] == 'system' %}
+    {%- set system_message = messages[0]['content'] | trim %}
+    {%- set loop_start = 1 %}
+{%- else %}
+    {%- set system_message = "" %}
+    {%- set loop_start = 0 %}
+{%- endif %}
+
+{#- System message #}
+{{- "<|start_header_id|>system<|end_header_id|>\n\n" }}
+{{- "Cutting Knowledge Date: December 2023\n" }}
+{{- "Today Date: " + date_string + "\n\n" }}
+{{- system_message }}
+{{- "<|eot_id|>" }}
+
+{%- for message in messages %}
+    {%- if loop.index0 >= loop_start %}
+        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' + message['content'] | trim + '<|eot_id|>' }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
+{%- endif %})TEMPLATE",
     },
     // Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf
     {
-        R"({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
+        R"TEMPLATE({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
 
 '+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>
 
-' }})",
-        R"({%- set loop_messages = messages %}
+' }})TEMPLATE",
+        R"TEMPLATE({%- set loop_messages = messages %}
 {%- for message in loop_messages %}
     {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}
     {%- if loop.index0 == 0 %}
@@ -226,31 +371,31 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {%- endif %}
     {{- content }}
 {%- endfor %}
-{{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }})",
+{{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }})TEMPLATE",
     },
     // Meta-Llama-3-8B-Instruct.Q4_0.gguf
     {
-        R"({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
+        R"TEMPLATE({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
 
 '+ message['content'] | trim + '<|eot_id|>' %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ '<|start_header_id|>assistant<|end_header_id|>
 
-' }}{% endif %})",
-        R"({%- set loop_messages = messages %}
+' }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- set loop_messages = messages %}
 {%- for message in loop_messages %}
     {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}
     {{- content }}
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
     // mistral-7b-openorca.gguf2.Q4_0.gguf
     {
-        R"({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
+        R"TEMPLATE({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
-' }}{% endif %})",
-        R"({%- if not add_generation_prompt is defined %}
+' }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- if not add_generation_prompt is defined %}
     {%- set add_generation_prompt = false %}
 {%- endif %}
 {%- for message in messages %}
@@ -258,28 +403,28 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|im_start|>assistant\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
     // Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf
     {
-        R"({% for message in messages %}{{'<|im_start|>' + message['role'] + '
+        R"TEMPLATE({% for message in messages %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
-' }}{% endif %})",
-        R"({%- for message in messages %}
+' }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- for message in messages %}
     {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n' }}
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|im_start|>assistant\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
     // Phi-3-mini-4k-instruct.Q4_0.gguf
     {
-        R"({{ bos_token }}{% for message in messages %}{{'<|' + message['role'] + '|>' + '
+        R"TEMPLATE({{ bos_token }}{% for message in messages %}{{'<|' + message['role'] + '|>' + '
 ' + message['content'] + '<|end|>
 ' }}{% endfor %}{% if add_generation_prompt %}{{ '<|assistant|>
-' }}{% else %}{{ eos_token }}{% endif %})",
-        R"({{- bos_token }}
+' }}{% else %}{{ eos_token }}{% endif %})TEMPLATE",
+        R"TEMPLATE({{- bos_token }}
 {%- for message in messages %}
     {{- '<|' + message['role'] + '|>\n' + message['content'] + '<|end|>\n' }}
 {%- endfor %}
@@ -287,17 +432,17 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|assistant|>\n' }}
 {%- else %}
     {{- eos_token }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
     // qwen2-1_5b-instruct-q4_0.gguf, Qwen2-1.5B-Instruct.Q6_K.gguf (nomic-ai/gpt4all#3263)
     {
-        R"({% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system
+        R"TEMPLATE({% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system
 You are a helpful assistant.<|im_end|>
 ' }}{% endif %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
-' }}{% endif %})",
-        R"({%- for message in messages %}
+' }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- for message in messages %}
     {%- if loop.first and messages[0]['role'] != 'system' %}
         {{- '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}
     {%- endif %}
@@ -305,6 +450,6 @@ You are a helpful assistant.<|im_end|>
 {%- endfor %}
 {%- if add_generation_prompt %}
     {{- '<|im_start|>assistant\n' }}
-{%- endif %})",
+{%- endif %})TEMPLATE",
     },
 };
