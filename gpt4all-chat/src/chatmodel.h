@@ -275,7 +275,7 @@ public:
                     QList<ResultInfo> data;
                     if (item->type() == ChatItem::Type::Response) {
                         if (auto prompt = getPeerUnlocked(item))
-                            data = (*prompt)->consolidatedSources;
+                            data = (*prompt)->sources;
                     }
                     return QVariant::fromValue(data);
                 }
@@ -284,7 +284,7 @@ public:
                     QList<ResultInfo> data;
                     if (item->type() == ChatItem::Type::Response) {
                         if (auto prompt = getPeerUnlocked(item))
-                            data = (*prompt)->sources;
+                            data = (*prompt)->consolidatedSources;
                     }
                     return QVariant::fromValue(data);
                 }
