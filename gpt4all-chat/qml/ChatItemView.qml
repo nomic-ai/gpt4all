@@ -36,7 +36,6 @@ GridLayout {
         Layout.preferredWidth: 32
         Layout.preferredHeight: 32
         Layout.topMargin: model.index > 0 ? 25 : 0
-        visible: content !== "" || childItems.length > 0
 
         Image {
             id: logo
@@ -71,7 +70,6 @@ GridLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: 38
         Layout.topMargin: model.index > 0 ? 25 : 0
-        visible: content !== "" || childItems.length > 0
 
         RowLayout {
             spacing: 5
