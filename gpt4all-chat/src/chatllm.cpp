@@ -740,7 +740,9 @@ std::vector<MessageItem> ChatLLM::forkConversation(const QString &prompt) const
     std::vector<MessageItem> conversation;
     {
         auto items = m_chatModel->messageItems();
-        Q_ASSERT(items.size() >= 2); // should be prompt/response pairs
+        // It is possible the main thread could have erased the conversation while the llm thread,
+        // is busy forking the conversatoin but it must have set stop generating first
+        Q_ASSERT(items.size() >= 2 || m_stopGenerating); // should be prompt/response pairs
         conversation.reserve(items.size() + 1);
         conversation.assign(items.begin(), items.end());
     }
@@ -960,10 +962,18 @@ auto ChatLLM::promptInternal(
         result.response.append(piece.data(), piece.size());
         auto respStr = QString::fromUtf8(result.response);
 
-        if (toolCallParser.hasSplit())
-            m_chatModel->setResponseValue(toolCallParser.buffer());
-        else
-            m_chatModel->setResponseValue(removeLeadingWhitespace(respStr));
+        try {
+            if (toolCallParser.hasSplit())
+                m_chatModel->setResponseValue(toolCallParser.buffer());
+            else
+                m_chatModel->setResponseValue(removeLeadingWhitespace(respStr));
+        } catch (const std::exception &e) {
+            // We have a try/catch here because the main thread might have removed the response from
+            // the chatmodel by erasing the conversation during the response... the main thread sets
+            // m_stopGenerating before doing so, but it doesn't wait after that to reset the chatmodel
+            Q_ASSERT(m_stopGenerating);
+            return false;
+        }
 
         emit responseChanged();
 
