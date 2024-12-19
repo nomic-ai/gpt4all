@@ -14,8 +14,8 @@ ToolModel *ToolModel::globalInstance()
 }
 
 ToolModel::ToolModel()
-    : QAbstractListModel(nullptr) {
-
+    : QAbstractListModel(nullptr)
+{
     QCoreApplication::instance()->installEventFilter(this);
 
     Tool* codeInterpreter = new CodeInterpreter;

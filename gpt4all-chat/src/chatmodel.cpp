@@ -1,5 +1,11 @@
 #include "chatmodel.h"
 
+#include <QDebug>
+#include <QMap>
+#include <QtGlobal>
+#include <QtLogging>
+
+
 QList<ResultInfo> ChatItem::consolidateSources(const QList<ResultInfo> &sources)
 {
     QMap<QString, ResultInfo> groupedData;
