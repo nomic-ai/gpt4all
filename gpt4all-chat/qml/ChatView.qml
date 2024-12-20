@@ -1354,6 +1354,10 @@ Rectangle {
                             ToolTip.text: Accessible.description
 
                             onClicked: {
+                                // FIXME: This no longer sets a 'stopped' field so conversations that
+                                // are copied to clipboard or to datalake don't indicate if the user
+                                // has prematurely stopped the response. This has been broken since
+                                // v3.0.0 at least.
                                 currentChat.stopGenerating()
                             }
                         }
