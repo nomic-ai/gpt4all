@@ -37,10 +37,11 @@ Rectangle {
 
     Connections {
         target: currentChat
-        function onResponseInProgressChanged() {
-            if (MySettings.networkIsActive && !currentChat.responseInProgress)
-                Network.sendConversation(currentChat.id, getConversationJson());
-        }
+        // FIXME: https://github.com/nomic-ai/gpt4all/issues/3334
+        // function onResponseInProgressChanged() {
+        //    if (MySettings.networkIsActive && !currentChat.responseInProgress)
+        //        Network.sendConversation(currentChat.id, getConversationJson());
+        // }
         function onModelLoadingErrorChanged() {
             if (currentChat.modelLoadingError !== "")
                 modelLoadingErrorPopup.open()
@@ -116,42 +117,44 @@ Rectangle {
         }
     }
 
-    function getConversation() {
-        var conversation = "";
-        for (var i = 0; i < chatModel.count; i++) {
-            var item = chatModel.get(i)
-            var string = item.name;
-            var isResponse = item.name === "Response: "
-            string += chatModel.get(i).value
-            if (isResponse && item.stopped)
-                string += " <stopped>"
-            string += "\n"
-            conversation += string
-        }
-        return conversation
-    }
+    // FIXME: https://github.com/nomic-ai/gpt4all/issues/3334
+    // function getConversation() {
+    //     var conversation = "";
+    //     for (var i = 0; i < chatModel.count; i++) {
+    //         var item = chatModel.get(i)
+    //         var string = item.name;
+    //         var isResponse = item.name === "Response: "
+    //         string += chatModel.get(i).value
+    //         if (isResponse && item.stopped)
+    //             string += " <stopped>"
+    //         string += "\n"
+    //         conversation += string
+    //     }
+    //     return conversation
+    // }
 
-    function getConversationJson() {
-        var str = "{\"conversation\": [";
-        for (var i = 0; i < chatModel.count; i++) {
-            var item = chatModel.get(i)
-            var isResponse = item.name === "Response: "
-            str += "{\"content\": ";
-            str += JSON.stringify(item.value)
-            str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
-            if (isResponse && item.thumbsUpState !== item.thumbsDownState)
-                str += ", \"rating\": \"" + (item.thumbsUpState ? "positive" : "negative") + "\"";
-            if (isResponse && item.newResponse !== "")
-                str += ", \"edited_content\": " + JSON.stringify(item.newResponse);
-            if (isResponse && item.stopped)
-                str += ", \"stopped\": \"true\""
-            if (!isResponse)
-                str += "},"
-            else
-                str += ((i < chatModel.count - 1) ? "}," : "}")
-        }
-        return str + "]}"
-    }
+    // FIXME: https://github.com/nomic-ai/gpt4all/issues/3334
+    // function getConversationJson() {
+    //     var str = "{\"conversation\": [";
+    //     for (var i = 0; i < chatModel.count; i++) {
+    //         var item = chatModel.get(i)
+    //         var isResponse = item.name === "Response: "
+    //         str += "{\"content\": ";
+    //         str += JSON.stringify(item.value)
+    //         str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
+    //         if (isResponse && item.thumbsUpState !== item.thumbsDownState)
+    //             str += ", \"rating\": \"" + (item.thumbsUpState ? "positive" : "negative") + "\"";
+    //         if (isResponse && item.newResponse !== "")
+    //             str += ", \"edited_content\": " + JSON.stringify(item.newResponse);
+    //         if (isResponse && item.stopped)
+    //             str += ", \"stopped\": \"true\""
+    //         if (!isResponse)
+    //             str += "},"
+    //         else
+    //             str += ((i < chatModel.count - 1) ? "}," : "}")
+    //     }
+    //     return str + "]}"
+    // }
 
     ChatDrawer {
         id: chatDrawer
@@ -932,10 +935,7 @@ Rectangle {
                             visible: false
                         }
                         onClicked: {
-                            var conversation = getConversation()
-                            copyEdit.text = conversation
-                            copyEdit.selectAll()
-                            copyEdit.copy()
+                            chatModel.copyToClipboard()
                             copyMessage.open()
                         }
                         ToolTip.visible: copyChatButton.hovered
@@ -1354,9 +1354,10 @@ Rectangle {
                             ToolTip.text: Accessible.description
 
                             onClicked: {
-                                var index = Math.max(0, chatModel.count - 1);
-                                var listElement = chatModel.get(index);
-                                listElement.stopped = true
+                                // FIXME: This no longer sets a 'stopped' field so conversations that
+                                // are copied to clipboard or to datalake don't indicate if the user
+                                // has prematurely stopped the response. This has been broken since
+                                // v3.0.0 at least.
                                 currentChat.stopGenerating()
                             }
                         }
