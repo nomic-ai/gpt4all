@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <filesystem>
 #include <functional>
 #include <optional>
 #include <span>
@@ -19,6 +20,7 @@
 class Dlhandle;
 
 using namespace std::string_literals;
+namespace fs = std::filesystem;
 
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
@@ -94,12 +96,13 @@ public:
 
     class Implementation {
     public:
+        Implementation(std::string buildBackend, Dlhandle &&dlhandle);
         Implementation(const Implementation &) = delete;
         Implementation(Implementation &&);
         ~Implementation();
 
-        std::string_view modelType() const { return m_modelType; }
-        std::string_view buildVariant() const { return m_buildVariant; }
+        const std::string &buildBackend() const { return m_buildBackend; }
+        std::string_view   modelType   () const { return m_modelType;    }
 
         static LLModel *construct(const std::string &modelPath, const std::string &backend = "auto", int n_ctx = 2048);
         static std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired = 0);
@@ -114,19 +117,17 @@ public:
         static int cpuSupportsAVX2();
 
     private:
-        Implementation(Dlhandle &&);
-
-        static const std::vector<Implementation> &implementationList();
-        static const Implementation *implementation(const char *fname, const std::string &buildVariant);
+        static const Implementation *findImplementation(const char *fname, const std::string &buildBackend);
         static LLModel *constructGlobalLlama(const std::optional<std::string> &backend = std::nullopt);
 
-        char *(*m_getFileArch)(const char *fname);
-        bool (*m_isArchSupported)(const char *arch);
-        LLModel *(*m_construct)();
+        std::string  m_buildBackend;
+        Dlhandle    *m_dlhandle;
+
+        char    *(*m_getFileArch)    (const char *fname);
+        bool     (*m_isArchSupported)(const char *arch);
+        LLModel *(*m_construct)      ();
 
         std::string_view m_modelType;
-        std::string_view m_buildVariant;
-        Dlhandle *m_dlhandle;
     };
 
     struct PromptContext {
@@ -141,6 +142,16 @@ public:
         float   contextErase = 0.5f;    // percent of context to erase if we exceed the context window
     };
 
+private:
+    struct LazyImplementation {
+        std::string                   buildBackend;
+        fs::path                      path;
+        std::optional<Implementation> impl = {};
+
+        const Implementation &get();
+    };
+
+public:
     explicit LLModel() {}
     virtual ~LLModel() {}
 
@@ -266,6 +277,9 @@ protected:
     void generateResponse(const ResponseCallback &responseCallback,
                           const PromptContext    &promptCtx,
                           int32_t                 nPast);
+
+private:
+    static std::vector<LazyImplementation> &getImplementations();
 
     friend class LLMImplementation;
 };
