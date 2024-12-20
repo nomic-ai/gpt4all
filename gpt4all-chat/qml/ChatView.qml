@@ -935,10 +935,7 @@ Rectangle {
                             visible: false
                         }
                         onClicked: {
-                            var conversation = chatModel.copyToClipboard()
-                            copyEdit.text = conversation
-                            copyEdit.selectAll()
-                            copyEdit.copy()
+                            chatModel.copyToClipboard()
                             copyMessage.open()
                         }
                         ToolTip.visible: copyChatButton.hovered

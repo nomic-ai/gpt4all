@@ -985,12 +985,15 @@ public:
     Q_INVOKABLE void copyToClipboard()
     {
         QMutexLocker locker(&m_mutex);
-        QStringList content;
+        QString conversation;
         for (ChatItem *item : m_chatItems) {
-            content << item->clipboardContent();
+            QString string = item->name;
+            string += item->clipboardContent();
+            string += "\n";
+            conversation += string;
         }
         QClipboard *clipboard = QGuiApplication::clipboard();
-        clipboard->setText(content.join("\n\n"), QClipboard::Clipboard);
+        clipboard->setText(conversation, QClipboard::Clipboard);
     }
 
     Q_INVOKABLE void copyToClipboard(int index)
