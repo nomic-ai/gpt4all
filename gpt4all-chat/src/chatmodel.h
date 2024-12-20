@@ -982,6 +982,17 @@ public:
         emit hasErrorChanged(value);
     }
 
+    Q_INVOKABLE void copyToClipboard()
+    {
+        QMutexLocker locker(&m_mutex);
+        QStringList content;
+        for (ChatItem *item : m_chatItems) {
+            content << item->clipboardContent();
+        }
+        QClipboard *clipboard = QGuiApplication::clipboard();
+        clipboard->setText(content.join("\n\n"), QClipboard::Clipboard);
+    }
+
     Q_INVOKABLE void copyToClipboard(int index)
     {
         QMutexLocker locker(&m_mutex);
