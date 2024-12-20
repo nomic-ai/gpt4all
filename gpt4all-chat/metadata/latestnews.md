@@ -1,5 +1,9 @@
 ## Latest News
 
+GPT4All v3.6.1 was released on December 20th and fixes issues with the stop generation and copy conversation buttons which were broken in v3.6.0.
+
+---
+
 GPT4All v3.6.0 was released on December 19th. Changes include:
 
 * **Reasoner v1:**

@@ -253,5 +253,10 @@
     "version": "3.6.0",
     "notes": "* **Reasoner v1:**\n  * Built-in javascript code interpreter tool.\n  * Custom curated model that utilizes the code interpreter to break down, analyze, perform, and verify complex reasoning tasks.\n* **Templates:** Automatically substitute chat templates that are not compatible with Jinja2Cpp in GGUFs.\n* **Fixes:**\n  * Remote model template to allow for XML in messages.\n  * Jinja2Cpp bug that broke system message detection in chat templates.\n  * LocalDocs sources displaying in unconsolidated form after v3.5.0.",
     "contributors": "* Adam Treat (Nomic AI)\n* Jared Van Bortel (Nomic AI)"
+  },
+  {
+    "version": "3.6.1",
+    "notes": "* **Fixes:**\n  * The stop generation button no longer working in v3.6.0.\n  * The copy entire conversation button no longer working in v3.6.0.",
+    "contributors": "* Adam Treat (Nomic AI)"
   }
 ]
