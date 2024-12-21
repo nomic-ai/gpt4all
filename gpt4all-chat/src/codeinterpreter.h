@@ -14,12 +14,79 @@ class JavaScriptConsoleCapture : public QObject
     Q_OBJECT
 public:
     QString output;
-    Q_INVOKABLE void log(const QString &message)
+    Q_INVOKABLE void log(const QJSValue &a)
+    {
+        logInternal(a, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b)
+    {
+        logInternal(a);
+        logInternal(b, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c, const QJSValue &d)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c);
+        logInternal(d, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c, const QJSValue &d,
+                         const QJSValue &e)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c);
+        logInternal(d);
+        logInternal(e, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c, const QJSValue &d,
+                         const QJSValue &e, const QJSValue &f)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c);
+        logInternal(d);
+        logInternal(e);
+        logInternal(f, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c, const QJSValue &d,
+                         const QJSValue &e, const QJSValue &f, const QJSValue &g)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c);
+        logInternal(d);
+        logInternal(e);
+        logInternal(f);
+        logInternal(g, true);
+    }
+    Q_INVOKABLE void log(const QJSValue &a, const QJSValue &b, const QJSValue &c, const QJSValue &d,
+                         const QJSValue &e, const QJSValue &f, const QJSValue &g, const QJSValue &h)
+    {
+        logInternal(a);
+        logInternal(b);
+        logInternal(c);
+        logInternal(d);
+        logInternal(e);
+        logInternal(f);
+        logInternal(g);
+        logInternal(h, true);
+    }
+
+private:
+    void logInternal(const QJSValue &value, bool newLine = false)
     {
         const int maxLength = 1024;
         if (output.length() >= maxLength)
             return;
 
+        const QString message = value.toString();
         if (output.length() + message.length() + 1 > maxLength) {
             static const QString trunc = "\noutput truncated at " + QString::number(maxLength) + " characters...";
             int remainingLength = maxLength - output.length();
@@ -28,7 +95,9 @@ public:
             output.append(trunc);
             Q_ASSERT(output.length() > maxLength);
         } else {
-            output.append(message + "\n");
+            if (!output.isEmpty() && output.back() != '\n') output.append(' ');
+            output.append(message);
+            if (newLine) output.append('\n');
         }
     }
 };
