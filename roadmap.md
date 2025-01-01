@@ -7,7 +7,7 @@ Each item should have an issue link below.
 - Chat UI Language Localization (localize UI into the native languages of users)
     - [ ] Chinese
     - [ ] German
-    - [ ] French
+    - [X] French
     - [x] Portuguese
     - [ ] Your native language here. 
 - UI Redesign: an internal effort at Nomic to improve the UI/UX of gpt4all for all users.
