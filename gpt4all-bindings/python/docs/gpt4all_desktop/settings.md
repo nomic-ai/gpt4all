@@ -8,8 +8,10 @@
     | --- | --- | --- |
     | **Theme** | Color theme for the application. Options are `Light`, `Dark`, and `LegacyDark` | `Light` |
     | **Font Size** | Font size setting for text throughout the application. Options are Small, Medium, and Large | Small |
+    | **Language and Locale | The language and locale of that language you wish to use | System Locale |
     | **Device** | Device that will run your models. Options are `Auto` (GPT4All chooses), `Metal` (Apple Silicon M1+), `CPU`, and `GPU` | `Auto` |
     | **Default Model** | Choose your preferred LLM to load by default on startup| Auto |
+    | **Suggestion Mode** | Generate suggested follow up questions at the end of responses | When chatting with LocalDocs | 
     | **Download Path** | Select a destination on your device to save downloaded models | Windows: `C:\Users\{username}\AppData\Local\nomic.ai\GPT4All`<br><br>Mac: `/Users/{username}/Library/Application Support/nomic.ai/GPT4All/`<br><br>Linux: `/home/{username}/.local/share/nomic.ai/GPT4All` |
     | **Enable Datalake** | Opt-in to sharing interactions with GPT4All community (**anonymous** and **optional**) | Off |
 
@@ -18,7 +20,7 @@
     | Setting | Description | Default Value |
     | --- | --- | --- |
     | **CPU Threads** | Number of concurrently running CPU threads (more can speed up responses) | 4 |
-    | **Save Chat Context** | Save chat context to disk to pick up exactly where a model left off. | Off |
+    | **Enable System Tray** | The application will minimize to the system tray / taskbar when the window is closed | Off |
     | **Enable Local Server** | Allow any application on your device to use GPT4All via an OpenAI-compatible GPT4All API | Off |
     | **API Server Port** | Local HTTP port for the local API server | 4891 |
 
@@ -29,8 +31,11 @@
     | Setting | Description | Default Value |
     | --- | --- | --- |
     | **Name** | Unique name of this model / character| set by model uploader |
-    | **System Prompt** | General instructions for the chats this model will be used for | set by model uploader |
-    | **Prompt Template** | Format of user <-> assistant interactions for the chats this model will be used for | set by model uploader |
+    | **Model File** | Filename (.gguf) of the model | set by model uploader |
+    | **System Message** | General instructions for the chats this model will be used for | set by model uploader |
+    | **Chat Template** | Format of user <-> assistant interactions for the chats this model will be used for | set by model uploader |
+    | **Chat Name Prompt** | Prompt used to automatically generate chat names | Describe the above conversation in seven words or less. |
+    | **Suggested FollowUp Prompt** | Prompt used to automatically generate follow up questions after a chat response | Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts. |
 
 ### Clone
 
