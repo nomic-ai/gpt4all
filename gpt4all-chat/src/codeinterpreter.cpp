@@ -97,7 +97,7 @@ void CodeInterpreterWorker::request(const QString &code)
 
     const QJSValue result = m_engine.evaluate(code);
 
-    QString resultString; //= result.isUndefined() ? QString() : result.toString();
+    QString resultString;
 
     if (m_engine.isInterrupted()) {
         resultString = QString("Error: code execution was timed out as it exceeded %1 ms. Code must be written to ensure execution does not timeout.").arg(m_timeout);
