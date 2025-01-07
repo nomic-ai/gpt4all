@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## Fixed
 - Fix the timeout error in code interpreter ([#3369](https://github.com/nomic-ai/gpt4all/pull/3369))
 - Fix code interpreter console.log not accepting multiple arguments ([#3371](https://github.com/nomic-ai/gpt4all/pull/3371))
+- Remove 'X is defined' checks from templates as they work incorrectly with Jinja2Cpp ([#3372](https://github.com/nomic-ai/gpt4all/pull/3372))
 
 ## [3.6.1] - 2024-12-20
 
