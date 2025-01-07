@@ -5,6 +5,9 @@
 #include <QThread>
 #include <QVariant>
 
+using namespace Qt::Literals::StringLiterals;
+
+
 QString CodeInterpreter::run(const QList<ToolParam> &params, qint64 timeout)
 {
     m_error = ToolEnums::Error::NoError;
@@ -92,7 +95,25 @@ CodeInterpreterWorker::CodeInterpreterWorker()
 void CodeInterpreterWorker::request(const QString &code)
 {
     JavaScriptConsoleCapture consoleCapture;
-    QJSValue consoleObject = m_engine.newQObject(&consoleCapture);
+    QJSValue consoleInternalObject = m_engine.newQObject(&consoleCapture);
+    m_engine.globalObject().setProperty("console_internal", consoleInternalObject);
+
+    // preprocess console.log args in JS since Q_INVOKE doesn't support varargs
+    auto consoleObject = m_engine.evaluate(uR"(
+        class Console {
+            log(...args) {
+                if (args.length && typeof args[0] === 'string')
+                    throw new Error('console.log string formatting not supported');
+                let cat = '';
+                for (const arg of args) {
+                    cat += String(arg);
+                }
+                console_internal.log(cat);
+            }
+        }
+
+        new Console();
+    )"_s);
     m_engine.globalObject().setProperty("console", consoleObject);
 
     const QJSValue result = m_engine.evaluate(code);
