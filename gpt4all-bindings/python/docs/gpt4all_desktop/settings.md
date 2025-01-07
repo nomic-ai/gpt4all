@@ -8,7 +8,7 @@
     | --- | --- | --- |
     | **Theme** | Color theme for the application. Options are `Light`, `Dark`, and `LegacyDark` | `Light` |
     | **Font Size** | Font size setting for text throughout the application. Options are Small, Medium, and Large | Small |
-    | **Language and Locale | The language and locale of that language you wish to use | System Locale |
+    | **Language and Locale** | The language and locale of that language you wish to use | System Locale |
     | **Device** | Device that will run your models. Options are `Auto` (GPT4All chooses), `Metal` (Apple Silicon M1+), `CPU`, and `GPU` | `Auto` |
     | **Default Model** | Choose your preferred LLM to load by default on startup| Auto |
     | **Suggestion Mode** | Generate suggested follow up questions at the end of responses | When chatting with LocalDocs | 
