@@ -203,13 +203,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
         R"TEMPLATE({{- bos_token }}
-{%- if not date_string is defined %}
-    {%- if strftime_now is defined %}
-        {%- set date_string = strftime_now('%d %b %Y') %}
-    {%- else %}
-        {%- set date_string = '26 Jul 2024' %}
-    {%- endif %}
-{%- endif %}
+{%- set date_string = strftime_now('%d %b %Y') %}
 
 {#- This block extracts the system message, so we can slot it into the right place. #}
 {%- if messages[0]['role'] == 'system' %}
@@ -348,13 +342,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
         R"TEMPLATE({{- bos_token }}
-{%- if not date_string is defined %}
-    {%- if strftime_now is defined %}
-        {%- set date_string = strftime_now("%d %b %Y") %}
-    {%- else %}
-        {%- set date_string = "26 Jul 2024" %}
-    {%- endif %}
-{%- endif %}
+{%- set date_string = strftime_now("%d %b %Y") %}
 
 {#- This block extracts the system message, so we can slot it into the right place. #}
 {%- if messages[0]['role'] == 'system' %}
