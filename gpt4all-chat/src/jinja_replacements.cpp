@@ -420,10 +420,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
 ' }}{% endif %})TEMPLATE",
-        R"TEMPLATE({%- if not add_generation_prompt is defined %}
-    {%- set add_generation_prompt = false %}
-{%- endif %}
-{%- for message in messages %}
+        R"TEMPLATE({%- for message in messages %}
     {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n' }}
 {%- endfor %}
 {%- if add_generation_prompt %}
