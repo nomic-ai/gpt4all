@@ -42,7 +42,7 @@ public:
     QString response() const { return m_response; }
 
     void request(const QString &code);
-    void interrupt() { m_engine.setInterrupted(true); }
+    void interrupt(qint64 timeout) { m_timeout = timeout; m_engine.setInterrupted(true); }
     ToolEnums::Error error() const { return m_error; }
     QString errorString() const { return m_errorString; }
 
@@ -50,6 +50,7 @@ Q_SIGNALS:
     void finished();
 
 private:
+    qint64 m_timeout = 0;
     QJSEngine m_engine;
     QString m_response;
     ToolEnums::Error m_error = ToolEnums::Error::NoError;

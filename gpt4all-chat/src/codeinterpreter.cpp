@@ -26,7 +26,7 @@ QString CodeInterpreter::run(const QList<ToolParam> &params, qint64 timeout)
     workerThread.start();
     bool timedOut = !workerThread.wait(timeout);
     if (timedOut) {
-        worker.interrupt(); // thread safe
+        worker.interrupt(timeout); // thread safe
         m_error = ToolEnums::Error::TimeoutError;
     }
     workerThread.quit();
@@ -96,14 +96,17 @@ void CodeInterpreterWorker::request(const QString &code)
     m_engine.globalObject().setProperty("console", consoleObject);
 
     const QJSValue result = m_engine.evaluate(code);
-    QString resultString = result.isUndefined() ? QString() : result.toString();
 
-    // NOTE: We purposely do not set the m_error or m_errorString for the code interpreter since
-    // we *want* the model to see the response has an error so it can hopefully correct itself. The
-    // error member variables are intended for tools that have error conditions that cannot be corrected.
-    // For instance, a tool depending upon the network might set these error variables if the network
-    // is not available.
-    if (result.isError()) {
+    QString resultString;
+
+    if (m_engine.isInterrupted()) {
+        resultString = QString("Error: code execution was timed out as it exceeded %1 ms. Code must be written to ensure execution does not timeout.").arg(m_timeout);
+    } else if (result.isError()) {
+        // NOTE: We purposely do not set the m_error or m_errorString for the code interpreter since
+        // we *want* the model to see the response has an error so it can hopefully correct itself. The
+        // error member variables are intended for tools that have error conditions that cannot be corrected.
+        // For instance, a tool depending upon the network might set these error variables if the network
+        // is not available.
         const QStringList lines = code.split('\n');
         const int line = result.property("lineNumber").toInt();
         const int index = line - 1;
@@ -114,6 +117,8 @@ void CodeInterpreterWorker::request(const QString &code)
                 .arg(lineContent);
         m_error = ToolEnums::Error::UnknownError;
         m_errorString = resultString;
+    } else {
+        resultString = result.isUndefined() ? QString() : result.toString();
     }
 
     if (resultString.isEmpty())
