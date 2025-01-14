@@ -749,8 +749,7 @@ jobs:
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
               qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
-              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat.win64_msvc2019_arm64 `
-              qt.qt6.651.debug_info.win64_msvc2019_arm64 qt.qt6.651.addons.qthttpserver.win64_msvc2019_arm64
+              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
@@ -869,8 +868,7 @@ jobs:
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
               qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
-              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat.win64_msvc2019_arm64 `
-              qt.qt6.651.debug_info.win64_msvc2019_arm64 qt.qt6.651.addons.qthttpserver.win64_msvc2019_arm64
+              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
