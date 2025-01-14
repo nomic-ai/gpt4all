@@ -721,6 +721,259 @@ jobs:
       - store_artifacts:
           path: build/upload
 
+  build-offline-chat-installer-windows-arm:
+    machine:
+      # we use 2024.04.01 because nvcc complains about the MSVC ver if we use anything newer
+      image: windows-server-2022-gui:2024.04.1
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:
+          keys:
+            - ccache-gpt4all-win-aarch64-
+      - run:
+          name: Install dependencies
+          command: choco install -y ccache wget
+      - run:
+          name: Installing Qt
+          command: |
+            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
+            # note: need x86_64 toolset for windeployqt.exe, which isn't provided with the ARM64 cross toolset
+            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
+              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat.win64_msvc2019_arm64 `
+              qt.qt6.651.debug_info.win64_msvc2019_arm64 qt.qt6.651.addons.qthttpserver.win64_msvc2019_arm64
+      - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            wget.exe "$dotnet_url"
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: Build
+          no_output_timeout: 30m
+          command: |
+            $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
+            Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -DevCmdArguments '-arch=arm64 -no_logo'
+
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            ccache -o "cache_dir=${pwd}\..\.ccache" -o max_size=500M -p -z
+            mkdir build
+            cd build
+            & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
+              -S ..\gpt4all-chat -B . -G Ninja `
+              -DCMAKE_BUILD_TYPE=Release `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_arm64" `
+              "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              -DCMAKE_C_COMPILER_LAUNCHER=ccache `
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
+              -DLLMODEL_CUDA=OFF `
+              -DLLMODEL_KOMPUTE=OFF `
+              -DWINDEPLOYQT='C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat' `
+              -DGPT4ALL_OFFLINE_INSTALLER=ON
+            & "C:\Qt\Tools\Ninja\ninja.exe"
+            & "C:\Qt\Tools\Ninja\ninja.exe" install
+            & "C:\Qt\Tools\Ninja\ninja.exe" package
+            ccache -s
+            mkdir upload
+            copy gpt4all-installer-win64-arm.exe upload
+      - store_artifacts:
+          path: build/upload
+            # add workspace so signing jobs can connect & obtain dmg
+      - save_cache:
+          key: ccache-gpt4all-win-aarch64-{{ epoch }}
+          when: always
+          paths:
+            - ..\.ccache
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  sign-offline-chat-installer-windows-arm:
+    machine:
+      image: windows-server-2022-gui:2024.04.1
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: Install dependencies
+          command: choco install -y wget
+      - run:
+          name: "Install Dotnet 8 && Azure Sign Tool"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            wget.exe "$dotnet_url"
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: "Sign Windows Installer With AST"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)\build\upload\gpt4all-installer-win64-arm.exe"
+      - store_artifacts:
+          path: build/upload
+
+  build-online-chat-installer-windows-arm:
+    machine:
+      image: windows-server-2022-gui:2024.04.1
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:
+          keys:
+            - ccache-gpt4all-win-aarch64-
+      - run:
+          name: Install dependencies
+          command: choco install -y ccache wget
+      - run:
+          name: Installing Qt
+          command: |
+            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
+            # note: need x86_64 toolset for windeployqt.exe, which isn't provided with the ARM64 cross toolset
+            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
+              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat.win64_msvc2019_arm64 `
+              qt.qt6.651.debug_info.win64_msvc2019_arm64 qt.qt6.651.addons.qthttpserver.win64_msvc2019_arm64
+      - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            wget.exe "$dotnet_url"
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+      - run:
+          name: "Setup Azure SignTool"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: Build
+          no_output_timeout: 30m
+          command: |
+            $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
+            Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -DevCmdArguments '-arch=arm64 -no_logo'
+
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            ccache -o "cache_dir=${pwd}\..\.ccache" -o max_size=500M -p -z
+            mkdir build
+            cd build
+            & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
+              -S ..\gpt4all-chat -B . -G Ninja `
+              -DCMAKE_BUILD_TYPE=Release `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              -DCMAKE_C_COMPILER_LAUNCHER=ccache `
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
+              -DLLMODEL_CUDA=OFF `
+              -DLLMODEL_KOMPUTE=OFF `
+              -DWINDEPLOYQT='C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat' `
+              -DGPT4ALL_OFFLINE_INSTALLER=OFF
+            & "C:\Qt\Tools\Ninja\ninja.exe"
+            & "C:\Qt\Tools\Ninja\ninja.exe" install
+            & "C:\Qt\Tools\Ninja\ninja.exe" package
+            ccache -s
+            mkdir upload
+            copy gpt4all-installer-win64-arm.exe upload
+            Set-Location -Path "_CPack_Packages/win64/IFW/gpt4all-installer-win64-arm"
+            Compress-Archive -Path 'repository' -DestinationPath '..\..\..\..\upload\repository.zip'
+      - store_artifacts:
+          path: build/upload
+      - save_cache:
+          key: ccache-gpt4all-win-aarch64-{{ epoch }}
+          when: always
+          paths:
+            - ..\.ccache
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  sign-online-chat-installer-windows-arm:
+    machine:
+      image: windows-server-2022-gui:2024.04.1
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: Install dependencies
+          command: choco install -y wget
+      - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            wget.exe "$dotnet_url"
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+      - run:
+          name: "Setup Azure SignTool"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: "Sign Windows Installer With AST"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)/build/upload/gpt4all-installer-win64-arm.exe"
+      - store_artifacts:
+          path: build/upload
+
   build-gpt4all-chat-linux:
     machine:
       image: ubuntu-2204:current
@@ -1509,6 +1762,12 @@ workflows:
       - sign-offline-chat-installer-windows:
           requires:
             - build-offline-chat-installer-windows
+      - build-offline-chat-installer-windows-arm:
+          requires:
+            - hold
+      - sign-offline-chat-installer-windows-arm:
+          requires:
+            - build-offline-chat-installer-windows-arm
       - build-offline-chat-installer-linux:
           requires:
             - hold
@@ -1541,6 +1800,14 @@ workflows:
           <<: *main_only
           requires:
             - build-online-chat-installer-windows
+      - build-online-chat-installer-windows-arm:
+          <<: *main_only
+          requires:
+            - hold
+      - sign-online-chat-installer-windows-arm:
+          <<: *main_only
+          requires:
+            - build-online-chat-installer-windows-arm
       - build-online-chat-installer-linux:
           <<: *main_only
           requires:
