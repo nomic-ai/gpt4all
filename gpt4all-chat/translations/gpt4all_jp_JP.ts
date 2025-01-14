@@ -548,243 +548,243 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="16"/>
         <source>Application</source>
-        <translation type="unfinished"></translation>
+        <translation>応用</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="25"/>
         <source>Network dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>ネットワークダイアログ</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="26"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation type="unfinished"></translation>
+        <translation>オプトインしてフィードバック/会話を共有する</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="48"/>
         <source>Error dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>エラーダイアログ</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="72"/>
         <source>Application Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>アプリケーション設定</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="85"/>
         <source>General</source>
-        <translation type="unfinished"></translation>
+        <translation>一般的な</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="97"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>テーマ</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="98"/>
         <source>The application color scheme.</source>
-        <translation type="unfinished"></translation>
+        <translation>アプリケーションのカラースキーム。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="113"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>暗い</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="112"/>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>明るい</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="39"/>
         <source>ERROR: Update system could not find the MaintenanceTool used to check for updates!&lt;br/&gt;&lt;br/&gt;Did you install this application using the online installer? If so, the MaintenanceTool executable should be located one directory above where this application resides on your filesystem.&lt;br/&gt;&lt;br/&gt;If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to reinstall.</source>
-        <translation type="unfinished"></translation>
+        <translation>エラー: 更新システムは、更新の確認に使用される MaintenanceTool を見つけることができませんでした。&lt;br/&gt;&lt;br/&gt;このアプリケーションはオンライン インストーラーを使用してインストールしましたか? その場合、MaintenanceTool 実行可能ファイルは、ファイル システム上でこのアプリケーションが存在するディレクトリの 1 つ上のディレクトリにあるはずです。&lt;br/&gt;&lt;br/&gt;手動で起動できない場合は、再インストールする必要があります。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="114"/>
         <source>LegacyDark</source>
-        <translation type="unfinished"></translation>
+        <translation>LegacyDark</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="136"/>
         <source>Font Size</source>
-        <translation type="unfinished"></translation>
+        <translation>フォントサイズ</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="137"/>
         <source>The size of text in the application.</source>
-        <translation type="unfinished"></translation>
+        <translation>アプリケーション内のテキストのサイズ。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="151"/>
         <source>Small</source>
-        <translation type="unfinished"></translation>
+        <translation>小さい</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="152"/>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>中くらい</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="153"/>
         <source>Large</source>
-        <translation type="unfinished"></translation>
+        <translation>大きい</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="176"/>
         <source>Language and Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>言語とロケール</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="177"/>
         <source>The language and locale you wish to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>使用したい言語とロケール。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="196"/>
         <source>System Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>システムロケール</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="223"/>
         <source>Device</source>
-        <translation type="unfinished"></translation>
+        <translation>デバイス</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
-        <translation type="unfinished"></translation>
+        <translation>テキスト生成に使用される計算デバイス。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="242"/>
         <location filename="../qml/ApplicationSettings.qml" line="297"/>
         <source>Application default</source>
-        <translation type="unfinished"></translation>
+        <translation>応用のデフォルト</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="275"/>
         <source>Default Model</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトのモデル</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="276"/>
         <source>The preferred model for new chats. Also used as the local server fallback.</source>
-        <translation type="unfinished"></translation>
+        <translation>新しいチャットに推奨されるモデル。ローカル サーバーのフォールバックとしても使用されます。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="339"/>
         <source>Suggestion Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>提案モード</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="340"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation type="unfinished"></translation>
+        <translation>提案されたフォローアップの質問 ATT と応答の猶予を生成します。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="353"/>
         <source>When chatting with LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translation>LocalDocs とチャットするとき</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="354"/>
         <source>Whenever possible</source>
-        <translation type="unfinished"></translation>
+        <translation>可能な限り</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="355"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>一度もない</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="368"/>
         <source>Download Path</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロードパス</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="369"/>
         <source>Where to store local models and the LocalDocs database.</source>
-        <translation type="unfinished"></translation>
+        <translation>ローカル モデルと LocalDocs データベースを保存する場所。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="401"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>閲覧する</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="402"/>
         <source>Choose where to save model files</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルファイルを保存する場所を選択する</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="413"/>
         <source>Enable Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>データレイクを有効にする</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="414"/>
         <source>Send chats and feedback to the GPT4All Open-Source Datalake.</source>
-        <translation type="unfinished"></translation>
+        <translation>チャットとフィードバックを GPT4All オープンソース データレイクに送信します。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="447"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>高度な</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="459"/>
         <source>CPU Threads</source>
-        <translation type="unfinished"></translation>
+        <translation>CPU スレッド</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="460"/>
         <source>The number of CPU threads used for inference and embedding.</source>
-        <translation type="unfinished"></translation>
+        <translation>推論とembeddingに使用される CPU スレッドの数。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
         <source>Enable System Tray</source>
-        <translation type="unfinished"></translation>
+        <translation>システムトレイを有効にする</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
-        <translation type="unfinished"></translation>
+        <translation>ウィンドウを閉じると、アプリケーションはシステム トレイに最小化されます。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
         <source>Enable Local API Server</source>
-        <translation type="unfinished"></translation>
+        <translation>ローカルAPIサーバーを有効にする</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="509"/>
         <source>Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenAI 互換サーバーを localhost に公開します。警告: リソース使用量が増加します。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="525"/>
         <source>API Server Port</source>
-        <translation type="unfinished"></translation>
+        <translation>API サーバー ポート</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="526"/>
         <source>The port to use for the local server. Requires restart.</source>
-        <translation type="unfinished"></translation>
+        <translation>ローカル サーバーに使用するポート。再起動が必要です。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="578"/>
         <source>Check For Updates</source>
-        <translation type="unfinished"></translation>
+        <translation>更新を確認する</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="579"/>
         <source>Manually check for an update to GPT4All.</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All のアップデートを手動で確認します。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="588"/>
         <source>Updates</source>
-        <translation type="unfinished"></translation>
+        <translation>更新情報</translation>
     </message>
 </context>
 <context>
@@ -1076,7 +1076,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="112"/>
         <source>The entire chat will be erased.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="245"/>
@@ -1091,7 +1091,7 @@
     <message>
         <location filename="../qml/ChatView.qml" line="353"/>
         <source>Reload the currently loaded model</source>
-        <translation type="unfinished"></translation>
+        <translation>現在ロードされているモデルを再ロードします</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="367"/>
@@ -1101,22 +1101,22 @@
     <message>
         <location filename="../qml/ChatView.qml" line="379"/>
         <source>No model installed.</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルがインストールされていません。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="381"/>
         <source>Model loading error.</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルの読み込みエラー。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="383"/>
         <source>Waiting for model...</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルを待っています...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="385"/>
         <source>Switching context...</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテキストを切り替えています...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="387"/>
@@ -1126,17 +1126,17 @@
     <message>
         <location filename="../qml/ChatView.qml" line="389"/>
         <source>Not found: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>見つかりません: %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="477"/>
         <source>The top item is the current model</source>
-        <translation type="unfinished"></translation>
+        <translation>一番上のアイテムは現在のモデルです</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="563"/>
         <source>LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translation>LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="581"/>
@@ -1151,33 +1151,33 @@
     <message>
         <location filename="../qml/ChatView.qml" line="753"/>
         <source>Load the default model</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトモデルをロードする</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="754"/>
         <source>Loads the default model which can be changed in settings</source>
-        <translation type="unfinished"></translation>
+        <translation>設定で変更できるデフォルトのモデルをロードします</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="765"/>
         <source>No Model Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルがインストールされていません</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="774"/>
         <source>GPT4All requires that you install at least one
 model to get started</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4Allを開始するには、少なくとも1つのモデルをインストールする必要があります</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="786"/>
         <source>Install a Model</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルをインストールする</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="791"/>
         <source>Shows the add model view</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル追加ビューを表示します</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="816"/>
@@ -1187,27 +1187,27 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="817"/>
         <source>prompt / response pairs from the conversation</source>
-        <translation type="unfinished"></translation>
+        <translation>会話からのプロンプト/応答のペア</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1093"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>レガシー プロンプト テンプレートは、[設定] で &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;更新&lt;/a&gt; する必要があります。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1097"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;チャット テンプレート&lt;/a&gt; が設定されていません。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1100"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;チャット テンプレート&lt;/a&gt; は空白にできません。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1103"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1291"/>
@@ -1243,12 +1243,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1349"/>
         <source>Stop generating</source>
-        <translation type="unfinished"></translation>
+        <translation>生成を停止</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1350"/>
         <source>Stop the current response generation</source>
-        <translation type="unfinished"></translation>
+        <translation>現在の応答生成を停止する</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1393"/>
@@ -1258,17 +1258,17 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1395"/>
         <source>Single File</source>
-        <translation type="unfinished"></translation>
+        <translation>単一ファイル</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1005"/>
         <source>Reloads the model</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルを再読み込みします</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="65"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation>&lt;h3&gt;モデルの読み込み中にエラーが発生しました:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;モデルの読み込みに失敗する理由はさまざまですが、最も一般的な原因としては、ファイル形式が正しくない、ダウンロードが不完全または破損している、ファイルの種類が間違っている、システム RAM が不足している、モデルの種類に互換性がない、などが挙げられます。この問題を解決するための提案をいくつかご紹介します。&lt;br&gt;&lt;ul&gt;&lt;li&gt;モデル ファイルの形式と種類に互換性があることを確認します。&lt;li&gt;ダウンロード フォルダー内のモデル ファイルが完全であることを確認します。&lt;li&gt;ダウンロード フォルダーは設定ダイアログにあります。&lt;li&gt;モデルをサイドロードした場合は、md5sum をチェックしてファイルが破損していないことを確認します。&lt;li&gt;サポートされているモデルの詳細については、GUI の &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;ドキュメント&lt;/a&gt; をご覧ください。&lt;li&gt;ヘルプについては、&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord チャンネル&lt;/a&gt; をご覧ください。</translation>
+        <translation>&lt;h3&gt;モデルの読み込み中にエラーが発生しました:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;モデルの読み込みに失敗する理由はさまざまですが、最も一般的な原因としては、ファイル形式が正しくない、ダウンロードが不完全または破損している、ファイルの種類が間違っている、システム RAM が不足している、モデルの種類に互換性がない、などが挙げられます。この問題を解決するための提案をいくつかご紹介します。&lt;br&gt;&lt;ul&gt;&lt;li&gt;モデル ファイルの形式と種類に互換性があることを確認します。&lt;li&gt;ダウンロード フォルダー内のモデル ファイルが完全であることを確認します。&lt;li&gt;ダウンロード フォルダーは設定ダイアログにあります。&lt;li&gt;モデルをサイドロードした場合は、md5sum をチェックしてファイルが破損していないことを確認します。&lt;li&gt;サポートされているモデルの詳細については、GUI の &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;ドキュメント&lt;/a&gt; をご覧ください。&lt;li&gt;ヘルプについては、&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord チャンネル&lt;/a&gt; をご覧ください</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="91"/>
@@ -1285,32 +1285,32 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="391"/>
         <location filename="../qml/ChatView.qml" line="1003"/>
         <source>Reload · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>再読み込み · %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="393"/>
         <source>Loading · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>読み込み中 · %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="729"/>
         <source>Load · %1 (default) →</source>
-        <translation type="unfinished"></translation>
+        <translation>読み込み中·%1 (デフォルト) →</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Send a message...</source>
-        <translation type="unfinished"></translation>
+        <translation>メッセージを送信...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1241"/>
         <source>Load a model to continue...</source>
-        <translation type="unfinished"></translation>
+        <translation>続行するにはモデルをロードしてください...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1244"/>
         <source>Send messages/prompts to the model</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルにメッセージ/プロンプトを送信する</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1285"/>
@@ -1320,22 +1320,22 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1297"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>ペースト</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1301"/>
         <source>Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>すべて選択</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1371"/>
         <source>Send message</source>
-        <translation type="unfinished"></translation>
+        <translation>メッセージを送信</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1372"/>
         <source>Sends the message/prompt contained in textfield to the model</source>
-        <translation type="unfinished"></translation>
+        <translation>テキストフィールドに含まれるメッセージ/プロンプトをモデルに送信します</translation>
     </message>
 </context>
 <context>
@@ -1873,287 +1873,294 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="14"/>
         <source>Model</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <source>%1 system message?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 システムメッセージ?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>クリア</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>初期化</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>システム メッセージは %1 になります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>removed</source>
-        <translation type="unfinished"></translation>
+        <translation>削除された</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>reset to the default</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトにリセットする</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>%1 chat template?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 チャット テンプレートですか?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>チャットテンプレートは %1 になります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>erased</source>
-        <translation type="unfinished"></translation>
+        <translation>消去された</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="57"/>
         <source>Model Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル設定</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="108"/>
         <source>Clone</source>
-        <translation type="unfinished"></translation>
+        <translation>クローン</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="118"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>取り除く</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="132"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名前</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="165"/>
         <source>Model File</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルファイル</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
-        <translation type="unfinished"></translation>
+        <translation>システムメッセージ</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
         <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテキストを設定したり、モデルの動作をガイドするためのメッセージ。何もない場合は空白のままにします。注: GPT4All 3.5 以降、これには制御トークンを含めないでください。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="218"/>
         <source>System message is not &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;plain text&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>システム メッセージは &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;プレーン テキスト&lt;/a&gt; ではありません。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="288"/>
         <source>Chat Template</source>
-        <translation type="unfinished"></translation>
+        <translation>チャットテンプレート</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>この Jinja テンプレートは、チャットをモデルの入力に変換します。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>この Jinja テンプレートは、チャットをモデルの入力に変換します。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;チャット テンプレート&lt;/a&gt; は空白にできません。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="379"/>
         <source>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;構文エラー&lt;/a&gt;: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="383"/>
         <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>チャット テンプレートは &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja 形式&lt;/a&gt;ではありません。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="409"/>
         <source>Chat Name Prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>チャット名プロンプト</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="410"/>
         <source>Prompt used to automatically generate chat names.</source>
-        <translation type="unfinished"></translation>
+        <translation>チャット名を自動的に生成するために使用されるプロンプト。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="452"/>
         <source>Suggested FollowUp Prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>推奨されるフォローアッププロンプト</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="453"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation type="unfinished"></translation>
+        <translation>提案されるフォローアップの質問を生成するために使用されるプロンプト。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="506"/>
         <source>Context Length</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテキストの長さ</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="507"/>
         <source>Number of input and output tokens the model sees.</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルが認識する入力トークンと出力トークンの数。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="528"/>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>情報が失われるまでの最大の組み合わせプロンプト/応答トークン数。
+モデルがトレーニングされたコンテキストよりも多くのコンテキストを使用すると、結果が悪くなります。
+注: モデルを再読み込みするまで有効になりません。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="566"/>
         <source>Temperature</source>
-        <translation type="unfinished"></translation>
+        <translation>温度</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="567"/>
         <source>Randomness of model output. Higher -&gt; more variation.</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル出力のランダム性。高いほど、バリエーションが多くなります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="578"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation type="unfinished"></translation>
+        <translation>温度によって、可能性の低いトークンを選択する可能性が高まります。
+注: 温度が高いほど、出力はより創造的になりますが、予測可能性は低くなります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="612"/>
         <source>Top-P</source>
-        <translation type="unfinished"></translation>
+        <translation>トップP</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="613"/>
         <source>Nucleus Sampling factor. Lower -&gt; more predictable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nucleus サンプリング係数。低いほど予測しやすくなります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="623"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>合計確率が top_p までの最も可能性の高いトークンのみを選択できます。
+注: 可能性が非常に低いトークンが選択されないようにします。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="657"/>
         <source>Min-P</source>
-        <translation type="unfinished"></translation>
+        <translation>最小P</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="658"/>
         <source>Minimum token probability. Higher -&gt; more predictable.</source>
-        <translation type="unfinished"></translation>
+        <translation>最小トークン確率。高いほど予測しやすくなります。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="668"/>
         <source>Sets the minimum relative probability for a token to be considered.</source>
-        <translation type="unfinished"></translation>
+        <translation>考慮されるトークンの最小相対確率を設定します。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="704"/>
         <source>Top-K</source>
-        <translation type="unfinished"></translation>
+        <translation>トップK</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="705"/>
         <source>Size of selection pool for tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>トークンの選択プールのサイズ。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="716"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation type="unfinished"></translation>
+        <translation>最も可能性の高い上位 K 個のトークンのみが選択されます。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="751"/>
         <source>Max Length</source>
-        <translation type="unfinished"></translation>
+        <translation>最大長</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="752"/>
         <source>Maximum response length, in tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>応答の最大長（トークン単位）。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="797"/>
         <source>Prompt Batch Size</source>
-        <translation type="unfinished"></translation>
+        <translation>プロンプトバッチサイズ</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="798"/>
         <source>The batch size used for prompt processing.</source>
-        <translation type="unfinished"></translation>
+        <translation>プロンプト処理に使用されるバッチ サイズ。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="809"/>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation type="unfinished"></translation>
+        <translation>一度に処理するプロンプト トークンの数。
+注: 値を大きくするとプロンプトの読み取り速度が上がりますが、RAM の使用量も増えます。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="844"/>
         <source>Repeat Penalty</source>
-        <translation type="unfinished"></translation>
+        <translation>繰り返しペナルティ</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="845"/>
         <source>Repetition penalty factor. Set to 1 to disable.</source>
-        <translation type="unfinished"></translation>
+        <translation>繰り返しペナルティ係数。無効にするには 1 に設定します。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="889"/>
         <source>Repeat Penalty Tokens</source>
-        <translation type="unfinished"></translation>
+        <translation>繰り返しペナルティトークン</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="890"/>
         <source>Number of previous tokens used for penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ペナルティに使用された以前のトークンの数。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="935"/>
         <source>GPU Layers</source>
-        <translation type="unfinished"></translation>
+        <translation>GPU レイヤー</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="936"/>
         <source>Number of model layers to load into VRAM.</source>
-        <translation type="unfinished"></translation>
+        <translation>VRAM にロードするモデル レイヤーの数。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="947"/>
         <source>How many model layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.
 Lower values increase CPU load and RAM usage, and make inference slower.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>VRAM にロードするモデル レイヤーの数。このモデルのロード中に GPT4All の VRAM が不足する場合は、この値を減らします。
+値が小さいほど、CPU 負荷と RAM 使用量が増加し、推論が遅くなります。
+注: モデルを再ロードするまで有効になりません。</translation>
     </message>
 </context>
 <context>
@@ -2161,169 +2168,169 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="40"/>
         <source>No Models Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルがインストールされていません</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="49"/>
         <source>Install a model to get started using GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4Allを使い始めるにはモデルをインストールしてください</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="60"/>
         <location filename="../qml/ModelsView.qml" line="102"/>
         <source>＋ Add Model</source>
-        <translation type="unfinished"></translation>
+        <translation>＋ モデルを追加</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="65"/>
         <source>Shows the add model view</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル追加ビューを表示します</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="83"/>
         <source>Installed Models</source>
-        <translation type="unfinished"></translation>
+        <translation>インストール済みモデル</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="89"/>
         <source>Locally installed chat models</source>
-        <translation type="unfinished"></translation>
+        <translation>ローカルにインストールされたチャットモデル</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="147"/>
         <source>Model file</source>
-        <translation type="unfinished"></translation>
+        <translation>モデルファイル</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="148"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロードするモデルファイル</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>説明</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="171"/>
         <source>File description</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルの説明</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="196"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>中止</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="196"/>
         <source>Resume</source>
-        <translation type="unfinished"></translation>
+        <translation>再開する</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="204"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロードを停止/再開/開始する</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="216"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>取り除く</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="223"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルシステムからモデルを削除する</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="237"/>
         <location filename="../qml/ModelsView.qml" line="271"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>インストール</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="272"/>
         <source>Install online model</source>
-        <translation type="unfinished"></translation>
+        <translation>オンラインモデルをインストールする</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="282"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;エラー&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="301"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告: お使いのハードウェアには推奨されません。モデルには、システムで使用可能なメモリ (%2) よりも多くのメモリ (%1 GB) が必要です。&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="399"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>エラー: $API_KEY が空です。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="420"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>エラー: $BASE_URL が空です。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="426"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished"></translation>
+        <translation>$BASE_URLを入力</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="441"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>エラー: $MODEL_NAME が空です。</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="447"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation>$MODEL_NAMEを入力</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>?</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="288"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロード中に発生したエラーについて説明します</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="307"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished"></translation>
+        <translation>互換性のないハードウェアのエラー</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="345"/>
         <source>Download progressBar</source>
-        <translation type="unfinished"></translation>
+        <translation>progressBar をダウンロード</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="346"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロードの進行状況を表示します</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="356"/>
         <source>Download speed</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロード速度</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="357"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロード速度 (バイト/キロバイト/メガバイト/秒)</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="374"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>計算中...</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="378"/>
@@ -2331,47 +2338,47 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="429"/>
         <location filename="../qml/ModelsView.qml" line="450"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルハッシュが計算されているかどうか</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="385"/>
         <source>Busy indicator</source>
-        <translation type="unfinished"></translation>
+        <translation>ビジーインジケーター</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="386"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルハッシュが計算されているときに表示されます</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="405"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished"></translation>
+        <translation>$API_KEYを入力</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="469"/>
         <source>File size</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルサイズ</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="491"/>
         <source>RAM required</source>
-        <translation type="unfinished"></translation>
+        <translation>必要なRAM</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="513"/>
         <source>Parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Parameters</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="535"/>
         <source>Quant</source>
-        <translation type="unfinished"></translation>
+        <translation>Quant</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="557"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>種類</translation>
     </message>
 </context>
 <context>
