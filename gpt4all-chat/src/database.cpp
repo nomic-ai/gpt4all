@@ -13,8 +13,10 @@
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QIODevice>
-#include <QPdfDocument>
-#include <QPdfSelection>
+#ifdef GPT4ALL_HAVE_QTPDF
+#   include <QPdfDocument>
+#   include <QPdfSelection>
+#endif
 #include <QRegularExpression>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -1133,6 +1135,7 @@ protected:
 
 namespace {
 
+#ifdef GPT4ALL_HAVE_QTPDF
 class PdfDocumentReader final : public DocumentReader {
 public:
     explicit PdfDocumentReader(const DocumentInfo &info)
@@ -1173,6 +1176,7 @@ private:
     QString                    m_pageText;
     std::optional<QTextStream> m_stream;
 };
+#endif // GPT4ALL_HAVE_QTPDF
 
 class WordDocumentReader final : public DocumentReader {
 public:
@@ -1313,8 +1317,13 @@ protected:
 
 std::unique_ptr<DocumentReader> DocumentReader::fromDocument(const DocumentInfo &doc)
 {
-    if (doc.isPdf())
+    if (doc.isPdf()) {
+#ifdef GPT4ALL_HAVE_QTPDF
         return std::make_unique<PdfDocumentReader>(doc);
+#else
+        throw std::invalid_argument("fromDocument() passed a PDF file but GPT4All was built without PDF support");
+#endif
+    }
     if (doc.isDocx())
         return std::make_unique<WordDocumentReader>(doc);
     return std::make_unique<TxtDocumentReader>(doc);

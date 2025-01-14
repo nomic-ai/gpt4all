@@ -80,7 +80,13 @@ configure_file(
 )
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
-find_package(Qt6 6.5 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
+set(GPT4ALL_QT_COMPONENTS Core HttpServer LinguistTools Quick QuickDialogs2 Sql Svg)
+set(GPT4ALL_HAVE_QTPDF OFF)
+if (NOT (CMAKE_SYSTEM_NAME MATCHES Windows AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$"))
+    set(GPT4ALL_HAVE_QTPDF ON)
+    list(APPEND GPT4ALL_QT_COMPONENTS Pdf)
+endif()
+find_package(Qt6 6.5 COMPONENTS ${GPT4ALL_QT_COMPONENTS} REQUIRED)
 
 if (QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)  # generate extra qmldir files on Qt 6.8+
@@ -404,7 +410,11 @@ target_include_directories(chat PRIVATE deps/usearch/include
                                         deps/usearch/fp16/include)
 
 target_link_libraries(chat
-    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
+    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Quick Qt6::Sql Qt6::Svg)
+if (GPT4ALL_HAVE_QTPDF)
+    target_compile_definitions(chat PRIVATE GPT4ALL_HAVE_QTPDF)
+    target_link_libraries(chat PRIVATE Qt6::Pdf)
+endif()
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx jinja2cpp)
 
