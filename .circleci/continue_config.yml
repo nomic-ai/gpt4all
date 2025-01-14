@@ -769,7 +769,7 @@ jobs:
           command: |
             $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
             Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -DevCmdArguments '-arch=arm64 -no_logo'
+            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -Arch arm64 -HostArch amd64 -DevCmdArguments '-no_logo'
 
             $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
@@ -894,7 +894,7 @@ jobs:
           command: |
             $vsInstallPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property installationpath
             Import-Module "${vsInstallPath}\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -DevCmdArguments '-arch=arm64 -no_logo'
+            Enter-VsDevShell -VsInstallPath "$vsInstallPath" -SkipAutomaticLocation -Arch arm64 -HostArch amd64 -DevCmdArguments '-no_logo'
 
             $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.8\bin"
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
