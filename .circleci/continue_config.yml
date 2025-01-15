@@ -781,11 +781,12 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_arm64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.5.1\msvc2019_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
-              -DWINDEPLOYQT='C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat' `
+              "-DWINDEPLOYQT=C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_OFFLINE_INSTALLER=ON
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
@@ -905,11 +906,12 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.5.1\msvc2019_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
-              -DWINDEPLOYQT='C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat' `
+              "-DWINDEPLOYQT=C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_OFFLINE_INSTALLER=OFF
             & "C:\Qt\Tools\Ninja\ninja.exe"
             & "C:\Qt\Tools\Ninja\ninja.exe" install
