@@ -24,7 +24,13 @@ endif()
 
 find_package(Python3 3.12 QUIET COMPONENTS Interpreter)
 
-option(GPT4ALL_TEST "Build the tests" ${Python3_FOUND})
+if (NOT CMAKE_CROSS_COMPILING AND Python3_FOUND)
+    set(GPT4ALL_TEST_DEFAULT ON)
+else()
+    set(GPT4ALL_TEST_DEFAULT OFF)
+endif()
+
+option(GPT4ALL_TEST "Build the tests" ${GPT4ALL_TEST_DEFAULT})
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
