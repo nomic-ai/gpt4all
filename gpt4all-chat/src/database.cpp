@@ -1239,7 +1239,7 @@ private:
 
     QString getMetadata(FPDF_BYTESTRING key)
     {
-        // FPDF_GetMetaText includes a 2-byte null teminator
+        // FPDF_GetMetaText includes a 2-byte null terminator
         ulong nBytes = FPDF_GetMetaText(m_doc, key, nullptr, 0);
         if (nBytes <= sizeof (FPDF_WCHAR))
             return { "" };
@@ -1259,7 +1259,7 @@ private:
         int nChars = FPDFText_CountChars(textPage);
         if (!nChars)
             return {};
-        // FPDFText_GetText includes a 2-byte null teminator
+        // FPDFText_GetText includes a 2-byte null terminator
         QByteArray buffer((nChars + 1) * sizeof (FPDF_WCHAR), Qt::Uninitialized);
         int nResultChars = FPDFText_GetText(textPage, 0, nChars, reinterpret_cast<ushort *>(buffer.data()));
         Q_ASSERT(nResultChars <= nChars + 1);
