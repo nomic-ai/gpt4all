@@ -63,15 +63,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
-    { "localdocs/fileExtensions",
-      QStringList {
-          "docx",
-#ifdef GPT4ALL_HAVE_QTPDF
-          "pdf",
-#endif
-          "txt", "md", "rst",
-      },
-    },
+    { "localdocs/fileExtensions", QStringList { "docx", "pdf", "txt", "md", "rst" } },
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
     { "localdocs/embedDevice",    "Auto" },
@@ -843,13 +835,4 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     // Finally, set the locale whether we have a translation or not
     QLocale::setDefault(locale);
     emit languageAndLocaleChanged();
-}
-
-bool MySettings::haveQtPdf() noexcept
-{
-#ifdef GPT4ALL_HAVE_QTPDF
-    return true;
-#else
-    return false;
-#endif
 }

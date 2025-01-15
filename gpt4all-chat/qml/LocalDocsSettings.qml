@@ -69,7 +69,7 @@ MySettingsTab {
                     exts = Array.from(new Set(exts));
                     /* Blacklist common unsupported file extensions. We only support plain text and PDFs, and although we
                      * reject binary data, we don't want to waste time trying to index files that we don't support. */
-                    let extBlacklist = [
+                    exts = exts.filter(e => ![
                         /* Microsoft documents  */ "rtf", "ppt", "pptx", "xls", "xlsx",
                         /* OpenOffice           */ "odt", "ods", "odp", "odg",
                         /* photos               */ "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
@@ -80,10 +80,7 @@ MySettingsTab {
                         /* archives             */ "zip", "jar", "apk", "rar", "7z", "tar", "gz", "xz", "bz2", "tar.gz",
                                                    "tgz", "tar.xz", "tar.bz2",
                         /* misc                 */ "bin",
-                    ];
-                    if (!MySettings.haveQtPdf)
-                        extBlacklist.push("pdf"); // PDF not supported in this build
-                    exts = exts.filter(e => !extBlacklist.includes(e));
+                    ].includes(e));
                     MySettings.localDocsFileExtensions = exts;
                     extsField.text = exts.join(',');
                     focus = false;

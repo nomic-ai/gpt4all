@@ -214,9 +214,6 @@ public:
     int networkPort() const;
     void setNetworkPort(int value);
 
-    // Compile-time configuration constants
-    static bool haveQtPdf() noexcept;
-
 Q_SIGNALS:
     void nameChanged(const ModelInfo &info);
     void filenameChanged(const ModelInfo &info);
