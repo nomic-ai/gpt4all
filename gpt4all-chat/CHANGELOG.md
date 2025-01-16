@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix code interpreter console.log not accepting multiple arguments ([#3371](https://github.com/nomic-ai/gpt4all/pull/3371))
 - Remove 'X is defined' checks from templates as they work incorrectly with Jinja2Cpp ([#3372](https://github.com/nomic-ai/gpt4all/pull/3372))
 - Jinja2Cpp: Add 'if' requirement for 'else' parsing to fix crash ([#3373](https://github.com/nomic-ai/gpt4all/pull/3373))
+- Sign the maintenance tool on macOS to prevent crash on Sonoma ([#3391](https://github.com/nomic-ai/gpt4all/pull/3391))
 
 ## [3.6.1] - 2024-12-20
 
