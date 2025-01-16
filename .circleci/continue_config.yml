@@ -499,10 +499,10 @@ jobs:
           name: Installing Qt
           command: |
             wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
-            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations ^
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations ^
-              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install ^
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat ^
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
@@ -627,10 +627,10 @@ jobs:
           name: Installing Qt
           command: |
             wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
-            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations ^
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations ^
-              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install ^
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat ^
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
@@ -833,10 +833,10 @@ jobs:
           name: Installing Qt
           command: |
             wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
-            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations ^
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations ^
-              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install ^
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat ^
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
