@@ -52,9 +52,11 @@ void ChatListModel::loadChats()
     connect(thread, &ChatsRestoreThread::finished, thread, &QObject::deleteLater);
     thread->start();
 
-    ChatSaver *saver = new ChatSaver;
-    connect(this, &ChatListModel::requestSaveChats, saver, &ChatSaver::saveChats, Qt::QueuedConnection);
-    connect(saver, &ChatSaver::saveChatsFinished, this, &ChatListModel::saveChatsFinished, Qt::QueuedConnection);
+    m_chatSaver = std::make_unique<ChatSaver>();
+    connect(this, &ChatListModel::requestSaveChats, m_chatSaver.get(), &ChatSaver::saveChats, Qt::QueuedConnection);
+    connect(m_chatSaver.get(), &ChatSaver::saveChatsFinished, this, &ChatListModel::saveChatsFinished, Qt::QueuedConnection);
+    // save chats on application quit
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &ChatListModel::saveChatsSync);
 
     connect(MySettings::globalInstance(), &MySettings::serverChatChanged, this, &ChatListModel::handleServerEnabledChanged);
 }
@@ -78,16 +80,24 @@ ChatSaver::ChatSaver()
     m_thread.start();
 }
 
+ChatSaver::~ChatSaver()
+{
+    m_thread.quit();
+    m_thread.wait();
+}
+
+QVector<Chat *> ChatListModel::getChatsToSave() const
+{
+    QVector<Chat *> toSave;
+    for (auto *chat : m_chats)
+        if (chat != m_serverChat && !chat->isNewChat())
+            toSave << chat;
+    return toSave;
+}
+
 void ChatListModel::saveChats()
 {
-    QVector<Chat*> toSave;
-    for (Chat *chat : m_chats) {
-        if (chat == m_serverChat)
-            continue;
-        if (chat->isNewChat())
-            continue;
-        toSave.append(chat);
-    }
+    auto toSave = getChatsToSave();
     if (toSave.isEmpty()) {
         emit saveChatsFinished();
         return;
@@ -96,8 +106,24 @@ void ChatListModel::saveChats()
     emit requestSaveChats(toSave);
 }
 
+void ChatListModel::saveChatsForQuit()
+{
+    saveChats();
+    m_startedFinalSave = true;
+}
+
+void ChatListModel::saveChatsSync()
+{
+    auto toSave = getChatsToSave();
+    if (!m_startedFinalSave && !toSave.isEmpty())
+        m_chatSaver->saveChats(toSave);
+}
+
 void ChatSaver::saveChats(const QVector<Chat *> &chats)
 {
+    // we can be called from the main thread instead of a worker thread at quit time, so take a lock
+    QMutexLocker locker(&m_mutex);
+
     QElapsedTimer timer;
     timer.start();
     const QString savePath = MySettings::globalInstance()->modelPath();
