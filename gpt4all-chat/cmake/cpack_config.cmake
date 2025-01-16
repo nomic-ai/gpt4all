@@ -21,7 +21,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
 endif()
 
 set(CPACK_COMPONENTS_ALL ${COMPONENT_NAME_MAIN})  # exclude development components
-if (APPLE)
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
     list(APPEND CPACK_COMPONENTS_ALL maintenancetool)
 endif()
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})

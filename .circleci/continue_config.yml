@@ -81,9 +81,10 @@ jobs:
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=ON \
-              -DGPT4ALL_SIGN_INSTALL=ON
-            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
-            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
+              -DGPT4ALL_SIGN_INSTALL=ON \
+              -DGPT4ALL_GEN_CPACK_CONFIG=ON
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake . -DGPT4ALL_GEN_CPACK_CONFIG=OFF
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ccache -s
             mkdir upload
@@ -219,9 +220,10 @@ jobs:
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=OFF \
-              -DGPT4ALL_SIGN_INSTALL=ON
-            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
-            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
+              -DGPT4ALL_SIGN_INSTALL=ON \
+              -DGPT4ALL_GEN_CPACK_CONFIG=ON
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake . -DGPT4ALL_GEN_CPACK_CONFIG=OFF
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ccache -s
             mkdir upload

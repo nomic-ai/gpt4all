@@ -534,7 +534,7 @@ cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "MIT LICENSE" ${CP
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_gpt4all_component.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
 
-if (APPLE)
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
     if (GPT4ALL_OFFLINE_INSTALLER)
         cpack_add_component(maintenancetool HIDDEN)
     else()
