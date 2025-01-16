@@ -54,7 +54,7 @@ Window {
                     systemTrayIcon.shouldClose = true;
                     window.shouldClose = true;
                     savingPopup.open();
-                    ChatListModel.saveChats();
+                    ChatListModel.saveChatsForQuit();
                 }
             }
         }
@@ -231,8 +231,8 @@ Window {
 
         window.shouldClose = true;
         savingPopup.open();
-        ChatListModel.saveChats();
-        close.accepted = false
+        ChatListModel.saveChatsForQuit();
+        close.accepted = false;
     }
 
     Connections {
