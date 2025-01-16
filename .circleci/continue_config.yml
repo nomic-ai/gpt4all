@@ -51,10 +51,11 @@ jobs:
             wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
             hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
             /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
-              --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.qt5compat \
-              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+              --no-force-installations --no-default-installations --no-size-checking --default-answer
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
             hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Setup Keychain
@@ -193,10 +194,11 @@ jobs:
             wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
             hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
             /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
-              --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.qt5compat \
-              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+              --no-force-installations --no-default-installations --no-size-checking --default-answer
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
             hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Setup Keychain
@@ -351,7 +353,7 @@ jobs:
             ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
               --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.gcc_64 qt.qt6.681.qt5compat \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build linuxdeployqt
@@ -433,7 +435,7 @@ jobs:
             ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
               --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.gcc_64 qt.qt6.681.qt5compat \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build linuxdeployqt
@@ -502,7 +504,7 @@ jobs:
             & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.addons.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
@@ -630,7 +632,7 @@ jobs:
             & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.addons.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
@@ -785,7 +787,7 @@ jobs:
             ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
               --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.gcc_64 qt.qt6.681.qt5compat \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build
@@ -836,7 +838,7 @@ jobs:
             & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.qt5compat `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2019_64 qt.qt6.681.addons.qt5compat `
               qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
@@ -901,10 +903,11 @@ jobs:
             wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
             hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
             /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
-              --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.qt5compat \
-              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+              --no-force-installations --no-default-installations --no-size-checking --default-answer
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
             hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Build
