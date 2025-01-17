@@ -28,6 +28,8 @@ option(GPT4ALL_TEST "Build the tests" ${Python3_FOUND})
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
+set(GPT4ALL_USE_QTPDF "AUTO" CACHE STRING "Whether to Use QtPDF for LocalDocs. If OFF or not available on this platform, PDFium is used.")
+set_property(CACHE GPT4ALL_USE_QTPDF PROPERTY STRINGS AUTO ON OFF)
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -80,7 +82,18 @@ configure_file(
 )
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
-find_package(Qt6 6.5 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
+set(GPT4ALL_QT_COMPONENTS Core HttpServer LinguistTools Quick QuickDialogs2 Sql Svg)
+set(GPT4ALL_USING_QTPDF OFF)
+if (CMAKE_SYSTEM_NAME MATCHES Windows AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+    # QtPDF is not available.
+    if (GPT4ALL_USE_QTPDF STREQUAL "ON")
+        message(FATAL_ERROR "QtPDF is not available on Windows ARM64.")
+    endif()
+elseif (GPT4ALL_USE_QTPDF MATCHES "^(ON|AUTO)$")
+    set(GPT4ALL_USING_QTPDF ON)
+    list(APPEND GPT4ALL_QT_COMPONENTS Pdf)
+endif()
+find_package(Qt6 6.5 COMPONENTS ${GPT4ALL_QT_COMPONENTS} REQUIRED)
 
 if (QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)  # generate extra qmldir files on Qt 6.8+
@@ -404,7 +417,14 @@ target_include_directories(chat PRIVATE deps/usearch/include
                                         deps/usearch/fp16/include)
 
 target_link_libraries(chat
-    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
+    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Quick Qt6::Sql Qt6::Svg)
+if (GPT4ALL_USING_QTPDF)
+    target_compile_definitions(chat PRIVATE GPT4ALL_USE_QTPDF)
+    target_link_libraries(chat PRIVATE Qt6::Pdf)
+else()
+    # Link PDFium
+    target_link_libraries(chat PRIVATE pdfium)
+endif()
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx jinja2cpp)
 
@@ -488,6 +508,15 @@ if (LLMODEL_CUDA)
     endif()
 endif()
 
+if (NOT GPT4ALL_USING_QTPDF)
+    # Install PDFium
+    if (WIN32)
+        install(FILES "${PDFium_LIBRARY}" DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+    else()
+        install(FILES "${PDFium_LIBRARY}" DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    endif()
+endif()
+
 if (NOT APPLE)
     install(FILES "${LOCAL_EMBEDDING_MODEL_PATH}"
             DESTINATION resources
@@ -513,7 +542,13 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake)
     set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.6")
     set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.ico")
-    set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-win64")
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+        set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-win64")
+    elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+        set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-win64-arm")
+    else()
+        message(FATAL_ERROR "Unrecognized processor: ${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
     set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@\\${COMPONENT_NAME_MAIN}")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
@@ -565,15 +600,19 @@ cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #W
 
 if (GPT4ALL_LOCALHOST)
     cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/repository")
-elseif(GPT4ALL_OFFLINE_INSTALLER)
-  add_compile_definitions(GPT4ALL_OFFLINE_INSTALLER)
+elseif (GPT4ALL_OFFLINE_INSTALLER)
+    add_compile_definitions(GPT4ALL_OFFLINE_INSTALLER)
 else()
-  if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
-  elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-      #To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
-  elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
-  endif()
+    if (CMAKE_SYSTEM_NAME MATCHES Linux)
+        cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
+    elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+        # To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
+        if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+            cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
+        elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+            cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows_arm/repository")
+        endif()
+    elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
+        cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
+    endif()
 endif()
