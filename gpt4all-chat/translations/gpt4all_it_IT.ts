@@ -64,94 +64,94 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
         <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
-        <translation>Questi modelli sono stati specificamente configurati per l'uso in GPT4All. I primi modelli dell'elenco sono noti per funzionare meglio, ma dovresti utilizzare solo modelli che possano rientrare nella memoria disponibile.</translation>
+        <translation>Questi modelli sono stati specificamente configurati per l&apos;uso in GPT4All. I primi modelli dell&apos;elenco sono noti per funzionare meglio, ma dovresti utilizzare solo modelli che possano rientrare nella memoria disponibile.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished">Errore di rete: impossibile recuperare %1</translation>
+        <translation>Errore di rete: impossibile recuperare %1</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="343"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">Indicatore di occupato</translation>
+        <translation>Indicatore di occupato</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="56"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation type="unfinished">Visualizzato quando la richiesta dei modelli è in corso</translation>
+        <translation>Visualizzato quando la richiesta dei modelli è in corso</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="96"/>
         <source>Model file</source>
-        <translation type="unfinished">File del modello</translation>
+        <translation>File del modello</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="97"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished">File del modello da scaricare</translation>
+        <translation>File del modello da scaricare</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="120"/>
         <source>Description</source>
-        <translation type="unfinished">Descrizione</translation>
+        <translation>Descrizione</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="121"/>
         <source>File description</source>
-        <translation type="unfinished">Descrizione del file</translation>
+        <translation>Descrizione del file</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annulla</translation>
+        <translation>Annulla</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Resume</source>
-        <translation type="unfinished">Riprendi</translation>
+        <translation>Riprendi</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="154"/>
         <source>Download</source>
-        <translation type="unfinished">Scarica</translation>
+        <translation>Scarica</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="162"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished">Arresta/riavvia/avvia il download</translation>
+        <translation>Arresta/riavvia/avvia il download</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="174"/>
         <source>Remove</source>
-        <translation type="unfinished">Rimuovi</translation>
+        <translation>Rimuovi</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="181"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished">Rimuovi il modello dal sistema dei file</translation>
+        <translation>Rimuovi il modello dal sistema dei file</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="195"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="229"/>
         <source>Install</source>
-        <translation type="unfinished">Installa</translation>
+        <translation>Installa</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="230"/>
         <source>Install online model</source>
-        <translation type="unfinished">Installa il modello online</translation>
+        <translation>Installa il modello online</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Errore&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Errore&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="246"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished">Descrive un errore che si è verificato durante lo scaricamento</translation>
+        <translation>Descrive un errore che si è verificato durante lo scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
@@ -161,32 +161,32 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished">Errore per hardware incompatibile</translation>
+        <translation>Errore per hardware incompatibile</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="303"/>
         <source>Download progressBar</source>
-        <translation type="unfinished">Barra di avanzamento dello scaricamento</translation>
+        <translation>Barra di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">Mostra lo stato di avanzamento dello scaricamento</translation>
+        <translation>Mostra lo stato di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="314"/>
         <source>Download speed</source>
-        <translation type="unfinished">Velocità di scaricamento</translation>
+        <translation>Velocità di scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="315"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">Velocità di scaricamento in byte/kilobyte/megabyte al secondo</translation>
+        <translation>Velocità di scaricamento in byte/kilobyte/megabyte al secondo</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
         <source>Calculating...</source>
-        <translation type="unfinished">Calcolo in corso...</translation>
+        <translation>Calcolo in corso...</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="336"/>
@@ -194,52 +194,52 @@
         <location filename="../qml/AddGPT4AllModelView.qml" line="387"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="408"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished">Se viene calcolato l&apos;hash del file</translation>
+        <translation>Se viene calcolato l&apos;hash del file</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="344"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished">Visualizzato durante il calcolo dell&apos;hash del file</translation>
+        <translation>Visualizzato durante il calcolo dell&apos;hash del file</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="357"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished">ERRORE: $API_KEY è vuoto.</translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="363"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished">Inserire $API_KEY</translation>
+        <translation>Inserire $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished">ERRORE: $BASE_URL non è valido.</translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="384"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">inserisci $BASE_URL</translation>
+        <translation>inserisci $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="399"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished">ERRORE: $MODEL_NAME è vuoto.</translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="405"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">inserisci $MODEL_NAME</translation>
+        <translation>inserisci $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="427"/>
         <source>File size</source>
-        <translation type="unfinished">Dimensione del file</translation>
+        <translation>Dimensione del file</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="449"/>
         <source>RAM required</source>
-        <translation type="unfinished">RAM richiesta</translation>
+        <translation>RAM richiesta</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
@@ -255,17 +255,17 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="471"/>
         <source>Parameters</source>
-        <translation type="unfinished">Parametri</translation>
+        <translation>Parametri</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="493"/>
         <source>Quant</source>
-        <translation type="unfinished">Quant</translation>
+        <translation>Quant</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="515"/>
         <source>Type</source>
-        <translation type="unfinished">Tipo</translation>
+        <translation>Tipo</translation>
     </message>
 </context>
 <context>
@@ -273,153 +273,153 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="32"/>
         <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
-        <translation>Usa la ricerca per trovare e scaricare modelli da HuggingFace. NON C'È ALCUNA GARANZIA che funzioneranno. Molti richiederanno configurazioni aggiuntive prima di poter essere utilizzati.</translation>
+        <translation>Usa la ricerca per trovare e scaricare modelli da HuggingFace. NON C&apos;È ALCUNA GARANZIA che funzioneranno. Molti richiederanno configurazioni aggiuntive prima di poter essere utilizzati.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="52"/>
         <source>Discover and download models by keyword search...</source>
-        <translation type="unfinished">Scopri e scarica i modelli tramite ricerca per parole chiave...</translation>
+        <translation>Scopri e scarica i modelli tramite ricerca per parole chiave...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="55"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation type="unfinished">Campo di testo per scoprire e filtrare i modelli scaricabili</translation>
+        <translation>Campo di testo per scoprire e filtrare i modelli scaricabili</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="61"/>
         <source>Searching · %1</source>
-        <translation type="unfinished">Ricerca · %1</translation>
+        <translation>Ricerca · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="131"/>
         <source>Initiate model discovery and filtering</source>
-        <translation type="unfinished">Avvia rilevamento e filtraggio dei modelli</translation>
+        <translation>Avvia rilevamento e filtraggio dei modelli</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="132"/>
         <source>Triggers discovery and filtering of models</source>
-        <translation type="unfinished">Attiva la scoperta e il filtraggio dei modelli</translation>
+        <translation>Attiva la scoperta e il filtraggio dei modelli</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="151"/>
         <source>Default</source>
-        <translation type="unfinished">Predefinito</translation>
+        <translation>Predefinito</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="152"/>
         <source>Likes</source>
-        <translation type="unfinished">Mi piace</translation>
+        <translation>Mi piace</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="153"/>
         <source>Downloads</source>
-        <translation type="unfinished">Scaricamenti</translation>
+        <translation>Scaricamenti</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="154"/>
         <source>Recent</source>
-        <translation type="unfinished">Recenti</translation>
+        <translation>Recenti</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="162"/>
         <source>Sort by: %1</source>
-        <translation type="unfinished">Ordina per: %1</translation>
+        <translation>Ordina per: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="176"/>
         <source>Asc</source>
-        <translation type="unfinished">Asc</translation>
+        <translation>Asc</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="177"/>
         <source>Desc</source>
-        <translation type="unfinished">Disc</translation>
+        <translation>Disc</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="190"/>
         <source>Sort dir: %1</source>
-        <translation type="unfinished">Direzione ordinamento: %1</translation>
+        <translation>Direzione ordinamento: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="212"/>
         <source>None</source>
-        <translation type="unfinished">Niente</translation>
+        <translation>Niente</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="234"/>
         <source>Limit: %1</source>
-        <translation type="unfinished">Limite: %1</translation>
+        <translation>Limite: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="297"/>
         <source>Model file</source>
-        <translation type="unfinished">File del modello</translation>
+        <translation>File del modello</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="298"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished">File del modello da scaricare</translation>
+        <translation>File del modello da scaricare</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="321"/>
         <source>Description</source>
-        <translation type="unfinished">Descrizione</translation>
+        <translation>Descrizione</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="322"/>
         <source>File description</source>
-        <translation type="unfinished">Descrizione del file</translation>
+        <translation>Descrizione del file</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annulla</translation>
+        <translation>Annulla</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Resume</source>
-        <translation type="unfinished">Riprendi</translation>
+        <translation>Riprendi</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Download</source>
-        <translation type="unfinished">Scarica</translation>
+        <translation>Scarica</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="363"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished">Arresta/riavvia/avvia il download</translation>
+        <translation>Arresta/riavvia/avvia il download</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="375"/>
         <source>Remove</source>
-        <translation type="unfinished">Rimuovi</translation>
+        <translation>Rimuovi</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="382"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished">Rimuovi il modello dal sistema dei file</translation>
+        <translation>Rimuovi il modello dal sistema dei file</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="396"/>
         <location filename="../qml/AddHFModelView.qml" line="430"/>
         <source>Install</source>
-        <translation type="unfinished">Installa</translation>
+        <translation>Installa</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="431"/>
         <source>Install online model</source>
-        <translation type="unfinished">Installa il modello online</translation>
+        <translation>Installa il modello online</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="441"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Errore&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Errore&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="447"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished">Descrive un errore che si è verificato durante lo scaricamento</translation>
+        <translation>Descrive un errore che si è verificato durante lo scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="460"/>
@@ -429,32 +429,32 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="466"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished">Errore per hardware incompatibile</translation>
+        <translation>Errore per hardware incompatibile</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="504"/>
         <source>Download progressBar</source>
-        <translation type="unfinished">Barra di avanzamento dello scaricamento</translation>
+        <translation>Barra di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="505"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">Mostra lo stato di avanzamento dello scaricamento</translation>
+        <translation>Mostra lo stato di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="515"/>
         <source>Download speed</source>
-        <translation type="unfinished">Velocità di scaricamento</translation>
+        <translation>Velocità di scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="516"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">Velocità di scaricamento in byte/kilobyte/megabyte al secondo</translation>
+        <translation>Velocità di scaricamento in byte/kilobyte/megabyte al secondo</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="533"/>
         <source>Calculating...</source>
-        <translation type="unfinished">Calcolo in corso...</translation>
+        <translation>Calcolo in corso...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="537"/>
@@ -462,62 +462,62 @@
         <location filename="../qml/AddHFModelView.qml" line="588"/>
         <location filename="../qml/AddHFModelView.qml" line="609"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished">Se viene calcolato l&apos;hash del file</translation>
+        <translation>Se viene calcolato l&apos;hash del file</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="544"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">Indicatore di occupato</translation>
+        <translation>Indicatore di occupato</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="545"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished">Visualizzato durante il calcolo dell&apos;hash del file</translation>
+        <translation>Visualizzato durante il calcolo dell&apos;hash del file</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="558"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished">ERRORE: $API_KEY è vuoto.</translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="564"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished">Inserire $API_KEY</translation>
+        <translation>Inserire $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="579"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished">ERRORE: $BASE_URL non è valido.</translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="585"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">inserisci $BASE_URL</translation>
+        <translation>inserisci $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="600"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished">ERRORE: $MODEL_NAME è vuoto.</translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="606"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">inserisci $MODEL_NAME</translation>
+        <translation>inserisci $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="628"/>
         <source>File size</source>
-        <translation type="unfinished">Dimensione del file</translation>
+        <translation>Dimensione del file</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="650"/>
         <source>Quant</source>
-        <translation type="unfinished">Quant</translation>
+        <translation>Quant</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="672"/>
         <source>Type</source>
-        <translation type="unfinished">Tipo</translation>
+        <translation>Tipo</translation>
     </message>
 </context>
 <context>
@@ -2846,7 +2846,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/StartupDialog.qml" line="118"/>
         <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
-        <translation>Acconsenti all'analisi anonima dell'uso per migliorare GPT4All</translation>
+        <translation>Acconsenti all&apos;analisi anonima dell&apos;uso per migliorare GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
