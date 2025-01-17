@@ -12,7 +12,7 @@
     "type": "qwen2",
     "description": "<ul><li>Based on <a href=\"https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct\">Qwen2.5-Coder 7B</a></li><li>Uses built-in javascript code interpreter</li><li>Use for complex reasoning tasks that can be aided by computation analysis</li><li>License: <a href=\"https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/blob/main/LICENSE\">Apache License Version 2.0</a></li><li>#reasoning</li></ul>",
     "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_0.gguf",
-    "chatTemplate": "{{- '<|im_start|>system\\n' }}\n{% if toolList|length > 0 %}You have access to the following functions:\n{% for tool in toolList %}\nUse the function '{{tool.function}}' to: '{{tool.description}}'\n{% if tool.parameters|length > 0 %}\nparameters:\n{% for info in tool.parameters %}\n  {{info.name}}:\n    type: {{info.type}}\n    description: {{info.description}}\n    required: {{info.required}}\n{% endfor %}\n{% endif %}\n# Tool Instructions\nIf you CHOOSE to call this function ONLY reply with the following format:\n'{{tool.symbolicFormat}}'\nHere is an example. If the user says, '{{tool.examplePrompt}}', then you reply\n'{{tool.exampleCall}}'\nAfter the result you might reply with, '{{tool.exampleReply}}'\n{% endfor %}\nYou MUST include both the start and end tags when you use a function.\n\nYou are a helpful AI assistant who uses the functions to break down, analyze, perform, and verify complex reasoning tasks. You SHOULD try to verify your answers using the functions where possible.\n{% endif %}\n{{- '<|im_end|>\\n' }}\n{% for message in messages %}\n{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n' }}\n{% endfor %}\n{% if add_generation_prompt %}\n{{ '<|im_start|>assistant\\n' }}\n{% endif %}\n",
+    "chatTemplate": "{{- '<|im_start|>system\\n' }}\n{% if toolList|length > 0 %}You have access to the following functions:\n{% for tool in toolList %}\nUse the function '{{tool.function}}' to: '{{tool.description}}'\n{% if tool.parameters|length > 0 %}\nparameters:\n{% for info in tool.parameters %}\n  {{info.name}}:\n    type: {{info.type}}\n    description: {{info.description}}\n    required: {{info.required}}\n{% endfor %}\n{% endif %}\n# Tool Instructions\nIf you CHOOSE to call this function ONLY reply with the following format:\n'{{tool.symbolicFormat}}'\nHere is an example. If the user says, '{{tool.examplePrompt}}', then you reply\n'{{tool.exampleCall}}'\nAfter the result you might reply with, '{{tool.exampleReply}}'\n{% endfor %}\nYou MUST include both the start and end tags when you use a function.\n\nYou are a helpful AI assistant who uses the functions to break down, analyze, perform, and verify complex reasoning tasks. You SHOULD try to verify your answers using the functions where possible.\n{% endif %}\n{{- '<|im_end|>\\n' }}\n{% for message in messages %}\n{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{% endfor %}\n{% if add_generation_prompt %}\n{{ '<|im_start|>assistant\\n' }}\n{% endif %}\n",
     "systemPrompt": ""
   },
   {
@@ -81,7 +81,7 @@
     "url": "https://huggingface.co/NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF/resolve/main/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
     "systemPrompt": "",
-    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "e",
@@ -132,7 +132,7 @@
     "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
     "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI.\n<|im_end|>\n",
-    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
+    "chatTemplate": "{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "h",

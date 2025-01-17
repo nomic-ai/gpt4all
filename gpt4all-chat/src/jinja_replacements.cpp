@@ -107,6 +107,19 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {%- endif %}
 {%- endfor %})TEMPLATE",
     },
+    // Hermes-3-Llama-3.2-3B.Q4_0.gguf, mistral-7b-openorca.gguf2.Q4_0.gguf
+    {
+        R"TEMPLATE({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
+' + message['content'] + '<|im_end|>' + '
+'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
+' }}{% endif %})TEMPLATE",
+        R"TEMPLATE({%- for message in messages %}
+    {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+{%- endif %})TEMPLATE",
+    },
     // Llama-3.2-1B-Instruct-Q4_0.gguf, Llama-3.2-3B-Instruct-Q4_0.gguf, SummLlama3.2-3B-Q4_0.gguf (nomic-ai/gpt4all#3309)
     {
         R"TEMPLATE({{- bos_token }}
@@ -342,23 +355,23 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
         R"TEMPLATE({{- bos_token }}
-{%- set date_string = strftime_now("%d %b %Y") %}
+{%- set date_string = strftime_now('%d %b %Y') %}
 
 {#- This block extracts the system message, so we can slot it into the right place. #}
 {%- if messages[0]['role'] == 'system' %}
     {%- set system_message = messages[0]['content'] | trim %}
     {%- set loop_start = 1 %}
 {%- else %}
-    {%- set system_message = "" %}
+    {%- set system_message = '' %}
     {%- set loop_start = 0 %}
 {%- endif %}
 
 {#- System message #}
-{{- "<|start_header_id|>system<|end_header_id|>\n\n" }}
-{{- "Cutting Knowledge Date: December 2023\n" }}
-{{- "Today Date: " + date_string + "\n\n" }}
+{{- '<|start_header_id|>system<|end_header_id|>\n\n' }}
+{{- 'Cutting Knowledge Date: December 2023\n' }}
+{{- 'Today Date: ' + date_string + '\n\n' }}
 {{- system_message }}
-{{- "<|eot_id|>" }}
+{{- '<|eot_id|>' }}
 
 {%- for message in messages %}
     {%- if loop.index0 >= loop_start %}
@@ -402,19 +415,6 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
     },
-    // mistral-7b-openorca.gguf2.Q4_0.gguf, Hermes-3-Llama-3.2-3B.Q4_0.gguf
-    {
-        R"TEMPLATE({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
-' + message['content'] + '<|im_end|>' + '
-'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
-' }}{% endif %})TEMPLATE",
-        R"TEMPLATE({%- for message in messages %}
-    {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n' }}
-{%- endfor %}
-{%- if add_generation_prompt %}
-    {{- '<|im_start|>assistant\n' }}
-{%- endif %})TEMPLATE",
-    },
     // Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf
     {
         R"TEMPLATE({% for message in messages %}{{'<|im_start|>' + message['role'] + '
@@ -444,7 +444,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- eos_token }}
 {%- endif %})TEMPLATE",
     },
-    // qwen2-1_5b-instruct-q4_0.gguf, Qwen2-1.5B-Instruct.Q6_K.gguf (nomic-ai/gpt4all#3263), Qwen2-72B-Instruct.Q4_K_M.gguf
+    // qwen2-1_5b-instruct-q4_0.gguf (nomic-ai/gpt4all#3263), qwen2-72b-instruct-q4_0.gguf
     {
         R"TEMPLATE({% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system
 You are a helpful assistant.<|im_end|>
