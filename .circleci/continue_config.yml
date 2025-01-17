@@ -1495,21 +1495,27 @@ workflows:
       - hold:
           type: approval
       - build-offline-chat-installer-macos:
+          context: gpt4all
           requires:
             - hold
       - sign-offline-chat-installer-macos:
+          context: gpt4all
           requires:
             - build-offline-chat-installer-macos
       - notarize-offline-chat-installer-macos:
+          context: gpt4all
           requires:
             - sign-offline-chat-installer-macos
       - build-offline-chat-installer-windows:
+          context: gpt4all
           requires:
             - hold
       - sign-offline-chat-installer-windows:
+          context: gpt4all
           requires:
             - build-offline-chat-installer-windows
       - build-offline-chat-installer-linux:
+          context: gpt4all
           requires:
             - hold
   build-chat-online-installers:
@@ -1523,26 +1529,32 @@ workflows:
           type: approval
       - build-online-chat-installer-macos:
           <<: *main_only
+          context: gpt4all
           requires:
             - hold
       - sign-online-chat-installer-macos:
           <<: *main_only
+          context: gpt4all
           requires:
             - build-online-chat-installer-macos
       - notarize-online-chat-installer-macos:
           <<: *main_only
+          context: gpt4all
           requires:
             - sign-online-chat-installer-macos
       - build-online-chat-installer-windows:
           <<: *main_only
+          context: gpt4all
           requires:
             - hold
       - sign-online-chat-installer-windows:
           <<: *main_only
+          context: gpt4all
           requires:
             - build-online-chat-installer-windows
       - build-online-chat-installer-linux:
           <<: *main_only
+          context: gpt4all
           requires:
             - hold
   build-and-test-gpt4all-chat:
@@ -1554,12 +1566,15 @@ workflows:
       - hold:
           type: approval
       - build-gpt4all-chat-linux:
+          context: gpt4all
           requires:
             - hold
       - build-gpt4all-chat-windows:
+          context: gpt4all
           requires:
             - hold
       - build-gpt4all-chat-macos:
+          context: gpt4all
           requires:
             - hold
   deploy-docs:
@@ -1572,6 +1587,7 @@ workflows:
           <<: *main_only
       - build-py-docs:
           <<: *main_only
+          context: gpt4all
   build-python:
     when:
       or:
@@ -1594,6 +1610,7 @@ workflows:
             - hold
       - publish-wheels:
           <<: *main_only
+          context: gpt4all
           requires:
             - pypi-hold
             - build-py-windows
