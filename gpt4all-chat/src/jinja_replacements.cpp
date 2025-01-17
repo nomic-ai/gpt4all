@@ -29,6 +29,7 @@
 const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBSTITUTIONS {
     // calme-2.1-phi3.5-4b.Q6_K.gguf (reported by ThilotE on Discord), Phi-3.5-mini-instruct-Q4_0.gguf (nomic-ai/gpt4all#3345)
     {
+        // original
         R"TEMPLATE({% for message in messages %}{% if message['role'] == 'system' and message['content'] %}{{'<|system|>
 ' + message['content'] + '<|end|>
 '}}{% elif message['role'] == 'user' %}{{'<|user|>
@@ -37,6 +38,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 ' + message['content'] + '<|end|>
 '}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|assistant|>
 ' }}{% else %}{{ eos_token }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- if message['role'] == 'system' and message['content'] %}
         {{- '<|system|>\n' + message['content'] + '<|end|>\n' }}
@@ -54,10 +56,12 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // gemma-2-9b-it-Q4_0.gguf (nomic-ai/gpt4all#3282)
     {
+        // original
         R"TEMPLATE({{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '
 ' + message['content'] | trim + '<end_of_turn>
 ' }}{% endfor %}{% if add_generation_prompt %}{{'<start_of_turn>model
 '}}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({{- bos_token }}
 {%- if messages[0]['role'] == 'system' %}
     {{- raise_exception('System role not supported') }}
@@ -79,6 +83,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // ghost-7b-v0.9.1-Q4_0.gguf
     {
+        // original
         R"TEMPLATE({% for message in messages %}
 {% if message['role'] == 'user' %}
 {{ '<|user|>
@@ -94,6 +99,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {{ '<|assistant|>' }}
 {% endif %}
 {% endfor %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- if message['role'] == 'user' %}
         {{- '<|user|>\n' + message['content'] + eos_token }}
@@ -109,10 +115,12 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Hermes-3-Llama-3.2-3B.Q4_0.gguf, mistral-7b-openorca.gguf2.Q4_0.gguf
     {
+        // original
         R"TEMPLATE({% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in messages %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}
 {%- endfor %}
@@ -122,6 +130,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Llama-3.2-1B-Instruct-Q4_0.gguf, Llama-3.2-3B-Instruct-Q4_0.gguf, SummLlama3.2-3B-Q4_0.gguf (nomic-ai/gpt4all#3309)
     {
+        // original
         R"TEMPLATE({{- bos_token }}
 {%- if custom_tools is defined %}
     {%- set tools = custom_tools %}
@@ -215,6 +224,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- if add_generation_prompt %}
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({{- bos_token }}
 {%- set date_string = strftime_now('%d %b %Y') %}
 
@@ -245,6 +255,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Llama-3.3-70B-Instruct-Q4_0.gguf (nomic-ai/gpt4all#3305)
     {
+        // original
         R"TEMPLATE({{- bos_token }}
 {%- if custom_tools is defined %}
     {%- set tools = custom_tools %}
@@ -354,6 +365,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- if add_generation_prompt %}
     {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
 {%- endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({{- bos_token }}
 {%- set date_string = strftime_now('%d %b %Y') %}
 
@@ -384,11 +396,13 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Llama3-DiscoLeo-Instruct-8B-32k-v0.1-Q4_0.gguf (nomic-ai/gpt4all#3347)
     {
+        // original
         R"TEMPLATE({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
 
 '+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ '<|start_header_id|>assistant<|end_header_id|>
 
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' + message['content'] | trim + '<|eot_id|>' %}
     {%- if loop.index0 == 0 %}
@@ -402,11 +416,13 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf
     {
+        // original
         R"TEMPLATE({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
 
 '+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>
 
 ' }})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- set loop_messages = messages %}
 {%- for message in loop_messages %}
     {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}
@@ -419,11 +435,13 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Meta-Llama-3-8B-Instruct.Q4_0.gguf
     {
+        // original
         R"TEMPLATE({% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>
 
 '+ message['content'] | trim + '<|eot_id|>' %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ '<|start_header_id|>assistant<|end_header_id|>
 
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- set loop_messages = messages %}
 {%- for message in loop_messages %}
     {%- set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}
@@ -435,6 +453,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Mistral-Nemo-Instruct-2407-Q4_0.gguf (nomic-ai/gpt4all#3284)
     {
+        // original
         R"TEMPLATE({%- if messages[0]["role"] == "system" %}
     {%- set system_message = messages[0]["content"] %}
     {%- set loop_messages = messages[1:] %}
@@ -522,6 +541,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
         {{- raise_exception("Only user and assistant roles are supported, with the exception of an initial optional system message!") }}
     {%- endif %}
 {%- endfor %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- if messages[0]['role'] == 'system' %}
     {%- set system_message = messages[0]['content'] %}
     {%- set loop_start = 1 %}
@@ -551,10 +571,12 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf
     {
+        // original
         R"TEMPLATE({% for message in messages %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' }}
 {%- endfor %}
@@ -564,12 +586,14 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // occiglot-7b-de-en-instruct.Q4_0.gguf (nomic-ai/gpt4all#3283)
     {
+        // original
         R"TEMPLATE({{'<s>'}}{% if messages[0]['role'] == 'system' %}{% set loop_messages = messages[1:] %}{% set system_message = messages[0]['content'] %}{% else %}{% set loop_messages = messages %}{% set system_message = 'You are a helpful assistant. Please give a long and detailed answer.' %}{% endif %}{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% for message in loop_messages %}{% if loop.index0 == 0 %}{{'<|im_start|>system
 ' + system_message + '<|im_end|>
 '}}{% endif %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({{- bos_token }}
 {%- if messages[0]['role'] == 'system' %}
     {%- set loop_start = 1 %}
@@ -590,6 +614,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Phi-3.1-mini-128k-instruct-Q4_0.gguf (nomic-ai/gpt4all#3346)
     {
+        // original
         R"TEMPLATE({% for message in messages %}{% if message['role'] == 'system' %}{{'<|system|>
 ' + message['content'] + '<|end|>
 '}}{% elif message['role'] == 'user' %}{{'<|user|>
@@ -598,6 +623,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 ' + message['content'] + '<|end|>
 '}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|assistant|>
 ' }}{% else %}{{ eos_token }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- if message['role'] == 'system' %}
         {{-'<|system|>\n' + message['content'] + '<|end|>\n'}}
@@ -615,10 +641,12 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // Phi-3-mini-4k-instruct.Q4_0.gguf
     {
+        // original
         R"TEMPLATE({{ bos_token }}{% for message in messages %}{{'<|' + message['role'] + '|>' + '
 ' + message['content'] + '<|end|>
 ' }}{% endfor %}{% if add_generation_prompt %}{{ '<|assistant|>
 ' }}{% else %}{{ eos_token }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({{- bos_token }}
 {%- for message in messages %}
     {{- '<|' + message['role'] + '|>\n' + message['content'] + '<|end|>\n' }}
@@ -631,12 +659,14 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     },
     // qwen2-1_5b-instruct-q4_0.gguf (nomic-ai/gpt4all#3263), qwen2-72b-instruct-q4_0.gguf
     {
+        // original
         R"TEMPLATE({% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system
 You are a helpful assistant.<|im_end|>
 ' }}{% endif %}{{'<|im_start|>' + message['role'] + '
 ' + message['content'] + '<|im_end|>' + '
 '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant
 ' }}{% endif %})TEMPLATE",
+        // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- if loop.first and messages[0]['role'] != 'system' %}
         {{- '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}
