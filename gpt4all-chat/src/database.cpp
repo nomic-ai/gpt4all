@@ -7,14 +7,13 @@
 #include <fmt/format.h>
 #include <usearch/index_plugins.hpp>
 
+#include <QByteArrayView>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QIODevice>
-#include <QPdfDocument>
-#include <QPdfSelection>
 #include <QRegularExpression>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -30,6 +29,15 @@
 #include <cmath>
 #include <optional>
 #include <stdexcept>
+
+#ifdef GPT4ALL_USE_QTPDF
+#   include <QPdfDocument>
+#   include <QPdfSelection>
+#else
+#   include <fpdfview.h>
+#   include <fpdf_doc.h>
+#   include <fpdf_text.h>
+#endif
 
 using namespace Qt::Literals::StringLiterals;
 namespace ranges = std::ranges;
@@ -1133,6 +1141,7 @@ protected:
 
 namespace {
 
+#ifdef GPT4ALL_USE_QTPDF
 class PdfDocumentReader final : public DocumentReader {
 public:
     explicit PdfDocumentReader(const DocumentInfo &info)
@@ -1173,6 +1182,99 @@ private:
     QString                    m_pageText;
     std::optional<QTextStream> m_stream;
 };
+#else
+class PdfDocumentReader final : public DocumentReader {
+public:
+    explicit PdfDocumentReader(const DocumentInfo &info)
+        : DocumentReader(info)
+    {
+        QString path = info.file.canonicalFilePath();
+        m_doc = FPDF_LoadDocument(path.toUtf8().constData(), nullptr);
+        if (!m_doc)
+            throw std::runtime_error(fmt::format("Failed to load PDF: {}", path));
+
+        // Extract metadata
+        Metadata metadata {
+            .title    = getMetadata("Title"   ),
+            .author   = getMetadata("Author"  ),
+            .subject  = getMetadata("Subject" ),
+            .keywords = getMetadata("Keywords"),
+        };
+        postInit(std::move(metadata));
+    }
+
+    ~PdfDocumentReader() override
+    {
+        if (m_page)
+            FPDF_ClosePage(m_page);
+        if (m_doc)
+            FPDF_CloseDocument(m_doc);
+        FPDF_DestroyLibrary();
+    }
+
+    int page() const override { return m_currentPage; }
+
+private:
+    std::optional<QString> advance() override
+    {
+        QString word;
+        do {
+            while (!m_stream || m_stream->atEnd()) {
+                if (m_currentPage >= FPDF_GetPageCount(m_doc))
+                    return std::nullopt;
+
+                if (m_page)
+                    FPDF_ClosePage(m_page);
+                m_page = FPDF_LoadPage(m_doc, m_currentPage++);
+                if (!m_page)
+                    throw std::runtime_error("Failed to load page.");
+
+                m_pageText = extractTextFromPage(m_page);
+                m_stream.emplace(&m_pageText);
+            }
+            *m_stream >> word;
+        } while (word.isEmpty());
+        return word;
+    }
+
+    QString getMetadata(FPDF_BYTESTRING key)
+    {
+        // FPDF_GetMetaText includes a 2-byte null terminator
+        ulong nBytes = FPDF_GetMetaText(m_doc, key, nullptr, 0);
+        if (nBytes <= sizeof (FPDF_WCHAR))
+            return { "" };
+        QByteArray buffer(nBytes, Qt::Uninitialized);
+        ulong nResultBytes = FPDF_GetMetaText(m_doc, key, buffer.data(), buffer.size());
+        Q_ASSERT(nResultBytes % 2 == 0);
+        Q_ASSERT(nResultBytes <= nBytes);
+        return QString::fromUtf16(reinterpret_cast<const char16_t *>(buffer.data()), nResultBytes / 2 - 1);
+    }
+
+    QString extractTextFromPage(FPDF_PAGE page)
+    {
+        FPDF_TEXTPAGE textPage = FPDFText_LoadPage(page);
+        if (!textPage)
+            throw std::runtime_error("Failed to load text page.");
+
+        int nChars = FPDFText_CountChars(textPage);
+        if (!nChars)
+            return {};
+        // FPDFText_GetText includes a 2-byte null terminator
+        QByteArray buffer((nChars + 1) * sizeof (FPDF_WCHAR), Qt::Uninitialized);
+        int nResultChars = FPDFText_GetText(textPage, 0, nChars, reinterpret_cast<ushort *>(buffer.data()));
+        Q_ASSERT(nResultChars <= nChars + 1);
+
+        FPDFText_ClosePage(textPage);
+        return QString::fromUtf16(reinterpret_cast<const char16_t *>(buffer.data()), nResultChars - 1);
+    }
+
+    FPDF_DOCUMENT              m_doc = nullptr;
+    FPDF_PAGE                  m_page = nullptr;
+    int                        m_currentPage = 0;
+    QString                    m_pageText;
+    std::optional<QTextStream> m_stream;
+};
+#endif // !defined(GPT4ALL_USE_QTPDF)
 
 class WordDocumentReader final : public DocumentReader {
 public:
