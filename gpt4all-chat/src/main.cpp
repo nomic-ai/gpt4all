@@ -25,6 +25,10 @@
 #include <QVariant>
 #include <Qt>
 
+#ifndef GPT4ALL_USE_QTPDF
+#   include <fpdfview.h>
+#endif
+
 #ifdef Q_OS_LINUX
 #   include <QIcon>
 #endif
@@ -58,6 +62,10 @@ static void raiseWindow(QWindow *window)
 
 int main(int argc, char *argv[])
 {
+#ifndef GPT4ALL_USE_QTPDF
+    FPDF_InitLibrary();
+#endif
+
     QCoreApplication::setOrganizationName("nomic.ai");
     QCoreApplication::setOrganizationDomain("gpt4all.io");
     QCoreApplication::setApplicationName("GPT4All");

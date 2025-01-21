@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Add support for the Windows ARM64 target platform (CPU-only) ([#3385](https://github.com/nomic-ai/gpt4all/pull/3385))
+
 ### Changed
 - Update from Qt 6.5.1 to 6.8.1 ([#3386](https://github.com/nomic-ai/gpt4all/pull/3386))
 
@@ -15,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Remove 'X is defined' checks from templates as they work incorrectly with Jinja2Cpp ([#3372](https://github.com/nomic-ai/gpt4all/pull/3372))
 - Jinja2Cpp: Add 'if' requirement for 'else' parsing to fix crash ([#3373](https://github.com/nomic-ai/gpt4all/pull/3373))
 - Save chats on quit, even if the window isn't closed first ([#3387](https://github.com/nomic-ai/gpt4all/pull/3387))
+- Add chat template replacements for five new models and fix EM German Mistral ([#3393](https://github.com/nomic-ai/gpt4all/pull/3393))
+- Fix crash when entering `{{ a["foo"(` as chat template ([#3394](https://github.com/nomic-ai/gpt4all/pull/3394))
+- Sign the maintenance tool on macOS to prevent crash on Sonoma ([#3391](https://github.com/nomic-ai/gpt4all/pull/3391))
 
 ## [3.6.1] - 2024-12-20
 

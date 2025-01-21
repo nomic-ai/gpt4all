@@ -28,7 +28,20 @@ option(GPT4ALL_TEST "Build the tests" ${Python3_FOUND})
 option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
+option(GPT4ALL_GEN_CPACK_CONFIG "Generate the CPack config.xml in the package step and nothing else." OFF)
+set(GPT4ALL_USE_QTPDF "AUTO" CACHE STRING "Whether to Use QtPDF for LocalDocs. If OFF or not available on this platform, PDFium is used.")
+set_property(CACHE GPT4ALL_USE_QTPDF PROPERTY STRINGS AUTO ON OFF)
 
+include(cmake/cpack_config.cmake)
+
+if (GPT4ALL_GEN_CPACK_CONFIG)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cpack-steal-config.cmake.in"
+                   "${CMAKE_BINARY_DIR}/cmake/cpack-steal-config.cmake" @ONLY)
+    set(CPACK_POST_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/cpack-steal-config.cmake)
+    include(CPack)
+    include(CPackIFW)
+    return()
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
@@ -80,7 +93,18 @@ configure_file(
 )
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
-find_package(Qt6 6.5 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
+set(GPT4ALL_QT_COMPONENTS Core HttpServer LinguistTools Quick QuickDialogs2 Sql Svg)
+set(GPT4ALL_USING_QTPDF OFF)
+if (CMAKE_SYSTEM_NAME MATCHES Windows AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+    # QtPDF is not available.
+    if (GPT4ALL_USE_QTPDF STREQUAL "ON")
+        message(FATAL_ERROR "QtPDF is not available on Windows ARM64.")
+    endif()
+elseif (GPT4ALL_USE_QTPDF MATCHES "^(ON|AUTO)$")
+    set(GPT4ALL_USING_QTPDF ON)
+    list(APPEND GPT4ALL_QT_COMPONENTS Pdf)
+endif()
+find_package(Qt6 6.5 COMPONENTS ${GPT4ALL_QT_COMPONENTS} REQUIRED)
 
 if (QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)  # generate extra qmldir files on Qt 6.8+
@@ -404,7 +428,14 @@ target_include_directories(chat PRIVATE deps/usearch/include
                                         deps/usearch/fp16/include)
 
 target_link_libraries(chat
-    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
+    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Quick Qt6::Sql Qt6::Svg)
+if (GPT4ALL_USING_QTPDF)
+    target_compile_definitions(chat PRIVATE GPT4ALL_USE_QTPDF)
+    target_link_libraries(chat PRIVATE Qt6::Pdf)
+else()
+    # Link PDFium
+    target_link_libraries(chat PRIVATE pdfium)
+endif()
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx jinja2cpp)
 
@@ -413,8 +444,6 @@ if (APPLE)
 endif()
 
 # -- install --
-
-set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
@@ -488,66 +517,37 @@ if (LLMODEL_CUDA)
     endif()
 endif()
 
+if (NOT GPT4ALL_USING_QTPDF)
+    # Install PDFium
+    if (WIN32)
+        install(FILES "${PDFium_LIBRARY}" DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+    else()
+        install(FILES "${PDFium_LIBRARY}" DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    endif()
+endif()
+
 if (NOT APPLE)
     install(FILES "${LOCAL_EMBEDDING_MODEL_PATH}"
             DESTINATION resources
             COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
 
-set(CPACK_GENERATOR "IFW")
-set(CPACK_VERBATIM_VARIABLES YES)
-set(CPACK_IFW_VERBOSE ON)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
     find_program(LINUXDEPLOYQT linuxdeployqt HINTS "$ENV{HOME}/dev/linuxdeployqt/build/tools/linuxdeployqt" "$ENV{HOME}/project/linuxdeployqt/bin")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake)
-    set(CPACK_IFW_ROOT "~/Qt/Tools/QtInstallerFramework/4.6")
-    set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-linux")
-    set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@/${COMPONENT_NAME_MAIN}")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-    find_program(WINDEPLOYQT windeployqt HINTS ${_qt_bin_dir})
+elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+    find_program(WINDEPLOYQT windeployqt)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-windows.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake)
-    set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.6")
-    set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.ico")
-    set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-win64")
-    set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@\\${COMPONENT_NAME_MAIN}")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    find_program(MACDEPLOYQT macdeployqt)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-mac.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake)
-    set(CPACK_IFW_ROOT "~/Qt/Tools/QtInstallerFramework/4.6")
-    set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
-    set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-darwin")
-    set(CPACK_IFW_TARGET_DIRECTORY "@ApplicationsDir@/${COMPONENT_NAME_MAIN}")
-    set(CPACK_BUNDLE_NAME ${COMPONENT_NAME_MAIN})
-    set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/gpt4all.icns")
 endif()
-
-set(CPACK_COMPONENTS_ALL gpt4all)  # exclude development components
-set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-SET(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.nomic.ai/gpt4all")
-set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
-set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
-set(CPACK_PACKAGE_EXECUTABLES "GPT4All")
-set(CPACK_CREATE_DESKTOP_LINKS "GPT4All")
-set(CPACK_IFW_PACKAGE_NAME "GPT4All")
-set(CPACK_IFW_PACKAGE_TITLE "GPT4All Installer")
-set(CPACK_IFW_PACKAGE_PUBLISHER "Nomic, Inc.")
-set(CPACK_IFW_PRODUCT_URL "https://www.nomic.ai/gpt4all")
-set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
-set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
-set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-32.png")
-set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
-set(CPACK_IFW_PACKAGE_CONTROL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_control.qs")
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
@@ -560,20 +560,35 @@ endif()
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${APP_VERSION})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "MIT LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
-cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_component.qs")
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_gpt4all_component.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
+
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
+    if (GPT4ALL_OFFLINE_INSTALLER)
+        cpack_add_component(maintenancetool HIDDEN)
+    else()
+        cpack_add_component(maintenancetool HIDDEN DOWNLOADED)
+    endif()
+    cpack_ifw_configure_component(maintenancetool ESSENTIAL FORCED_INSTALLATION)
+    cpack_ifw_configure_component(maintenancetool VERSION ${APP_VERSION})
+    cpack_ifw_configure_component(maintenancetool SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installer_maintenancetool_component.qs")
+endif()
 
 if (GPT4ALL_LOCALHOST)
     cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/repository")
-elseif(GPT4ALL_OFFLINE_INSTALLER)
-  add_compile_definitions(GPT4ALL_OFFLINE_INSTALLER)
+elseif (GPT4ALL_OFFLINE_INSTALLER)
+    add_compile_definitions(GPT4ALL_OFFLINE_INSTALLER)
 else()
-  if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
-  elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-      #To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
-  elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
-  endif()
+    if (CMAKE_SYSTEM_NAME MATCHES Linux)
+        cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
+    elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+        # To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
+        if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+            cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
+        elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+            cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows_arm/repository")
+        endif()
+    elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
+        cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
+    endif()
 endif()
