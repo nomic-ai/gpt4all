@@ -775,8 +775,9 @@ jobs:
             & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_arm64_cross_compiled `
-              qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 `
+              qt.qt6.681.win64_msvc2022_arm64_cross_compiled qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info `
+              qt.qt6.681.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
@@ -813,6 +814,7 @@ jobs:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
+              "-DWINDEPLOYQT=C:\Qt\6.8.1\msvc2022_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.8.1\msvc2022_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_TEST=OFF `
               -DGPT4ALL_OFFLINE_INSTALLER=ON
             & "C:\Qt\Tools\Ninja\ninja.exe"
@@ -894,8 +896,9 @@ jobs:
             & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
               --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_arm64_cross_compiled `
-              qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 `
+              qt.qt6.681.win64_msvc2022_arm64_cross_compiled qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info `
+              qt.qt6.681.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
@@ -937,6 +940,7 @@ jobs:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
+              "-DWINDEPLOYQT=C:\Qt\6.8.1\msvc2022_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.8.1\msvc2022_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_TEST=OFF `
               -DGPT4ALL_OFFLINE_INSTALLER=OFF
             & "C:\Qt\Tools\Ninja\ninja.exe"
