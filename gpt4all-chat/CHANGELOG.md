@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Jinja2Cpp: Add 'if' requirement for 'else' parsing to fix crash ([#3373](https://github.com/nomic-ai/gpt4all/pull/3373))
 - Save chats on quit, even if the window isn't closed first ([#3387](https://github.com/nomic-ai/gpt4all/pull/3387))
 - Add chat template replacements for five new models and fix EM German Mistral ([#3393](https://github.com/nomic-ai/gpt4all/pull/3393))
+- Fix crash when entering `{{ a["foo"(` as chat template ([#3394](https://github.com/nomic-ai/gpt4all/pull/3394))
 
 ## [3.6.1] - 2024-12-20
 
