@@ -10,6 +10,10 @@ set(APP_VERSION "${APP_VERSION_BASE}")
 
 project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
+endif()
+
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" OFF)
   if(BUILD_UNIVERSAL)
@@ -125,10 +129,6 @@ message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
-endif()
 
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
