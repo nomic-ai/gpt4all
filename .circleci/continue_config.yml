@@ -85,6 +85,16 @@ jobs:
               -DGPT4ALL_GEN_CPACK_CONFIG=ON
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake . -DGPT4ALL_GEN_CPACK_CONFIG=OFF
+            # The 'install' step here *should* be completely unnecessary. There is absolutely no reason we should have
+            # to copy all of the build artifacts to an output directory that we do not use (because we package GPT4All
+            # as an installer instead).
+            # However, because of the way signing is implemented in the cmake script, the *source* files are signed at
+            # install time instead of the *installed* files. This side effect is the *only* way libraries that are not
+            # processed by macdeployqt, such as libllmodel.so, get signed (at least, with -DBUILD_UNIVERSAL=ON).
+            # Also, we have to run this as a *separate* step. Telling cmake to run both targets in one command causes it
+            # to execute them in parallel, since it is not aware of the dependency of the package target on the install
+            # target.
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ccache -s
             mkdir upload
@@ -224,6 +234,8 @@ jobs:
               -DGPT4ALL_GEN_CPACK_CONFIG=ON
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake . -DGPT4ALL_GEN_CPACK_CONFIG=OFF
+            # See comment above related to the 'install' target.
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             ccache -s
             mkdir upload
