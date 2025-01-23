@@ -1,6 +1,6 @@
 ## Latest News
 
-GPT4All v3.7.0 was released on January 22nd. Changes include:
+GPT4All v3.7.0 was released on January 23rd. Changes include:
 
 * **Windows ARM Support:** GPT4All now supports the Windows ARM platform, ensuring compatibility with devices powered by Qualcomm Snapdragon and Microsoft SQ-series processors.
   * **NOTE:** Support for GPU and/or NPU acceleration is not available at this time. Only the CPU will be used to run LLMs.
