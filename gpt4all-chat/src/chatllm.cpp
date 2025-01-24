@@ -869,7 +869,7 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
             auto &[promptIndex, queryStr] = *query;
             const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
             emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
-            m_chatModel->updateSources(promptIndex, databaseResults);
+            m_chatModel->updateSources(promptIndex + startOffset, databaseResults);
             emit databaseResultsChanged(databaseResults);
         }
     }
