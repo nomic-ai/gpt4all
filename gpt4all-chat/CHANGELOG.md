@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Fix regression while using localdocs with server API ([#3410](https://github.com/nomic-ai/gpt4all/pull/3410))
+- Don't show system messages in server chat view ([#3411](https://github.com/nomic-ai/gpt4all/pull/3411))
 
 ## [3.7.0] - 2025-01-21
 
