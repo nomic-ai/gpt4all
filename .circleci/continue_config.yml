@@ -48,10 +48,15 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
-            hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-            /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
-            hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
+            hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
+            /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
+              --no-force-installations --no-default-installations --no-size-checking --default-answer \
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+            hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Setup Keychain
           command: |
@@ -72,14 +77,14 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S ../gpt4all-chat -B . -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.1/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
-              -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
+              -DMACDEPLOYQT=~/Qt/6.8.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=ON \
               -DGPT4ALL_SIGN_INSTALL=ON \
               -DGPT4ALL_GEN_CPACK_CONFIG=ON
@@ -197,10 +202,15 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
-            hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-            /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
-            hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
+            hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
+            /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
+              --no-force-installations --no-default-installations --no-size-checking --default-answer \
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+            hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Setup Keychain
           command: |
@@ -221,14 +231,14 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S ../gpt4all-chat -B . -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.1/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
               -DGGML_METAL_MACOSX_VERSION_MIN=12.6 \
-              -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
+              -DMACDEPLOYQT=~/Qt/6.8.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=OFF \
               -DGPT4ALL_SIGN_INSTALL=ON \
               -DGPT4ALL_GEN_CPACK_CONFIG=ON
@@ -352,9 +362,13 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
-            chmod +x qt-unified-linux-x64-4.6.0-online.run
-            ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
+            chmod +x qt-online-installer-linux-x64-4.8.1.run
+            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build linuxdeployqt
           command: |
@@ -365,7 +379,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             set -eo pipefail
-            export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            export CMAKE_PREFIX_PATH=~/Qt/6.8.1/gcc_64/lib/cmake
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             export PATH=$PATH:/usr/local/cuda/bin
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
@@ -430,9 +444,13 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
-            chmod +x qt-unified-linux-x64-4.6.0-online.run
-            ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
+            chmod +x qt-online-installer-linux-x64-4.8.1.run
+            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build linuxdeployqt
           command: |
@@ -443,7 +461,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             set -eo pipefail
-            export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            export CMAKE_PREFIX_PATH=~/Qt/6.8.1/gcc_64/lib/cmake
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.8/bin
             export PATH=$PATH:/usr/local/cuda/bin
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
@@ -496,8 +514,12 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
-            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 qt.qt6.681.addons.qt5compat `
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
@@ -538,7 +560,7 @@ jobs:
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
               -S ..\gpt4all-chat -B . -G Ninja `
               -DCMAKE_BUILD_TYPE=Release `
-              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.8.1\msvc2022_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
@@ -620,8 +642,12 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
-            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 qt.qt6.681.addons.qt5compat `
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
@@ -667,7 +693,7 @@ jobs:
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
               -S ..\gpt4all-chat -B . -G Ninja `
               -DCMAKE_BUILD_TYPE=Release `
-              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.8.1\msvc2022_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
@@ -757,13 +783,13 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
-            # note: need x86_64 toolset for windeployqt.exe, which isn't provided with the ARM64 cross toolset
-            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations `
+            wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
-              --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
-              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qthttpserver
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 `
+              qt.qt6.681.win64_msvc2022_arm64_cross_compiled qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info `
+              qt.qt6.681.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
@@ -793,14 +819,14 @@ jobs:
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
               -S ..\gpt4all-chat -B . -G Ninja `
               -DCMAKE_BUILD_TYPE=Release `
-              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_arm64" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.8.1\msvc2022_arm64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
-              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.5.1\msvc2019_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
+              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.8.1\msvc2022_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
-              "-DWINDEPLOYQT=C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat" `
+              "-DWINDEPLOYQT=C:\Qt\6.8.1\msvc2022_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.8.1\msvc2022_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_TEST=OFF `
               -DGPT4ALL_OFFLINE_INSTALLER=ON
             & "C:\Qt\Tools\Ninja\ninja.exe"
@@ -878,13 +904,13 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
-            # note: need x86_64 toolset for windeployqt.exe, which isn't provided with the ARM64 cross toolset
-            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations `
+            wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
-              --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install `
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 `
-              qt.qt6.651.win64_msvc2019_arm64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qthttpserver
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 `
+              qt.qt6.681.win64_msvc2022_arm64_cross_compiled qt.qt6.681.addons.qt5compat qt.qt6.681.debug_info `
+              qt.qt6.681.addons.qthttpserver
       - run:
           name: "Install Dotnet 8"
           command: |
@@ -919,14 +945,14 @@ jobs:
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
               -S ..\gpt4all-chat -B . -G Ninja `
               -DCMAKE_BUILD_TYPE=Release `
-              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_arm64" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.8.1\msvc2022_arm64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
-              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.5.1\msvc2019_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
+              "-DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.8.1\msvc2022_arm64\lib\cmake\Qt6\qt.toolchain.cmake" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DLLMODEL_CUDA=OFF `
               -DLLMODEL_KOMPUTE=OFF `
-              "-DWINDEPLOYQT=C:\Qt\6.5.1\msvc2019_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.5.1\msvc2019_arm64\bin\qtpaths.bat" `
+              "-DWINDEPLOYQT=C:\Qt\6.8.1\msvc2022_64\bin\windeployqt.exe;--qtpaths;C:\Qt\6.8.1\msvc2022_arm64\bin\qtpaths.bat" `
               -DGPT4ALL_TEST=OFF `
               -DGPT4ALL_OFFLINE_INSTALLER=OFF
             & "C:\Qt\Tools\Ninja\ninja.exe"
@@ -1025,14 +1051,18 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run"
-            chmod +x qt-unified-linux-x64-4.6.0-online.run
-            ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
+            chmod +x qt-online-installer-linux-x64-4.8.1.run
+            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.linux_gcc_64 qt.qt6.681.addons.qt5compat \
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Build
           no_output_timeout: 30m
           command: |
-            export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            export CMAKE_PREFIX_PATH=~/Qt/6.8.1/gcc_64/lib/cmake
             export PATH=$PATH:/usr/local/cuda/bin
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
             ~/Qt/Tools/CMake/bin/cmake \
@@ -1073,8 +1103,12 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget.exe "https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe"
-            & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            wget.exe "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-windows-x64-4.8.1.exe"
+            & .\qt-online-installer-windows-x64-4.8.1.exe --no-force-installations --no-default-installations `
+              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations `
+              --email "${Env:QT_EMAIL}" --password "${Env:QT_PASSWORD}" install `
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.win64_msvc2022_64 qt.qt6.681.addons.qt5compat `
+              qt.qt6.681.debug_info extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
       - run:
           name: Install VulkanSDK
           command: |
@@ -1099,7 +1133,7 @@ jobs:
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
               -S gpt4all-chat -B build -G Ninja `
               -DCMAKE_BUILD_TYPE=Release `
-              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.8.1\msvc2022_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               -DCMAKE_C_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
@@ -1135,10 +1169,15 @@ jobs:
       - run:
           name: Installing Qt
           command: |
-            wget "https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg"
-            hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-            /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
-            hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-macOS-x64-4.8.1.dmg"
+            hdiutil attach qt-online-installer-macOS-x64-4.8.1.dmg
+            /Volumes/qt-online-installer-macOS-x64-4.8.1/qt-online-installer-macOS-x64-4.8.1.app/Contents/MacOS/qt-online-installer-macOS-x64-4.8.1 \
+              --no-force-installations --no-default-installations --no-size-checking --default-answer \
+              --accept-licenses --confirm-command --accept-obligations --email "$QT_EMAIL" --password "$QT_PASSWORD" \
+              install \
+              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.681.clang_64 qt.qt6.681.addons.qt5compat \
+              extensions.qtpdf.681 qt.qt6.681.addons.qthttpserver
+            hdiutil detach /Volumes/qt-online-installer-macOS-x64-4.8.1
       - run:
           name: Build
           no_output_timeout: 30m
@@ -1147,7 +1186,7 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -S gpt4all-chat -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.1/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
