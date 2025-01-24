@@ -525,11 +525,11 @@ endif()
 
 if (NOT GPT4ALL_USING_QTPDF)
     # Install PDFium
-    install(
-        FILES ${PDFium_LIBRARY}
-        LIBRARY DESTINATION ${GPT4ALL_LIB_DEST} COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
-        RUNTIME DESTINATION bin                 COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
-    )
+    if (WIN32)
+        install(FILES ${PDFium_LIBRARY} DESTINATION bin                 COMPONENT ${COMPONENT_NAME_MAIN})  # .dll
+    else()
+        install(FILES ${PDFium_LIBRARY} DESTINATION ${GPT4ALL_LIB_DEST} COMPONENT ${COMPONENT_NAME_MAIN})  # .so/.dylib
+    endif()
 endif()
 
 if (NOT APPLE)
