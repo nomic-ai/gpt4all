@@ -88,18 +88,19 @@ int main(int argc, char *argv[])
 #endif
 
     // set search path before constructing the MySettings instance, which relies on this
-    {
-        auto appDirPath = QCoreApplication::applicationDirPath();
-        QStringList searchPaths {
-#ifdef Q_OS_DARWIN
-            u"%1/../Frameworks"_s.arg(appDirPath),
-#else
-            appDirPath,
-            u"%1/../lib"_s.arg(appDirPath),
+    QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
+    const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";
+    if (LLM::directoryExists(libDir))
+        llmodelSearchPaths += ";" + libDir;
+#if defined(Q_OS_MAC)
+    const QString binDir = QCoreApplication::applicationDirPath() + "/../../../";
+    if (LLM::directoryExists(binDir))
+        llmodelSearchPaths += ";" + binDir;
+    const QString frameworksDir = QCoreApplication::applicationDirPath() + "/../Frameworks/";
+    if (LLM::directoryExists(frameworksDir))
+        llmodelSearchPaths += ";" + frameworksDir;
 #endif
-        };
-        LLModel::Implementation::setImplementationsSearchPath(searchPaths.join(u';').toStdString());
-    }
+    LLModel::Implementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
 
     // Set the local and language translation before the qml engine has even been started. This will
     // use the default system locale unless the user has explicitly set it to use a different one.
