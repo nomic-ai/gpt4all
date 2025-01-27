@@ -102,7 +102,9 @@ void CodeInterpreterWorker::request(const QString &code)
     auto consoleObject = m_engine.evaluate(uR"(
         class Console {
             log(...args) {
-                if (args.length && typeof args[0] === 'string')
+                if (args.length == 0)
+                    return;
+                if (args.length >= 2 && typeof args[0] === 'string')
                     throw new Error('console.log string formatting not supported');
                 let cat = '';
                 for (const arg of args) {
