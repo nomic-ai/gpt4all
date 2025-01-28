@@ -445,12 +445,18 @@ endif()
 
 # -- install --
 
+if (APPLE)
+    set(GPT4ALL_LIB_DEST bin/gpt4all.app/Contents/Frameworks)
+else()
+    set(GPT4ALL_LIB_DEST lib)
+endif()
+
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
 install(
     TARGETS llmodel
-    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
-    RUNTIME DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+    LIBRARY DESTINATION ${GPT4ALL_LIB_DEST} COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION bin                 COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
 )
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
@@ -473,8 +479,8 @@ endif()
 
 install(
     TARGETS ${MODEL_IMPL_TARGETS}
-    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
-    RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+    LIBRARY DESTINATION ${GPT4ALL_LIB_DEST} COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION lib                 COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
 )
 
 if(APPLE AND GPT4ALL_SIGN_INSTALL)
@@ -503,7 +509,7 @@ if (LLMODEL_CUDA)
         TARGETS llamamodel-mainline-cuda
                 llamamodel-mainline-cuda-avxonly
         RUNTIME_DEPENDENCY_SET llama-cuda-deps
-        LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+        LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so
         RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
     )
     if (WIN32)
@@ -520,9 +526,9 @@ endif()
 if (NOT GPT4ALL_USING_QTPDF)
     # Install PDFium
     if (WIN32)
-        install(FILES "${PDFium_LIBRARY}" DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+        install(FILES ${PDFium_LIBRARY} DESTINATION bin                 COMPONENT ${COMPONENT_NAME_MAIN})  # .dll
     else()
-        install(FILES "${PDFium_LIBRARY}" DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+        install(FILES ${PDFium_LIBRARY} DESTINATION ${GPT4ALL_LIB_DEST} COMPONENT ${COMPONENT_NAME_MAIN})  # .so/.dylib
     endif()
 endif()
 

@@ -828,7 +828,7 @@ Rectangle {
                                     textInput.cursorPosition = text.length;
                                 }
                                 height: visible ? implicitHeight : 0
-                                visible: name !== "ToolResponse: "
+                                visible: name !== "ToolResponse: " && name !== "System: "
                             }
 
                             remove: Transition {

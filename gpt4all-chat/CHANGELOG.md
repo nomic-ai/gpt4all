@@ -4,10 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Fix regression while using localdocs with server API ([#3410](https://github.com/nomic-ai/gpt4all/pull/3410))
+- Don't show system messages in server chat view ([#3411](https://github.com/nomic-ai/gpt4all/pull/3411))
+- Fix `codesign --verify` failure on macOS ([#3413](https://github.com/nomic-ai/gpt4all/pull/3413))
+- Code Interpreter: Fix console.log not accepting a single string after v3.7.0 ([#3426](https://github.com/nomic-ai/gpt4all/pull/3426))
+
 ## [3.7.0] - 2025-01-21
 
 ### Added
 - Add support for the Windows ARM64 target platform (CPU-only) ([#3385](https://github.com/nomic-ai/gpt4all/pull/3385))
+
+### Changed
+- Update from Qt 6.5.1 to 6.8.1 ([#3386](https://github.com/nomic-ai/gpt4all/pull/3386))
 
 ### Fixed
 - Fix the timeout error in code interpreter ([#3369](https://github.com/nomic-ai/gpt4all/pull/3369))
@@ -261,6 +272,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.7.0...HEAD
 [3.7.0]: https://github.com/nomic-ai/gpt4all/compare/v3.6.1...v3.7.0
 [3.6.1]: https://github.com/nomic-ai/gpt4all/compare/v3.6.0...v3.6.1
 [3.6.0]: https://github.com/nomic-ai/gpt4all/compare/v3.5.3...v3.6.0
