@@ -1810,11 +1810,11 @@ workflows:
     jobs:
       - noop
   build-chat-installers-release:
-    # only run on main branch tags that start with 'v'
+    # only run on main branch tags that start with 'v' and a digit
     when:
       and:
         - equal: [ << pipeline.git.branch >>, main ]
-        - matches: { pattern: '^v.*', value: << pipeline.git.tag >> }
+        - matches: { pattern: '^v\d.*', value: << pipeline.git.tag >> }
     jobs:
       - validate-commit-on-main
       - build-offline-chat-installer-macos:
