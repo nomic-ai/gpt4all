@@ -1845,50 +1845,40 @@ workflows:
         - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - build-hold:
-          <<: *job_only_main
           type: approval
       - sign-hold:
-          <<: *job_only_main
           type: approval
       - build-online-chat-installer-macos:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - build-hold
       - sign-online-chat-installer-macos:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - sign-hold
             - build-online-chat-installer-macos
       - notarize-online-chat-installer-macos:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - sign-online-chat-installer-macos
       - build-online-chat-installer-windows:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - build-hold
       - sign-online-chat-installer-windows:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - sign-hold
             - build-online-chat-installer-windows
       - build-online-chat-installer-windows-arm:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - build-hold
       - sign-online-chat-installer-windows-arm:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - build-online-chat-installer-windows-arm
       - build-online-chat-installer-linux:
-          <<: *job_only_main
           context: gpt4all
           requires:
             - build-hold
