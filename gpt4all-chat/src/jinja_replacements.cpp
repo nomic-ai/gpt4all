@@ -626,7 +626,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
         // replacement
         R"TEMPLATE({%- for message in messages %}
     {%- if message['role'] == 'system' %}
-        {{-'<|system|>\n' + message['content'] + '<|end|>\n'}}
+        {{- '<|system|>\n' + message['content'] + '<|end|>\n' }}
     {%- elif message['role'] == 'user' %}
         {{- '<|user|>\n' + message['content'] + '<|end|>\n' }}
     {%- elif message['role'] == 'assistant' %}
