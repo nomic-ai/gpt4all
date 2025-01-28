@@ -351,9 +351,10 @@ jobs:
             set -e
             hdiutil attach build/upload/gpt4all-installer-darwin-signed.dmg
             codesign --verify --deep --verbose /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app
+            tar -xf upload/repository.tar.gz
             /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app/Contents/MacOS/gpt4all-installer-darwin \
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
-              --install-compressed-repository upload/repository.tar.gz \
+              --set-temp-repository repository \
               install gpt4all
             codesign --verify --deep --verbose /Applications/gpt4all/bin/gpt4all.app
             codesign --verify --deep --verbose /Applications/gpt4all/maintenancetool.app
@@ -533,7 +534,8 @@ jobs:
           name: Test installation
           command: |
             build/upload/gpt4all-installer-linux.run --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations --install-compressed-repository upload/repository.tar.gz \
+              --confirm-command --accept-obligations \
+              --set-temp-repository build/_CPack_Packages/Linux/IFW/gpt4all-installer-linux/repository \
               install gpt4all
 
   build-offline-chat-installer-windows:
@@ -813,8 +815,9 @@ jobs:
       - run:
           name: Test installation
           command: |
+            Expand-Archive -LiteralPath upload\repository.zip
             build\upload\gpt4all-installer-win64.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations --install-compressed-repository install upload/repository.zip `
+              --confirm-command --accept-obligations --set-temp-repository repository `
               install gpt4all
 
   build-offline-chat-installer-windows-arm:
@@ -1080,8 +1083,9 @@ jobs:
       - run:
           name: Test installation
           command: |
+            Expand-Archive -LiteralPath upload\repository.zip
             build\upload\gpt4all-installer-win64-arm.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations --install-compressed-repository install upload/repository.zip `
+              --confirm-command --accept-obligations --set-temp-repository repository `
               install gpt4all
 
   build-gpt4all-chat-linux:
