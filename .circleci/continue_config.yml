@@ -25,6 +25,14 @@ jobs:
       - image: cimg/base:stable
     steps:
       - run: "true"
+  validate-commit-on-main:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Verify that commit is on the main branch
+          command: git merge-base --is-ancestor HEAD main
   build-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
@@ -1782,6 +1790,13 @@ job_only_main: &job_only_main
     branches:
       only: main
 
+# allow a job to run on tags as well as commits
+job_allow_tags: &job_allow_tags
+  filters:
+    tags:
+      only:
+        - /.*/
+
 workflows:
   version: 2
   noop:
@@ -1794,6 +1809,94 @@ workflows:
           - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - noop
+  build-chat-installers-release:
+    # only run on main branch tags that start with 'v'
+    when:
+      and:
+        - equal: [ << pipeline.git.branch >>, main ]
+        - matches: { pattern: '^v.*', value: << pipeline.git.tag >> }
+    jobs:
+      - validate-commit-on-main
+      - build-offline-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-offline-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-offline-chat-installer-macos
+      - notarize-offline-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - sign-offline-chat-installer-macos
+      - build-offline-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-offline-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-offline-chat-installer-windows
+      - build-offline-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-offline-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-offline-chat-installer-windows-arm
+      - build-offline-chat-installer-linux:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - build-online-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-online-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-macos
+      - notarize-online-chat-installer-macos:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - sign-online-chat-installer-macos
+      - build-online-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-online-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-windows
+      - build-online-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - sign-online-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-windows-arm
+      - build-online-chat-installer-linux:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
   build-chat-offline-installers:
     when:
       or:
