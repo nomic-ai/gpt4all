@@ -22,10 +22,9 @@ jobs:
   # work around CircleCI-Public/path-filtering-orb#20
   noop:
     docker:
-      - image: cimg/base:current
+      - image: cimg/base:stable
     steps:
       - run: "true"
-
   build-offline-chat-installer-macos:
     macos:
       xcode: 15.4.0
@@ -1220,7 +1219,7 @@ jobs:
             cd gpt4all-bindings/typescript
             npm run docs:build
 
-  build-py-docs:
+  deploy-docs:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -1424,7 +1423,7 @@ jobs:
           paths:
             - "*.whl"
 
-  publish-wheels:
+  deploy-wheels:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -1721,7 +1720,7 @@ jobs:
             - prebuilds/win32-x64/*.node
             - runtimes/win32-x64/*-*.dll
 
-  prepare-npm-pkg:
+  deploy-npm-pkg:
     docker:
       - image: cimg/base:stable
     steps:
@@ -1777,7 +1776,8 @@ jobs:
             npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
             npm publish
 
-main_only: &main_only
+# only run a job on the main branch
+job_only_main: &job_only_main
   filters:
     branches:
       only: main
@@ -1841,45 +1841,45 @@ workflows:
         - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - hold:
-          <<: *main_only
+          <<: *job_only_main
           type: approval
       - build-online-chat-installer-macos:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - hold
       - sign-online-chat-installer-macos:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - build-online-chat-installer-macos
       - notarize-online-chat-installer-macos:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - sign-online-chat-installer-macos
       - build-online-chat-installer-windows:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - hold
       - sign-online-chat-installer-windows:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - build-online-chat-installer-windows
       - build-online-chat-installer-windows-arm:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - hold
       - sign-online-chat-installer-windows-arm:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - build-online-chat-installer-windows-arm
       - build-online-chat-installer-linux:
-          <<: *main_only
+          <<: *job_only_main
           context: gpt4all
           requires:
             - hold
@@ -1905,14 +1905,13 @@ workflows:
             - hold
   deploy-docs:
     when:
-      or:
-        - << pipeline.parameters.run-all-workflows >>
-        - << pipeline.parameters.run-python-workflow >>
+      and:
+        - equal: [ << pipeline.git.branch >>, main ]
+        - or:
+            - << pipeline.parameters.run-all-workflows >>
+            - << pipeline.parameters.run-python-workflow >>
     jobs:
-      - build-ts-docs:
-          <<: *main_only
-      - build-py-docs:
-          <<: *main_only
+      - deploy-docs:
           context: gpt4all
   build-python:
     when:
@@ -1921,7 +1920,7 @@ workflows:
         - << pipeline.parameters.run-python-workflow >>
     jobs:
       - pypi-hold:
-          <<: *main_only
+          <<: *job_only_main
           type: approval
       - hold:
           type: approval
@@ -1934,8 +1933,8 @@ workflows:
       - build-py-windows:
           requires:
             - hold
-      - publish-wheels:
-          <<: *main_only
+      - deploy-wheels:
+          <<: *job_only_main
           context: gpt4all
           requires:
             - pypi-hold
@@ -1946,34 +1945,26 @@ workflows:
     when:
       or:
        - << pipeline.parameters.run-all-workflows >>
-       - << pipeline.parameters.run-python-workflow >>
        - << pipeline.parameters.run-ts-workflow >>
     jobs:
-      - hold:
+      - backend-hold:
           type: approval
       - nodejs-hold:
           type: approval
       - npm-hold:
-          <<: *main_only
+          <<: *job_only_main
+          type: approval
+      - docs-hold:
           type: approval
       - build-bindings-backend-linux:
           requires:
-            - hold
+            - backend-hold
       - build-bindings-backend-macos:
           requires:
-            - hold
+            - backend-hold
       - build-bindings-backend-windows:
           requires:
-            - hold
-
-      # NodeJs Jobs
-      - prepare-npm-pkg:
-          <<: *main_only
-          requires:
-            - npm-hold
-            - build-nodejs-linux
-            - build-nodejs-windows
-            - build-nodejs-macos
+            - backend-hold
       - build-nodejs-linux:
           requires:
             - nodejs-hold
@@ -1986,3 +1977,13 @@ workflows:
           requires:
             - nodejs-hold
             - build-bindings-backend-macos
+      - build-ts-docs:
+          requires:
+            - docs-hold
+      - deploy-npm-pkg:
+          <<: *job_only_main
+          requires:
+            - npm-hold
+            - build-nodejs-linux
+            - build-nodejs-windows
+            - build-nodejs-macos
