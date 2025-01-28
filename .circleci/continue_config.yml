@@ -351,7 +351,7 @@ jobs:
             set -e
             hdiutil attach build/upload/gpt4all-installer-darwin-signed.dmg
             codesign --verify --deep --verbose /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app
-            tar -xf upload/repository.tar.gz
+            tar -xf build/upload/repository.tar.gz
             /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app/Contents/MacOS/gpt4all-installer-darwin \
               --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
               --set-temp-repository repository \
@@ -815,7 +815,7 @@ jobs:
       - run:
           name: Test installation
           command: |
-            Expand-Archive -LiteralPath upload\repository.zip
+            Expand-Archive -LiteralPath build\upload\repository.zip
             build\upload\gpt4all-installer-win64.exe --no-size-checking --default-answer --accept-licenses `
               --confirm-command --accept-obligations --set-temp-repository repository `
               install gpt4all
@@ -1083,7 +1083,7 @@ jobs:
       - run:
           name: Test installation
           command: |
-            Expand-Archive -LiteralPath upload\repository.zip
+            Expand-Archive -LiteralPath build\upload\repository.zip
             build\upload\gpt4all-installer-win64-arm.exe --no-size-checking --default-answer --accept-licenses `
               --confirm-command --accept-obligations --set-temp-repository repository `
               install gpt4all
