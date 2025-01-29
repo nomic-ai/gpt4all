@@ -51,7 +51,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (MSVC)
-    # Enable accurate __cplusplus macro to fix errors in Jinja2Cpp
+    # Enable accurate __cplusplus macro
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
 endif()
 
@@ -437,7 +437,10 @@ else()
     target_link_libraries(chat PRIVATE pdfium)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx jinja2cpp)
+    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
+target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include)
+target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include/nlohmann)
+target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/minja/include)
 
 if (APPLE)
     target_link_libraries(chat PRIVATE ${COCOA_LIBRARY})

@@ -7,111 +7,75 @@
 #include <QString>
 #include <QUrl>
 
-#include <memory>
+#include <iterator>
+#include <map>
+#include <ranges>
 #include <vector>
 
-using namespace std::literals::string_view_literals;
+namespace views  = std::views;
+using json = nlohmann::ordered_json;
 
 
-JinjaResultInfo::~JinjaResultInfo() = default;
-
-const JinjaFieldMap<ResultInfo> JinjaResultInfo::s_fields = {
-    { "collection", [](auto &s) { return s.collection.toStdString(); } },
-    { "path",       [](auto &s) { return s.path      .toStdString(); } },
-    { "file",       [](auto &s) { return s.file      .toStdString(); } },
-    { "title",      [](auto &s) { return s.title     .toStdString(); } },
-    { "author",     [](auto &s) { return s.author    .toStdString(); } },
-    { "date",       [](auto &s) { return s.date      .toStdString(); } },
-    { "text",       [](auto &s) { return s.text      .toStdString(); } },
-    { "page",       [](auto &s) { return s.page;                     } },
-    { "file_uri",   [](auto &s) { return s.fileUri() .toStdString(); } },
-};
-
-JinjaPromptAttachment::~JinjaPromptAttachment() = default;
-
-const JinjaFieldMap<PromptAttachment> JinjaPromptAttachment::s_fields = {
-    { "url",               [](auto &s) { return s.url.toString()    .toStdString(); } },
-    { "file",              [](auto &s) { return s.file()            .toStdString(); } },
-    { "processed_content", [](auto &s) { return s.processedContent().toStdString(); } },
-};
-
-std::vector<std::string> JinjaMessage::GetKeys() const
+json::object_t JinjaResultInfo::AsJson() const
 {
-    std::vector<std::string> result;
-    auto &keys = this->keys();
-    result.reserve(keys.size());
-    result.assign(keys.begin(), keys.end());
-    return result;
+    return {
+        { "collection", m_source->collection.toStdString() },
+        { "path",       m_source->path      .toStdString() },
+        { "file",       m_source->file      .toStdString() },
+        { "title",      m_source->title     .toStdString() },
+        { "author",     m_source->author    .toStdString() },
+        { "date",       m_source->date      .toStdString() },
+        { "text",       m_source->text      .toStdString() },
+        { "page",       m_source->page                     },
+        { "file_uri",   m_source->fileUri() .toStdString() },
+    };
 }
 
-auto JinjaMessage::keys() const -> const std::unordered_set<std::string_view> &
+json::object_t JinjaPromptAttachment::AsJson() const
 {
-    static const std::unordered_set<std::string_view> baseKeys
-        { "role", "content" };
-    static const std::unordered_set<std::string_view> userKeys
-        { "role", "content", "sources", "prompt_attachments" };
-    switch (m_item->type()) {
-        using enum MessageItem::Type;
-    case System:
-    case Response:
-    case ToolResponse:
-        return baseKeys;
-    case Prompt:
-        return userKeys;
-        break;
-    }
-    Q_UNREACHABLE();
+    return {
+        { "url",               m_attachment->url.toString()    .toStdString() },
+        { "file",              m_attachment->file()            .toStdString() },
+        { "processed_content", m_attachment->processedContent().toStdString() },
+    };
 }
 
-bool operator==(const JinjaMessage &a, const JinjaMessage &b)
+json::object_t JinjaMessage::AsJson() const
 {
-    if (a.m_item == b.m_item)
-        return true;
-    const auto &[ia, ib] = std::tie(*a.m_item, *b.m_item);
-    auto type = ia.type();
-    if (type != ib.type() || ia.content() != ib.content())
-        return false;
-
-    switch (type) {
-        using enum MessageItem::Type;
-    case System:
-    case Response:
-    case ToolResponse:
-        return true;
-    case Prompt:
-        return ia.sources() == ib.sources() && ia.promptAttachments() == ib.promptAttachments();
-        break;
-    }
-    Q_UNREACHABLE();
-}
-
-const JinjaFieldMap<JinjaMessage> JinjaMessage::s_fields = {
-    { "role", [](auto &m) {
-        switch (m.item().type()) {
+    json::object_t obj;
+    {
+        json::string_t role;
+        switch (m_item->type()) {
             using enum MessageItem::Type;
-            case System:   return "system"sv;
-            case Prompt:   return "user"sv;
-            case Response: return "assistant"sv;
-            case ToolResponse: return "tool"sv;
-                break;
+            case System:       role = "system";    break;
+            case Prompt:       role = "user";      break;
+            case Response:     role = "assistant"; break;
+            case ToolResponse: role = "tool";      break;
         }
-        Q_UNREACHABLE();
-    } },
-    { "content", [](auto &m) {
-        if (m.version() == 0 && m.item().type() == MessageItem::Type::Prompt)
-            return m.item().bakedPrompt().toStdString();
-        return m.item().content().toStdString();
-    } },
-    { "sources", [](auto &m) {
-        auto sources = m.item().sources() | views::transform([](auto &r) {
-            return jinja2::GenericMap([map = std::make_shared<JinjaResultInfo>(r)] { return map.get(); });
-        });
-        return jinja2::ValuesList(sources.begin(), sources.end());
-    } },
-    { "prompt_attachments", [](auto &m) {
-        auto attachments = m.item().promptAttachments() | views::transform([](auto &pa) {
-            return jinja2::GenericMap([map = std::make_shared<JinjaPromptAttachment>(pa)] { return map.get(); });
-        });
-        return jinja2::ValuesList(attachments.begin(), attachments.end());
-    } },
-};
+        obj.emplace_back("role", std::move(role));
+    }
+    {
+        QString content;
+        if (m_version == 0 && m_item->type() == MessageItem::Type::Prompt) {
+            content = m_item->bakedPrompt();
+        } else {
+            content = m_item->content();
+        }
+        obj.emplace_back("content", content.toStdString());
+    }
+    if (m_item->type() == MessageItem::Type::Prompt) {
+        {
+            auto sources = m_item->sources() | views::transform([](auto &r) {
+                return JinjaResultInfo(r).AsJson();
+            });
+            obj.emplace("sources", json::array_t(sources.begin(), sources.end()));
+        }
+        {
+            auto attachments = m_item->promptAttachments() | views::transform([](auto &pa) {
+                return JinjaPromptAttachment(pa).AsJson();
+            });
+            obj.emplace("prompt_attachments", json::array_t(attachments.begin(), attachments.end()));
+        }
+    }
+    return obj;
+}
