@@ -187,13 +187,16 @@ jobs:
       - store_artifacts:
           path: build/upload
       - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
           name: Test installation and verify that it is signed
           command: |
             set -e
             hdiutil attach build/upload/gpt4all-installer-darwin-signed.dmg
             codesign --verify --deep --verbose /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app
             /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app/Contents/MacOS/gpt4all-installer-darwin \
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+              --no-size-checking --default-answer --accept-licenses --confirm-command \
               install gpt4all
             codesign --verify --deep --verbose /Applications/gpt4all/bin/gpt4all.app
             codesign --verify --deep --verbose /Applications/gpt4all/maintenancetool.app
@@ -346,6 +349,9 @@ jobs:
       - store_artifacts:
           path: build/upload
       - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
           name: Test installation and verify that it is signed
           command: |
             set -e
@@ -353,8 +359,7 @@ jobs:
             codesign --verify --deep --verbose /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app
             tar -xf build/upload/repository.tar.gz
             /Volumes/gpt4all-installer-darwin/gpt4all-installer-darwin.app/Contents/MacOS/gpt4all-installer-darwin \
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
-              --set-temp-repository repository \
+              --no-size-checking --default-answer --accept-licenses --confirm-command --set-temp-repository repository \
               install gpt4all
             codesign --verify --deep --verbose /Applications/gpt4all/bin/gpt4all.app
             codesign --verify --deep --verbose /Applications/gpt4all/maintenancetool.app
@@ -444,8 +449,9 @@ jobs:
       - run:
           name: Test installation
           command: |
+            mkdir ~/Desktop
             build/upload/gpt4all-installer-linux.run --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations \
+              --confirm-command \
               install gpt4all
 
   build-online-chat-installer-linux:
@@ -533,8 +539,9 @@ jobs:
       - run:
           name: Test installation
           command: |
+            mkdir ~/Desktop
             build/upload/gpt4all-installer-linux.run --no-size-checking --default-answer --accept-licenses \
-              --confirm-command --accept-obligations \
+              --confirm-command \
               --set-temp-repository build/_CPack_Packages/Linux/IFW/gpt4all-installer-linux/repository \
               install gpt4all
 
@@ -670,7 +677,7 @@ jobs:
           name: Test installation
           command: |
             build\upload\gpt4all-installer-win64.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations `
+              --confirm-command `
               install gpt4all
 
   build-online-chat-installer-windows:
@@ -815,9 +822,9 @@ jobs:
       - run:
           name: Test installation
           command: |
-            Expand-Archive -LiteralPath build\upload\repository.zip
+            Expand-Archive -LiteralPath build\upload\repository.zip -DestinationPath .
             build\upload\gpt4all-installer-win64.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations --set-temp-repository repository `
+              --confirm-command --set-temp-repository repository `
               install gpt4all
 
   build-offline-chat-installer-windows-arm:
@@ -945,7 +952,7 @@ jobs:
           name: Test installation
           command: |
             build\upload\gpt4all-installer-win64-arm.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations `
+              --confirm-command `
               install gpt4all
 
   build-online-chat-installer-windows-arm:
@@ -1083,9 +1090,9 @@ jobs:
       - run:
           name: Test installation
           command: |
-            Expand-Archive -LiteralPath build\upload\repository.zip
+            Expand-Archive -LiteralPath build\upload\repository.zip -DestinationPath .
             build\upload\gpt4all-installer-win64-arm.exe --no-size-checking --default-answer --accept-licenses `
-              --confirm-command --accept-obligations --set-temp-repository repository `
+              --confirm-command --set-temp-repository repository `
               install gpt4all
 
   build-gpt4all-chat-linux:
