@@ -1818,6 +1818,35 @@ workflows:
           - equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - noop
+  schedule:
+    # only run when scheduled by CircleCI
+    when:
+      equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
+    jobs:
+      - build-offline-chat-installer-macos:
+          context: gpt4all
+      - build-offline-chat-installer-windows:
+          context: gpt4all
+      - build-offline-chat-installer-windows-arm:
+          context: gpt4all
+      - build-offline-chat-installer-linux:
+          context: gpt4all
+      - sign-online-chat-installer-macos:
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-macos
+      - notarize-online-chat-installer-macos:
+          context: gpt4all
+          requires:
+            - sign-online-chat-installer-macos
+      - sign-online-chat-installer-windows:
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-windows
+      - sign-online-chat-installer-windows-arm:
+          context: gpt4all
+          requires:
+            - build-online-chat-installer-windows-arm
   build-chat-installers-release:
     # only run on main branch tags that start with 'v' and a digit
     when:
@@ -1833,6 +1862,21 @@ workflows:
           context: gpt4all
           requires:
             - validate-commit-on-main
+      - build-offline-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - build-offline-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - build-offline-chat-installer-linux:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
       - sign-offline-chat-installer-macos:
           <<: *job_allow_tags
           context: gpt4all
@@ -1843,32 +1887,32 @@ workflows:
           context: gpt4all
           requires:
             - sign-offline-chat-installer-macos
-      - build-offline-chat-installer-windows:
-          <<: *job_allow_tags
-          context: gpt4all
-          requires:
-            - validate-commit-on-main
       - sign-offline-chat-installer-windows:
           <<: *job_allow_tags
           context: gpt4all
           requires:
             - build-offline-chat-installer-windows
-      - build-offline-chat-installer-windows-arm:
-          <<: *job_allow_tags
-          context: gpt4all
-          requires:
-            - validate-commit-on-main
       - sign-offline-chat-installer-windows-arm:
           <<: *job_allow_tags
           context: gpt4all
           requires:
             - build-offline-chat-installer-windows-arm
-      - build-offline-chat-installer-linux:
+      - build-online-chat-installer-macos:
           <<: *job_allow_tags
           context: gpt4all
           requires:
             - validate-commit-on-main
-      - build-online-chat-installer-macos:
+      - build-online-chat-installer-windows:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - build-online-chat-installer-windows-arm:
+          <<: *job_allow_tags
+          context: gpt4all
+          requires:
+            - validate-commit-on-main
+      - build-online-chat-installer-linux:
           <<: *job_allow_tags
           context: gpt4all
           requires:
@@ -1883,31 +1927,16 @@ workflows:
           context: gpt4all
           requires:
             - sign-online-chat-installer-macos
-      - build-online-chat-installer-windows:
-          <<: *job_allow_tags
-          context: gpt4all
-          requires:
-            - validate-commit-on-main
       - sign-online-chat-installer-windows:
           <<: *job_allow_tags
           context: gpt4all
           requires:
             - build-online-chat-installer-windows
-      - build-online-chat-installer-windows-arm:
-          <<: *job_allow_tags
-          context: gpt4all
-          requires:
-            - validate-commit-on-main
       - sign-online-chat-installer-windows-arm:
           <<: *job_allow_tags
           context: gpt4all
           requires:
             - build-online-chat-installer-windows-arm
-      - build-online-chat-installer-linux:
-          <<: *job_allow_tags
-          context: gpt4all
-          requires:
-            - validate-commit-on-main
   build-chat-offline-installers:
     <<: *workflow-when-chat-requested
     jobs:
