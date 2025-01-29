@@ -110,6 +110,7 @@ GridLayout {
                         case Chat.PromptProcessing: return qsTr("processing ...")
                         case Chat.ResponseGeneration: return qsTr("generating response ...");
                         case Chat.GeneratingQuestions: return qsTr("generating questions ...");
+                        case Chat.ToolCallGeneration: return qsTr("generating toolcall ...");
                         default: return ""; // handle unexpected values
                         }
                     }

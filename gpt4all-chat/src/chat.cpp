@@ -181,6 +181,11 @@ QVariant Chat::popPrompt(int index)
 
 void Chat::stopGenerating()
 {
+    // In future if we have more than one tool we'll have to keep track of which tools are possibly
+    // running, but for now we only have one
+    Tool *toolInstance = ToolModel::globalInstance()->get(ToolCallConstants::CodeInterpreterFunction);
+    Q_ASSERT(toolInstance);
+    toolInstance->interrupt();
     m_llmodel->stopGenerating();
 }
 
@@ -242,56 +247,71 @@ void Chat::responseStopped(qint64 promptResponseMs)
 
     const QString possibleToolcall = m_chatModel->possibleToolcall();
 
-    ToolCallParser parser;
-    parser.update(possibleToolcall);
-
-    if (parser.state() == ToolEnums::ParseState::Complete) {
-        const QString toolCall = parser.toolCall();
-
-        // Regex to remove the formatting around the code
-        static const QRegularExpression regex("^\\s*```javascript\\s*|\\s*```\\s*$");
-        QString code = toolCall;
-        code.remove(regex);
-        code = code.trimmed();
-
-        // Right now the code interpreter is the only available tool
-        Tool *toolInstance = ToolModel::globalInstance()->get(ToolCallConstants::CodeInterpreterFunction);
-        Q_ASSERT(toolInstance);
-
-        // The param is the code
-        const ToolParam param = { "code", ToolEnums::ParamType::String, code };
-        const QString result = toolInstance->run({param}, 10000 /*msecs to timeout*/);
-        const ToolEnums::Error error = toolInstance->error();
-        const QString errorString = toolInstance->errorString();
-
-        // Update the current response with meta information about toolcall and re-parent
-        m_chatModel->updateToolCall({
-            ToolCallConstants::CodeInterpreterFunction,
-            { param },
-            result,
-            error,
-            errorString
-        });
-
-        ++m_consecutiveToolCalls;
-
-        // We limit the number of consecutive toolcalls otherwise we get into a potentially endless loop
-        if (m_consecutiveToolCalls < 3 || error == ToolEnums::Error::NoError) {
-            resetResponseState();
-            emit promptRequested(m_collections); // triggers a new response
-            return;
-        }
-    }
-
-    if (m_generatedName.isEmpty())
-        emit generateNameRequested();
-
-    m_consecutiveToolCalls = 0;
-    Network::globalInstance()->trackChatEvent("response_complete", {
+    Network::globalInstance()->trackChatEvent("response_stopped", {
         {"first", m_firstResponse},
         {"message_count", chatModel()->count()},
         {"$duration", promptResponseMs / 1000.},
     });
+
+    ToolCallParser parser;
+    parser.update(possibleToolcall);
+    if (parser.state() == ToolEnums::ParseState::Complete)
+        processToolCall(parser.toolCall());
+    else
+        responseComplete();
+}
+
+void Chat::processToolCall(const QString &toolCall)
+{
+    m_responseState = Chat::ToolCallGeneration;
+    emit responseStateChanged();
+    // Regex to remove the formatting around the code
+    static const QRegularExpression regex("^\\s*```javascript\\s*|\\s*```\\s*$");
+    QString code = toolCall;
+    code.remove(regex);
+    code = code.trimmed();
+
+    // Right now the code interpreter is the only available tool
+    Tool *toolInstance = ToolModel::globalInstance()->get(ToolCallConstants::CodeInterpreterFunction);
+    Q_ASSERT(toolInstance);
+    connect(toolInstance, &Tool::runComplete, this, &Chat::toolCallComplete, Qt::SingleShotConnection);
+
+    // The param is the code
+    const ToolParam param = { "code", ToolEnums::ParamType::String, code };
+    m_responseInProgress = true;
+    emit responseInProgressChanged();
+    toolInstance->run({param});
+}
+
+void Chat::toolCallComplete(const ToolCallInfo &info)
+{
+    // Update the current response with meta information about toolcall and re-parent
+    m_chatModel->updateToolCall(info);
+
+    ++m_consecutiveToolCalls;
+
+    m_responseInProgress = false;
+    emit responseInProgressChanged();
+
+    // We limit the number of consecutive toolcalls otherwise we get into a potentially endless loop
+    if (m_consecutiveToolCalls < 3 || info.error == ToolEnums::Error::NoError) {
+        resetResponseState();
+        emit promptRequested(m_collections); // triggers a new response
+        return;
+    }
+
+    responseComplete();
+}
+
+void Chat::responseComplete()
+{
+    if (m_generatedName.isEmpty())
+        emit generateNameRequested();
+
+    m_responseState = Chat::ResponseStopped;
+    emit responseStateChanged();
+
+    m_consecutiveToolCalls = 0;
     m_firstResponse = false;
 }
 
