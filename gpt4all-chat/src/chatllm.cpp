@@ -64,6 +64,14 @@ namespace ranges = std::ranges;
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
+static std::string jinjaGetStringArg(const jinja2::ValuesMap &args, const std::string &name)
+{
+    auto arg = args.find(name);
+    if (arg == args.end() || !arg->second.isString())
+        throw std::runtime_error(fmt::format("'{}' argument to raise_exception() must be a string", name));
+    return arg->second.asString();
+}
+
 // NOTE: not threadsafe
 static jinja2::TemplateEnv *jinjaEnv()
 {
@@ -75,26 +83,33 @@ static jinja2::TemplateEnv *jinjaEnv()
         settings.lstripBlocks = true;
         env.AddGlobal("raise_exception", jinja2::UserCallable(
             /*callable*/ [](auto &params) -> jinja2::Value {
-                auto messageArg = params.args.find("message");
-                if (messageArg == params.args.end() || !messageArg->second.isString())
-                    throw std::runtime_error("'message' argument to raise_exception() must be a string");
-                throw std::runtime_error(fmt::format("Jinja template error: {}", messageArg->second.asString()));
+                auto message = jinjaGetStringArg(params.args, "message");
+                throw std::runtime_error(fmt::format("Jinja template error: {}", message));
             },
             /*argsInfo*/ { jinja2::ArgInfo("message", /*isMandatory*/ true) }
         ));
         env.AddGlobal("strftime_now", jinja2::UserCallable(
             /*callable*/ [](auto &params) -> jinja2::Value {
                 using Clock = std::chrono::system_clock;
-                auto formatArg = params.args.find("format");
-                if (formatArg == params.args.end() || !formatArg->second.isString())
-                    throw std::runtime_error("'format' argument to strftime_now() must be a string");
+                auto format = jinjaGetStringArg(params.args, "format");
                 time_t nowUnix = Clock::to_time_t(Clock::now());
                 auto localDate = *std::localtime(&nowUnix);
                 std::ostringstream ss;
-                ss << std::put_time(&localDate, formatArg->second.asString().c_str());
+                ss << std::put_time(&localDate, format.c_str());
                 return ss.str();
             },
             /*argsInfo*/ { jinja2::ArgInfo("format", /*isMandatory*/ true) }
+        ));
+        env.AddGlobal("regex_replace", jinja2::UserCallable(
+            /*callable*/ [](auto &params) -> jinja2::Value {
+                auto str     = jinjaGetStringArg(params.args, "str"    );
+                auto pattern = jinjaGetStringArg(params.args, "pattern");
+                auto repl    = jinjaGetStringArg(params.args, "repl"   );
+                return std::regex_replace(str, std::regex(pattern), repl);
+            },
+            /*argsInfo*/ { jinja2::ArgInfo("str",     /*isMandatory*/ true),
+                           jinja2::ArgInfo("pattern", /*isMandatory*/ true),
+                           jinja2::ArgInfo("repl",    /*isMandatory*/ true) }
         ));
     }
     return &*environment;
