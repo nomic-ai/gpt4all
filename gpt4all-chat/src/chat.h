@@ -55,7 +55,8 @@ public:
         LocalDocsProcessing,
         PromptProcessing,
         GeneratingQuestions,
-        ResponseGeneration
+        ResponseGeneration,
+        ToolCallGeneration
     };
     Q_ENUM(ResponseState)
 
@@ -166,6 +167,9 @@ private Q_SLOTS:
     void promptProcessing();
     void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);
+    void processToolCall(const QString &toolCall);
+    void toolCallComplete(const ToolCallInfo &info);
+    void responseComplete();
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &question);
     void handleModelLoadingError(const QString &error);

@@ -87,7 +87,8 @@ public:
     Tool() : QObject(nullptr) {}
     virtual ~Tool() {}
 
-    virtual QString run(const QList<ToolParam> &params, qint64 timeout = 2000) = 0;
+    virtual void run(const QList<ToolParam> &params) = 0;
+    virtual bool interrupt() = 0;
 
     // Tools should set these if they encounter errors. For instance, a tool depending upon the network
     // might set these error variables if the network is not available.
@@ -122,6 +123,9 @@ public:
     bool operator==(const Tool &other) const { return function() == other.function(); }
 
     jinja2::Value jinjaValue() const;
+
+Q_SIGNALS:
+    void runComplete(const ToolCallInfo &info);
 };
 
 #endif // TOOL_H

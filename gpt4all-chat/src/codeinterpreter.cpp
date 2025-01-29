@@ -7,8 +7,15 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+CodeInterpreter::CodeInterpreter()
+    : Tool()
+    , m_error(ToolEnums::Error::NoError)
+{
+    m_worker = new CodeInterpreterWorker;
+    connect(this, &CodeInterpreter::request, m_worker, &CodeInterpreterWorker::request, Qt::QueuedConnection);
+}
 
-QString CodeInterpreter::run(const QList<ToolParam> &params, qint64 timeout)
+void CodeInterpreter::run(const QList<ToolParam> &params)
 {
     m_error = ToolEnums::Error::NoError;
     m_errorString = QString();
@@ -18,27 +25,24 @@ QString CodeInterpreter::run(const QList<ToolParam> &params, qint64 timeout)
           && params.first().type == ToolEnums::ParamType::String);
 
     const QString code = params.first().value.toString();
-
-    QThread workerThread;
-    CodeInterpreterWorker worker;
-    worker.moveToThread(&workerThread);
-    connect(&worker, &CodeInterpreterWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
-    connect(&workerThread, &QThread::started, [&worker, code]() {
-        worker.request(code);
+    connect(m_worker, &CodeInterpreterWorker::finished, [this, params] {
+        m_error = m_worker->error();
+        m_errorString = m_worker->errorString();
+        emit runComplete({
+        ToolCallConstants::CodeInterpreterFunction,
+            params,
+            m_worker->response(),
+            m_error,
+            m_errorString
+        });
     });
-    workerThread.start();
-    bool timedOut = !workerThread.wait(timeout);
-    if (timedOut) {
-        worker.interrupt(timeout); // thread safe
-        m_error = ToolEnums::Error::TimeoutError;
-    }
-    workerThread.quit();
-    workerThread.wait();
-    if (!timedOut) {
-        m_error = worker.error();
-        m_errorString = worker.errorString();
-    }
-    return worker.response();
+
+    emit request(code);
+}
+
+bool CodeInterpreter::interrupt()
+{
+    return m_worker->interrupt();
 }
 
 QList<ToolParamInfo> CodeInterpreter::parameters() const
@@ -89,17 +93,15 @@ QString CodeInterpreter::exampleReply() const
 
 CodeInterpreterWorker::CodeInterpreterWorker()
     : QObject(nullptr)
+    , m_engine(new QJSEngine(this))
 {
-}
+    moveToThread(&m_thread);
 
-void CodeInterpreterWorker::request(const QString &code)
-{
-    JavaScriptConsoleCapture consoleCapture;
-    QJSValue consoleInternalObject = m_engine.newQObject(&consoleCapture);
-    m_engine.globalObject().setProperty("console_internal", consoleInternalObject);
+    QJSValue consoleInternalObject = m_engine->newQObject(&m_consoleCapture);
+    m_engine->globalObject().setProperty("console_internal", consoleInternalObject);
 
     // preprocess console.log args in JS since Q_INVOKE doesn't support varargs
-    auto consoleObject = m_engine.evaluate(uR"(
+    auto consoleObject = m_engine->evaluate(uR"(
         class Console {
             log(...args) {
                 if (args.length == 0)
@@ -116,15 +118,28 @@ void CodeInterpreterWorker::request(const QString &code)
 
         new Console();
     )"_s);
-    m_engine.globalObject().setProperty("console", consoleObject);
+    m_engine->globalObject().setProperty("console", consoleObject);
+    m_thread.start();
+}
 
-    const QJSValue result = m_engine.evaluate(code);
+void CodeInterpreterWorker::reset()
+{
+    m_response.clear();
+    m_error = ToolEnums::Error::NoError;
+    m_errorString.clear();
+    m_consoleCapture.output.clear();
+    m_engine->setInterrupted(false);
+}
 
+void CodeInterpreterWorker::request(const QString &code)
+{
+    reset();
+    const QJSValue result = m_engine->evaluate(code);
     QString resultString;
 
-    if (m_engine.isInterrupted()) {
-        resultString = QString("Error: code execution was timed out as it exceeded %1 ms. Code must be written to ensure execution does not timeout.").arg(m_timeout);
-    } else if (result.isError()) {
+    if (m_engine->isInterrupted()) {
+        resultString = QString("Error: code execution was interrupted or timed out.");
+   } else if (result.isError()) {
         // NOTE: We purposely do not set the m_error or m_errorString for the code interpreter since
         // we *want* the model to see the response has an error so it can hopefully correct itself. The
         // error member variables are intended for tools that have error conditions that cannot be corrected.
@@ -145,9 +160,16 @@ void CodeInterpreterWorker::request(const QString &code)
     }
 
     if (resultString.isEmpty())
-        resultString = consoleCapture.output;
-    else if (!consoleCapture.output.isEmpty())
-        resultString += "\n" + consoleCapture.output;
+        resultString = m_consoleCapture.output;
+    else if (!m_consoleCapture.output.isEmpty())
+        resultString += "\n" + m_consoleCapture.output;
     m_response = resultString;
     emit finished();
+}
+
+bool CodeInterpreterWorker::interrupt()
+{
+    m_error = ToolEnums::Error::TimeoutError;
+    m_engine->setInterrupted(true);
+    return true;
 }
