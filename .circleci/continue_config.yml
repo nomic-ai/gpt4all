@@ -1797,6 +1797,14 @@ job_allow_tags: &job_allow_tags
       only:
         - /.*/
 
+# standard chat workflow filter
+workflow-when-chat-requested: &workflow-when-chat-requested
+  when:
+    and:
+      - or: [ << pipeline.parameters.run-all-workflows >>, << pipeline.parameters.run-chat-workflow >> ]
+      - not:
+          equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
+
 workflows:
   version: 2
   noop:
@@ -1807,6 +1815,7 @@ workflows:
           - << pipeline.parameters.run-python-workflow >>
           - << pipeline.parameters.run-ts-workflow >>
           - << pipeline.parameters.run-chat-workflow >>
+          - equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - noop
   build-chat-installers-release:
@@ -1815,6 +1824,8 @@ workflows:
       and:
         - equal: [ << pipeline.git.branch >>, main ]
         - matches: { pattern: '^v\d.*', value: << pipeline.git.tag >> }
+        - not:
+            equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - validate-commit-on-main
       - build-offline-chat-installer-macos:
@@ -1898,10 +1909,7 @@ workflows:
           requires:
             - validate-commit-on-main
   build-chat-offline-installers:
-    when:
-      or:
-        - << pipeline.parameters.run-all-workflows >>
-        - << pipeline.parameters.run-chat-workflow >>
+    <<: *workflow-when-chat-requested
     jobs:
       - build-hold:
           type: approval
@@ -1942,10 +1950,7 @@ workflows:
           requires:
             - build-hold
   build-chat-online-installers:
-    when:
-      or:
-        - << pipeline.parameters.run-all-workflows >>
-        - << pipeline.parameters.run-chat-workflow >>
+    <<: *workflow-when-chat-requested
     jobs:
       - build-hold:
           type: approval
@@ -1986,10 +1991,7 @@ workflows:
           requires:
             - build-hold
   build-and-test-gpt4all-chat:
-    when:
-      or:
-        - << pipeline.parameters.run-all-workflows >>
-        - << pipeline.parameters.run-chat-workflow >>
+    <<: *workflow-when-chat-requested
     jobs:
       - hold:
           type: approval
@@ -2012,14 +2014,17 @@ workflows:
         - or:
             - << pipeline.parameters.run-all-workflows >>
             - << pipeline.parameters.run-python-workflow >>
+        - not:
+            equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - deploy-docs:
           context: gpt4all
   build-python:
     when:
-      or:
-        - << pipeline.parameters.run-all-workflows >>
-        - << pipeline.parameters.run-python-workflow >>
+      and:
+        - or: [ << pipeline.parameters.run-all-workflows >>, << pipeline.parameters.run-python-workflow >> ]
+        - not:
+            equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - pypi-hold:
           <<: *job_only_main
@@ -2045,9 +2050,10 @@ workflows:
             - build-py-macos
   build-bindings:
     when:
-      or:
-       - << pipeline.parameters.run-all-workflows >>
-       - << pipeline.parameters.run-ts-workflow >>
+      and:
+        - or: [ << pipeline.parameters.run-all-workflows >>, << pipeline.parameters.run-ts-workflow >> ]
+        - not:
+            equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
       - backend-hold:
           type: approval
