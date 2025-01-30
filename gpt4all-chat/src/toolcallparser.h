@@ -15,6 +15,7 @@ namespace ToolCallConstants
     const QString CodeInterpreterPrefix = CodeInterpreterTag + "\n```javascript\n";
     const QString CodeInterpreterSuffix = "```\n" + CodeInterpreterEndTag;
 
+    // NB: the parsing code assumes the first char of the various tags differ
     const QString ThinkTag = QStringLiteral("<think>");
     const QString ThinkEndTag = QStringLiteral("</think>");
 }
@@ -32,13 +33,13 @@ public:
     QString endTag() const;
 
     bool splitIfPossible();
-    QVector<QString> buffers() const;
+    const QVector<QString> &buffers() const;
     int numberOfBuffers() const { return m_buffers.size(); }
 
 private:
     QString &currentBuffer();
     void resetSearchState();
-    bool isExpected(const QChar &ch) const;
+    bool isExpected(QChar c) const;
     void setExpected(const QStringList &tags);
 
     QStringList m_possibleStartTags;

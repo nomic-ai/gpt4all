@@ -40,7 +40,7 @@ void ToolCallParser::resetSearchState()
     m_endIndex = -1;
 }
 
-bool ToolCallParser::isExpected(const QChar &c) const
+bool ToolCallParser::isExpected(QChar c) const
 {
     return m_expected.isEmpty() || m_expected.contains(c);
 }
@@ -99,7 +99,6 @@ void ToolCallParser::update(const QString &update)
             }
         case ToolEnums::ParseState::InTagChoice:
             {
-                // WARNING: this assumes the first char of the tags differ
                 for (int i = 0; i < m_possibleStartTags.size(); ++i) {
                     const QString tag = m_possibleStartTags.at(i);
                     if (c == tag.at(1)) m_currentTagIndex = i;
@@ -179,7 +178,7 @@ bool ToolCallParser::splitIfPossible()
     return false;
 }
 
-QVector<QString> ToolCallParser::buffers() const
+const QVector<QString> &ToolCallParser::buffers() const
 {
     return m_buffers;
 }
