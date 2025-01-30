@@ -182,4 +182,3 @@ const QVector<QString> &ToolCallParser::buffers() const
 {
     return m_buffers;
 }
-
