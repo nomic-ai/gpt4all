@@ -1,12 +1,13 @@
 #include "tool.h"
 
-#include <jinja2cpp/value.h>
-
 #include <string>
 
-jinja2::Value Tool::jinjaValue() const
+using json = nlohmann::ordered_json;
+
+
+json::object_t Tool::jinjaValue() const
 {
-    jinja2::ValuesList paramList;
+    json::array_t paramList;
     const QList<ToolParamInfo> p = parameters();
     for (auto &info : p) {
         std::string typeStr;
@@ -20,26 +21,24 @@ jinja2::Value Tool::jinjaValue() const
         case Boolean:  typeStr = "boolean"; break;
         case Null:     typeStr = "null"; break;
         }
-        jinja2::ValuesMap infoMap {
-            { "name", info.name.toStdString() },
-            { "type", typeStr},
+        paramList.emplace_back(json::initializer_list_t {
+            { "name",        info.name.toStdString()        },
+            { "type",        typeStr                        },
             { "description", info.description.toStdString() },
-            { "required", info.required }
-        };
-        paramList.push_back(infoMap);
+            { "required",    info.required                  },
+        });
     }
 
-    jinja2::ValuesMap params {
-        { "name", name().toStdString() },
-        { "description", description().toStdString() },
-        { "function", function().toStdString() },
-        { "parameters", paramList },
+    return {
+        { "name",           name().toStdString()           },
+        { "description",    description().toStdString()    },
+        { "function",       function().toStdString()       },
+        { "parameters",     paramList                      },
         { "symbolicFormat", symbolicFormat().toStdString() },
-        { "examplePrompt", examplePrompt().toStdString() },
-        { "exampleCall", exampleCall().toStdString() },
-        { "exampleReply", exampleReply().toStdString() }
+        { "examplePrompt",  examplePrompt().toStdString()  },
+        { "exampleCall",    exampleCall().toStdString()    },
+        { "exampleReply",   exampleReply().toStdString()   },
     };
-    return params;
 }
 
 void ToolCallInfo::serialize(QDataStream &stream, int version)

@@ -15,15 +15,6 @@ add_subdirectory(DuckX)
 set(QT_VERSION_MAJOR 6)
 add_subdirectory(QXlsx/QXlsx)
 
-# forked dependency of Jinja2Cpp
-set(RAPIDJSON_BUILD_DOC                  OFF)
-set(RAPIDJSON_BUILD_EXAMPLES             OFF)
-set(RAPIDJSON_BUILD_TESTS                OFF)
-set(RAPIDJSON_ENABLE_INSTRUMENTATION_OPT OFF)
-add_subdirectory(rapidjson)
-
-add_subdirectory(Jinja2Cpp)
-
 if (NOT GPT4ALL_USING_QTPDF)
     # If we do not use QtPDF, we need to get PDFium.
     set(GPT4ALL_PDFIUM_TAG "chromium/6954")
