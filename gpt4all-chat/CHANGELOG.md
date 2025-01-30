@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Support DeepSeek-R1 Qwen models ([#3431](https://github.com/nomic-ai/gpt4all/pull/3431))
 
+### Changed
+- Use minja instead of Jinja2Cpp for significantly improved template compatibility ([#3433](https://github.com/nomic-ai/gpt4all/pull/3433))
+
 ### Fixed
 - Fix regression while using localdocs with server API ([#3410](https://github.com/nomic-ai/gpt4all/pull/3410))
 - Don't show system messages in server chat view ([#3411](https://github.com/nomic-ai/gpt4all/pull/3411))
