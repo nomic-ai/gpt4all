@@ -8,6 +8,10 @@ workflows:
   generate-config:
     jobs:
       - path-filtering/filter:
+          filters:
+            tags:
+              only:
+                - /.*/
           base-revision: main
           config-path: .circleci/continue_config.yml
           mapping: |
