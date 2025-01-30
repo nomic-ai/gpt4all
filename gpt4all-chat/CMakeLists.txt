@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 include(../common/common.cmake)
 
 set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 7)
-set(APP_VERSION_PATCH 1)
+set(APP_VERSION_MINOR 8)
+set(APP_VERSION_PATCH 0)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 set(APP_VERSION "${APP_VERSION_BASE}-dev0")
 
