@@ -22,7 +22,7 @@ void ToolCallParser::reset()
 
     // These are global states maintained between update calls
     m_buffers.clear();
-    m_buffers.append(QByteArray());
+    m_buffers << QByteArray();
 }
 
 void ToolCallParser::resetSearchState()
@@ -159,8 +159,8 @@ bool ToolCallParser::splitIfPossible()
     // The first split happens when we're in a partial state
     if (m_buffers.size() < 2 && m_state == ToolEnums::ParseState::Partial) {
         Q_ASSERT(m_startIndex >= 0);
-        const QByteArray beforeToolCall = currentBuffer().left(m_startIndex);
-        const QByteArray toolCall = currentBuffer().mid(m_startIndex);
+        const auto beforeToolCall = currentBuffer().left(m_startIndex);
+        const auto toolCall       = currentBuffer().mid (m_startIndex);
         m_buffers = { beforeToolCall, toolCall };
         return true;
     }
@@ -168,9 +168,9 @@ bool ToolCallParser::splitIfPossible()
     // The second split happens when we're in the complete state
     if (m_buffers.size() < 3 && m_state == ToolEnums::ParseState::Complete) {
         Q_ASSERT(m_endIndex >= 0);
-        const QByteArray &beforeToolCall = m_buffers.first();
-        const QByteArray toolCall = currentBuffer().left(m_endIndex);
-        const QByteArray afterToolCall = currentBuffer().mid(m_endIndex);
+        const auto &beforeToolCall = m_buffers.first();
+        const auto toolCall        = currentBuffer().left(m_endIndex);
+        const auto afterToolCall   = currentBuffer().mid (m_endIndex);
         m_buffers = { beforeToolCall, toolCall, afterToolCall };
         return true;
     }
