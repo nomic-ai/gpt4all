@@ -938,13 +938,11 @@ auto ChatLLM::promptInternal(
         result.responseTokens++;
         m_timer->inc();
 
-        // FIXME: This is *not* necessarily fully formed utf data because it can be partial at this point
-        // handle this like below where we have a QByteArray
-        toolCallParser.update(QString::fromStdString(piece.data()));
+        toolCallParser.update(piece.data());
 
         // Split the response into two if needed and create chat items
         if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
-            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            const auto parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 2);
             if (toolCallParser.startTag() == ToolCallConstants::ThinkTag)
                 m_chatModel->splitThinking({parseBuffers.at(0), parseBuffers.at(1)});
@@ -955,7 +953,7 @@ auto ChatLLM::promptInternal(
         // Split the response into three if needed and create chat items
         if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkTag
             && toolCallParser.splitIfPossible()) {
-            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            const auto parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 3);
             m_chatModel->endThinking({parseBuffers.at(1), parseBuffers.at(2)}, totalTime.elapsed());
         }
@@ -964,7 +962,7 @@ auto ChatLLM::promptInternal(
         auto respStr = QString::fromUtf8(result.response);
 
         try {
-            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            const auto parseBuffers = toolCallParser.buffers();
             if (parseBuffers.size() > 1)
                 m_chatModel->setResponseValue(parseBuffers.last());
             else
@@ -998,7 +996,7 @@ auto ChatLLM::promptInternal(
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
-    const QVector<QString> &parseBuffers = toolCallParser.buffers();
+    const auto parseBuffers = toolCallParser.buffers();
     const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
         && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
 

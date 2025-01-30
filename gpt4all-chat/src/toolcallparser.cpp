@@ -8,10 +8,10 @@
 
 ToolCallParser::ToolCallParser()
 {
-    m_possibleStartTags << ToolCallConstants::CodeInterpreterTag
-                        << ToolCallConstants::ThinkTag;
-    m_possibleEndTags   << ToolCallConstants::CodeInterpreterEndTag
-                        << ToolCallConstants::ThinkEndTag;
+    m_possibleStartTags << ToolCallConstants::CodeInterpreterTag.toUtf8()
+                        << ToolCallConstants::ThinkTag.toUtf8();
+    m_possibleEndTags   << ToolCallConstants::CodeInterpreterEndTag.toUtf8()
+                        << ToolCallConstants::ThinkEndTag.toUtf8();
     reset();
 }
 
@@ -22,7 +22,7 @@ void ToolCallParser::reset()
 
     // These are global states maintained between update calls
     m_buffers.clear();
-    m_buffers.append(QString());
+    m_buffers << QByteArray();
 }
 
 void ToolCallParser::resetSearchState()
@@ -40,35 +40,35 @@ void ToolCallParser::resetSearchState()
     m_endIndex = -1;
 }
 
-bool ToolCallParser::isExpected(QChar c) const
+bool ToolCallParser::isExpected(char c) const
 {
     return m_expected.isEmpty() || m_expected.contains(c);
 }
 
-void ToolCallParser::setExpected(const QStringList &tags)
+void ToolCallParser::setExpected(const QList<QByteArray> &tags)
 {
     m_expected.clear();
-    for (const QString &tag : tags) {
+    for (const auto &tag : tags) {
         Q_ASSERT(tag.size() > m_expectedIndex);
         m_expected << tag.at(m_expectedIndex);
     }
 }
 
-QString ToolCallParser::startTag() const
+QByteArray ToolCallParser::startTag() const
 {
     if (m_currentTagIndex < 0)
-        return QString();
+        return {};
     return m_possibleStartTags.at(m_currentTagIndex);
 }
 
-QString ToolCallParser::endTag() const
+QByteArray ToolCallParser::endTag() const
 {
     if (m_currentTagIndex < 0)
-        return QString();
+        return {};
     return m_possibleEndTags.at(m_currentTagIndex);
 }
 
-QString &ToolCallParser::currentBuffer()
+QByteArray &ToolCallParser::currentBuffer()
 {
     return m_buffers.last();
 }
@@ -76,12 +76,12 @@ QString &ToolCallParser::currentBuffer()
 // This method is called with an arbitrary string and a current state. This method should take the
 // current state into account and then parse through the update character by character to arrive at
 // the new state.
-void ToolCallParser::update(const QString &update)
+void ToolCallParser::update(const QByteArray &update)
 {
     currentBuffer().append(update);
 
     for (size_t i = currentBuffer().size() - update.size(); i < currentBuffer().size(); ++i) {
-        const QChar c = currentBuffer()[i];
+        const char c = currentBuffer()[i];
         const bool foundMatch = isExpected(c);
         if (!foundMatch) {
             resetSearchState();
@@ -100,7 +100,7 @@ void ToolCallParser::update(const QString &update)
         case ToolEnums::ParseState::InTagChoice:
             {
                 for (int i = 0; i < m_possibleStartTags.size(); ++i) {
-                    const QString tag = m_possibleStartTags.at(i);
+                    const auto &tag = m_possibleStartTags.at(i);
                     if (c == tag.at(1)) m_currentTagIndex = i;
                 }
                 if (m_currentTagIndex >= 0) {
@@ -115,7 +115,7 @@ void ToolCallParser::update(const QString &update)
             {
                 m_startTagBuffer.append(c);
 
-                const QString startTag = this->startTag();
+                const auto startTag = this->startTag();
                 Q_ASSERT(!startTag.isEmpty());
                 if (m_expectedIndex == startTag.size() - 1) {
                     m_expectedIndex = 0;
@@ -131,7 +131,7 @@ void ToolCallParser::update(const QString &update)
         case ToolEnums::ParseState::Partial:
             {
                 Q_ASSERT(m_currentTagIndex >= 0);
-                const QString endTag = this->endTag();
+                const auto endTag = this->endTag();
                 Q_ASSERT(!endTag.isEmpty());
                 m_toolCall.append(c);
                 m_endTagBuffer.append(c);
@@ -159,8 +159,8 @@ bool ToolCallParser::splitIfPossible()
     // The first split happens when we're in a partial state
     if (m_buffers.size() < 2 && m_state == ToolEnums::ParseState::Partial) {
         Q_ASSERT(m_startIndex >= 0);
-        const QString beforeToolCall = currentBuffer().left(m_startIndex);
-        const QString toolCall = currentBuffer().mid(m_startIndex);
+        const auto beforeToolCall = currentBuffer().left(m_startIndex);
+        const auto toolCall       = currentBuffer().mid (m_startIndex);
         m_buffers = { beforeToolCall, toolCall };
         return true;
     }
@@ -168,9 +168,9 @@ bool ToolCallParser::splitIfPossible()
     // The second split happens when we're in the complete state
     if (m_buffers.size() < 3 && m_state == ToolEnums::ParseState::Complete) {
         Q_ASSERT(m_endIndex >= 0);
-        const QString beforeToolCall = m_buffers.first();
-        const QString toolCall = currentBuffer().left(m_endIndex);
-        const QString afterToolCall = currentBuffer().mid(m_endIndex);
+        const auto &beforeToolCall = m_buffers.first();
+        const auto toolCall        = currentBuffer().left(m_endIndex);
+        const auto afterToolCall   = currentBuffer().mid (m_endIndex);
         m_buffers = { beforeToolCall, toolCall, afterToolCall };
         return true;
     }
@@ -178,7 +178,11 @@ bool ToolCallParser::splitIfPossible()
     return false;
 }
 
-const QVector<QString> &ToolCallParser::buffers() const
+QStringList ToolCallParser::buffers() const
 {
-    return m_buffers;
+    QStringList result;
+    result.reserve(m_buffers.size());
+    for (const auto &buffer : m_buffers)
+        result << QString::fromUtf8(buffer);
+    return result;
 }
