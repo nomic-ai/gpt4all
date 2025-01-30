@@ -3,9 +3,10 @@
 
 #include "tool.h"
 
-#include <QChar>
+#include <QByteArray>
+#include <QList>
 #include <QString>
-#include <QPair>
+#include <QStringList>
 
 namespace ToolCallConstants
 {
@@ -25,34 +26,34 @@ class ToolCallParser
 public:
     ToolCallParser();
     void reset();
-    void update(const QString &update);
-    QString toolCall() const { return m_toolCall; }
+    void update(const QByteArray &update);
+    QString toolCall() const { return QString::fromUtf8(m_toolCall); }
     int startIndex() const { return m_startIndex; }
     ToolEnums::ParseState state() const { return m_state; }
-    QString startTag() const;
-    QString endTag() const;
+    QByteArray startTag() const;
+    QByteArray endTag() const;
 
     bool splitIfPossible();
-    const QVector<QString> &buffers() const;
+    QStringList buffers() const;
     int numberOfBuffers() const { return m_buffers.size(); }
 
 private:
-    QString &currentBuffer();
+    QByteArray &currentBuffer();
     void resetSearchState();
-    bool isExpected(QChar c) const;
-    void setExpected(const QStringList &tags);
+    bool isExpected(char c) const;
+    void setExpected(const QList<QByteArray> &tags);
 
-    QStringList m_possibleStartTags;
-    QStringList m_possibleEndTags;
-    QString m_startTagBuffer;
-    QString m_endTagBuffer;
+    QList<QByteArray> m_possibleStartTags;
+    QList<QByteArray> m_possibleEndTags;
+    QByteArray m_startTagBuffer;
+    QByteArray m_endTagBuffer;
     int m_currentTagIndex;
 
-    QVector<QChar> m_expected;
+    QList<char> m_expected;
     int m_expectedIndex;
     ToolEnums::ParseState m_state;
-    QVector<QString> m_buffers;
-    QString m_toolCall;
+    QList<QByteArray> m_buffers;
+    QByteArray m_toolCall;
     int m_startIndex;
     int m_endIndex;
 };
