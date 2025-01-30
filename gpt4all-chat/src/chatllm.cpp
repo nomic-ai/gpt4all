@@ -966,7 +966,7 @@ auto ChatLLM::promptInternal(
 
         // Split the response into two if needed and create chat items
         if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
-            const QVector<QString> parseBuffers = toolCallParser.buffers();
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 2);
             if (toolCallParser.startTag() == ToolCallConstants::ThinkTag)
                 m_chatModel->splitThinking({parseBuffers.at(0), parseBuffers.at(1)});
@@ -977,7 +977,7 @@ auto ChatLLM::promptInternal(
         // Split the response into three if needed and create chat items
         if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkTag
             && toolCallParser.splitIfPossible()) {
-            const QVector<QString> parseBuffers = toolCallParser.buffers();
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 3);
             m_chatModel->endThinking({parseBuffers.at(1), parseBuffers.at(2)}, totalTime.elapsed());
         }
