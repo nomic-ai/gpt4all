@@ -182,7 +182,7 @@ QStringList ToolCallParser::buffers() const
 {
     QStringList result;
     result.reserve(m_buffers.size());
-    for (const auto &buffer: m_buffers)
+    for (const auto &buffer : m_buffers)
         result << QString::fromUtf8(buffer);
     return result;
 }
