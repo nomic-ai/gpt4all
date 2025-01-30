@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Support DeepSeek-R1 Qwen models ([#3431](https://github.com/nomic-ai/gpt4all/pull/3431))
+- Support for think tags in the GUI ([#3440](https://github.com/nomic-ai/gpt4all/pull/3440))
 
 ### Fixed
 - Fix regression while using localdocs with server API ([#3410](https://github.com/nomic-ai/gpt4all/pull/3410))
