@@ -2045,6 +2045,7 @@ workflows:
       - sign-offline-chat-installer-windows-arm:
           context: gpt4all
           requires:
+            - sign-hold
             - build-offline-chat-installer-windows-arm
       - build-offline-chat-installer-linux:
           context: gpt4all
@@ -2086,6 +2087,7 @@ workflows:
       - sign-online-chat-installer-windows-arm:
           context: gpt4all
           requires:
+            - sign-hold
             - build-online-chat-installer-windows-arm
       - build-online-chat-installer-linux:
           context: gpt4all
