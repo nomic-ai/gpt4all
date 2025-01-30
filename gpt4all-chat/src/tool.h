@@ -28,6 +28,7 @@ namespace ToolEnums
 
     enum class ParseState {
         None,
+        InTagChoice,
         InStart,
         Partial,
         Complete,

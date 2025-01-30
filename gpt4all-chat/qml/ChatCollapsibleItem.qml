@@ -13,6 +13,8 @@ ColumnLayout {
     property alias textContent: innerTextItem.textContent
     property bool isCurrent: false
     property bool isError: false
+    property bool isThinking: false
+    property int  thinkingTime: 0
 
     Layout.topMargin: 10
     Layout.bottomMargin: 10
@@ -26,16 +28,20 @@ ColumnLayout {
             anchors.bottom: parent.bottom
 
             Item {
-                width: myTextArea.width
-                height: myTextArea.height
+                Layout.preferredWidth: myTextArea.implicitWidth
+                Layout.preferredHeight: myTextArea.implicitHeight
                 TextArea {
                     id: myTextArea
                     text: {
                         if (isError)
                             return qsTr("Analysis encountered error");
                         if (isCurrent)
-                            return qsTr("Analyzing");
-                        return qsTr("Analyzed");
+                            return isThinking ? qsTr("Thinking") : qsTr("Analyzing");
+                        return isThinking
+                            ? qsTr("Thought for %1 %2")
+                                  .arg(Math.ceil(thinkingTime / 1000.0))
+                                  .arg(Math.ceil(thinkingTime / 1000.0) === 1 ? qsTr("second") : qsTr("seconds"))
+                            : qsTr("Analyzed");
                     }
                     padding: 0
                     font.pixelSize: theme.fontSizeLarger

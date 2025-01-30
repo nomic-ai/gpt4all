@@ -189,6 +189,17 @@ GridLayout {
                         isError: modelData.isToolCallError
                     }
                 }
+                DelegateChoice {
+                    roleValue: "Think: ";
+                    ChatCollapsibleItem {
+                        Layout.fillWidth: true
+                        textContent: modelData.content
+                        isCurrent: modelData.isCurrentResponse
+                        isError: false
+                        isThinking: true
+                        thinkingTime: modelData.thinkingTime
+                    }
+                }
             }
 
             delegate: chooser
