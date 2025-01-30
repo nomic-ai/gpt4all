@@ -43,7 +43,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "deepseek",
-    "description": "<p>The official Qwen2.5-Math-7B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
+    "description": "<p>The official Qwen2.5-Math-7B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li><li>#reasoning</li></ul>",
     "url": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-7B-Q4_0.gguf",
     "chatTemplate": "{%- if not add_generation_prompt is defined %}\n    {%- set add_generation_prompt = false %}\n{%- endif %}\n{%- if messages[0]['role'] == 'system' %}\n    {{- messages[0]['content'] }}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '<｜User｜>' + message['content'] }}\n    {%- endif %}\n    {%- if message['role'] == 'assistant' %}\n        {%- set content = message['content'] | regex_replace('^[\\\\s\\\\S]*</think>', '') %}\n        {{- '<｜Assistant｜>' + content + '<｜end▁of▁sentence｜>' }}\n    {%- endif %}\n{%- endfor -%}\n{%- if add_generation_prompt %}\n    {{- '<｜Assistant｜>' }}\n{%- endif %}"
   },
@@ -58,7 +58,7 @@
     "parameters": "14 billion",
     "quant": "q4_0",
     "type": "deepseek",
-    "description": "<p>The official Qwen2.5-14B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
+    "description": "<p>The official Qwen2.5-14B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li><li>#reasoning</li></ul>",
     "url": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-14B-Q4_0.gguf",
     "chatTemplate": "{%- if not add_generation_prompt is defined %}\n    {%- set add_generation_prompt = false %}\n{%- endif %}\n{%- if messages[0]['role'] == 'system' %}\n    {{- messages[0]['content'] }}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '<｜User｜>' + message['content'] }}\n    {%- endif %}\n    {%- if message['role'] == 'assistant' %}\n        {%- set content = message['content'] | regex_replace('^[\\\\s\\\\S]*</think>', '') %}\n        {{- '<｜Assistant｜>' + content + '<｜end▁of▁sentence｜>' }}\n    {%- endif %}\n{%- endfor -%}\n{%- if add_generation_prompt %}\n    {{- '<｜Assistant｜>' }}\n{%- endif %}"
   },
@@ -73,7 +73,7 @@
     "parameters": "8 billion",
     "quant": "q4_0",
     "type": "deepseek",
-    "description": "<p>The official Llama-3.1-8B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
+    "description": "<p>The official Llama-3.1-8B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li><li>#reasoning</li></ul>",
     "url": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q4_0.gguf",
     "chatTemplate": "{%- if not add_generation_prompt is defined %}\n    {%- set add_generation_prompt = false %}\n{%- endif %}\n{%- if messages[0]['role'] == 'system' %}\n    {{- messages[0]['content'] }}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '<｜User｜>' + message['content'] }}\n    {%- endif %}\n    {%- if message['role'] == 'assistant' %}\n        {%- set content = message['content'] | regex_replace('^[\\\\s\\\\S]*</think>', '') %}\n        {{- '<｜Assistant｜>' + content + '<｜end▁of▁sentence｜>' }}\n    {%- endif %}\n{%- endfor -%}\n{%- if add_generation_prompt %}\n    {{- '<｜Assistant｜>' }}\n{%- endif %}"
   },
@@ -88,7 +88,7 @@
     "parameters": "1.5 billion",
     "quant": "q4_0",
     "type": "deepseek",
-    "description": "<p>The official Qwen2.5-Math-1.5B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
+    "description": "<p>The official Qwen2.5-Math-1.5B distillation of DeepSeek-R1.</p><ul><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li><li>#reasoning</li></ul>",
     "url": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B-Q4_0.gguf",
     "chatTemplate": "{%- if not add_generation_prompt is defined %}\n    {%- set add_generation_prompt = false %}\n{%- endif %}\n{%- if messages[0]['role'] == 'system' %}\n    {{- messages[0]['content'] }}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '<｜User｜>' + message['content'] }}\n    {%- endif %}\n    {%- if message['role'] == 'assistant' %}\n        {%- set content = message['content'] | regex_replace('^[\\\\s\\\\S]*</think>', '') %}\n        {{- '<｜Assistant｜>' + content + '<｜end▁of▁sentence｜>' }}\n    {%- endif %}\n{%- endfor -%}\n{%- if add_generation_prompt %}\n    {{- '<｜Assistant｜>' }}\n{%- endif %}"
   },
