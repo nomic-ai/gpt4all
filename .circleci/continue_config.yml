@@ -1927,7 +1927,8 @@ workflows:
         - not:
             equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
     jobs:
-      - validate-commit-on-main
+      - validate-commit-on-main:
+          <<: *job_allow_tags
       - build-offline-chat-installer-macos:
           <<: *job_allow_tags
           context: gpt4all
