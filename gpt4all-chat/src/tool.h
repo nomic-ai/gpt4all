@@ -1,13 +1,16 @@
 #ifndef TOOL_H
 #define TOOL_H
 
+#include <nlohmann/json.hpp>
+
 #include <QList>
 #include <QObject>
 #include <QString>
 #include <QVariant>
 #include <QtGlobal>
 
-#include <jinja2cpp/value.h>
+using json = nlohmann::ordered_json;
+
 
 namespace ToolEnums
 {
@@ -122,7 +125,7 @@ public:
 
     bool operator==(const Tool &other) const { return function() == other.function(); }
 
-    jinja2::Value jinjaValue() const;
+    json::object_t jinjaValue() const;
 
 Q_SIGNALS:
     void runComplete(const ToolCallInfo &info);
