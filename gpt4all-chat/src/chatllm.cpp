@@ -986,7 +986,7 @@ auto ChatLLM::promptInternal(
         auto respStr = QString::fromUtf8(result.response);
 
         try {
-            const QVector<QString> parseBuffers = toolCallParser.buffers();
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
             if (parseBuffers.size() > 1)
                 m_chatModel->setResponseValue(parseBuffers.last());
             else
@@ -1020,7 +1020,7 @@ auto ChatLLM::promptInternal(
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
-    const QVector<QString> parseBuffers = toolCallParser.buffers();
+    const QVector<QString> &parseBuffers = toolCallParser.buffers();
     const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
         && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
 
