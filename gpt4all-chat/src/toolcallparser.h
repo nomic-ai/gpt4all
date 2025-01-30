@@ -14,6 +14,9 @@ namespace ToolCallConstants
     const QString CodeInterpreterEndTag = R"(</)" + CodeInterpreterFunction + R"(>)";
     const QString CodeInterpreterPrefix = CodeInterpreterTag + "\n```javascript\n";
     const QString CodeInterpreterSuffix = "```\n" + CodeInterpreterEndTag;
+
+    const QString ThinkTag = QStringLiteral("<think>");
+    const QString ThinkEndTag = QStringLiteral("</think>");
 }
 
 class ToolCallParser
@@ -22,26 +25,35 @@ public:
     ToolCallParser();
     void reset();
     void update(const QString &update);
-    QString buffer() const { return m_buffer; }
     QString toolCall() const { return m_toolCall; }
     int startIndex() const { return m_startIndex; }
     ToolEnums::ParseState state() const { return m_state; }
+    QString startTag() const;
+    QString endTag() const;
 
-    // Splits
-    QPair<QString, QString> split();
-    bool hasSplit() const { return m_hasSplit; }
+    bool splitIfPossible();
+    QVector<QString> buffers() const;
+    int numberOfBuffers() const { return m_buffers.size(); }
 
 private:
+    QString &currentBuffer();
     void resetSearchState();
+    bool isExpected(const QChar &ch) const;
+    void setExpected(const QStringList &tags);
 
-    QChar m_expected;
+    QStringList m_possibleStartTags;
+    QStringList m_possibleEndTags;
+    QString m_startTagBuffer;
+    QString m_endTagBuffer;
+    int m_currentTagIndex;
+
+    QVector<QChar> m_expected;
     int m_expectedIndex;
     ToolEnums::ParseState m_state;
-    QString m_buffer;
+    QVector<QString> m_buffers;
     QString m_toolCall;
-    QString m_endTagBuffer;
     int m_startIndex;
-    bool m_hasSplit;
+    int m_endIndex;
 };
 
 #endif // TOOLCALLPARSER_H
