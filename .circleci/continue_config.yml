@@ -1923,7 +1923,6 @@ workflows:
     # only run on main branch tags that start with 'v' and a digit
     when:
       and:
-        - equal: [ << pipeline.git.branch >>, main ]
         - matches: { pattern: '^v\d.*', value: << pipeline.git.tag >> }
         - not:
             equal: [ << pipeline.trigger_source >>, scheduled_pipeline ]
