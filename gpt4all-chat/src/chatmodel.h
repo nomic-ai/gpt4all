@@ -265,7 +265,7 @@ public:
         if (type() == Type::Response) {
             // We parse if this contains any part of a partial toolcall
             ToolCallParser parser;
-            parser.update(value);
+            parser.update(value.toUtf8());
 
             // If no tool call is detected, return the original value
             if (parser.startIndex() < 0)
@@ -292,7 +292,7 @@ public:
     QString thinkContent(const QString &value) const
     {
         ToolCallParser parser;
-        parser.update(value);
+        parser.update(value.toUtf8());
 
         // Extract the content
         QString content = parser.toolCall();
@@ -303,7 +303,7 @@ public:
     QString toolCallContent(const QString &value) const
     {
         ToolCallParser parser;
-        parser.update(value);
+        parser.update(value.toUtf8());
 
         // Extract the code
         QString code = parser.toolCall();

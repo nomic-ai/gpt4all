@@ -254,7 +254,7 @@ void Chat::responseStopped(qint64 promptResponseMs)
     });
 
     ToolCallParser parser;
-    parser.update(possibleToolcall);
+    parser.update(possibleToolcall.toUtf8());
     if (parser.state() == ToolEnums::ParseState::Complete && parser.startTag() != ToolCallConstants::ThinkTag)
         processToolCall(parser.toolCall());
     else
