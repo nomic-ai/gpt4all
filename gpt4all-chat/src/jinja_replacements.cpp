@@ -5,26 +5,9 @@
 // This is a list of prompt templates known to GPT4All and their associated replacements which are automatically used
 // instead when loading the chat template from GGUF. These exist for two primary reasons:
 // - HuggingFace model authors make ugly chat templates because they do not expect the end user to see them;
-// - and our Jinja2Cpp-based template parsing is not fully compatible with HuggingFace transformers and jinja2.
-
-// Below is a list of known incompatibilities with the official HF jinja2 implementation. These are not all necessarily
-// reflected in the below substitution list, and this cannot be an exhaustive list because there are a plethora of edge
-// cases in template parsing in which jinja2 and Jinja2Cpp differ. These are differences that could be reasonably
-// expected to affect chat templates that could be seen in the wild, or that cause a crash:
-// - Jinja2Cpp crashes (in debug builds) if given the template `a[""(`
-// - Jinja2Cpp does not support these jinja2 constructs:
-//   - `is not none`
-//   - list slicing, e.g. `messages[1:]`
-//   - the jinja2.ext.loopcontrols extension, which HF enables by default
-//   - a missing space after a quote in substitution (e.g. `{{ 'foo'}}`), which *has* been seen in the wild
-// - GPT4All does not currently support these HuggingFace template features:
-//   - customized "tojson" filter (we provide the built-in Jinja2Cpp one)
-//   - the AssistantTracker extension
-
+// - and chat templates occasionally use features we do not support. This is less true now that we use minja.
 
 // The substitution list.
-// For templates that apply to models listed in models3.json, these should be copied there as well for best
-// compatibility with older versions of GPT4All.
 
 const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBSTITUTIONS {
     // calme-2.1-phi3.5-4b.Q6_K.gguf (reported by ThilotE on Discord), Phi-3.5-mini-instruct-Q4_0.gguf (nomic-ai/gpt4all#3345)

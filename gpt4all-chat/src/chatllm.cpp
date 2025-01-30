@@ -12,12 +12,8 @@
 #include "toolcallparser.h"
 
 #include <fmt/format.h>
-
-#include <jinja2cpp/error_info.h>
-#include <jinja2cpp/template.h>
-#include <jinja2cpp/template_env.h>
-#include <jinja2cpp/user_callable.h>
-#include <jinja2cpp/value.h>
+#include <minja/minja.hpp>
+#include <nlohmann/json.hpp>
 
 #include <QDataStream>
 #include <QDebug>
@@ -60,59 +56,40 @@
 using namespace Qt::Literals::StringLiterals;
 using namespace ToolEnums;
 namespace ranges = std::ranges;
+using json = nlohmann::ordered_json;
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
-static std::string jinjaGetStringArg(const jinja2::ValuesMap &args, const std::string &name)
-{
-    auto arg = args.find(name);
-    if (arg == args.end() || !arg->second.isString())
-        throw std::runtime_error(fmt::format("'{}' argument to raise_exception() must be a string", name));
-    return arg->second.asString();
-}
-
 // NOTE: not threadsafe
-static jinja2::TemplateEnv *jinjaEnv()
+static const std::shared_ptr<minja::Context> &jinjaEnv()
 {
-    static std::optional<jinja2::TemplateEnv> environment;
+    static std::shared_ptr<minja::Context> environment;
     if (!environment) {
-        auto &env = environment.emplace();
-        auto &settings = env.GetSettings();
-        settings.trimBlocks = true;
-        settings.lstripBlocks = true;
-        env.AddGlobal("raise_exception", jinja2::UserCallable(
-            /*callable*/ [](auto &params) -> jinja2::Value {
-                auto message = jinjaGetStringArg(params.args, "message");
-                throw std::runtime_error(fmt::format("Jinja template error: {}", message));
-            },
-            /*argsInfo*/ { jinja2::ArgInfo("message", /*isMandatory*/ true) }
-        ));
-        env.AddGlobal("strftime_now", jinja2::UserCallable(
-            /*callable*/ [](auto &params) -> jinja2::Value {
+        environment = minja::Context::builtins();
+        environment->set("strftime_now", minja::simple_function(
+            "strftime_now", { "format" },
+            [](const std::shared_ptr<minja::Context> &, minja::Value &args) -> minja::Value {
+                auto format = args.at("format").get<std::string>();
                 using Clock = std::chrono::system_clock;
-                auto format = jinjaGetStringArg(params.args, "format");
                 time_t nowUnix = Clock::to_time_t(Clock::now());
                 auto localDate = *std::localtime(&nowUnix);
                 std::ostringstream ss;
                 ss << std::put_time(&localDate, format.c_str());
                 return ss.str();
-            },
-            /*argsInfo*/ { jinja2::ArgInfo("format", /*isMandatory*/ true) }
+            }
         ));
-        env.AddGlobal("regex_replace", jinja2::UserCallable(
-            /*callable*/ [](auto &params) -> jinja2::Value {
-                auto str     = jinjaGetStringArg(params.args, "str"    );
-                auto pattern = jinjaGetStringArg(params.args, "pattern");
-                auto repl    = jinjaGetStringArg(params.args, "repl"   );
+        environment->set("regex_replace", minja::simple_function(
+            "regex_replace", { "str", "pattern", "repl" },
+            [](const std::shared_ptr<minja::Context> &, minja::Value &args) -> minja::Value {
+                auto str     = args.at("str"    ).get<std::string>();
+                auto pattern = args.at("pattern").get<std::string>();
+                auto repl    = args.at("repl"   ).get<std::string>();
                 return std::regex_replace(str, std::regex(pattern), repl);
-            },
-            /*argsInfo*/ { jinja2::ArgInfo("str",     /*isMandatory*/ true),
-                           jinja2::ArgInfo("pattern", /*isMandatory*/ true),
-                           jinja2::ArgInfo("repl",    /*isMandatory*/ true) }
+            }
         ));
     }
-    return &*environment;
+    return environment;
 }
 
 class LLModelStore {
@@ -772,19 +749,18 @@ static uint parseJinjaTemplateVersion(QStringView tmpl)
     return 0;
 }
 
-static auto loadJinjaTemplate(
-    std::optional<jinja2::Template> &tmpl /*out*/, const std::string &source
-) -> jinja2::Result<void>
+static std::shared_ptr<minja::TemplateNode> loadJinjaTemplate(const std::string &source)
 {
-    tmpl.emplace(jinjaEnv());
-    return tmpl->Load(source);
+    return minja::Parser::parse(source, { .trim_blocks = true, .lstrip_blocks = true, .keep_trailing_newline = false });
 }
 
 std::optional<std::string> ChatLLM::checkJinjaTemplateError(const std::string &source)
 {
-    std::optional<jinja2::Template> tmpl;
-    if (auto res = loadJinjaTemplate(tmpl, source); !res)
-        return res.error().ToString();
+    try {
+        loadJinjaTemplate(source);
+    } catch (const std::runtime_error &e) {
+        return e.what();
+    }
     return std::nullopt;
 }
 
@@ -816,13 +792,13 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) cons
     uint version = parseJinjaTemplateVersion(chatTemplate);
 
     auto makeMap = [version](const MessageItem &item) {
-        return jinja2::GenericMap([msg = std::make_shared<JinjaMessage>(version, item)] { return msg.get(); });
+        return JinjaMessage(version, item).AsJson();
     };
 
     std::unique_ptr<MessageItem> systemItem;
     bool useSystem = !isAllSpace(systemMessage);
 
-    jinja2::ValuesList messages;
+    json::array_t messages;
     messages.reserve(useSystem + items.size());
     if (useSystem) {
         systemItem = std::make_unique<MessageItem>(MessageItem::Type::System, systemMessage.toUtf8());
@@ -831,14 +807,14 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) cons
     for (auto &item : items)
         messages.emplace_back(makeMap(item));
 
-    jinja2::ValuesList toolList;
+    json::array_t toolList;
     const int toolCount = ToolModel::globalInstance()->count();
     for (int i = 0; i < toolCount; ++i) {
         Tool *t = ToolModel::globalInstance()->get(i);
         toolList.push_back(t->jinjaValue());
     }
 
-    jinja2::ValuesMap params {
+    json::object_t params {
         { "messages",              std::move(messages) },
         { "add_generation_prompt", true                },
         { "toolList",              toolList            },
@@ -846,12 +822,14 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) cons
     for (auto &[name, token] : model->specialTokens())
         params.emplace(std::move(name), std::move(token));
 
-    std::optional<jinja2::Template> tmpl;
-    auto maybeRendered = loadJinjaTemplate(tmpl, chatTemplate.toStdString())
-        .and_then([&] { return tmpl->RenderAsString(params); });
-    if (!maybeRendered)
-        throw std::runtime_error(fmt::format("Failed to parse chat template: {}", maybeRendered.error().ToString()));
-    return *maybeRendered;
+    try {
+        auto tmpl = loadJinjaTemplate(chatTemplate.toStdString());
+        auto context = minja::Context::make(minja::Value(std::move(params)), jinjaEnv());
+        return tmpl->render(context);
+    } catch (const std::runtime_error &e) {
+        throw std::runtime_error(fmt::format("Failed to parse chat template: {}", e.what()));
+    }
+    Q_UNREACHABLE();
 }
 
 auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LLModel::PromptContext &ctx,
@@ -950,8 +928,12 @@ auto ChatLLM::promptInternal(
         return !m_stopGenerating;
     };
 
+    QElapsedTimer totalTime;
+    totalTime.start();
+    m_timer->start();
+
     ToolCallParser toolCallParser;
-    auto handleResponse = [this, &result, &toolCallParser](LLModel::Token token, std::string_view piece) -> bool {
+    auto handleResponse = [this, &result, &toolCallParser, &totalTime](LLModel::Token token, std::string_view piece) -> bool {
         Q_UNUSED(token)
         result.responseTokens++;
         m_timer->inc();
@@ -960,18 +942,31 @@ auto ChatLLM::promptInternal(
         // handle this like below where we have a QByteArray
         toolCallParser.update(QString::fromStdString(piece.data()));
 
-        // Create a toolcall and split the response if needed
-        if (!toolCallParser.hasSplit() && toolCallParser.state() == ToolEnums::ParseState::Partial) {
-            const QPair<QString, QString> pair = toolCallParser.split();
-            m_chatModel->splitToolCall(pair);
+        // Split the response into two if needed and create chat items
+        if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            Q_ASSERT(parseBuffers.size() == 2);
+            if (toolCallParser.startTag() == ToolCallConstants::ThinkTag)
+                m_chatModel->splitThinking({parseBuffers.at(0), parseBuffers.at(1)});
+            else
+                m_chatModel->splitToolCall({parseBuffers.at(0), parseBuffers.at(1)});
+        }
+
+        // Split the response into three if needed and create chat items
+        if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkTag
+            && toolCallParser.splitIfPossible()) {
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            Q_ASSERT(parseBuffers.size() == 3);
+            m_chatModel->endThinking({parseBuffers.at(1), parseBuffers.at(2)}, totalTime.elapsed());
         }
 
         result.response.append(piece.data(), piece.size());
         auto respStr = QString::fromUtf8(result.response);
 
         try {
-            if (toolCallParser.hasSplit())
-                m_chatModel->setResponseValue(toolCallParser.buffer());
+            const QVector<QString> &parseBuffers = toolCallParser.buffers();
+            if (parseBuffers.size() > 1)
+                m_chatModel->setResponseValue(parseBuffers.last());
             else
                 m_chatModel->setResponseValue(removeLeadingWhitespace(respStr));
         } catch (const std::exception &e) {
@@ -984,13 +979,11 @@ auto ChatLLM::promptInternal(
 
         emit responseChanged();
 
-        const bool foundToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete;
-        return !foundToolCall && !m_stopGenerating;
-    };
+        const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
+            && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
 
-    QElapsedTimer totalTime;
-    totalTime.start();
-    m_timer->start();
+        return !shouldExecuteToolCall && !m_stopGenerating;
+    };
 
     try {
         emit promptProcessing();
@@ -1005,20 +998,22 @@ auto ChatLLM::promptInternal(
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
-    const bool foundToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete;
+    const QVector<QString> &parseBuffers = toolCallParser.buffers();
+    const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
+        && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
 
     // trim trailing whitespace
     auto respStr = QString::fromUtf8(result.response);
-    if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || foundToolCall)) {
-        if (toolCallParser.hasSplit())
-            m_chatModel->setResponseValue(toolCallParser.buffer());
+    if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || parseBuffers.size() > 1)) {
+        if (parseBuffers.size() > 1)
+            m_chatModel->setResponseValue(parseBuffers.last());
         else
             m_chatModel->setResponseValue(respStr.trimmed());
         emit responseChanged();
     }
 
     bool doQuestions = false;
-    if (!m_isServer && messageItems && !foundToolCall) {
+    if (!m_isServer && messageItems && !shouldExecuteToolCall) {
         switch (mySettings->suggestionMode()) {
             case SuggestionMode::On:            doQuestions = true;          break;
             case SuggestionMode::LocalDocsOnly: doQuestions = usedLocalDocs; break;
