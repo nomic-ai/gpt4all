@@ -53,6 +53,7 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "gpt2",
     // "gptj", -- no inference code
     "gptneox",
+    "granitemoe",    //not compatible with kompute backend (GPT4All v3.8.0)
     "mpt",
     "baichuan",
     "starcoder",
@@ -80,6 +81,7 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "command-r",
     // "dbrx", -- 16x12B parameters
     "olmo",
+    "olmoe",    //not compatible with kompute backend (GPT4All v3.8.0)
     "openelm",
     // "arctic", -- 10B+128x3.66B parameters
     "deepseek2",
