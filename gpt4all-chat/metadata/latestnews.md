@@ -1,17 +1,16 @@
 ## Latest News
 
-GPT4All v3.7.0 was released on January 23rd. Changes include:
+GPT4All v3.8.0 was released on January 30th. Changes include:
 
-* **Windows ARM Support:** GPT4All now supports the Windows ARM platform, ensuring compatibility with devices powered by Qualcomm Snapdragon and Microsoft SQ-series processors.
-  * **NOTE:** Support for GPU and/or NPU acceleration is not available at this time. Only the CPU will be used to run LLMs.
-  * **NOTE:** You must install the new *Windows ARM* version of GPT4All from the website. The standard *Windows* version will not work due to emulation limitations.
-* **Fixed Updating on macOS:** The maintenance tool no longer crashes when attempting to update or uninstall GPT4All on Sequoia.
-  * **NOTE:** If you have installed the version from the GitHub releases as a workaround for this issue, you can safely uninstall it and switch back to the version from the website.
-* **Fixed Chat Saving on macOS:** Chats now save as expected when the application is quit with Command-Q.
-* **Code Interpreter Improvements:**
-  * The behavior when the code takes too long to execute and times out has been improved.
-  * console.log now accepts multiple arguments for better compatibility with native JavaScript.
-* **Chat Templating Improvements:**
-  * Two crashes and one compatibility issue have been fixed in the chat template parser.
-  * The default chat template for EM German Mistral has been fixed.
-  * Automatic replacements have been added for five new models as we continue to improve compatibility with common chat templates.
+* **Native DeepSeek-R1-Distill Support:** GPT4All now has robust support for the DeepSeek-R1 family of distillations.
+  * Several model variants are now available on the downloads page.
+  * Reasoning (wrapped in "think" tags) is displayed similarly to the Reasoner model.
+  * The DeepSeek-R1 Qwen pretokenizer is now supported, resolving the loading failure in previous versions.
+  * The model is now configured with a GPT4All-compatible prompt template by default.
+* **Chat Templating Overhaul:** The template parser has been *completely* replaced with one that has much better compatibility with common models.
+* **Code Interpreter Fixes:**
+  * An issue preventing the code interpreter from logging a single string in v3.7.0 has been fixed.
+  * The UI no longer freezes while the code interpreter is running a computation.
+* **Local Server Fixes:**
+  * An issue preventing the server from using LocalDocs after the first request since v3.5.0 has been fixed.
+  * System messages are now correctly hidden from the message history.
