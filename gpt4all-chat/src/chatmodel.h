@@ -555,6 +555,7 @@ private:
         return std::nullopt;
     }
 
+    // FIXME(jared): this should really be done at the parent level, not the sub-item level
     static std::optional<qsizetype> getPeerInternal(const MessageItem *arr, qsizetype size, qsizetype index)
     {
         qsizetype peer;
