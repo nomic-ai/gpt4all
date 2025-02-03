@@ -35,6 +35,8 @@ option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires si
 option(GPT4ALL_GEN_CPACK_CONFIG "Generate the CPack config.xml in the package step and nothing else." OFF)
 set(GPT4ALL_USE_QTPDF "AUTO" CACHE STRING "Whether to Use QtPDF for LocalDocs. If OFF or not available on this platform, PDFium is used.")
 set_property(CACHE GPT4ALL_USE_QTPDF PROPERTY STRINGS AUTO ON OFF)
+set(GPT4ALL_FORCE_D3D12 "AUTO" CACHE STRING "Whether to use Direct3D 12 as the Qt scene graph backend. Defaults to ON on Windows ARM.")
+set_property(CACHE GPT4ALL_FORCE_D3D12 PROPERTY STRINGS AUTO ON OFF)
 
 include(cmake/cpack_config.cmake)
 
@@ -90,12 +92,6 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Generate a header file with the version number
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-)
-
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 set(GPT4ALL_QT_COMPONENTS Core HttpServer LinguistTools Quick QuickDialogs2 Sql Svg)
 set(GPT4ALL_USING_QTPDF OFF)
@@ -129,6 +125,24 @@ message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(GPT4ALL_CONFIG_FORCE_D3D12 -1)
+if (NOT CMAKE_SYSTEM_NAME MATCHES Windows OR Qt6_VERSION VERSION_LESS "6.6")
+    # Direct3D 12 is not available.
+    if (GPT4ALL_FORCE_D3D12 STREQUAL "ON")
+        message(FATAL_ERROR "Cannot use Direct3D 12 on this platform.")
+    endif()
+elseif (GPT4ALL_FORCE_D3D12 MATCHES "^(ON|AUTO)$")
+    if (GPT4ALL_FORCE_D3D12 STREQUAL "ON" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|AARCH64|arm64|ARM64)$")
+        set(GPT4ALL_CONFIG_FORCE_D3D12 1)
+    endif()
+endif()
+
+# Generate a header file for configuration
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
 
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
