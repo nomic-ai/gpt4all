@@ -128,7 +128,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(GPT4ALL_CONFIG_FORCE_D3D12 -1)
 if (NOT CMAKE_SYSTEM_NAME MATCHES Windows OR Qt6_VERSION VERSION_LESS "6.6")
-    # Direct3D is not available.
+    # Direct3D 12 is not available.
     if (GPT4ALL_FORCE_D3D12 STREQUAL "ON")
         message(FATAL_ERROR "Cannot use Direct3D 12 on this platform.")
     endif()
