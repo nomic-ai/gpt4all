@@ -730,7 +730,8 @@ std::vector<MessageItem> ChatLLM::forkConversation(const QString &prompt) const
         conversation.reserve(items.size() + 1);
         conversation.assign(items.begin(), items.end());
     }
-    conversation.emplace_back(MessageItem::Type::Prompt, prompt.toUtf8());
+    qsizetype nextIndex = conversation.empty() ? 0 : conversation.back().index().value() + 1;
+    conversation.emplace_back(nextIndex, MessageItem::Type::Prompt, prompt.toUtf8());
     return conversation;
 }
 
@@ -801,7 +802,7 @@ std::string ChatLLM::applyJinjaTemplate(std::span<const MessageItem> items) cons
     json::array_t messages;
     messages.reserve(useSystem + items.size());
     if (useSystem) {
-        systemItem = std::make_unique<MessageItem>(MessageItem::Type::System, systemMessage.toUtf8());
+        systemItem = std::make_unique<MessageItem>(MessageItem::system_tag, systemMessage.toUtf8());
         messages.emplace_back(makeMap(*systemItem));
     }
     for (auto &item : items)
@@ -855,14 +856,14 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
             // Find the prompt that represents the query. Server chats are flexible and may not have one.
             auto items = getChat();
             if (auto peer = m_chatModel->getPeer(items, items.end() - 1)) // peer of response
-                query = { *peer - items.begin(), (*peer)->content() };
+                query = { (*peer)->index().value(), (*peer)->content() };
         }
 
         if (query) {
             auto &[promptIndex, queryStr] = *query;
             const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
             emit requestRetrieveFromDB(enabledCollections, queryStr, retrievalSize, &databaseResults); // blocks
-            m_chatModel->updateSources(promptIndex + startOffset, databaseResults);
+            m_chatModel->updateSources(promptIndex, databaseResults);
             emit databaseResultsChanged(databaseResults);
         }
     }
