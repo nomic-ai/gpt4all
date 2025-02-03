@@ -94,11 +94,28 @@ class MessageItem
 public:
     enum class Type { System, Prompt, Response, ToolResponse };
 
-    MessageItem(Type type, QString content)
-        : m_type(type), m_content(std::move(content)) {}
+    struct system_tag_t { explicit system_tag_t() = default; };
+    static inline constexpr system_tag_t system_tag = system_tag_t{};
 
-    MessageItem(Type type, QString content, const QList<ResultInfo> &sources, const QList<PromptAttachment> &promptAttachments)
-        : m_type(type), m_content(std::move(content)), m_sources(sources), m_promptAttachments(promptAttachments) {}
+    MessageItem(qsizetype index, Type type, QString content)
+        : m_index(index), m_type(type), m_content(std::move(content))
+    {
+        Q_ASSERT(type != Type::System); // use system_tag constructor
+    }
+
+    // Construct a system message with no index, since they are never stored in the chat
+    MessageItem(system_tag_t, QString content)
+        : m_type(Type::System), m_content(std::move(content)) {}
+
+    MessageItem(qsizetype index, Type type, QString content, const QList<ResultInfo> &sources, const QList<PromptAttachment> &promptAttachments)
+        : m_index(index)
+        , m_type(type)
+        , m_content(std::move(content))
+        , m_sources(sources)
+        , m_promptAttachments(promptAttachments) {}
+
+    // index of the parent ChatItem (system, prompt, response) in its container
+    std::optional<qsizetype> index()   const { return m_index; }
 
     Type           type()    const { return m_type;    }
     const QString &content() const { return m_content; }
@@ -126,10 +143,11 @@ public:
     }
 
 private:
-    Type                    m_type;
-    QString                 m_content;
-    QList<ResultInfo>       m_sources;
-    QList<PromptAttachment> m_promptAttachments;
+    std::optional<qsizetype> m_index;
+    Type                     m_type;
+    QString                  m_content;
+    QList<ResultInfo>        m_sources;
+    QList<PromptAttachment>  m_promptAttachments;
 };
 Q_DECLARE_METATYPE(MessageItem)
 
@@ -399,7 +417,7 @@ public:
         Q_UNREACHABLE();
     }
 
-    MessageItem asMessageItem() const
+    MessageItem asMessageItem(qsizetype index) const
     {
         MessageItem::Type msgType;
         switch (auto typ = type()) {
@@ -413,7 +431,7 @@ public:
             case Think:
                 throw std::invalid_argument(fmt::format("cannot convert ChatItem type {} to message item", int(typ)));
         }
-        return { msgType, flattenedContent(), sources, promptAttachments };
+        return { index, msgType, flattenedContent(), sources, promptAttachments };
     }
 
     static QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources);
@@ -537,6 +555,7 @@ private:
         return std::nullopt;
     }
 
+    // FIXME(jared): this should really be done at the parent level, not the sub-item level
     static std::optional<qsizetype> getPeerInternal(const MessageItem *arr, qsizetype size, qsizetype index)
     {
         qsizetype peer;
@@ -1114,10 +1133,12 @@ public:
         // A flattened version of the chat item tree used by the backend and jinja
         QMutexLocker locker(&m_mutex);
         std::vector<MessageItem> chatItems;
-        for (const ChatItem *item : m_chatItems) {
-            chatItems.reserve(chatItems.size() + item->subItems.size() + 1);
-            ranges::copy(item->subItems | views::transform(&ChatItem::asMessageItem), std::back_inserter(chatItems));
-            chatItems.push_back(item->asMessageItem());
+        for (qsizetype i : views::iota(0, m_chatItems.size())) {
+            auto *parent = m_chatItems.at(i);
+            chatItems.reserve(chatItems.size() + parent->subItems.size() + 1);
+            ranges::copy(parent->subItems | views::transform([&](auto *s) { return s->asMessageItem(i); }),
+                         std::back_inserter(chatItems));
+            chatItems.push_back(parent->asMessageItem(i));
         }
         return chatItems;
     }
