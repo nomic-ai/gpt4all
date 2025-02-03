@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Fix "index N is not a prompt" when using LocalDocs with reasoning ([#3451](https://github.com/nomic-ai/gpt4all/pull/3451)
-- Fix UI freeze when chat template is `{#` ([#3446](https://github.com/nomic-ai/gpt4all/pull/3446))
 - Work around rendering artifacts on Snapdragon SoCs with Windows ([#3450](https://github.com/nomic-ai/gpt4all/pull/3450))
 
 ## [3.8.0] - 2025-01-30
