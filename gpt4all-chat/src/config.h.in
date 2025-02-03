@@ -1,0 +1,7 @@
+#pragma once
+
+#define APP_VERSION "@APP_VERSION@"
+
+#define G4A_CONFIG(name) (1/G4A_CONFIG_##name == 1)
+
+#define G4A_CONFIG_force_d3d12 @GPT4ALL_CONFIG_FORCE_D3D12@
