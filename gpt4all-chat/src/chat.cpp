@@ -255,7 +255,7 @@ void Chat::responseStopped(qint64 promptResponseMs)
 
     ToolCallParser parser;
     parser.update(possibleToolcall.toUtf8());
-    if (parser.state() == ToolEnums::ParseState::Complete && parser.startTag() != ToolCallConstants::ThinkTag)
+    if (parser.state() == ToolEnums::ParseState::Complete && parser.startTag() != ToolCallConstants::ThinkStartTag)
         processToolCall(parser.toolCall());
     else
         responseComplete();
@@ -381,11 +381,8 @@ void Chat::trySwitchContextOfLoadedModel()
 
 void Chat::generatedNameChanged(const QString &name)
 {
-    // Only use the first three words maximum and remove newlines and extra spaces
-    m_generatedName = name.simplified();
-    QStringList words = m_generatedName.split(' ', Qt::SkipEmptyParts);
-    int wordCount = qMin(7, words.size());
-    m_name = words.mid(0, wordCount).join(' ');
+    m_generatedName = name;
+    m_name = name;
     emit nameChanged();
     m_needsSave = true;
 }

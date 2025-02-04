@@ -269,7 +269,7 @@ private:
             std::optional<QString> m_chatTemplate;
     mutable std::optional<QString> m_modelChatTemplate;
     QString m_systemMessage;
-    QString m_chatNamePrompt          = "Describe the above conversation in seven words or less.";
+    QString m_chatNamePrompt          = "Describe the above conversation. Your entire response must be three words or less.";
     QString m_suggestedFollowUpPrompt = "Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.";
     friend class MySettings;
     friend class ModelList;
