@@ -1209,7 +1209,6 @@ public:
             FPDF_ClosePage(m_page);
         if (m_doc)
             FPDF_CloseDocument(m_doc);
-        FPDF_DestroyLibrary();
     }
 
     int page() const override { return m_currentPage; }
@@ -1224,7 +1223,7 @@ private:
                     return std::nullopt;
 
                 if (m_page)
-                    FPDF_ClosePage(m_page);
+                    FPDF_ClosePage(std::exchange(m_page, nullptr));
                 m_page = FPDF_LoadPage(m_doc, m_currentPage++);
                 if (!m_page)
                     throw std::runtime_error("Failed to load page.");

@@ -181,5 +181,9 @@ int main(int argc, char *argv[])
     // Otherwise, we can get a heap-use-after-free inside of llama.cpp.
     ChatListModel::globalInstance()->destroyChats();
 
+#ifndef GPT4ALL_USE_QTPDF
+    FPDF_DestroyLibrary();
+#endif
+
     return res;
 }
