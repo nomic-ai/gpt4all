@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix "index N is not a prompt" when using LocalDocs with reasoning ([#3451](https://github.com/nomic-ai/gpt4all/pull/3451)
 - Work around rendering artifacts on Snapdragon SoCs with Windows ([#3450](https://github.com/nomic-ai/gpt4all/pull/3450))
 - Prevent DeepSeek-R1 reasoning from appearing in chat names and follow-up questions ([#3458](https://github.com/nomic-ai/gpt4all/pull/3458))
+- Fix LocalDocs crash on Windows ARM when reading PDFs ([#3460](https://github.com/nomic-ai/gpt4all/pull/3460))
 - Fix UI freeze when chat template is `{#` ([#3446](https://github.com/nomic-ai/gpt4all/pull/3446))
 
 ## [3.8.0] - 2025-01-30
