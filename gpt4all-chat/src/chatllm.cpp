@@ -99,7 +99,7 @@ public:
     // "old-style" responses, with all of the implementation details left in
     virtual void onOldResponseChunk(const QByteArray &chunk)                                                          = 0;
     // notify of a "new-style" response that has been cleaned of tool calling
-    virtual bool onBufferResponse  (const QString &response)                                                          = 0;
+    virtual bool onBufferResponse  (const QString &response, int bufferIdx)                                           = 0;
     // notify of a "new-style" response, no tool calling applicable
     virtual bool onRegularResponse ()                                                                                 = 0;
     virtual bool getStopGenerating () const                                                                           = 0;
@@ -136,7 +136,7 @@ static auto promptModelWithTools(
         bool ok;
         const auto parseBuffers = toolCallParser.buffers();
         if (parseBuffers.size() > 1) {
-            ok = respHandler.onBufferResponse(parseBuffers.last());
+            ok = respHandler.onBufferResponse(parseBuffers.last(), parseBuffers.size() - 1);
         } else {
             ok = respHandler.onRegularResponse();
         }
@@ -971,8 +971,9 @@ public:
         m_result->response.append(chunk);
     }
 
-    bool onBufferResponse(const QString &response) override
+    bool onBufferResponse(const QString &response, int bufferIdx) override
     {
+        Q_UNUSED(bufferIdx)
         try {
             m_cllm->m_chatModel->setResponseValue(response);
         } catch (const std::exception &e) {
@@ -989,7 +990,7 @@ public:
     bool onRegularResponse() override
     {
         auto respStr = QString::fromUtf8(m_result->response);
-        return onBufferResponse(removeLeadingWhitespace(respStr));
+        return onBufferResponse(removeLeadingWhitespace(respStr), 0);
     }
 
     bool getStopGenerating() const override { return m_cllm->m_stopGenerating; }
@@ -1160,6 +1161,43 @@ void ChatLLM::reloadModel()
         loadModel(m);
 }
 
+class NameResponseHandler : public BaseResponseHandler {
+public:
+    NameResponseHandler(ChatLLM *cllm)
+        : m_cllm(cllm) {}
+
+    void onSplitIntoTwo(const QString &startTag, const QString &firstBuffer, const QString &secondBuffer) override
+    { /* no-op */ }
+
+    void onSplitIntoThree(const QString &secondBuffer, const QString &thirdBuffer) override
+    { /* no-op */ }
+
+    void onOldResponseChunk(const QByteArray &chunk) override
+    {
+        m_response.append(chunk);
+    }
+
+    bool onBufferResponse(const QString &response, int bufferIdx) override
+    {
+        if (bufferIdx == 1)
+            return true; // ignore "think" content
+        QStringList words = response.simplified().split(u' ', Qt::SkipEmptyParts);
+        emit m_cllm->generatedNameChanged(words.join(u' '));
+        return words.size() <= 3;
+    }
+
+    bool onRegularResponse() override
+    {
+        return onBufferResponse(QString::fromUtf8(m_response), 0);
+    }
+
+    bool getStopGenerating() const override { return m_cllm->m_stopGenerating; }
+
+private:
+    ChatLLM    *m_cllm;
+    QByteArray  m_response;
+};
+
 void ChatLLM::generateName()
 {
     Q_ASSERT(isModelLoaded());
@@ -1176,23 +1214,15 @@ void ChatLLM::generateName()
         return;
     }
 
-    QByteArray response; // raw UTF-8
-
-    auto handleResponse = [this, &response](LLModel::Token token, std::string_view piece) -> bool {
-        Q_UNUSED(token)
-
-        response.append(piece.data(), piece.size());
-        QStringList words = QString::fromUtf8(response).simplified().split(u' ', Qt::SkipEmptyParts);
-        emit generatedNameChanged(words.join(u' '));
-        return words.size() <= 3;
-    };
+    NameResponseHandler respHandler(this);
 
     try {
-        m_llModelInfo.model->prompt(
-            applyJinjaTemplate(forkConversation(chatNamePrompt)),
-            [this](auto &&...) { return !m_stopGenerating; },
-            handleResponse,
-            promptContextFromSettings(m_modelInfo)
+        promptModelWithTools(
+            m_llModelInfo.model.get(),
+            /*promptCallback*/ [this](auto &&...) { return !m_stopGenerating; },
+            respHandler, promptContextFromSettings(m_modelInfo),
+            applyJinjaTemplate(forkConversation(chatNamePrompt)).c_str(),
+            { ToolCallConstants::ThinkTagName }
         );
     } catch (const std::exception &e) {
         qWarning() << "ChatLLM failed to generate name:" << e.what();

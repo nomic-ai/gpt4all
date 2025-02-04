@@ -287,6 +287,7 @@ private:
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;
     friend class ChatViewResponseHandler;
+    friend class NameResponseHandler;
 };
 
 #endif // CHATLLM_H
