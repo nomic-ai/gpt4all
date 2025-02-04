@@ -92,6 +92,70 @@ static const std::shared_ptr<minja::Context> &jinjaEnv()
     return environment;
 }
 
+class BaseResponseHandler {
+public:
+    virtual void onSplitIntoTwo    (const QString &startTag, const QString &firstBuffer, const QString &secondBuffer) = 0;
+    virtual void onSplitIntoThree  (const QString &secondBuffer, const QString &thirdBuffer)                          = 0;
+    // "old-style" responses, with all of the implementation details left in
+    virtual void onOldResponseChunk(const QByteArray &chunk)                                                          = 0;
+    // notify of a "new-style" response that has been cleaned of tool calling
+    virtual bool onBufferResponse  (const QString &response)                                                          = 0;
+    // notify of a "new-style" response, no tool calling applicable
+    virtual bool onRegularResponse ()                                                                                 = 0;
+    virtual bool getStopGenerating () const                                                                           = 0;
+};
+
+static auto promptModelWithTools(
+    LLModel *model, const LLModel::PromptCallback &promptCallback, BaseResponseHandler &respHandler,
+    const LLModel::PromptContext &ctx, const QByteArray &prompt, const QStringList &toolNames
+) -> std::pair<QStringList, bool>
+{
+    ToolCallParser toolCallParser(toolNames);
+    auto handleResponse = [&toolCallParser, &respHandler](LLModel::Token token, std::string_view piece) -> bool {
+        Q_UNUSED(token)
+
+        toolCallParser.update(piece.data());
+
+        // Split the response into two if needed
+        if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
+            const auto parseBuffers = toolCallParser.buffers();
+            Q_ASSERT(parseBuffers.size() == 2);
+            respHandler.onSplitIntoTwo(toolCallParser.startTag(), parseBuffers.at(0), parseBuffers.at(1));
+        }
+
+        // Split the response into three if needed
+        if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkStartTag
+            && toolCallParser.splitIfPossible()) {
+            const auto parseBuffers = toolCallParser.buffers();
+            Q_ASSERT(parseBuffers.size() == 3);
+            respHandler.onSplitIntoThree(parseBuffers.at(1), parseBuffers.at(2));
+        }
+
+        respHandler.onOldResponseChunk(QByteArray::fromRawData(piece.data(), piece.size()));
+
+        bool ok;
+        const auto parseBuffers = toolCallParser.buffers();
+        if (parseBuffers.size() > 1) {
+            ok = respHandler.onBufferResponse(parseBuffers.last());
+        } else {
+            ok = respHandler.onRegularResponse();
+        }
+        if (!ok)
+            return false;
+
+        const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
+            && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
+
+        return !shouldExecuteToolCall && !respHandler.getStopGenerating();
+    };
+    model->prompt(std::string_view(prompt), promptCallback, handleResponse, ctx);
+
+    const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
+        && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
+
+    return { toolCallParser.buffers(), shouldExecuteToolCall };
+}
+
 class LLModelStore {
 public:
     static LLModelStore *globalInstance();
@@ -882,6 +946,60 @@ auto ChatLLM::promptInternalChat(const QStringList &enabledCollections, const LL
     };
 }
 
+class ChatViewResponseHandler : public BaseResponseHandler {
+public:
+    ChatViewResponseHandler(ChatLLM *cllm, QElapsedTimer *totalTime, ChatLLM::PromptResult *result)
+        : m_cllm(cllm), m_totalTime(totalTime), m_result(result) {}
+
+    void onSplitIntoTwo(const QString &startTag, const QString &firstBuffer, const QString &secondBuffer) override
+    {
+        if (startTag == ToolCallConstants::ThinkStartTag)
+            m_cllm->m_chatModel->splitThinking({ firstBuffer, secondBuffer });
+        else
+            m_cllm->m_chatModel->splitToolCall({ firstBuffer, secondBuffer });
+    }
+
+    void onSplitIntoThree(const QString &secondBuffer, const QString &thirdBuffer) override
+    {
+        m_cllm->m_chatModel->endThinking({ secondBuffer, thirdBuffer }, m_totalTime->elapsed());
+    }
+
+    void onOldResponseChunk(const QByteArray &chunk) override
+    {
+        m_result->responseTokens++;
+        m_cllm->m_timer->inc();
+        m_result->response.append(chunk);
+    }
+
+    bool onBufferResponse(const QString &response) override
+    {
+        try {
+            m_cllm->m_chatModel->setResponseValue(response);
+        } catch (const std::exception &e) {
+            // We have a try/catch here because the main thread might have removed the response from
+            // the chatmodel by erasing the conversation during the response... the main thread sets
+            // m_stopGenerating before doing so, but it doesn't wait after that to reset the chatmodel
+            Q_ASSERT(m_cllm->m_stopGenerating);
+            return false;
+        }
+        emit m_cllm->responseChanged();
+        return true;
+    }
+
+    bool onRegularResponse() override
+    {
+        auto respStr = QString::fromUtf8(m_result->response);
+        return onBufferResponse(removeLeadingWhitespace(respStr));
+    }
+
+    bool getStopGenerating() const override { return m_cllm->m_stopGenerating; }
+
+private:
+    ChatLLM               *m_cllm;
+    QElapsedTimer         *m_totalTime;
+    ChatLLM::PromptResult *m_result;
+};
+
 auto ChatLLM::promptInternal(
     const std::variant<std::span<const MessageItem>, std::string_view> &prompt,
     const LLModel::PromptContext &ctx,
@@ -931,64 +1049,20 @@ auto ChatLLM::promptInternal(
 
     QElapsedTimer totalTime;
     totalTime.start();
+    ChatViewResponseHandler respHandler(this, &totalTime, &result);
+
     m_timer->start();
-
-    ToolCallParser toolCallParser;
-    auto handleResponse = [this, &result, &toolCallParser, &totalTime](LLModel::Token token, std::string_view piece) -> bool {
-        Q_UNUSED(token)
-        result.responseTokens++;
-        m_timer->inc();
-
-        toolCallParser.update(piece.data());
-
-        // Split the response into two if needed and create chat items
-        if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
-            const auto parseBuffers = toolCallParser.buffers();
-            Q_ASSERT(parseBuffers.size() == 2);
-            if (toolCallParser.startTag() == ToolCallConstants::ThinkStartTag)
-                m_chatModel->splitThinking({parseBuffers.at(0), parseBuffers.at(1)});
-            else
-                m_chatModel->splitToolCall({parseBuffers.at(0), parseBuffers.at(1)});
-        }
-
-        // Split the response into three if needed and create chat items
-        if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkStartTag
-            && toolCallParser.splitIfPossible()) {
-            const auto parseBuffers = toolCallParser.buffers();
-            Q_ASSERT(parseBuffers.size() == 3);
-            m_chatModel->endThinking({parseBuffers.at(1), parseBuffers.at(2)}, totalTime.elapsed());
-        }
-
-        result.response.append(piece.data(), piece.size());
-        auto respStr = QString::fromUtf8(result.response);
-
-        try {
-            const auto parseBuffers = toolCallParser.buffers();
-            if (parseBuffers.size() > 1)
-                m_chatModel->setResponseValue(parseBuffers.last());
-            else
-                m_chatModel->setResponseValue(removeLeadingWhitespace(respStr));
-        } catch (const std::exception &e) {
-            // We have a try/catch here because the main thread might have removed the response from
-            // the chatmodel by erasing the conversation during the response... the main thread sets
-            // m_stopGenerating before doing so, but it doesn't wait after that to reset the chatmodel
-            Q_ASSERT(m_stopGenerating);
-            return false;
-        }
-
-        emit responseChanged();
-
-        const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
-            && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
-
-        return !shouldExecuteToolCall && !m_stopGenerating;
-    };
-
+    QStringList finalBuffers;
+    bool        shouldExecuteTool;
     try {
         emit promptProcessing();
         m_llModelInfo.model->setThreadCount(mySettings->threadCount());
         m_stopGenerating = false;
-        m_llModelInfo.model->prompt(conversation, handlePrompt, handleResponse, ctx);
+        std::tie(finalBuffers, shouldExecuteTool) = promptModelWithTools(
+            m_llModelInfo.model.get(), handlePrompt, respHandler, ctx,
+            QByteArray::fromRawData(conversation.data(), conversation.size()),
+            ToolCallConstants::AllTagNames
+        );
     } catch (...) {
         m_timer->stop();
         throw;
@@ -997,22 +1071,18 @@ auto ChatLLM::promptInternal(
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
 
-    const auto parseBuffers = toolCallParser.buffers();
-    const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
-        && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
-
     // trim trailing whitespace
     auto respStr = QString::fromUtf8(result.response);
-    if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || parseBuffers.size() > 1)) {
-        if (parseBuffers.size() > 1)
-            m_chatModel->setResponseValue(parseBuffers.last());
+    if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || finalBuffers.size() > 1)) {
+        if (finalBuffers.size() > 1)
+            m_chatModel->setResponseValue(finalBuffers.last());
         else
             m_chatModel->setResponseValue(respStr.trimmed());
         emit responseChanged();
     }
 
     bool doQuestions = false;
-    if (!m_isServer && messageItems && !shouldExecuteToolCall) {
+    if (!m_isServer && messageItems && !shouldExecuteTool) {
         switch (mySettings->suggestionMode()) {
             case SuggestionMode::On:            doQuestions = true;          break;
             case SuggestionMode::LocalDocsOnly: doQuestions = usedLocalDocs; break;

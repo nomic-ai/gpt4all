@@ -30,6 +30,7 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+class ChatViewResponseHandler;
 class QDataStream;
 
 // NOTE: values serialized to disk, do not change or reuse
@@ -285,6 +286,7 @@ private:
     bool m_isServer;
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;
+    friend class ChatViewResponseHandler;
 };
 
 #endif // CHATLLM_H
