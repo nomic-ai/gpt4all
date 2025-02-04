@@ -268,5 +268,10 @@
     "version": "3.8.0",
     "notes": "* **Native DeepSeek-R1-Distill Support:** GPT4All now has robust support for the DeepSeek-R1 family of distillations.\n  * Several model variants are now available on the downloads page.\n  * Reasoning (wrapped in \"think\" tags) is displayed similarly to the Reasoner model.\n  * The DeepSeek-R1 Qwen pretokenizer is now supported, resolving the loading failure in previous versions.\n  * The model is now configured with a GPT4All-compatible prompt template by default.\n* **Chat Templating Overhaul:** The template parser has been *completely* replaced with one that has much better compatibility with common models.\n* **Code Interpreter Fixes:**\n  * An issue preventing the code interpreter from logging a single string in v3.7.0 has been fixed.\n  * The UI no longer freezes while the code interpreter is running a computation.\n* **Local Server Fixes:**\n  * An issue preventing the server from using LocalDocs after the first request since v3.5.0 has been fixed.\n  * System messages are now correctly hidden from the message history.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* ThiloteE (`@ThiloteE`)"
+  },
+  {
+    "version": "3.9.0",
+    "notes": "* **LocalDocs Fix:** LocalDocs no longer shows an error on later messages with reasoning models.\n* **DeepSeek Fix:** DeepSeek-R1 reasoning (in 'think' tags) no longer appears in chat names and follow-up questions.\n* **Windows ARM Improvements:**\n  * Graphical artifacts on some SoCs have been fixed.\n  * A crash when adding a collection of PDFs to LocalDocs has been fixed.\n* **Template Parser Fixes:** Chat templates containing an unclosed comment no longer freeze GPT4All.\n* **New Models:** OLMoE and Granite MoE models are now supported.\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* ThiloteE (`@ThiloteE`)"
   }
 ]
