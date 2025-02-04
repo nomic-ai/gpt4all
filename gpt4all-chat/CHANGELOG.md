@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Whitelist OLMoE and Granite model architectures (no Vulkan) ([#3449](https://github.com/nomic-ai/gpt4all/pull/3449))
+- Whitelist OLMoE and Granite MoE model architectures (no Vulkan) ([#3449](https://github.com/nomic-ai/gpt4all/pull/3449))
 
 ### Fixed
 - Fix "index N is not a prompt" when using LocalDocs with reasoning ([#3451](https://github.com/nomic-ai/gpt4all/pull/3451)
