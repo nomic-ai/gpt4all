@@ -1,17 +1,29 @@
 #include "toolcallparser.h"
 
-#include <QDebug>
-#include <QtGlobal>
-#include <QtLogging>
+#include "tool.h"
 
-#include <cstddef>
+#include <QSet>
+#include <QtGlobal>
+
+#include <stdexcept>
+
 
 ToolCallParser::ToolCallParser()
+    : ToolCallParser(ToolCallConstants::AllTagNames)
+    {}
+
+ToolCallParser::ToolCallParser(const QStringList &tagNames)
 {
-    m_possibleStartTags << ToolCallConstants::CodeInterpreterTag.toUtf8()
-                        << ToolCallConstants::ThinkTag.toUtf8();
-    m_possibleEndTags   << ToolCallConstants::CodeInterpreterEndTag.toUtf8()
-                        << ToolCallConstants::ThinkEndTag.toUtf8();
+    QSet<QChar> firstChars;
+    for (auto &name : tagNames) {
+        if (name.isEmpty())
+            throw std::invalid_argument("ToolCallParser(): tag names must not be empty");
+        if (firstChars.contains(name.at(0)))
+            throw std::invalid_argument("ToolCallParser(): tag names must not share any prefix");
+        firstChars << name.at(0);
+        m_possibleStartTags << makeStartTag(name).toUtf8();
+        m_possibleEndTags   << makeEndTag  (name).toUtf8();
+    }
     reset();
 }
 
@@ -80,7 +92,7 @@ void ToolCallParser::update(const QByteArray &update)
 {
     currentBuffer().append(update);
 
-    for (size_t i = currentBuffer().size() - update.size(); i < currentBuffer().size(); ++i) {
+    for (qsizetype i = currentBuffer().size() - update.size(); i < currentBuffer().size(); ++i) {
         const char c = currentBuffer()[i];
         const bool foundMatch = isExpected(c);
         if (!foundMatch) {

@@ -945,14 +945,14 @@ auto ChatLLM::promptInternal(
         if (toolCallParser.numberOfBuffers() < 2 && toolCallParser.splitIfPossible()) {
             const auto parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 2);
-            if (toolCallParser.startTag() == ToolCallConstants::ThinkTag)
+            if (toolCallParser.startTag() == ToolCallConstants::ThinkStartTag)
                 m_chatModel->splitThinking({parseBuffers.at(0), parseBuffers.at(1)});
             else
                 m_chatModel->splitToolCall({parseBuffers.at(0), parseBuffers.at(1)});
         }
 
         // Split the response into three if needed and create chat items
-        if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkTag
+        if (toolCallParser.numberOfBuffers() < 3 && toolCallParser.startTag() == ToolCallConstants::ThinkStartTag
             && toolCallParser.splitIfPossible()) {
             const auto parseBuffers = toolCallParser.buffers();
             Q_ASSERT(parseBuffers.size() == 3);
@@ -979,7 +979,7 @@ auto ChatLLM::promptInternal(
         emit responseChanged();
 
         const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
-            && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
+            && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
 
         return !shouldExecuteToolCall && !m_stopGenerating;
     };
@@ -999,7 +999,7 @@ auto ChatLLM::promptInternal(
 
     const auto parseBuffers = toolCallParser.buffers();
     const bool shouldExecuteToolCall = toolCallParser.state() == ToolEnums::ParseState::Complete
-        && toolCallParser.startTag() != ToolCallConstants::ThinkTag;
+        && toolCallParser.startTag() != ToolCallConstants::ThinkStartTag;
 
     // trim trailing whitespace
     auto respStr = QString::fromUtf8(result.response);
