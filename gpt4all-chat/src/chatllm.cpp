@@ -994,7 +994,8 @@ public:
         return onBufferResponse(removeLeadingWhitespace(respStr), 0);
     }
 
-    bool getStopGenerating() const override { return m_cllm->m_stopGenerating; }
+    bool getStopGenerating() const override
+    { return m_cllm->m_stopGenerating; }
 
 private:
     ChatLLM               *m_cllm;
@@ -1162,13 +1163,10 @@ void ChatLLM::reloadModel()
         loadModel(m);
 }
 
-class NameResponseHandler : public BaseResponseHandler {
-private:
-    // max length of chat names, in words
-    static constexpr qsizetype MAX_WORDS = 3;
-
+// This class throws discards the text within thinking tags, for use with chat names and follow-up questions.
+class SimpleResponseHandler : public BaseResponseHandler {
 public:
-    NameResponseHandler(ChatLLM *cllm)
+    SimpleResponseHandler(ChatLLM *cllm)
         : m_cllm(cllm) {}
 
     void onSplitIntoTwo(const QString &startTag, const QString &firstBuffer, const QString &secondBuffer) override
@@ -1178,15 +1176,40 @@ public:
     { /* no-op */ }
 
     void onOldResponseChunk(const QByteArray &chunk) override
-    {
-        m_response.append(chunk);
-    }
+    { m_response.append(chunk); }
 
     bool onBufferResponse(const QString &response, int bufferIdx) override
     {
         if (bufferIdx == 1)
             return true; // ignore "think" content
+        return onSimpleResponse(response);
+    }
 
+    bool onRegularResponse() override
+    { return onBufferResponse(QString::fromUtf8(m_response), 0); }
+
+    bool getStopGenerating() const override
+    { return m_cllm->m_stopGenerating; }
+
+protected:
+    virtual bool onSimpleResponse(const QString &response) = 0;
+
+protected:
+    ChatLLM    *m_cllm;
+    QByteArray  m_response;
+};
+
+class NameResponseHandler : public SimpleResponseHandler {
+private:
+    // max length of chat names, in words
+    static constexpr qsizetype MAX_WORDS = 3;
+
+public:
+    using SimpleResponseHandler::SimpleResponseHandler;
+
+protected:
+    bool onSimpleResponse(const QString &response) override
+    {
         QTextStream stream(const_cast<QString *>(&response), QIODeviceBase::ReadOnly);
         QStringList words;
         while (!stream.atEnd() && words.size() < MAX_WORDS) {
@@ -1198,17 +1221,6 @@ public:
         emit m_cllm->generatedNameChanged(words.join(u' '));
         return words.size() < MAX_WORDS || stream.atEnd();
     }
-
-    bool onRegularResponse() override
-    {
-        return onBufferResponse(QString::fromUtf8(m_response), 0);
-    }
-
-    bool getStopGenerating() const override { return m_cllm->m_stopGenerating; }
-
-private:
-    ChatLLM    *m_cllm;
-    QByteArray  m_response;
 };
 
 void ChatLLM::generateName()
@@ -1247,13 +1259,43 @@ void ChatLLM::handleChatIdChanged(const QString &id)
     m_llmThread.setObjectName(id);
 }
 
-void ChatLLM::generateQuestions(qint64 elapsed)
-{
+class QuestionResponseHandler : public SimpleResponseHandler {
+public:
+    using SimpleResponseHandler::SimpleResponseHandler;
+
+protected:
+    bool onSimpleResponse(const QString &response) override
+    {
+        auto responseUtf8Bytes = response.toUtf8().slice(m_offset);
+        auto responseUtf8 = std::string(responseUtf8Bytes.begin(), responseUtf8Bytes.end());
+        // extract all questions from response
+        ptrdiff_t lastMatchEnd = -1;
+        auto it = std::sregex_iterator(responseUtf8.begin(), responseUtf8.end(), s_reQuestion);
+        auto end = std::sregex_iterator();
+        for (; it != end; ++it) {
+            auto pos = it->position();
+            auto len = it->length();
+            lastMatchEnd = pos + len;
+            emit m_cllm->generatedQuestionFinished(QString::fromUtf8(&responseUtf8[pos], len));
+        }
+
+        // remove processed input from buffer
+        if (lastMatchEnd != -1)
+            m_offset += lastMatchEnd;
+        return true;
+    }
+
+private:
     // FIXME: This only works with response by the model in english which is not ideal for a multi-language
     // model.
     // match whole question sentences
-    static const std::regex reQuestion(R"(\b(?:What|Where|How|Why|When|Who|Which|Whose|Whom)\b[^?]*\?)");
+    static inline const std::regex s_reQuestion { R"(\b(?:What|Where|How|Why|When|Who|Which|Whose|Whom)\b[^?]*\?)" };
 
+    qsizetype m_offset = 0;
+};
+
+void ChatLLM::generateQuestions(qint64 elapsed)
+{
     Q_ASSERT(isModelLoaded());
     if (!isModelLoaded()) {
         emit responseStopped(elapsed);
@@ -1271,39 +1313,17 @@ void ChatLLM::generateQuestions(qint64 elapsed)
 
     emit generatingQuestions();
 
-    std::string response; // raw UTF-8
-
-    auto handleResponse = [this, &response](LLModel::Token token, std::string_view piece) -> bool {
-        Q_UNUSED(token)
-
-        // add token to buffer
-        response.append(piece);
-
-        // extract all questions from response
-        ptrdiff_t lastMatchEnd = -1;
-        auto it = std::sregex_iterator(response.begin(), response.end(), reQuestion);
-        auto end = std::sregex_iterator();
-        for (; it != end; ++it) {
-            auto pos = it->position();
-            auto len = it->length();
-            lastMatchEnd = pos + len;
-            emit generatedQuestionFinished(QString::fromUtf8(&response[pos], len));
-        }
-
-        // remove processed input from buffer
-        if (lastMatchEnd != -1)
-            response.erase(0, lastMatchEnd);
-        return true;
-    };
+    QuestionResponseHandler respHandler(this);
 
     QElapsedTimer totalTime;
     totalTime.start();
     try {
-        m_llModelInfo.model->prompt(
-            applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)),
-            [this](auto &&...) { return !m_stopGenerating; },
-            handleResponse,
-            promptContextFromSettings(m_modelInfo)
+        promptModelWithTools(
+            m_llModelInfo.model.get(),
+            /*promptCallback*/ [this](auto &&...) { return !m_stopGenerating; },
+            respHandler, promptContextFromSettings(m_modelInfo),
+            applyJinjaTemplate(forkConversation(suggestedFollowUpPrompt)).c_str(),
+            { ToolCallConstants::ThinkTagName }
         );
     } catch (const std::exception &e) {
         qWarning() << "ChatLLM failed to generate follow-up questions:" << e.what();
