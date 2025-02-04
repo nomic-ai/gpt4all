@@ -25,6 +25,10 @@
 #include <QVariant>
 #include <Qt>
 
+#if G4A_CONFIG(force_d3d12)
+#   include <QSGRendererInterface>
+#endif
+
 #ifndef GPT4ALL_USE_QTPDF
 #   include <fpdfview.h>
 #endif
@@ -82,6 +86,10 @@ int main(int argc, char *argv[])
         app.sendMessage("RAISE_WINDOW");
         return 0;
     }
+
+#if G4A_CONFIG(force_d3d12)
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D12);
+#endif
 
 #ifdef Q_OS_LINUX
     app.setWindowIcon(QIcon(":/gpt4all/icons/gpt4all.svg"));
