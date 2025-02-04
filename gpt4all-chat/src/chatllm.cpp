@@ -29,6 +29,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QSet>
+#include <QTextStream>
 #include <QUrl>
 #include <QWaitCondition>
 #include <Qt>
@@ -1162,6 +1163,10 @@ void ChatLLM::reloadModel()
 }
 
 class NameResponseHandler : public BaseResponseHandler {
+private:
+    // max length of chat names, in words
+    static constexpr qsizetype MAX_WORDS = 3;
+
 public:
     NameResponseHandler(ChatLLM *cllm)
         : m_cllm(cllm) {}
@@ -1181,9 +1186,17 @@ public:
     {
         if (bufferIdx == 1)
             return true; // ignore "think" content
-        QStringList words = response.simplified().split(u' ', Qt::SkipEmptyParts);
+
+        QTextStream stream(const_cast<QString *>(&response), QIODeviceBase::ReadOnly);
+        QStringList words;
+        while (!stream.atEnd() && words.size() < MAX_WORDS) {
+            QString word;
+            stream >> word;
+            words << word;
+        }
+
         emit m_cllm->generatedNameChanged(words.join(u' '));
-        return words.size() <= 3;
+        return words.size() < MAX_WORDS || stream.atEnd();
     }
 
     bool onRegularResponse() override
