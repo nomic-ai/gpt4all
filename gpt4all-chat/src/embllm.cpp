@@ -281,6 +281,9 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
         std::vector<float> result;
         result.resize(chunks.size() * m_model->embeddingSize());
         for (int j = 0; j < chunks.size(); j += BATCH_SIZE) {
+            if (m_stopGenerating)
+                return;
+
             QMutexLocker locker(&m_mutex);
             std::vector batchTexts(texts.begin() + j, texts.begin() + std::min(j + BATCH_SIZE, int(texts.size())));
             try {
