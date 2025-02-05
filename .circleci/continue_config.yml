@@ -1903,22 +1903,22 @@ workflows:
           context: gpt4all
       - build-offline-chat-installer-linux:
           context: gpt4all
-      - sign-online-chat-installer-macos:
+      - sign-offline-chat-installer-macos:
           context: gpt4all
           requires:
-            - build-online-chat-installer-macos
-      - notarize-online-chat-installer-macos:
+            - build-offline-chat-installer-macos
+      - notarize-offline-chat-installer-macos:
           context: gpt4all
           requires:
-            - sign-online-chat-installer-macos
-      - sign-online-chat-installer-windows:
+            - sign-offline-chat-installer-macos
+      - sign-offline-chat-installer-windows:
           context: gpt4all
           requires:
-            - build-online-chat-installer-windows
-      - sign-online-chat-installer-windows-arm:
+            - build-offline-chat-installer-windows
+      - sign-offline-chat-installer-windows-arm:
           context: gpt4all
           requires:
-            - build-online-chat-installer-windows-arm
+            - build-offline-chat-installer-windows-arm
   build-chat-installers-release:
     # only run on main branch tags that start with 'v' and a digit
     when:
