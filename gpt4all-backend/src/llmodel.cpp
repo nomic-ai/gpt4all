@@ -10,9 +10,9 @@
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <regex>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -32,6 +32,8 @@
 #   include "sysinfo.h" // for getSystemTotalRAMInBytes
 #endif
 
+using namespace std::string_literals;
+using namespace std::string_view_literals;
 namespace fs = std::filesystem;
 
 #ifndef __APPLE__
@@ -66,40 +68,36 @@ std::string s_implementations_search_path = ".";
     #define cpu_supports_avx2() !!__builtin_cpu_supports("avx2")
 #endif
 
-LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
-    : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
+LLModel::Implementation::Implementation(std::string buildBackend, Dlhandle &&dlhandle)
+    : m_buildBackend(std::move(buildBackend))
+    , m_dlhandle(new Dlhandle(std::move(dlhandle)))
+{
     auto get_model_type = m_dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
-    m_modelType = get_model_type();
-    auto get_build_variant = m_dlhandle->get<const char *()>("get_build_variant");
-    assert(get_build_variant);
-    m_buildVariant = get_build_variant();
     m_getFileArch = m_dlhandle->get<char *(const char *)>("get_file_arch");
     assert(m_getFileArch);
     m_isArchSupported = m_dlhandle->get<bool(const char *)>("is_arch_supported");
     assert(m_isArchSupported);
     m_construct = m_dlhandle->get<LLModel *()>("construct");
     assert(m_construct);
+
+    m_modelType = get_model_type();
 }
 
 LLModel::Implementation::Implementation(Implementation &&o)
-    : m_getFileArch(o.m_getFileArch)
+    : m_buildBackend(o.m_buildBackend)
+    , m_dlhandle(o.m_dlhandle)
+    , m_getFileArch(o.m_getFileArch)
     , m_isArchSupported(o.m_isArchSupported)
     , m_construct(o.m_construct)
     , m_modelType(o.m_modelType)
-    , m_buildVariant(o.m_buildVariant)
-    , m_dlhandle(o.m_dlhandle) {
+{
     o.m_dlhandle = nullptr;
 }
 
 LLModel::Implementation::~Implementation()
 {
     delete m_dlhandle;
-}
-
-static bool isImplementation(const Dlhandle &dl)
-{
-    return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
 // Add the CUDA Toolkit to the DLL search path on Windows.
@@ -117,55 +115,43 @@ static void addCudaSearchPath()
 #endif
 }
 
-const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList()
+auto LLModel::LazyImplementation::get() -> const Implementation &
 {
+    if (!impl) impl.emplace(buildBackend, Dlhandle(path));
+    return *impl;
+}
+
+auto LLModel::getImplementations() -> std::vector<LazyImplementation> &
+{
+    // in no particular order
+    static const std::array ALL_BUILD_BACKENDS { "cpu"sv, "metal"sv, "kompute"sv, "vulkan"sv, "cuda"sv };
+    static const std::string_view LIB_EXT(LIB_FILE_EXT);
+
     if (cpu_supports_avx() == 0) {
         throw std::runtime_error("CPU does not support AVX");
     }
 
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<Implementation>([] () {
-        std::vector<Implementation> fres;
+    static auto* libs = new std::vector<LazyImplementation>([] () {
+        std::vector<LazyImplementation> fres;
 
         addCudaSearchPath();
 
-        std::string impl_name_re = "llamamodel-mainline-(cpu|metal|kompute|vulkan|cuda)";
-        if (cpu_supports_avx2() == 0) {
-            impl_name_re += "-avxonly";
-        }
-        std::regex re(impl_name_re);
-        auto search_in_directory = [&](const std::string& paths) {
-            std::stringstream ss(paths);
-            std::string path;
-            // Split the paths string by the delimiter and process each path.
-            while (std::getline(ss, path, ';')) {
-                std::u8string u8_path(path.begin(), path.end());
-                // Iterate over all libraries
-                for (const auto &f : fs::directory_iterator(u8_path)) {
-                    const fs::path &p = f.path();
-
-                    if (p.extension() != LIB_FILE_EXT) continue;
-                    if (!std::regex_search(p.stem().string(), re)) continue;
-
-                    // Add to list if model implementation
-                    Dlhandle dl;
-                    try {
-                        dl = Dlhandle(p);
-                    } catch (const Dlhandle::Exception &e) {
-                        std::cerr << "Failed to load " << p.filename().string() << ": " << e.what() << "\n";
-                        continue;
-                    }
-                    if (!isImplementation(dl)) {
-                        std::cerr << "Not an implementation: " << p.filename().string() << "\n";
-                        continue;
-                    }
-                    fres.emplace_back(Implementation(std::move(dl)));
-                }
+        bool avxonly = cpu_supports_avx2() == 0;
+        std::stringstream ss(s_implementations_search_path);
+        std::string piece;
+        // Split the paths string by the delimiter and process each path.
+        while (std::getline(ss, piece, ';')) {
+            auto basePath = fs::path(std::u8string(piece.begin(), piece.end()));
+            // Iterate over all libraries
+            for (auto &buildBackend : ALL_BUILD_BACKENDS) {
+                auto path = basePath /
+                    "llamamodel-mainline-"s.append(buildBackend).append(avxonly ? "-avxonly" : "").append(LIB_EXT);
+                if (fs::exists(path))
+                    fres.push_back(LazyImplementation { std::string(buildBackend), path });
             }
-        };
-
-        search_in_directory(s_implementations_search_path);
+        }
 
         return fres;
     }());
@@ -173,22 +159,16 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     return *libs;
 }
 
-static std::string applyCPUVariant(const std::string &buildVariant)
+auto LLModel::Implementation::findImplementation(const char *fname, const std::string &buildBackend)
+    -> const Implementation *
 {
-    if (buildVariant != "metal" && cpu_supports_avx2() == 0) {
-        return buildVariant + "-avxonly";
-    }
-    return buildVariant;
-}
-
-const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant)
-{
-    bool buildVariantMatched = false;
+    bool buildBackendMatched = false;
     std::optional<std::string> archName;
-    for (const auto& i : implementationList()) {
-        if (buildVariant != i.m_buildVariant) continue;
-        buildVariantMatched = true;
+    for (auto &li : getImplementations()) {
+        if (li.buildBackend != buildBackend) continue;
+        buildBackendMatched = true;
 
+        auto &i = li.get();
         char *arch = i.m_getFileArch(fname);
         if (!arch) continue;
         archName = arch;
@@ -198,7 +178,7 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
         if (archSupported) return &i;
     }
 
-    if (!buildVariantMatched)
+    if (!buildBackendMatched)
         return nullptr;
     if (!archName)
         throw UnsupportedModelError("Unsupported file format");
@@ -216,7 +196,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, const 
     }
 
     for (const auto &desiredBackend: desiredBackends) {
-        const auto *impl = implementation(modelPath.c_str(), applyCPUVariant(desiredBackend));
+        const auto *impl = findImplementation(modelPath.c_str(), desiredBackend);
 
         if (impl) {
             // Construct llmodel implementation
@@ -251,11 +231,11 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
 {
     static std::unordered_map<std::string, std::unique_ptr<LLModel>> implCache;
 
-    const std::vector<Implementation> *impls;
+    std::vector<LazyImplementation> *impls;
     try {
-        impls = &implementationList();
+        impls = &getImplementations();
     } catch (const std::runtime_error &e) {
-        std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
+        std::cerr << __func__ << ": getImplementations() failed: " << e.what() << "\n";
         return nullptr;
     }
 
@@ -268,13 +248,15 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
 
     const Implementation *impl = nullptr;
 
-    for (const auto &desiredBackend: desiredBackends) {
+    for (const auto &desiredBackend : desiredBackends) {
         auto cacheIt = implCache.find(desiredBackend);
         if (cacheIt != implCache.end())
             return cacheIt->second.get(); // cached
 
-        for (const auto &i: *impls) {
-            if (i.m_modelType == "LLaMA" && i.m_buildVariant == applyCPUVariant(desiredBackend)) {
+        for (auto &li : *impls) {
+            if (li.buildBackend == desiredBackend) {
+                auto &i = li.get();
+                assert(i.m_modelType == "LLaMA");
                 impl = &i;
                 break;
             }

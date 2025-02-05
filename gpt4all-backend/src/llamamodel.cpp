@@ -1280,19 +1280,10 @@ void LLamaModel::embedInternal(
 #endif
 
 extern "C" {
-DLL_EXPORT bool is_g4a_backend_model_implementation()
-{
-    return true;
-}
 
 DLL_EXPORT const char *get_model_type()
 {
     return modelType_;
-}
-
-DLL_EXPORT const char *get_build_variant()
-{
-    return GGML_BUILD_VARIANT;
 }
 
 DLL_EXPORT char *get_file_arch(const char *fname)
