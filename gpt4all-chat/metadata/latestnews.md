@@ -1,5 +1,15 @@
 ## Latest News
 
+GPT4All v3.9.0 was released on February 4th. Changes include:
+
+* **LocalDocs Fix:** LocalDocs no longer shows an error on later messages with reasoning models.
+* **DeepSeek Fix:** DeepSeek-R1 reasoning (in 'think' tags) no longer appears in chat names and follow-up questions.
+* **Windows ARM Improvements:**
+  * Graphical artifacts on some SoCs have been fixed.
+  * A crash when adding a collection of PDFs to LocalDocs has been fixed.
+* **Template Parser Fixes:** Chat templates containing an unclosed comment no longer freeze GPT4All.
+* **New Models:** OLMoE and Granite MoE models are now supported.
+
 GPT4All v3.8.0 was released on January 30th. Changes include:
 
 * **Native DeepSeek-R1-Distill Support:** GPT4All now has robust support for the DeepSeek-R1 family of distillations.
