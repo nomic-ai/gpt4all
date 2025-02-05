@@ -242,6 +242,12 @@ void Network::handleJsonUploadFinished()
 
     m_activeUploads.removeAll(jsonReply);
 
+    if (jsonReply->error() != QNetworkReply::NoError) {
+        qWarning() << "Request to" << jsonReply->url().toString() << "failed:" << jsonReply->errorString();
+        jsonReply->deleteLater();
+        return;
+    }
+
     QVariant response = jsonReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
     bool ok;
@@ -449,6 +455,11 @@ void Network::handleIpifyFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Request to" << reply->url().toString() << "failed:" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
@@ -473,6 +484,11 @@ void Network::handleMixpanelFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Request to" << reply->url().toString() << "failed:" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
@@ -511,6 +527,11 @@ void Network::handleHealthFinished()
     QNetworkReply *healthReply = qobject_cast<QNetworkReply *>(sender());
     if (!healthReply)
         return;
+    if (healthReply->error() != QNetworkReply::NoError) {
+        qWarning() << "Request to" << healthReply->url().toString() << "failed:" << healthReply->errorString();
+        healthReply->deleteLater();
+        return;
+    }
 
     QVariant response = healthReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
