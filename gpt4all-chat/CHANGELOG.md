@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Fix visual spacing issues with deepseek models ([#3470](https://github.com/nomic-ai/gpt4all/pull/3470))
+
 ## [3.9.0] - 2025-02-04
 
 ### Added
