@@ -198,6 +198,7 @@ GridLayout {
                         isError: false
                         isThinking: true
                         thinkingTime: modelData.thinkingTime
+                        visible: modelData.content !== ""
                     }
                 }
             }
