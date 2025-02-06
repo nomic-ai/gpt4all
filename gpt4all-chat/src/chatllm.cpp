@@ -976,7 +976,8 @@ public:
     {
         Q_UNUSED(bufferIdx)
         try {
-            m_cllm->m_chatModel->setResponseValue(response);
+            QString r = response;
+            m_cllm->m_chatModel->setResponseValue(removeLeadingWhitespace(r));
         } catch (const std::exception &e) {
             // We have a try/catch here because the main thread might have removed the response from
             // the chatmodel by erasing the conversation during the response... the main thread sets
@@ -991,7 +992,7 @@ public:
     bool onRegularResponse() override
     {
         auto respStr = QString::fromUtf8(m_result->response);
-        return onBufferResponse(removeLeadingWhitespace(respStr), 0);
+        return onBufferResponse(respStr, 0);
     }
 
     bool getStopGenerating() const override
@@ -1078,7 +1079,7 @@ auto ChatLLM::promptInternal(
     auto respStr = QString::fromUtf8(result.response);
     if (!respStr.isEmpty() && (std::as_const(respStr).back().isSpace() || finalBuffers.size() > 1)) {
         if (finalBuffers.size() > 1)
-            m_chatModel->setResponseValue(finalBuffers.last());
+            m_chatModel->setResponseValue(finalBuffers.last().trimmed());
         else
             m_chatModel->setResponseValue(respStr.trimmed());
         emit responseChanged();
