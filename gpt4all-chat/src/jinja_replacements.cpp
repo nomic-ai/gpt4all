@@ -184,7 +184,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- if loop.last and add_generation_prompt %}
    {{- '<|start_of_role|>assistant' }}
 {%- if controls %}
-   {{- '\n\n' + controls | tojson()}}
+   {{- ' ' + controls | tojson()}}
 {%- endif %}
    {{- '<|end_of_role|>' }}
 {%- endif %}
