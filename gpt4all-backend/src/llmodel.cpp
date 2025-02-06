@@ -140,9 +140,14 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
             std::string path;
             // Split the paths string by the delimiter and process each path.
             while (std::getline(ss, path, ';')) {
-                std::u8string u8_path(path.begin(), path.end());
+                fs::directory_iterator iter;
+                try {
+                    iter = fs::directory_iterator(std::u8string(path.begin(), path.end()));
+                } catch (const fs::filesystem_error &) {
+                    continue; // skip nonexistent path
+                }
                 // Iterate over all libraries
-                for (const auto &f : fs::directory_iterator(u8_path)) {
+                for (const auto &f : iter) {
                     const fs::path &p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;

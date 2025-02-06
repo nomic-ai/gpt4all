@@ -359,8 +359,11 @@ void EmbeddingLLMWorker::handleFinished()
     if (retrievedData.isValid() && retrievedData.canConvert<QVector<EmbeddingChunk>>())
         chunks = retrievedData.value<QVector<EmbeddingChunk>>();
 
-    QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    Q_ASSERT(response.isValid());
+    QVariant response;
+    if (reply->error() != QNetworkReply::NoError) {
+        response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        Q_ASSERT(response.isValid());
+    }
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
