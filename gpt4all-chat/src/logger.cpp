@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QGlobalStatic>
 #include <QIODevice>
+#include <QMutexLocker>
 #include <QStandardPaths>
 
 #include <cstdio>
@@ -62,8 +63,11 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext &, const QS
     }
     // Get time and date
     auto timestamp = QDateTime::currentDateTime().toString();
-    // Write message
+
     const std::string out = u"[%1] (%2): %3\n"_s.arg(typeString, timestamp, msg).toStdString();
+
+    // Write message
+    QMutexLocker locker(&logger->m_mutex);
     logger->m_file.write(out.c_str());
     logger->m_file.flush();
     std::cerr << out;

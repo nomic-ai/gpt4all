@@ -2,19 +2,23 @@
 #define LOGGER_H
 
 #include <QFile>
+#include <QMutex>
 #include <QString>
 #include <QtLogging>
 
-class Logger
-{
-    QFile m_file;
-
-    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
-
+class Logger {
 public:
+    explicit Logger();
+
     static Logger *globalInstance();
 
-    explicit Logger();
+private:
+    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+private:
+    QFile  m_file;
+    QMutex m_mutex;
+
     friend class MyLogger;
 };
 

@@ -499,11 +499,6 @@
         <translation>introdu $BASE_URL</translation>
     </message>
     <message>
-        <location filename="../qml/AddHFModelView.qml" line="600"/>
-        <source>ERROR: $API_KEY is empty.</source>
-        <translation>EROARE: $API_KEY absentă</translation>
-    </message>
-    <message>
         <location filename="../qml/AddHFModelView.qml" line="606"/>
         <source>enter $MODEL_NAME</source>
         <translation>introdu $MODEL_NAME</translation>

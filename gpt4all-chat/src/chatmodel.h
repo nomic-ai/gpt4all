@@ -204,7 +204,8 @@ public:
         : QObject(nullptr)
     {
         moveToThread(parent->thread());
-        setParent(parent);
+        // setParent must be called from the thread the object lives in
+        QMetaObject::invokeMethod(this, [this, parent]() { this->setParent(parent); });
     }
 
     // NOTE: System messages are currently never serialized and only *stored* by the local server.
