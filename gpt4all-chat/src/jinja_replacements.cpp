@@ -135,6 +135,61 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|im_start|>assistant\n' }}
 {%- endif %})TEMPLATE",
     },
+    // ibm-granite/granite-3.1-8b-instruct.gguf
+    {
+        // original
+        R"TEMPLATE({%- if messages[0]['role'] == 'system' %}{%- set system_message = messages[0]['content'] %}{%- set loop_messages = messages[1:] %}{%- else %}{%- set system_message = "Knowledge Cutoff Date: April 2024. You are Granite, developed by IBM." %}{%- if tools and documents %}{%- set system_message = system_message + " You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request. Write the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}{%- elif tools %}{%- set system_message = system_message + " You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request." %}{%- elif documents %}{%- set system_message = system_message + " Write the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}{%- else %}{%- set system_message = system_message + " You are a helpful AI assistant." %}{%- endif %}{%- if controls and 'citations' in controls and documents %}{%- set system_message = system_message + ' In your response, use the symbols <co> and </co> to indicate when a fact comes from a document in the search result, e.g <co>0</co> for a fact from document 0. Afterwards, list all the citations with their corresponding documents in an ordered list.' %}{%- endif %}{%- if controls and 'hallucinations' in controls and documents %}{%- set system_message = system_message + ' Finally, after the response is written, include a numbered list of sentences from the response that are potentially hallucinated and not based in the documents.' %}{%- endif %}{%- set loop_messages = messages %}{%- endif %}{{- '<|start_of_role|>system<|end_of_role|>' + system_message + '<|end_of_text|> ' }}{%- if tools %}{{- '<|start_of_role|>tools<|end_of_role|>' }}{{- tools | tojson(indent=4) }}{{- '<|end_of_text|> ' }}{%- endif %}{%- if documents %}{{- '<|start_of_role|>documents<|end_of_role|>' }}{%- for document in documents %}{{- 'Document ' + loop.index0 | string + ' ' }}{{- document['text'] }}{%- if not loop.last %}{{- ' '}}{%- endif%}{%- endfor %}{{- '<|end_of_text|> ' }}{%- endif %}{%- for message in loop_messages %}{{- '<|start_of_role|>' + message['role'] + '<|end_of_role|>' + message['content'] + '<|end_of_text|> ' }}{%- if loop.last and add_generation_prompt %}{{- '<|start_of_role|>assistant' }}{%- if controls %}{{- ' ' + controls | tojson()}}{%- endif %}{{- '<|end_of_role|>' }}{%- endif %}{%- endfor %})TEMPLATE",
+        // replacement
+        R"TEMPLATE({%- if messages[0]['role'] == 'system' %}
+   {%- set system_message = messages[0]['content'] %}
+   {%- set loop_messages = messages[1:] %}
+{%- else %}
+   {%- set system_message = "Knowledge Cutoff Date: April 2024.\nYou are Granite, developed by IBM." %}
+{%- if tools and documents %}
+   {%- set system_message = system_message + " You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request.\n\nWrite the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}
+{%- elif tools %}
+   {%- set system_message = system_message + " You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request." %}
+{%- elif documents %}
+   {%- set system_message = system_message + " Write the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}
+{%- else %}
+   {%- set system_message = system_message + " You are a helpful AI assistant." %}
+{%- endif %}
+{%- if controls and 'citations' in controls and documents %}
+   {%- set system_message = system_message + '\n\nIn your response, use the symbols <co> and </co> to indicate when a fact comes from a document in the search result, e.g <co>0</co> for a fact from document 0. Afterwards, list all the citations with their corresponding documents in an ordered list.' %}
+{%- endif %}
+{%- if controls and 'hallucinations' in controls and documents %}
+   {%- set system_message = system_message + '\n\nFinally, after the response is written, include a numbered list of sentences from the response that are potentially hallucinated and not based in the documents.' %}
+{%- endif %}
+   {%- set loop_messages = messages %}
+{%- endif %}
+{{- '<|start_of_role|>system<|end_of_role|>' + system_message + '<|end_of_text|>\n' }}
+{%- if tools %}
+{{- '<|start_of_role|>tools<|end_of_role|>' }}
+{{- tools | tojson(indent=4) }}
+{{- '<|end_of_text|>\n' }}
+{%- endif %}
+{%- if documents %}
+   {{- '<|start_of_role|>documents<|end_of_role|>' }}
+{%- for document in documents %}
+   {{- 'Document ' + loop.index0 | string + '\n' }}
+   {{- document['text'] }}
+   {%- if not loop.last %}
+   {{- '\n\n'}}
+{%- endif%}
+{%- endfor %}
+{{- '<|end_of_text|>\n' }}
+{%- endif %}
+{%- for message in loop_messages %}
+   {{- '<|start_of_role|>' + message['role'] + '<|end_of_role|>' + message['content'] + '<|end_of_text|>\n' }}
+{%- if loop.last and add_generation_prompt %}
+   {{- '<|start_of_role|>assistant' }}
+{%- if controls %}
+   {{- '\n\n' + controls | tojson()}}
+{%- endif %}
+   {{- '<|end_of_role|>' }}
+{%- endif %}
+{%- endfor %})TEMPLATE",
+    },
     // Llama-3.2-1B-Instruct-Q4_0.gguf, Llama-3.2-3B-Instruct-Q4_0.gguf, SummLlama3.2-3B-Q4_0.gguf (nomic-ai/gpt4all#3309)
     {
         // original
@@ -618,6 +673,39 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
 {%- if add_generation_prompt %}
     {{- '<|im_start|>assistant\n' }}
 {%- endif %})TEMPLATE",
+    },
+    // allenai/OLMoE-1B-7B-0924-Instruct-GGUF ()
+    {
+        // original
+        R"TEMPLATE({{ bos_token }}{% for message in messages %}
+{% if message['role'] == 'system' %}
+{{ '<|system|>
+' + message['content'] }}
+{% elif message['role'] == 'user' %}
+{{ '<|user|>
+' + message['content'] }}
+{% elif message['role'] == 'assistant' %}
+{{ '<|assistant|>
+'  + message['content'] + eos_token }}
+{% endif %}
+{% if loop.last and add_generation_prompt %}
+{{ '<|assistant|>' }}
+{% endif %}
+{% endfor %})TEMPLATE",
+        // replacement
+        R"TEMPLATE({{ bos_token }}
+{% for message in messages %}
+{% if message['role'] == 'system' %}
+   {{ '<|system|>\n' + message['content'] }}
+{% elif message['role'] == 'user' %}
+   {{ '<|user|>\n' + message['content'] }}
+{% elif message['role'] == 'assistant' %}
+   {{ '<|assistant|>\n'  + message['content'] + eos_token }}
+{% endif %}
+{% if loop.last and add_generation_prompt %}
+   {{ '<|assistant|>' }}
+{% endif %}
+{% endfor %})TEMPLATE",
     },
     // Phi-3.1-mini-128k-instruct-Q4_0.gguf (nomic-ai/gpt4all#3346)
     {
