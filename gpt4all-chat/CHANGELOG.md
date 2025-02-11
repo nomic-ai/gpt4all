@@ -6,13 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Substitute prettier default templates for OLMoE 7B and Granite 3.1 3B/8B ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
+
 ### Fixed
 - Fix several potential crashes ([#3465](https://github.com/nomic-ai/gpt4all/pull/3465))
 - Fix visual spacing issues with deepseek models ([#3470](https://github.com/nomic-ai/gpt4all/pull/3470))
-
-### Added
-- Added Jinja replacement template for allenai\/OLMoE-1B-7B-0924-Instruct ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
-- Added Jinja replacement template for ibm-granite\/granite-3.1-3b-a800m-instruct ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
 
 ## [3.9.0] - 2025-02-04
 
