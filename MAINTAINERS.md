@@ -72,6 +72,6 @@ Discord: `@Tim453`
 - Flatpak
 
 Jack ([@wuodoo](https://github.com/wuodoo))<br/>
-E-mail: 2296103047@qq.com><br/>
+E-mail: 2296103047@qq.com<br/>
 Discord: `@mikage`
 - zh\_CN translation
