@@ -113,7 +113,7 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {%- elif message['role'] == 'system' %}
         {{- '<|system|>\n' + message['content'] + eos_token }}
     {%- elif message['role'] == 'assistant' %}
-        {{- '<|assistant|>\n'  + message['content'] + eos_token }}
+        {{- '<|assistant|>\n' + message['content'] + eos_token }}
     {%- endif %}
     {%- if loop.last and add_generation_prompt %}
         {{- '<|assistant|>' }}
@@ -660,9 +660,9 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
         {{- '<|user|>\n' + message['content'] + '\n' }}
     {%- elif message['role'] == 'assistant' %}
         {%- if not loop.last %}
-            {{- '<|assistant|>\n'  + message['content'] + eos_token + '\n' }}
+            {{- '<|assistant|>\n' + message['content'] + eos_token + '\n' }}
         {%- else %}
-            {{- '<|assistant|>\n'  + message['content'] + eos_token }}
+            {{- '<|assistant|>\n' + message['content'] + eos_token }}
         {%- endif %}
     {%- endif %}
     {%- if loop.last and add_generation_prompt %}
