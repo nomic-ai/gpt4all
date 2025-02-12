@@ -639,6 +639,37 @@ const std::unordered_map<std::string_view, std::string_view> CHAT_TEMPLATE_SUBST
     {{- '<|im_start|>assistant\n' }}
 {%- endif %})TEMPLATE",
     },
+    // OLMoE-1B-7B-0125-Instruct-Q4_0.gguf (nomic-ai/gpt4all#3471)
+    {
+        // original
+        R"TEMPLATE({{ bos_token }}{% for message in messages %}{% if message['role'] == 'system' %}{{ '<|system|>
+' + message['content'] + '
+' }}{% elif message['role'] == 'user' %}{{ '<|user|>
+' + message['content'] + '
+' }}{% elif message['role'] == 'assistant' %}{% if not loop.last %}{{ '<|assistant|>
+'  + message['content'] + eos_token + '
+' }}{% else %}{{ '<|assistant|>
+'  + message['content'] + eos_token }}{% endif %}{% endif %}{% if loop.last and add_generation_prompt %}{{ '<|assistant|>
+' }}{% endif %}{% endfor %})TEMPLATE",
+        // replacement
+        R"TEMPLATE({{- bos_token }}
+{%- for message in messages %}
+    {%- if message['role'] == 'system' %}
+        {{- '<|system|>\n' + message['content'] + '\n' }}
+    {%- elif message['role'] == 'user' %}
+        {{- '<|user|>\n' + message['content'] + '\n' }}
+    {%- elif message['role'] == 'assistant' %}
+        {%- if not loop.last %}
+            {{- '<|assistant|>\n'  + message['content'] + eos_token + '\n' }}
+        {%- else %}
+            {{- '<|assistant|>\n'  + message['content'] + eos_token }}
+        {%- endif %}
+    {%- endif %}
+    {%- if loop.last and add_generation_prompt %}
+        {{- '<|assistant|>\n' }}
+    {%- endif %}
+{%- endfor %})TEMPLATE",
+    },
     // OLMoE-1B-7B-0924-Instruct-Q4_0.gguf (nomic-ai/gpt4all#3471)
     {
         // original

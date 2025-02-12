@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
-- Substitute prettier default templates for OLMoE 7B and Granite 3.1 3B/8B ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
+- Substitute prettier default templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
 
 ### Fixed
 - Fix several potential crashes ([#3465](https://github.com/nomic-ai/gpt4all/pull/3465))
