@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Whitelist Granite (non-MoE) model architecture (by [@ThiloteE](https://github.com/ThiloteE) in [#3487](https://github.com/nomic-ai/gpt4all/pull/3487))
 
 ### Changed
-- Substitute prettier default templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B ([#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
+- Substitute prettier default templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B (by [@ThiloteE](https://github.com/ThiloteE) in [#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
 
 ### Fixed
 - Fix several potential crashes ([#3465](https://github.com/nomic-ai/gpt4all/pull/3465))
