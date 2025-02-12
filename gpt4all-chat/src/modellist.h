@@ -5,24 +5,28 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QHash>
-#include <QLatin1StringView>
+#include <QLatin1StringView> // IWYU pragma: keep
 #include <QList>
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
-#include <QPair>
-#include <QQmlEngine>
+#include <QPair> // IWYU pragma: keep
+#include <QQmlEngine> // IWYU pragma: keep
 #include <QSortFilterProxyModel>
 #include <QSslError>
 #include <QString>
 #include <QVariant>
-#include <QVector>
+#include <QVector> // IWYU pragma: keep
 #include <Qt>
-#include <QtGlobal>
+#include <QtTypes>
 
 #include <optional>
 #include <utility>
+
+// IWYU pragma: no_forward_declare QObject
+// IWYU pragma: no_forward_declare QSslError
+class QUrl;
 
 using namespace Qt::Literals::StringLiterals;
 

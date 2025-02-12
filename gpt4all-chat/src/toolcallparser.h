@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include <QList>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 
 namespace ToolEnums { enum class ParseState; }
 

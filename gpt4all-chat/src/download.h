@@ -13,9 +13,13 @@
 #include <QSslError>
 #include <QString>
 #include <QThread>
-#include <QtGlobal>
+#include <QtTypes>
 
+// IWYU pragma: no_forward_declare QFile
+// IWYU pragma: no_forward_declare QList
+// IWYU pragma: no_forward_declare QSslError
 class QByteArray;
+
 
 struct ReleaseInfo {
     Q_GADGET

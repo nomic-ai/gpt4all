@@ -10,31 +10,36 @@
 #include <QDebug>
 #include <QGlobalStatic>
 #include <QGuiApplication>
-#include <QIODevice>
+#include <QIODevice> // IWYU pragma: keep
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QKeyValueIterator>
 #include <QLocale>
 #include <QNetworkRequest>
-#include <QPair>
+#include <QPair> // IWYU pragma: keep
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QSettings>
 #include <QSslConfiguration>
 #include <QSslSocket>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QTextStream>
 #include <QUrl>
 #include <QVariant>
-#include <QVector>
+#include <QVector> // IWYU pragma: keep
 #include <Qt>
+#include <QtAssert>
 #include <QtLogging>
+#include <QtMinMax>
 
-#include <algorithm>
 #include <compare>
 #include <cstddef>
 #include <utility>
 
 using namespace Qt::Literals::StringLiterals;
+
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)

@@ -1,34 +1,34 @@
 #include "embllm.h"
 
-#include "modellist.h"
 #include "mysettings.h"
 
 #include <gpt4all-backend/llmodel.h>
 
 #include <QCoreApplication>
 #include <QDebug>
-#include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
-#include <QIODevice>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QList>
-#include <QMutexLocker>
+#include <QMutexLocker> // IWYU pragma: keep
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrl>
 #include <Qt>
-#include <QtGlobal>
+#include <QtAssert>
 #include <QtLogging>
 
 #include <exception>
+#include <string>
 #include <utility>
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+
 
 static const QString EMBEDDING_MODEL_NAME = u"nomic-embed-text-v1.5"_s;
 static const QString LOCAL_EMBEDDING_MODEL = u"nomic-embed-text-v1.5.f16.gguf"_s;

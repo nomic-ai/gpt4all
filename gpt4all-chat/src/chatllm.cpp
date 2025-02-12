@@ -15,32 +15,40 @@
 #include <minja/minja.hpp>
 #include <nlohmann/json.hpp>
 
+#include <QChar>
 #include <QDataStream>
 #include <QDebug>
 #include <QFile>
 #include <QGlobalStatic>
-#include <QIODevice>
+#include <QIODevice> // IWYU pragma: keep
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QMap>
-#include <QMutex>
+#include <QMutex> // IWYU pragma: keep
 #include <QMutexLocker> // IWYU pragma: keep
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
+#include <QRegularExpression> // IWYU pragma: keep
+#include <QRegularExpressionMatch> // IWYU pragma: keep
 #include <QSet>
+#include <QStringView>
 #include <QTextStream>
 #include <QUrl>
+#include <QVariant>
 #include <QWaitCondition>
 #include <Qt>
+#include <QtAssert>
 #include <QtLogging>
+#include <QtTypes> // IWYU pragma: keep
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <exception>
+#include <functional>
 #include <iomanip>
 #include <limits>
 #include <optional>

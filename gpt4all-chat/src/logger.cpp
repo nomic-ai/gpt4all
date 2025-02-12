@@ -2,9 +2,10 @@
 
 #include <QDateTime>
 #include <QDebug>
+#include <QFlags>
 #include <QGlobalStatic>
 #include <QIODevice>
-#include <QMutexLocker>
+#include <QMutexLocker> // IWYU pragma: keep
 #include <QStandardPaths>
 
 #include <cstdio>
@@ -12,6 +13,7 @@
 #include <string>
 
 using namespace Qt::Literals::StringLiterals;
+
 
 class MyLogger: public Logger { };
 Q_GLOBAL_STATIC(MyLogger, loggerInstance)

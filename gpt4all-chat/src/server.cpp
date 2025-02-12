@@ -4,9 +4,10 @@
 #include "chatmodel.h"
 #include "modellist.h"
 #include "mysettings.h"
-#include "utils.h"
+#include "utils.h" // IWYU pragma: keep
 
 #include <fmt/format.h>
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QCborArray>
@@ -15,29 +16,38 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QHostAddress>
+#include <QHttpHeaders>
 #include <QHttpServer>
+#include <QHttpServerRequest>
 #include <QHttpServerResponder>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QLatin1StringView>
-#include <QPair>
+#include <QPair> // IWYU pragma: keep
 #include <QTcpServer>
 #include <QVariant>
 #include <Qt>
+#include <QtAssert>
 #include <QtCborCommon>
-#include <QtGlobal>
 #include <QtLogging>
+#include <QtMinMax>
+#include <QtPreprocessorSupport>
+#include <QtTypes>
 
 #include <cstdint>
+#include <exception>
 #include <iostream>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
+#include <variant>
+#include <vector>
 
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;

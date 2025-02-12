@@ -1,16 +1,11 @@
 #include "jinja_helpers.h"
 
-#include "utils.h"
-
-#include <fmt/format.h>
-
 #include <QString>
 #include <QUrl>
 
-#include <iterator>
-#include <map>
 #include <ranges>
-#include <vector>
+#include <string>
+#include <utility>
 
 namespace views  = std::views;
 using json = nlohmann::ordered_json;

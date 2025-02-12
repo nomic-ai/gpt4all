@@ -1,11 +1,15 @@
 #include "codeinterpreter.h"
 
+#include <QJSEngine>
 #include <QJSValue>
-#include <QStringList>
+#include <QList>
+#include <QStringList> // IWYU pragma: keep
 #include <QThread>
 #include <QVariant>
+#include <Qt>
 
 using namespace Qt::Literals::StringLiterals;
+
 
 CodeInterpreter::CodeInterpreter()
     : Tool()

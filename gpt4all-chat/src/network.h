@@ -11,7 +11,14 @@
 #include <QSslError>
 #include <QString>
 #include <QVariant>
-#include <QVector>
+#include <QVariantMap> // IWYU pragma: keep
+#include <QVector> // IWYU pragma: keep
+
+// IWYU pragma: no_forward_declare QByteArray
+// IWYU pragma: no_forward_declare QNetworkReply
+// IWYU pragma: no_forward_declare QSslError
+class QUrl;
+
 
 struct KeyValue {
     QString key;

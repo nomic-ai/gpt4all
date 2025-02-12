@@ -2,6 +2,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+
 void MacOSDock::showIcon()
 {
     [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];

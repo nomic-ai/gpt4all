@@ -5,7 +5,7 @@
 
 #include <QByteArray>
 #include <QJsonValue>
-#include <QLatin1StringView>
+#include <QLatin1StringView> // IWYU pragma: keep
 #include <QString>
 #include <QStringView>
 #include <QUtf8StringView>
@@ -13,8 +13,9 @@
 
 #include <initializer_list>
 #include <string_view>
-#include <utility>
+#include <utility> // IWYU pragma: keep
 
+// IWYU pragma: no_forward_declare QJsonValue
 class QJsonObject;
 
 
@@ -40,4 +41,4 @@ MAKE_FORMATTER(QVariant,        value.toString().toUtf8());
 // alternative to QJsonObject's initializer_list constructor that accepts Latin-1 strings
 QJsonObject makeJsonObject(std::initializer_list<std::pair<QLatin1StringView, QJsonValue>> args);
 
-#include "utils.inl"
+#include "utils.inl" // IWYU pragma: export

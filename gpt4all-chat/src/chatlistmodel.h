@@ -7,17 +7,20 @@
 
 #include <QAbstractListModel>
 #include <QByteArray>
+#include <QDate>
 #include <QDebug>
 #include <QHash>
 #include <QList>
 #include <QMutex>
 #include <QObject>
+#include <QString>
 #include <QThread>
 #include <QVariant>
-#include <QVector>
+#include <QVector> // IWYU pragma: keep
 #include <Qt>
-#include <QtGlobal>
+#include <QtAssert>
 #include <QtLogging>
+#include <QtPreprocessorSupport>
 
 #include <memory>
 

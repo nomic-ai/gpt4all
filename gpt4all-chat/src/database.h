@@ -1,7 +1,7 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include "embllm.h" // IWYU pragma: keep
+#include "embllm.h"
 
 #include <QByteArray>
 #include <QChar>
@@ -15,11 +15,11 @@
 #include <QSet>
 #include <QSqlDatabase>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QThread>
 #include <QUrl>
-#include <QVector>
-#include <QtGlobal>
+#include <QVector> // IWYU pragma: keep
+#include <QtAssert>
 
 #include <atomic>
 #include <cstddef>
@@ -28,7 +28,7 @@
 #include <memory>
 #include <optional>
 #include <utility>
-#include <vector>
+#include <vector> // IWYU pragma: keep
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -38,6 +38,7 @@ class QFileSystemWatcher;
 class QSqlQuery;
 class QTextStream;
 class QTimer;
+
 
 /* Version 0: GPT4All v2.4.3, full-text search
  * Version 1: GPT4All v2.5.3, embeddings in hsnwlib
