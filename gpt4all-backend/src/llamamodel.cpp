@@ -53,6 +53,7 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "gpt2",
     // "gptj", -- no inference code
     "gptneox",
+    "granite",
     "granitemoe",
     "mpt",
     "baichuan",
