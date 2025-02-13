@@ -97,6 +97,7 @@ jobs:
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
               -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -264,6 +265,7 @@ jobs:
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
               -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1274,6 +1276,7 @@ jobs:
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
               -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1417,6 +1420,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
               -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1615,6 +1619,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
               -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
