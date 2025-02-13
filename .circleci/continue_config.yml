@@ -20,12 +20,14 @@ parameters:
 
 job-macos-executor: &job-macos-executor
   macos:
-    xcode: 15.4.0
+    xcode: 16.2.0
   resource_class: macos.m1.medium.gen1
+  environment:
+    HOMEBREW_NO_AUTO_UPDATE: 1
 
 job-macos-install-deps: &job-macos-install-deps
-  name: Install basic macOS build dependencies
-  command: brew install ccache wget
+  name: Install common macOS dependencies
+  command: brew install ccache llvm wget
 
 jobs:
   # work around CircleCI-Public/path-filtering-orb#20
@@ -93,6 +95,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -258,6 +263,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1266,6 +1274,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1407,6 +1418,9 @@ jobs:
             cd gpt4all-backend
             cmake -B build \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1603,6 +1617,9 @@ jobs:
             cd runtimes/build
             cmake ../.. \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
