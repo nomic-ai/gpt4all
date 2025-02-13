@@ -29,13 +29,6 @@ Jared Van Bortel ([@cebtenzzre](https://github.com/cebtenzzre))<br/>
 E-mail: jared@nomic.ai<br/>
 Discord: `@cebtenzzre`
 - gpt4all-backend
-- Python binding
-- Python CLI app
-
-Jacob Nguyen ([@jacoobes](https://github.com/jacoobes))<br/>
-Discord: `@jacoobes`<br/>
-E-mail: `jacoobes@sern.dev`
-- TypeScript binding
 
 Dominik ([@cosmic-snow](https://github.com/cosmic-snow))<br/>
 E-mail: cosmic-snow@mailfence.com<br/>
@@ -45,7 +38,7 @@ Discord: `@cosmic__snow`
 Max Cembalest ([@mcembalest](https://github.com/mcembalest))<br/>
 E-mail: max@nomic.ai<br/>
 Discord: `@maxcembalest.`
-- Official documentation (gpt4all-bindings/python/docs -> https://docs.gpt4all.io/)
+- Official documentation (docs -> https://docs.gpt4all.io/)
 
 Thiago Ramos ([@thiagojramos](https://github.com/thiagojramos))<br/>
 E-mail: thiagojramos@outlook.com<br/>

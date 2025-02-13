@@ -32,17 +32,17 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 
 <p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
-    <img src="gpt4all-bindings/python/docs/assets/windows.png" style="height: 1em; width: auto" /> Windows Installer
+    <img src="docs/assets/windows.png" style="height: 1em; width: auto" /> Windows Installer
   </a> &mdash;
 </p>
 <p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
-    <img src="gpt4all-bindings/python/docs/assets/mac.png" style="height: 1em; width: auto" /> macOS Installer
+    <img src="docs/assets/mac.png" style="height: 1em; width: auto" /> macOS Installer
   </a> &mdash;
 </p>
 <p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
-    <img src="gpt4all-bindings/python/docs/assets/ubuntu.svg" style="height: 1em; width: auto" /> Ubuntu Installer
+    <img src="docs/assets/ubuntu.svg" style="height: 1em; width: auto" /> Ubuntu Installer
   </a> &mdash;
 </p>
 <p>
@@ -62,24 +62,6 @@ See the full [System Requirements](gpt4all-chat/system_requirements.md) for more
     Flathub (community maintained)
   </a>
 </p>
-
-## Install GPT4All Python
-
-`gpt4all` gives you access to LLMs with our Python client around [`llama.cpp`](https://github.com/ggerganov/llama.cpp) implementations. 
-
-Nomic contributes to open source software like [`llama.cpp`](https://github.com/ggerganov/llama.cpp) to make LLMs accessible and efficient **for all**.
-
-```bash
-pip install gpt4all
-```
-
-```python
-from gpt4all import GPT4All
-model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf") # downloads / loads a 4.66GB LLM
-with model.chat_session():
-    print(model.generate("How can I run LLMs efficiently on my laptop?", max_tokens=1024))
-```
-
 
 ## Integrations
 
@@ -108,7 +90,7 @@ Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown t
 
 Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
 Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
-Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
+Example tags: `backend`, `documentation`, etc.
 
 ## Citation
 

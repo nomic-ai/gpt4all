@@ -17,6 +17,4 @@ workflows:
           mapping: |
             .circleci/.* run-all-workflows true
             gpt4all-backend/.* run-all-workflows true
-            gpt4all-bindings/python/.* run-python-workflow true
-            gpt4all-bindings/typescript/.* run-ts-workflow true
             gpt4all-chat/.* run-chat-workflow true

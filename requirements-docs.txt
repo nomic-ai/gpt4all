@@ -1,0 +1,3 @@
+markdown-captions
+mkdocs
+mkdocs-material[imaging]

@@ -9,14 +9,6 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
-</p>
-
-<p align="center">
-<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
-</p>
-
-<p align="center">
 <a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Web Chat Interface</a>
 </p>
 
@@ -73,8 +65,6 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 [ggml Model Download Link](https://gpt4all.io/models/ggml-gpt4all-j.bin)
 
 Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
-
-Python bindings are imminent and will be integrated into this [repository](https://github.com/nomic-ai/pyllamacpp). Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
 
 ## Training GPT4All-J
 
@@ -145,43 +135,6 @@ This model had all refusal to answer responses removed from training. Try it wit
 - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel -m gpt4all-lora-unfiltered-quantized.bin`
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
-
-# Python Client
-## CPU Interface
-To run GPT4All in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
-
-The old bindings are still available but now deprecated. They will not work in a notebook environment.
-To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
-Then, you can use the following script to interact with GPT4All:
-```
-from nomic.gpt4all import GPT4All
-m = GPT4All()
-m.open()
-m.prompt('write me a story about a lonely computer')
-```
-
-## GPU Interface
-There are two ways to get up and running with this model on GPU.
-The setup here is slightly more involved than the CPU model.
-1. clone the nomic client [repo](https://github.com/nomic-ai/nomic) and run `pip install .[GPT4All]` in the home dir.
-2. run `pip install nomic` and install the additional deps from the wheels built [here](https://github.com/nomic-ai/nomic/tree/main/bin)
-
-Once this is done, you can run the model on GPU with a script like the following:
-```
-from nomic.gpt4all import GPT4AllGPU
-m = GPT4AllGPU(LLAMA_PATH)
-config = {'num_beams': 2,
-          'min_new_tokens': 10,
-          'max_length': 100,
-          'repetition_penalty': 2.0}
-out = m.generate('write me a story about a lonely computer', config)
-print(out)
-```
-Where LLAMA_PATH is the path to a Huggingface Automodel compliant LLAMA model.
-Nomic is unable to distribute this file at this time.
-We are working on a GPT4All that does not have this limitation right now.
-
-You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
 
 # GPT4All Compatibility Ecosystem
 Edge models in the GPT4All Ecosystem. Please PR as the [community grows](https://huggingface.co/models?sort=modified&search=4bit).
