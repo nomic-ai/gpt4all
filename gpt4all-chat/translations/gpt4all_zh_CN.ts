@@ -19,10 +19,6 @@
         <translation>添加一个包含纯文本文件、PDF或Markdown的文件夹。在“设置”中配置其他扩展。</translation>
     </message>
     <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">请选择一个目录</translation>
-    </message>
-    <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
         <source>Name</source>
         <translation>名称</translation>
@@ -556,222 +552,6 @@
         <source>HuggingFace</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Discover and download models by keyword search...</source>
-        <translation type="vanished">通过关键词查找并下载模型 ...</translation>
-    </message>
-    <message>
-        <source>Text field for discovering and filtering downloadable models</source>
-        <translation type="vanished">用于发现和筛选可下载模型的文本字段</translation>
-    </message>
-    <message>
-        <source>Initiate model discovery and filtering</source>
-        <translation type="vanished">启动模型发现和过滤</translation>
-    </message>
-    <message>
-        <source>Triggers discovery and filtering of models</source>
-        <translation type="vanished">触发模型的发现和筛选</translation>
-    </message>
-    <message>
-        <source>Default</source>
-        <translation type="vanished">默认</translation>
-    </message>
-    <message>
-        <source>Likes</source>
-        <translation type="vanished">喜欢</translation>
-    </message>
-    <message>
-        <source>Downloads</source>
-        <translation type="vanished">下载</translation>
-    </message>
-    <message>
-        <source>Recent</source>
-        <translation type="vanished">近期</translation>
-    </message>
-    <message>
-        <source>Asc</source>
-        <translation type="vanished">升序</translation>
-    </message>
-    <message>
-        <source>Desc</source>
-        <translation type="vanished">倒序</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation type="vanished">无</translation>
-    </message>
-    <message>
-        <source>Searching · %1</source>
-        <translation type="vanished">搜索中 · %1</translation>
-    </message>
-    <message>
-        <source>Sort by: %1</source>
-        <translation type="vanished">排序: %1</translation>
-    </message>
-    <message>
-        <source>Sort dir: %1</source>
-        <translation type="vanished">排序目录: %1</translation>
-    </message>
-    <message>
-        <source>Limit: %1</source>
-        <translation type="vanished">数量: %1</translation>
-    </message>
-    <message>
-        <source>Network error: could not retrieve %1</source>
-        <translation type="vanished">网络错误：无法检索 %1</translation>
-    </message>
-    <message>
-        <source>Busy indicator</source>
-        <translation type="vanished">繁忙程度</translation>
-    </message>
-    <message>
-        <source>Displayed when the models request is ongoing</source>
-        <translation type="vanished">在模型请求进行中时显示</translation>
-    </message>
-    <message>
-        <source>Model file</source>
-        <translation type="vanished">模型文件</translation>
-    </message>
-    <message>
-        <source>Model file to be downloaded</source>
-        <translation type="vanished">待下载模型</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation type="vanished">描述</translation>
-    </message>
-    <message>
-        <source>File description</source>
-        <translation type="vanished">文件描述</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">取消</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation type="vanished">继续</translation>
-    </message>
-    <message>
-        <source>Download</source>
-        <translation type="vanished">下载</translation>
-    </message>
-    <message>
-        <source>Stop/restart/start the download</source>
-        <translation type="vanished">停止/重启/开始下载</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="vanished">删除</translation>
-    </message>
-    <message>
-        <source>Remove model from filesystem</source>
-        <translation type="vanished">从系统中删除模型</translation>
-    </message>
-    <message>
-        <source>Install</source>
-        <translation type="vanished">安装</translation>
-    </message>
-    <message>
-        <source>Install online model</source>
-        <translation type="vanished">安装在线模型</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;错误&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="vanished">&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告: 你的设备硬件不推荐 ，模型需要的内存 (%1 GB)比你的系统还要多  (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
-    </message>
-    <message>
-        <source>ERROR: $API_KEY is empty.</source>
-        <translation type="vanished">错误：$API_KEY 为空</translation>
-    </message>
-    <message>
-        <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="vanished">错误：$BASE_URL 为空</translation>
-    </message>
-    <message>
-        <source>enter $BASE_URL</source>
-        <translation type="vanished">输入 $BASE_URL</translation>
-    </message>
-    <message>
-        <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="vanished">错误：$MODEL_NAME为空</translation>
-    </message>
-    <message>
-        <source>enter $MODEL_NAME</source>
-        <translation type="vanished">输入：$MODEL_NAME</translation>
-    </message>
-    <message>
-        <source>%1 GB</source>
-        <translation type="vanished">%1 GB</translation>
-    </message>
-    <message>
-        <source>?</source>
-        <translation type="vanished">？</translation>
-    </message>
-    <message>
-        <source>Describes an error that occurred when downloading</source>
-        <translation type="vanished">描述下载过程中发生的错误</translation>
-    </message>
-    <message>
-        <source>Error for incompatible hardware</source>
-        <translation type="vanished">硬件不兼容的错误</translation>
-    </message>
-    <message>
-        <source>Download progressBar</source>
-        <translation type="vanished">下载进度</translation>
-    </message>
-    <message>
-        <source>Shows the progress made in the download</source>
-        <translation type="vanished">显示下载进度</translation>
-    </message>
-    <message>
-        <source>Download speed</source>
-        <translation type="vanished">下载速度</translation>
-    </message>
-    <message>
-        <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="vanished">下载速度  b/kb/mb /s</translation>
-    </message>
-    <message>
-        <source>Calculating...</source>
-        <translation type="vanished">计算中</translation>
-    </message>
-    <message>
-        <source>Whether the file hash is being calculated</source>
-        <translation type="vanished">是否正在计算文件哈希</translation>
-    </message>
-    <message>
-        <source>Displayed when the file hash is being calculated</source>
-        <translation type="vanished">在计算文件哈希时显示</translation>
-    </message>
-    <message>
-        <source>enter $API_KEY</source>
-        <translation type="vanished">输入$API_KEY</translation>
-    </message>
-    <message>
-        <source>File size</source>
-        <translation type="vanished">文件大小</translation>
-    </message>
-    <message>
-        <source>RAM required</source>
-        <translation type="vanished">RAM 需要</translation>
-    </message>
-    <message>
-        <source>Parameters</source>
-        <translation type="vanished">参数</translation>
-    </message>
-    <message>
-        <source>Quant</source>
-        <translation type="vanished">量化</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation type="vanished">类型</translation>
-    </message>
 </context>
 <context>
     <name>ApplicationSettings</name>
@@ -881,10 +661,6 @@
         <translation>设备</translation>
     </message>
     <message>
-        <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or Metal.</source>
-        <translation type="vanished">用于文本生成的计算设备. &quot;自动&quot; 使用 Vulkan or Metal.</translation>
-    </message>
-    <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
         <translation>设备用于文本生成</translation>
@@ -984,14 +760,6 @@
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save Chat Context</source>
-        <translation type="vanished">保存对话上下文</translation>
-    </message>
-    <message>
-        <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
-        <translation type="vanished">保存模型&apos;s 状态以提供更快加载速度. 警告: 需用 ~2GB 每个对话.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
@@ -1171,18 +939,6 @@
         <source>Copy</source>
         <translation type="unfinished">复制</translation>
     </message>
-    <message>
-        <source>Copy Message</source>
-        <translation type="obsolete">复制内容</translation>
-    </message>
-    <message>
-        <source>Disable markdown</source>
-        <translation type="obsolete">不允许markdown</translation>
-    </message>
-    <message>
-        <source>Enable markdown</source>
-        <translation type="obsolete">允许markdown</translation>
-    </message>
     <message numerus="yes">
         <location filename="../qml/ChatItemView.qml" line="283"/>
         <source>%n Source(s)</source>
@@ -1304,14 +1060,6 @@
         <location filename="../qml/ChatView.qml" line="85"/>
         <source>&lt;h3&gt;Warning&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</source>
         <translation>&lt;h3&gt;警告&lt;/h3&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Switch model dialog</source>
-        <translation type="vanished">切换模型对话</translation>
-    </message>
-    <message>
-        <source>Warn the user if they switch models, then context will be erased</source>
-        <translation type="vanished">如果用户切换模型，则警告用户，然后上下文将被删除</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="99"/>
@@ -1460,65 +1208,9 @@ model to get started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>GPT4All</source>
-        <translation type="vanished">GPT4All</translation>
-    </message>
-    <message>
-        <source>You</source>
-        <translation type="vanished">您</translation>
-    </message>
-    <message>
-        <source>response stopped ...</source>
-        <translation type="vanished">响应停止...</translation>
-    </message>
-    <message>
-        <source>processing ...</source>
-        <translation type="vanished">处理中</translation>
-    </message>
-    <message>
-        <source>generating response ...</source>
-        <translation type="vanished">响应中...</translation>
-    </message>
-    <message>
-        <source>generating questions ...</source>
-        <translation type="vanished">生成响应</translation>
-    </message>
-    <message>
         <location filename="../qml/ChatView.qml" line="1293"/>
         <source>Copy</source>
         <translation>复制</translation>
-    </message>
-    <message>
-        <source>Copy Message</source>
-        <translation type="vanished">复制内容</translation>
-    </message>
-    <message>
-        <source>Disable markdown</source>
-        <translation type="vanished">不允许markdown</translation>
-    </message>
-    <message>
-        <source>Enable markdown</source>
-        <translation type="vanished">允许markdown</translation>
-    </message>
-    <message>
-        <source>Thumbs up</source>
-        <translation type="vanished">点赞</translation>
-    </message>
-    <message>
-        <source>Gives a thumbs up to the response</source>
-        <translation type="vanished">点赞响应</translation>
-    </message>
-    <message>
-        <source>Thumbs down</source>
-        <translation type="vanished">点踩</translation>
-    </message>
-    <message>
-        <source>Opens thumbs down dialog</source>
-        <translation type="vanished">打开点踩对话框</translation>
-    </message>
-    <message>
-        <source>Suggested follow-ups</source>
-        <translation type="vanished">建议的后续行动</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="924"/>
@@ -1529,10 +1221,6 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="942"/>
         <source>Copy chat session to clipboard</source>
         <translation>复制对话到剪切板</translation>
-    </message>
-    <message>
-        <source>Redo last chat response</source>
-        <translation type="vanished">重新生成上个响应</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1216"/>
@@ -1600,24 +1288,6 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="732"/>
         <source>Load · %1 (default) →</source>
         <translation>载入 · %1 (默认) →</translation>
-    </message>
-    <message>
-        <source>restoring from text ...</source>
-        <translation type="vanished">从文本恢复中</translation>
-    </message>
-    <message>
-        <source>retrieving localdocs: %1 ...</source>
-        <translation type="vanished">检索本地文档: %1 ...</translation>
-    </message>
-    <message>
-        <source>searching localdocs: %1 ...</source>
-        <translation type="vanished">搜索本地文档: %1 ...</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n Source(s)</source>
-        <translation type="vanished">
-            <numerusform>%n 资源</numerusform>
-        </translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1243"/>
@@ -2277,26 +1947,6 @@ model to get started</source>
         <translation>模型文件</translation>
     </message>
     <message>
-        <source>System Prompt</source>
-        <translation type="vanished">系统提示词</translation>
-    </message>
-    <message>
-        <source>Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.</source>
-        <translation type="vanished">每次对话开始时的前缀</translation>
-    </message>
-    <message>
-        <source>Prompt Template</source>
-        <translation type="vanished">提示词模版</translation>
-    </message>
-    <message>
-        <source>The template that wraps every prompt.</source>
-        <translation type="vanished">包装每个提示的模板</translation>
-    </message>
-    <message>
-        <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
-        <translation type="vanished">必须包含字符串 &quot;%1&quot; 替换为用户的&apos;s 输入.</translation>
-    </message>
-    <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
         <translation type="unfinished"></translation>
@@ -2772,13 +2422,6 @@ NOTE: Does not take effect until you reload the model.</source>
     </message>
 </context>
 <context>
-    <name>MySettingsStack</name>
-    <message>
-        <source>Please choose a directory</source>
-        <translation type="vanished">请选择目录</translation>
-    </message>
-</context>
-<context>
     <name>MySettingsTab</name>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="24"/>
@@ -3063,25 +2706,6 @@ model release that uses your data!</source>
         <location filename="../qml/StartupDialog.qml" line="308"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
         <translation>允许选择退出将聊天匿名共享至 GPT4All 数据湖</translation>
-    </message>
-</context>
-<context>
-    <name>SwitchModelDialog</name>
-    <message>
-        <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
-        <translation type="vanished">&lt;b&gt;警告:&lt;/b&gt; 更改模型将删除当前对话。您想继续吗？</translation>
-    </message>
-    <message>
-        <source>Continue</source>
-        <translation type="vanished">继续</translation>
-    </message>
-    <message>
-        <source>Continue with model loading</source>
-        <translation type="vanished">模型载入时继续</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">取消</translation>
     </message>
 </context>
 <context>
