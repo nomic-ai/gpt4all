@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Whitelist Granite (non-MoE) model architecture (by [@ThiloteE](https://github.com/ThiloteE) in [#3487](https://github.com/nomic-ai/gpt4all/pull/3487))
+- Add support for CUDA compute 5.0 GPUs such as the GTX 750 ([#3499](https://github.com/nomic-ai/gpt4all/pull/3499))
 
 ### Changed
 - Substitute prettier default templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B (by [@ThiloteE](https://github.com/ThiloteE) in [#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
