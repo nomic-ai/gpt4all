@@ -34,6 +34,8 @@ job-linux-install-chat-deps: &job-linux-install-chat-deps
   command: |
     # Prevent apt-get from interactively prompting for service restart
     echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
+    wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+    sudo add-apt-repository -yn 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
     wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" \
       | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc >/dev/null
     wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" \
@@ -41,12 +43,12 @@ job-linux-install-chat-deps: &job-linux-install-chat-deps
     wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
     sudo dpkg -i cuda-keyring_1.1-1_all.deb
     packages=(
-      bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-      libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-      libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-      libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-      libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
-      python3 vulkan-sdk
+      bison build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 flex gperf libcublas-dev-11-8
+      libfontconfig1 libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5
+      libwayland-dev libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+      libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0
+      libxcb-xinerama0 libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1
+      patchelf python3 vulkan-sdk python3 vulkan-sdk
     )
     sudo apt-get update
     sudo apt-get install -y "${packages[@]}"
@@ -61,6 +63,8 @@ job-linux-install-chat-deps: &job-linux-install-chat-deps
 job-linux-install-backend-deps: &job-linux-install-backend-deps
   name: Install Linux build dependencies for gpt4all-backend
   command: |
+    wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+    sudo add-apt-repository -yn 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
     wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" \
       | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc >/dev/null
     wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" \
@@ -68,12 +72,13 @@ job-linux-install-backend-deps: &job-linux-install-backend-deps
     wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
     sudo dpkg -i cuda-keyring_1.1-1_all.deb
     packages=(
-      build-essential ccache cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server vulkan-sdk
+      build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 libcublas-dev-11-8
+      libnvidia-compute-550-server vulkan-sdk
     )
     sudo apt-get update
     sudo apt-get install -y "${packages[@]}"
-    pyenv global 3.11.2
-    pip install setuptools wheel cmake
+    pyenv global 3.13.2
+    pip install setuptools wheel cmake ninja
 
 jobs:
   # work around CircleCI-Public/path-filtering-orb#20
@@ -455,8 +460,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -517,8 +524,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1121,8 +1130,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S gpt4all-chat -B build \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1318,10 +1329,12 @@ jobs:
             git submodule update --init --recursive
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
             cd gpt4all-backend
-            cmake -B build \
+            cmake -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1509,10 +1522,12 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
-            cmake ../.. \
+            cmake ../.. -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_C_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
