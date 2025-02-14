@@ -45,10 +45,10 @@ job-linux-install-chat-deps: &job-linux-install-chat-deps
     packages=(
       bison build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 flex gperf libcublas-dev-11-8
       libfontconfig1 libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5
-      libwayland-dev libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
-      libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0
-      libxcb-xinerama0 libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1
-      patchelf python3 vulkan-sdk python3 vulkan-sdk
+      libstdc++-12-dev libwayland-dev libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0
+      libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1
+      libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0
+      libxrender1 patchelf python3 vulkan-sdk python3 vulkan-sdk
     )
     sudo apt-get update
     sudo apt-get install -y "${packages[@]}"
@@ -73,7 +73,7 @@ job-linux-install-backend-deps: &job-linux-install-backend-deps
     sudo dpkg -i cuda-keyring_1.1-1_all.deb
     packages=(
       build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 libcublas-dev-11-8
-      libnvidia-compute-550-server vulkan-sdk
+      libnvidia-compute-550-server libstdc++-12-dev vulkan-sdk
     )
     sudo apt-get update
     sudo apt-get install -y "${packages[@]}"
