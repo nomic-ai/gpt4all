@@ -18,6 +18,15 @@ parameters:
     type: boolean
     default: false
 
+job-macos-executor: &job-macos-executor
+  macos:
+    xcode: 15.4.0
+  resource_class: macos.m1.medium.gen1
+
+job-macos-install-deps: &job-macos-install-deps
+  name: Install basic macOS build dependencies
+  command: brew install ccache wget
+
 jobs:
   # work around CircleCI-Public/path-filtering-orb#20
   noop:
@@ -34,8 +43,7 @@ jobs:
           name: Verify that commit is on the main branch
           command: git merge-base --is-ancestor HEAD main
   build-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -47,11 +55,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -128,8 +135,7 @@ jobs:
             - upload
 
   sign-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -163,8 +169,7 @@ jobs:
             - upload
 
   notarize-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
@@ -203,8 +208,7 @@ jobs:
             hdiutil detach /Volumes/gpt4all-installer-darwin
 
   build-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -216,11 +220,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -290,8 +293,7 @@ jobs:
             - upload
 
   sign-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -325,8 +327,7 @@ jobs:
             - upload
 
   notarize-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
@@ -1227,8 +1228,7 @@ jobs:
             - ..\.ccache
 
   build-gpt4all-chat-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -1240,11 +1240,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -1387,18 +1386,17 @@ jobs:
             - "*.whl"
 
   build-py-macos:
-    macos:
-      xcode: 15.4.0
-    resource_class: macos.m1.large.gen1
+    <<: *job-macos-executor
     steps:
       - checkout
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install dependencies
           command: |
-            brew install ccache cmake
             pip install setuptools wheel cmake
       - run:
           name: Build C library
@@ -1582,8 +1580,7 @@ jobs:
             - runtimes/linux-x64/*.so
 
   build-bindings-backend-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -1595,9 +1592,7 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
-          name: Install dependencies
-          command: |
-            brew install ccache cmake
+          <<: *job-macos-install-deps
       - run:
           name: Build Libraries
           no_output_timeout: 30m
@@ -1725,8 +1720,7 @@ jobs:
             - runtimes/linux-x64/*-*.so
 
   build-nodejs-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
