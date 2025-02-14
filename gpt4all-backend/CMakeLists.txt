@@ -69,7 +69,7 @@ if (LLMODEL_CUDA)
     cmake_minimum_required(VERSION 3.18)  # for CMAKE_CUDA_ARCHITECTURES
 
     # Defaults must be set before enable_language(CUDA).
-    # Keep this in sync with the arch list in ggml/src/CMakeLists.txt.
+    # Keep this in sync with the arch list in ggml/src/CMakeLists.txt (plus 5.0 for non-F16 branch).
     if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
         # 52 == lowest CUDA 12 standard
         # 60 == f16 CUDA intrinsics
@@ -78,7 +78,7 @@ if (LLMODEL_CUDA)
         if (GGML_CUDA_F16 OR GGML_CUDA_DMMV_F16)
             set(CMAKE_CUDA_ARCHITECTURES "60;61;70;75") # needed for f16 CUDA intrinsics
         else()
-            set(CMAKE_CUDA_ARCHITECTURES "52;61;70;75") # lowest CUDA 12 standard + lowest for integer intrinsics
+            set(CMAKE_CUDA_ARCHITECTURES "50;52;61;70;75") # lowest CUDA 12 standard + lowest for integer intrinsics
             #set(CMAKE_CUDA_ARCHITECTURES "OFF") # use this to compile much faster, but only F16 models work
         endif()
     endif()
