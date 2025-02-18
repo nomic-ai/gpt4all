@@ -30,7 +30,8 @@ LocalDocs::LocalDocs()
     connect(MySettings::globalInstance(), &MySettings::localDocsFileExtensionsChanged, this, &LocalDocs::handleFileExtensionsChanged);
 
     // Create the DB with the chunk size from settings
-    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize(),
+    m_database = new Database(MySettings::globalInstance()->localDocsAutomaticUpdate(),
+                              MySettings::globalInstance()->localDocsChunkSize(),
                               MySettings::globalInstance()->localDocsFileExtensions());
 
     connect(this, &LocalDocs::requestStart, m_database,
