@@ -1,3 +1,8 @@
+# enable color diagnostics with ninja
+if (CMAKE_GENERATOR STREQUAL Ninja AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-fdiagnostics-color=always)
+endif()
+
 function(gpt4all_add_warning_options target)
     if (MSVC)
         return()

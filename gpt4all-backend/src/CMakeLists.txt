@@ -1,5 +1,3 @@
-include(../../common/common.cmake)
-
 set(TARGET gpt4all-backend)
 
 add_library(${TARGET} STATIC

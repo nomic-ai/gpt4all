@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.29)
-
 project(gpt4all-backend VERSION 0.1 LANGUAGES CXX)
+
+include(../common/common.cmake)
 
 find_package(Qt6 6.8 COMPONENTS Core REQUIRED)
 

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
-include(../common/common.cmake)
-
 set(APP_VERSION_MAJOR 3)
 set(APP_VERSION_MINOR 9)
 set(APP_VERSION_PATCH 1)
@@ -9,6 +7,8 @@ set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PA
 set(APP_VERSION "${APP_VERSION_BASE}-dev0")
 
 project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
+
+include(../common/common.cmake)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
