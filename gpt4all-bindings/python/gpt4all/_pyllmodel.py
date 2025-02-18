@@ -9,7 +9,7 @@ import textwrap
 import threading
 from enum import Enum
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Iterator, Literal, NoReturn, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, Literal, NoReturn, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -227,6 +227,9 @@ llmodel.llmodel_count_prompt_tokens.restype = ctypes.c_int32
 llmodel.llmodel_model_foreach_special_token.argtypes = [ctypes.c_void_p, SpecialTokenCallback]
 llmodel.llmodel_model_foreach_special_token.restype = None
 
+llmodel.llmodel_model_chat_template.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
+llmodel.llmodel_model_chat_template.restype = ctypes.c_char_p
+
 ResponseCallbackType = Callable[[int, str], bool]
 RawResponseCallbackType = Callable[[int, bytes], bool]
 EmbCancelCallbackType: TypeAlias = 'Callable[[list[int], str], bool]'
@@ -290,10 +293,7 @@ class LLModel:
 
             raise RuntimeError(f"Unable to instantiate model: {errmsg}")
         self.model: ctypes.c_void_p | None = model
-        self.special_tokens_map: dict[str, str] = {}
-        llmodel.llmodel_model_foreach_special_token(
-            self.model, lambda n, t: self.special_tokens_map.__setitem__(n.decode(), t.decode()),
-        )
+        self._special_tokens_map: dict[str, str] | None = None
 
     def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
@@ -320,6 +320,26 @@ class LLModel:
         dev = llmodel.llmodel_model_gpu_device_name(self.model)
         return None if dev is None else dev.decode()
 
+    @property
+    def builtin_chat_template(self) -> str:
+        err = ctypes.c_char_p()
+        tmpl = llmodel.llmodel_model_chat_template(self.model_path, ctypes.byref(err))
+        if tmpl is not None:
+            return tmpl.decode()
+        s = err.value
+        raise ValueError('Failed to get chat template', 'null' if s is None else s.decode())
+
+    @property
+    def special_tokens_map(self) -> dict[str, str]:
+        if self.model is None:
+            self._raise_closed()
+        if self._special_tokens_map is None:
+            tokens: dict[str, str] = {}
+            cb = SpecialTokenCallback(lambda n, t: tokens.__setitem__(n.decode(), t.decode()))
+            llmodel.llmodel_model_foreach_special_token(self.model, cb)
+            self._special_tokens_map = tokens
+        return self._special_tokens_map
+
     def count_prompt_tokens(self, prompt: str) -> int:
         if self.model is None:
             self._raise_closed()
@@ -330,8 +350,6 @@ class LLModel:
             errmsg = 'null' if s is None else s.decode()
             raise RuntimeError(f'Unable to count prompt tokens: {errmsg}')
         return n_tok
-
-    llmodel.llmodel_count_prompt_tokens.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 
     @staticmethod
     def list_gpus(mem_required: int = 0) -> list[str]:
