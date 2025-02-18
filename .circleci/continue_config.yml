@@ -18,6 +18,68 @@ parameters:
     type: boolean
     default: false
 
+job-macos-executor: &job-macos-executor
+  macos:
+    xcode: 16.2.0
+  resource_class: macos.m1.medium.gen1
+  environment:
+    HOMEBREW_NO_AUTO_UPDATE: 1
+
+job-macos-install-deps: &job-macos-install-deps
+  name: Install basic macOS build dependencies
+  command: brew install ccache llvm wget
+
+job-linux-install-chat-deps: &job-linux-install-chat-deps
+  name: Install Linux build dependencies for gpt4all-chat
+  command: |
+    # Prevent apt-get from interactively prompting for service restart
+    echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
+    wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+    sudo add-apt-repository -yn 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
+    wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" \
+      | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc >/dev/null
+    wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" \
+      | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list >/dev/null
+    wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
+    sudo dpkg -i cuda-keyring_1.1-1_all.deb
+    packages=(
+      bison build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 flex gperf libcublas-dev-11-8
+      libfontconfig1 libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5
+      libstdc++-12-dev libwayland-dev libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0
+      libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1
+      libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0
+      libxrender1 patchelf python3 vulkan-sdk python3 vulkan-sdk
+    )
+    sudo apt-get update
+    sudo apt-get install -y "${packages[@]}"
+    wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
+    chmod +x qt-online-installer-linux-x64-4.8.1.run
+    ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
+      --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
+      --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
+      qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.682.linux_gcc_64 qt.qt6.682.addons.qt5compat \
+      qt.qt6.682.debug_info extensions.qtpdf.682 qt.qt6.682.addons.qthttpserver
+
+job-linux-install-backend-deps: &job-linux-install-backend-deps
+  name: Install Linux build dependencies for gpt4all-backend
+  command: |
+    wget -qO- 'https://apt.llvm.org/llvm-snapshot.gpg.key' | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+    sudo add-apt-repository -yn 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
+    wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" \
+      | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc >/dev/null
+    wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" \
+      | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list >/dev/null
+    wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
+    sudo dpkg -i cuda-keyring_1.1-1_all.deb
+    packages=(
+      build-essential ccache clang-19 clang-tools-19 cuda-compiler-11-8 libcublas-dev-11-8
+      libnvidia-compute-550-server libstdc++-12-dev vulkan-sdk
+    )
+    sudo apt-get update
+    sudo apt-get install -y "${packages[@]}"
+    pyenv global 3.13.2
+    pip install setuptools wheel cmake ninja
+
 jobs:
   # work around CircleCI-Public/path-filtering-orb#20
   noop:
@@ -34,8 +96,7 @@ jobs:
           name: Verify that commit is on the main branch
           command: git merge-base --is-ancestor HEAD main
   build-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -47,11 +108,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -86,6 +146,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -128,8 +191,7 @@ jobs:
             - upload
 
   sign-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -163,8 +225,7 @@ jobs:
             - upload
 
   notarize-offline-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
@@ -203,8 +264,7 @@ jobs:
             hdiutil detach /Volumes/gpt4all-installer-darwin
 
   build-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -216,11 +276,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -255,6 +314,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -290,8 +352,7 @@ jobs:
             - upload
 
   sign-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -325,8 +386,7 @@ jobs:
             - upload
 
   notarize-online-chat-installer-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
@@ -379,34 +439,7 @@ jobs:
           keys:
             - ccache-gpt4all-linux-amd64-
       - run:
-          name: Setup Linux and Dependencies
-          command: |
-            # Prevent apt-get from interactively prompting for service restart
-            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
-            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
-            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
-              python3 vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - run:
-          name: Installing Qt
-          command: |
-            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
-            chmod +x qt-online-installer-linux-x64-4.8.1.run
-            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
-              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.682.linux_gcc_64 qt.qt6.682.addons.qt5compat \
-              qt.qt6.682.debug_info extensions.qtpdf.682 qt.qt6.682.addons.qthttpserver
+          <<: *job-linux-install-chat-deps
       - run:
           name: Build linuxdeployqt
           command: |
@@ -427,8 +460,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -468,34 +503,7 @@ jobs:
           keys:
             - ccache-gpt4all-linux-amd64-
       - run:
-          name: Setup Linux and Dependencies
-          command: |
-            # Prevent apt-get from interactively prompting for service restart
-            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
-            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
-            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 patchelf
-              python3 vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - run:
-          name: Installing Qt
-          command: |
-            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
-            chmod +x qt-online-installer-linux-x64-4.8.1.run
-            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
-              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.682.linux_gcc_64 qt.qt6.682.addons.qt5compat \
-              qt.qt6.682.debug_info extensions.qtpdf.682 qt.qt6.682.addons.qthttpserver
+          <<: *job-linux-install-chat-deps
       - run:
           name: Build linuxdeployqt
           command: |
@@ -516,8 +524,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S ../gpt4all-chat -B . \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1109,34 +1119,7 @@ jobs:
           keys:
             - ccache-gpt4all-linux-amd64-
       - run:
-          name: Setup Linux and Dependencies
-          command: |
-            # Prevent apt-get from interactively prompting for service restart
-            echo "\$nrconf{restart} = 'l'" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf >/dev/null
-            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
-            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              bison build-essential ccache cuda-compiler-11-8 flex g++-12 gperf libcublas-dev-11-8 libfontconfig1
-              libfreetype6 libgl1-mesa-dev libmysqlclient21 libnvidia-compute-550-server libodbc2 libpq5 libwayland-dev
-              libx11-6 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
-              libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 libxcb-xinerama0
-              libxcb-xkb1 libxcb1 libxext6 libxfixes3 libxi6 libxkbcommon-dev libxkbcommon-x11-0 libxrender1 python3
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-      - run:
-          name: Installing Qt
-          command: |
-            wget "https://qt.mirror.constant.com/archive/online_installers/4.8/qt-online-installer-linux-x64-4.8.1.run"
-            chmod +x qt-online-installer-linux-x64-4.8.1.run
-            ./qt-online-installer-linux-x64-4.8.1.run --no-force-installations --no-default-installations \
-              --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations \
-              --email "$QT_EMAIL" --password "$QT_PASSWORD" install \
-              qt.tools.cmake qt.tools.ifw.48 qt.tools.ninja qt.qt6.682.linux_gcc_64 qt.qt6.682.addons.qt5compat \
-              qt.qt6.682.debug_info extensions.qtpdf.682 qt.qt6.682.addons.qthttpserver
+          <<: *job-linux-install-chat-deps
       - run:
           name: Build
           no_output_timeout: 30m
@@ -1147,8 +1130,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake \
               -S gpt4all-chat -B build \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1227,8 +1212,7 @@ jobs:
             - ..\.ccache
 
   build-gpt4all-chat-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -1240,11 +1224,10 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install Rosetta
           command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
-      - run:
-          name: Install dependencies
-          command: brew install ccache wget
       - run:
           name: Installing Qt
           command: |
@@ -1267,6 +1250,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.8.2/macos/lib/cmake \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1334,22 +1320,7 @@ jobs:
           keys:
             - ccache-gpt4all-linux-amd64-
       - run:
-          name: Set Python Version
-          command: pyenv global 3.11.2
-      - run:
-          name: Install dependencies
-          command: |
-            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
-            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
-            pip install setuptools wheel cmake
+          <<: *job-linux-install-backend-deps
       - run:
           name: Build C library
           no_output_timeout: 30m
@@ -1358,10 +1329,12 @@ jobs:
             git submodule update --init --recursive
             ccache -o "cache_dir=${PWD}/../.ccache" -o max_size=500M -p -z
             cd gpt4all-backend
-            cmake -B build \
+            cmake -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_CXX_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
@@ -1387,18 +1360,17 @@ jobs:
             - "*.whl"
 
   build-py-macos:
-    macos:
-      xcode: 15.4.0
-    resource_class: macos.m1.large.gen1
+    <<: *job-macos-executor
     steps:
       - checkout
       - restore_cache:
           keys:
             - ccache-gpt4all-macos-
       - run:
+          <<: *job-macos-install-deps
+      - run:
           name: Install dependencies
           command: |
-            brew install ccache cmake
             pip install setuptools wheel cmake
       - run:
           name: Build C library
@@ -1409,6 +1381,9 @@ jobs:
             cd gpt4all-backend
             cmake -B build \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1537,18 +1512,7 @@ jobs:
           keys:
             - ccache-gpt4all-linux-amd64-
       - run:
-          name: Install dependencies
-          command: |
-            wget -qO- "https://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-            wget -qO- "https://packages.lunarg.com/vulkan/1.3.290/lunarg-vulkan-1.3.290-jammy.list" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan-1.3.290-jammy.list
-            wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-            sudo dpkg -i cuda-keyring_1.1-1_all.deb
-            packages=(
-              build-essential ccache cmake cuda-compiler-11-8 g++-12 libcublas-dev-11-8 libnvidia-compute-550-server
-              vulkan-sdk
-            )
-            sudo apt-get update
-            sudo apt-get install -y "${packages[@]}"
+          <<: *job-linux-install-backend-deps
       - run:
           name: Build Libraries
           no_output_timeout: 30m
@@ -1558,10 +1522,12 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
-            cmake ../.. \
+            cmake ../.. -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=gcc-12 \
-              -DCMAKE_C_COMPILER=g++-12 \
+              -DCMAKE_C_COMPILER=clang-19 \
+              -DCMAKE_CXX_COMPILER=clang++-19 \
+              -DCMAKE_CXX_COMPILER_AR=ar \
+              -DCMAKE_CXX_COMPILER_RANLIB=ranlib \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -1582,8 +1548,7 @@ jobs:
             - runtimes/linux-x64/*.so
 
   build-bindings-backend-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - run:
@@ -1595,9 +1560,7 @@ jobs:
           keys:
             - ccache-gpt4all-macos-
       - run:
-          name: Install dependencies
-          command: |
-            brew install ccache cmake
+          <<: *job-macos-install-deps
       - run:
           name: Build Libraries
           no_output_timeout: 30m
@@ -1608,6 +1571,9 @@ jobs:
             cd runtimes/build
             cmake ../.. \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DCMAKE_RANLIB=/usr/bin/ranlib \
               -DCMAKE_C_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_UNIVERSAL=ON \
@@ -1725,8 +1691,7 @@ jobs:
             - runtimes/linux-x64/*-*.so
 
   build-nodejs-macos:
-    macos:
-      xcode: 15.4.0
+    <<: *job-macos-executor
     steps:
       - checkout
       - attach_workspace:
