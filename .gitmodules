@@ -5,7 +5,7 @@
 	path = gpt4all-chat/deps/SingleApplication
 	url = https://github.com/nomic-ai/SingleApplication.git
 [submodule "gpt4all-chat/deps/fmt"]
-	path = gpt4all-chat/deps/fmt
+	path = deps/fmt
 	url = https://github.com/fmtlib/fmt.git
 [submodule "gpt4all-chat/deps/DuckX"]
 	path = gpt4all-chat/deps/DuckX
@@ -17,5 +17,8 @@
 	path = gpt4all-chat/deps/minja
 	url = https://github.com/nomic-ai/minja.git
 [submodule "gpt4all-chat/deps/json"]
-	path = gpt4all-chat/deps/json
+	path = deps/json
 	url = https://github.com/nlohmann/json.git
+[submodule "gpt4all-backend/deps/ollama-hpp"]
+	path = gpt4all-backend/deps/ollama-hpp
+	url = github.com:nomic-ai/ollama-hpp.git

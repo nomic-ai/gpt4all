@@ -144,6 +144,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
+add_subdirectory(../deps "${CMAKE_CURRENT_BINARY_DIR}/common_deps")
 add_subdirectory(deps)
 add_subdirectory(../gpt4all-backend llmodel)
 
@@ -451,9 +452,7 @@ else()
     target_link_libraries(chat PRIVATE pdfium)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
-target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include)
-target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include/nlohmann)
+    PRIVATE llmodel nlohmann_json::nlohmann_json SingleApplication fmt::fmt duckx::duckx QXlsx)
 target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/minja/include)
 
 if (APPLE)

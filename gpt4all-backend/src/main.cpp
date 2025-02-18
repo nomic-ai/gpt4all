@@ -4,6 +4,8 @@ module;
 
 #include <QString>
 
+#include <ollama.hpp>
+
 module gpt4all.backend.main;
 
 

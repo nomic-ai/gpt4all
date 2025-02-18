@@ -14,6 +14,9 @@ target_sources(${TARGET} PUBLIC
     main.cppm
 )
 gpt4all_add_warning_options(${TARGET})
-target_link_libraries(${TARGET} PRIVATE
+target_link_libraries(${TARGET} PUBLIC
     Qt6::Core
+)
+target_link_libraries(${TARGET} PRIVATE
+    fmt::fmt ollama-hpp
 )
