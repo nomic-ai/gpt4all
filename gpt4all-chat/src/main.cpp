@@ -12,18 +12,24 @@
 #include <gpt4all-backend/llmodel.h>
 #include <singleapplication.h>
 
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QFont>
 #include <QFontDatabase>
+#include <QList>
 #include <QObject>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
 #include <QVariant>
+#include <QWindow>
 #include <Qt>
+#include <QtAssert>
+#include <QtSystemDetection>
 
 #if G4A_CONFIG(force_d3d12)
 #   include <QSGRendererInterface>

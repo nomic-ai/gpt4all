@@ -1,19 +1,21 @@
 #include "database.h"
 
 #include "mysettings.h"
-#include "utils.h"
+#include "utils.h" // IWYU pragma: keep
 
 #include <duckx/duckx.hpp>
 #include <fmt/format.h>
+#include <usearch/index.hpp>
 #include <usearch/index_plugins.hpp>
 
-#include <QByteArrayView>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileSystemWatcher>
+#include <QFlags>
 #include <QIODevice>
+#include <QKeyValueIterator>
 #include <QRegularExpression>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -22,8 +24,9 @@
 #include <QMap>
 #include <QUtf8StringView>
 #include <QVariant>
-#include <Qt>
 #include <QtLogging>
+#include <QtMinMax>
+#include <QtTypes>
 
 #include <algorithm>
 #include <cmath>
@@ -45,6 +48,7 @@ namespace us = unum::usearch;
 
 //#define DEBUG
 //#define DEBUG_EXAMPLE
+
 
 namespace {
 

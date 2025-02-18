@@ -1,23 +1,24 @@
 #include "chatlistmodel.h"
 
-#include "database.h" // IWYU pragma: keep
 #include "mysettings.h"
 
+#include <QCoreApplication>
 #include <QDataStream>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QEvent>
 #include <QFile>
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QGuiApplication>
 #include <QIODevice>
 #include <QSettings>
-#include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <Qt>
+#include <QtTypes>
 
 #include <algorithm>
-#include <memory>
+
 
 static constexpr quint32 CHAT_FORMAT_MAGIC   = 0xF5D553CC;
 static constexpr qint32  CHAT_FORMAT_VERSION = 12;

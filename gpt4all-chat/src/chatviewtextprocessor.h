@@ -3,18 +3,15 @@
 
 #include <QColor>
 #include <QObject>
-#include <QQmlEngine>
-#include <QQuickTextDocument> // IWYU pragma: keep
-#include <QRectF>
-#include <QSizeF>
+#include <QQmlEngine> // IWYU pragma: keep
+#include <QQuickTextDocument>
 #include <QString>
 #include <QSyntaxHighlighter>
-#include <QTextObjectInterface>
-#include <QVector>
+#include <QVector> // IWYU pragma: keep
+#include <QtTypes>
 
-class QPainter;
-class QTextDocument;
-class QTextFormat;
+// IWYU pragma: no_forward_declare QQuickTextDocument
+
 
 struct CodeColors {
     Q_GADGET

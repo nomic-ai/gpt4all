@@ -4,11 +4,13 @@
 #include "tool.h"
 #include "toolcallparser.h"
 
-#include <QJSEngine>
 #include <QObject>
 #include <QString>
-#include <QtGlobal>
 #include <QThread>
+#include <QtAssert>
+
+class QJSEngine;
+
 
 class JavaScriptConsoleCapture : public QObject
 {

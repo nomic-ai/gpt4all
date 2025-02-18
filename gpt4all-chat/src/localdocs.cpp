@@ -5,10 +5,14 @@
 #include "mysettings.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QGlobalStatic>
 #include <QGuiApplication>
+#include <QList>
 #include <QUrl>
 #include <Qt>
+#include <QtLogging>
+
 
 class MyLocalDocs: public LocalDocs { };
 Q_GLOBAL_STATIC(MyLocalDocs, localDocsInstance)

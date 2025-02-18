@@ -2,8 +2,10 @@
 
 #include <QDebug>
 #include <QMap>
-#include <QtGlobal>
+#include <QTextStream>
 #include <QtLogging>
+
+#include <exception>
 
 
 QList<ResultInfo> ChatItem::consolidateSources(const QList<ResultInfo> &sources)

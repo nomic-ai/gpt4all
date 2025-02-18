@@ -4,6 +4,7 @@
 class QIODevice;
 class QString;
 
+
 class XLSXToMD
 {
 public:

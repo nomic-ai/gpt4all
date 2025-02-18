@@ -1,5 +1,8 @@
 #include "tool.h"
 
+#include <QDataStream>
+#include <QtTypes>
+
 #include <string>
 
 using json = nlohmann::ordered_json;
