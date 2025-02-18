@@ -1,12 +1,27 @@
 module;
 
+#include <memory>
 #include <string>
 
-#include <QString>
+#include <QLatin1StringView>
 
 export module gpt4all.backend.main;
 
+class Ollama;
+
 
 export class LLMProvider {
-    static std::string qstringToSTL(const QString &s);
+public:
+    LLMProvider(QLatin1StringView serverUrl);
+    ~LLMProvider();
+
+    QLatin1StringView serverUrl() const { return QLatin1StringView(m_serverUrl); }
+    void setServerUrl(QLatin1StringView serverUrl);
+
+    /// Retrieve the Ollama version, e.g. "0.5.1"
+    QByteArray getVersion();
+
+private:
+    std::string             m_serverUrl;
+    std::unique_ptr<Ollama> m_ollama;
 };

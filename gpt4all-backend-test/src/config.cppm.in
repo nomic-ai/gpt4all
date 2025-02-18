@@ -1,0 +1,7 @@
+module;
+
+#include <QByteArray>
+
+export module gpt4all.test.config;
+
+export inline QByteArray OLLAMA_URL("@G4A_TEST_OLLAMA_URL@");
