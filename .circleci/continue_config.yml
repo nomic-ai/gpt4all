@@ -1339,7 +1339,7 @@ jobs:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache \
               -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
-              -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
+              -DCMAKE_CUDA_ARCHITECTURES='50-virtual;52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build -j$(nproc)
             ccache -s
       - run:
@@ -1458,7 +1458,7 @@ jobs:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
               -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache `
               -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON `
-              -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
+              -DCMAKE_CUDA_ARCHITECTURES='50-virtual;52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build --parallel
             ccache -s
       - run:
