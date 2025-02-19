@@ -26,7 +26,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="114"/>
         <source>Collection name...</source>
-        <translation>集合名称</translation>
+        <translation>集合名称...</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="116"/>
@@ -41,7 +41,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="149"/>
         <source>Folder path...</source>
-        <translation>目录地址</translation>
+        <translation>目录地址...</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="152"/>
@@ -64,139 +64,139 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="31"/>
         <source>These models have been specifically configured for use in GPT4All. The first few models on the list are known to work the best, but you should only attempt to use models that will fit in your available memory.</source>
-        <translation type="unfinished"></translation>
+        <translation>这些模型已专门为GPT4All配置。列表前几个模型的效果最好，但你最好只使用那些满足内存的模型。</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="45"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished">网络错误：无法检索 %1</translation>
+        <translation>网络错误：无法检索 %1</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="389"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">繁忙程度</translation>
+        <translation>繁忙程度</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="56"/>
         <source>Displayed when the models request is ongoing</source>
-        <translation type="unfinished">在模型请求进行中时显示</translation>
+        <translation>当模型请求处于进行中时显示</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="65"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>全选</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="85"/>
         <source>Reasoning</source>
-        <translation type="unfinished"></translation>
+        <translation>推理</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="142"/>
         <source>Model file</source>
-        <translation type="unfinished">模型文件</translation>
+        <translation>模型文件</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="143"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>待下载的模型</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="166"/>
         <source>Description</source>
-        <translation type="unfinished">描述</translation>
+        <translation>描述</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="167"/>
         <source>File description</source>
-        <translation type="unfinished">文件描述</translation>
+        <translation>文件描述</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="200"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="200"/>
         <source>Resume</source>
-        <translation type="unfinished">继续</translation>
+        <translation>继续</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="200"/>
         <source>Download</source>
-        <translation type="unfinished">下载</translation>
+        <translation>下载</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="208"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished">停止/重启/开始下载</translation>
+        <translation>停止/重启/开始下载</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="220"/>
         <source>Remove</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="227"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished">从系统中删除模型</translation>
+        <translation>从系统中删除模型</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="241"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="275"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>安装</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="276"/>
         <source>Install online model</source>
-        <translation type="unfinished">安装在线模型</translation>
+        <translation>安装在线模型</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="286"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;错误&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="292"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>描述下载时发生的错误</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="305"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推荐用于您的硬件。模型需要的内存（%1 GB）超过了您系统的可用内存（%2）&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="311"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished">硬件不兼容的错误</translation>
+        <translation>硬件不兼容的错误</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="349"/>
         <source>Download progressBar</source>
-        <translation type="unfinished">下载进度</translation>
+        <translation>下载进度</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="350"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">显示下载进度</translation>
+        <translation>显示下载进度</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="360"/>
         <source>Download speed</source>
-        <translation type="unfinished">下载速度</translation>
+        <translation>下载速度</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="361"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">下载速度  b/kb/mb /s</translation>
+        <translation>下载速度  b/kb/mb 每秒</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>计算中...</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="382"/>
@@ -204,78 +204,78 @@
         <location filename="../qml/AddGPT4AllModelView.qml" line="433"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished">是否正在计算文件哈希</translation>
+        <translation>是否正在计算文件哈希</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="390"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished">在计算文件哈希时显示</translation>
+        <translation>在计算文件哈希时显示</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="403"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>错误：$API_KEY为空</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="409"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished"></translation>
+        <translation>输入 $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="424"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished">错误：$BASE_URL 为空</translation>
+        <translation>错误：$BASE_URL 为空</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="430"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">输入 $BASE_URL</translation>
+        <translation>输入 $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="445"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>错误：$MODEL_NAME 为空</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="451"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">输入：$MODEL_NAME</translation>
+        <translation>输入 $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="473"/>
         <source>File size</source>
-        <translation type="unfinished">文件大小</translation>
+        <translation>文件大小</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="495"/>
         <source>RAM required</source>
-        <translation type="unfinished"></translation>
+        <translation>需要 RAM</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="500"/>
         <source>%1 GB</source>
-        <translation type="unfinished">%1 GB</translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="500"/>
         <location filename="../qml/AddGPT4AllModelView.qml" line="522"/>
         <source>?</source>
-        <translation type="unfinished">？</translation>
+        <translation>？</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="517"/>
         <source>Parameters</source>
-        <translation type="unfinished">参数</translation>
+        <translation>参数</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="539"/>
         <source>Quant</source>
-        <translation type="unfinished">量化</translation>
+        <translation>量化</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="561"/>
         <source>Type</source>
-        <translation type="unfinished">类型</translation>
+        <translation>类型</translation>
     </message>
 </context>
 <context>
@@ -283,188 +283,188 @@
     <message>
         <location filename="../qml/AddHFModelView.qml" line="32"/>
         <source>Use the search to find and download models from HuggingFace. There is NO GUARANTEE that these will work. Many will require additional configuration before they can be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>在 Hugging Face 上查找并下载模型。不能保证这些模型可以正常工作。许多模型在使用前需要额外的配置。</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="52"/>
         <source>Discover and download models by keyword search...</source>
-        <translation type="unfinished">通过关键词查找并下载模型 ...</translation>
+        <translation>通过关键词查找并下载模型 ...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="55"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation type="unfinished">用于发现和筛选可下载模型的文本字段</translation>
+        <translation>用于发现和筛选可下载模型的文本字段</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="61"/>
         <source>Searching · %1</source>
-        <translation type="unfinished">搜索中 · %1</translation>
+        <translation>搜索中 · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="131"/>
         <source>Initiate model discovery and filtering</source>
-        <translation type="unfinished">启动模型发现和过滤</translation>
+        <translation>启动模型发现和过滤</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="132"/>
         <source>Triggers discovery and filtering of models</source>
-        <translation type="unfinished">触发模型的发现和筛选</translation>
+        <translation>触发模型发现和过滤</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="151"/>
         <source>Default</source>
-        <translation type="unfinished">默认</translation>
+        <translation>默认</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="152"/>
         <source>Likes</source>
-        <translation type="unfinished">喜欢</translation>
+        <translation>热门</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="153"/>
         <source>Downloads</source>
-        <translation type="unfinished">下载</translation>
+        <translation>下载量</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="154"/>
         <source>Recent</source>
-        <translation type="unfinished">近期</translation>
+        <translation>最近</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="162"/>
         <source>Sort by: %1</source>
-        <translation type="unfinished">排序: %1</translation>
+        <translation>排序: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="176"/>
         <source>Asc</source>
-        <translation type="unfinished">升序</translation>
+        <translation>升序</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="177"/>
         <source>Desc</source>
-        <translation type="unfinished">倒序</translation>
+        <translation>降序</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="190"/>
         <source>Sort dir: %1</source>
-        <translation type="unfinished">排序目录: %1</translation>
+        <translation>排序目录: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="212"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="234"/>
         <source>Limit: %1</source>
-        <translation type="unfinished">数量: %1</translation>
+        <translation>数量: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="297"/>
         <source>Model file</source>
-        <translation type="unfinished">模型文件</translation>
+        <translation>模型文件</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="298"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>待下载的模型</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="321"/>
         <source>Description</source>
-        <translation type="unfinished">描述</translation>
+        <translation>描述</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="322"/>
         <source>File description</source>
-        <translation type="unfinished">文件描述</translation>
+        <translation>文件描述</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Resume</source>
-        <translation type="unfinished">继续</translation>
+        <translation>继续</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="355"/>
         <source>Download</source>
-        <translation type="unfinished">下载</translation>
+        <translation>下载</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="363"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished">停止/重启/开始下载</translation>
+        <translation>停止/重启/开始下载</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="375"/>
         <source>Remove</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="382"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished">从系统中删除模型</translation>
+        <translation>从系统中删除模型</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="396"/>
         <location filename="../qml/AddHFModelView.qml" line="430"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>安装</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="431"/>
         <source>Install online model</source>
-        <translation type="unfinished">安装在线模型</translation>
+        <translation>安装在线模型</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="441"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;错误&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="447"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>描述下载时发生的错误</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="460"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推荐用于您的硬件。模型需要的内存（%1 GB）超过了您系统的可用内存（%2）&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="466"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished">硬件不兼容的错误</translation>
+        <translation>硬件不兼容的错误</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="504"/>
         <source>Download progressBar</source>
-        <translation type="unfinished">下载进度</translation>
+        <translation>下载进度</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="505"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished">显示下载进度</translation>
+        <translation>显示下载进度</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="515"/>
         <source>Download speed</source>
-        <translation type="unfinished">下载速度</translation>
+        <translation>下载速度</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="516"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished">下载速度  b/kb/mb /s</translation>
+        <translation>下载速度  b/kb/mb 每秒</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="533"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>计算中...</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="537"/>
@@ -472,62 +472,62 @@
         <location filename="../qml/AddHFModelView.qml" line="588"/>
         <location filename="../qml/AddHFModelView.qml" line="609"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished">是否正在计算文件哈希</translation>
+        <translation>是否正在计算文件哈希</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="544"/>
         <source>Busy indicator</source>
-        <translation type="unfinished">繁忙程度</translation>
+        <translation>繁忙程度</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="545"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished">在计算文件哈希时显示</translation>
+        <translation>在计算文件哈希时显示</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="558"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>错误：$API_KEY为空</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="564"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished"></translation>
+        <translation>输入 $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="579"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished">错误：$BASE_URL 为空</translation>
+        <translation>错误：$BASE_URL 为空</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="585"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">输入 $BASE_URL</translation>
+        <translation>输入 $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="600"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>错误：$MODEL_NAME 为空</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="606"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">输入：$MODEL_NAME</translation>
+        <translation>输入 $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="628"/>
         <source>File size</source>
-        <translation type="unfinished">文件大小</translation>
+        <translation>文件大小</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="650"/>
         <source>Quant</source>
-        <translation type="unfinished">量化</translation>
+        <translation>量化</translation>
     </message>
     <message>
         <location filename="../qml/AddHFModelView.qml" line="672"/>
         <source>Type</source>
-        <translation type="unfinished">类型</translation>
+        <translation>类型</translation>
     </message>
 </context>
 <context>
@@ -535,7 +535,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="55"/>
         <source>← Existing Models</source>
-        <translation>← 存在的模型</translation>
+        <translation>← 已安装的模型</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="75"/>
@@ -545,12 +545,12 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="86"/>
         <source>GPT4All</source>
-        <translation type="unfinished">GPT4All</translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
         <source>HuggingFace</source>
-        <translation type="unfinished"></translation>
+        <translation>HuggingFace</translation>
     </message>
 </context>
 <context>
@@ -754,12 +754,12 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="491"/>
         <source>Enable System Tray</source>
-        <translation type="unfinished"></translation>
+        <translation>启用系统托盘</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="492"/>
         <source>The application will minimize to the system tray when the window is closed.</source>
-        <translation type="unfinished"></translation>
+        <translation>当窗口关闭时，应用程序将最小化到系统托盘。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="508"/>
@@ -892,125 +892,125 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="83"/>
         <source>GPT4All</source>
-        <translation type="unfinished">GPT4All</translation>
+        <translation>GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="84"/>
         <source>You</source>
-        <translation type="unfinished">您</translation>
+        <translation>您</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="107"/>
         <source>response stopped ...</source>
-        <translation type="unfinished">响应停止...</translation>
+        <translation>响应停止...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="108"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation type="unfinished">检索本地文档: %1 ...</translation>
+        <translation>检索本地文档: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="109"/>
         <source>searching localdocs: %1 ...</source>
-        <translation type="unfinished">搜索本地文档: %1 ...</translation>
+        <translation>搜索本地文档: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="110"/>
         <source>processing ...</source>
-        <translation type="unfinished">处理中</translation>
+        <translation>处理中...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="111"/>
         <source>generating response ...</source>
-        <translation type="unfinished">响应中...</translation>
+        <translation>正在生成回复…</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="112"/>
         <source>generating questions ...</source>
-        <translation type="unfinished">生成响应</translation>
+        <translation>正在生成问题…</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="113"/>
         <source>generating toolcall ...</source>
-        <translation type="unfinished"></translation>
+        <translation>正在生成工具调用…</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="545"/>
         <source>Copy</source>
-        <translation type="unfinished">复制</translation>
+        <translation>复制</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/ChatItemView.qml" line="283"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n 资源</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="430"/>
         <source>LocalDocs</source>
-        <translation type="unfinished">本地文档</translation>
+        <translation>本地文档</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="460"/>
         <source>Edit this message?</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑这条消息？</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="461"/>
         <location filename="../qml/ChatItemView.qml" line="472"/>
         <source>All following messages will be permanently erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>所有后续消息将被永久删除。</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="471"/>
         <source>Redo this response?</source>
-        <translation type="unfinished"></translation>
+        <translation>重新生成这条回复？</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="495"/>
         <source>Cannot edit chat without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>未加载模型时无法编辑聊天。</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="497"/>
         <source>Cannot edit chat while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>生成模型时无法编辑聊天。</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="506"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="517"/>
         <source>Cannot redo response without a loaded model.</source>
-        <translation type="unfinished"></translation>
+        <translation>未加载模型时无法重新生成回复。</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="519"/>
         <source>Cannot redo response while the model is generating.</source>
-        <translation type="unfinished"></translation>
+        <translation>生成模型时无法重新生成回复。</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="528"/>
         <source>Redo</source>
-        <translation type="unfinished"></translation>
+        <translation>重做</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="565"/>
         <source>Like response</source>
-        <translation type="unfinished"></translation>
+        <translation>点赞这条回复</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="594"/>
         <source>Dislike response</source>
-        <translation type="unfinished"></translation>
+        <translation>点踩这条回复</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="657"/>
         <source>Suggested follow-ups</source>
-        <translation type="unfinished">建议的后续行动</translation>
+        <translation>建议的后续步骤</translation>
     </message>
 </context>
 <context>
@@ -1018,7 +1018,7 @@
     <message>
         <location filename="../src/chatllm.cpp" line="1039"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
-        <translation type="unfinished"></translation>
+        <translation>您的消息过长，无法处理（%1 &gt; %2）。请尝试简短内容。</translation>
     </message>
 </context>
 <context>
@@ -1064,17 +1064,17 @@
     <message>
         <location filename="../qml/ChatView.qml" line="99"/>
         <source>Conversation copied to clipboard.</source>
-        <translation>复制对话到剪切板</translation>
+        <translation>复制对话到剪切板。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="106"/>
         <source>Code copied to clipboard.</source>
-        <translation>复制代码到剪切板</translation>
+        <translation>复制代码到剪切板。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="113"/>
         <source>The entire chat will be erased.</source>
-        <translation type="unfinished"></translation>
+        <translation>全部聊天记录将被清除。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="248"/>
@@ -1099,27 +1099,27 @@
     <message>
         <location filename="../qml/ChatView.qml" line="382"/>
         <source>No model installed.</source>
-        <translation>没有安装模型</translation>
+        <translation>没有安装模型。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="384"/>
         <source>Model loading error.</source>
-        <translation>模型加载错误</translation>
+        <translation>模型加载错误。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="386"/>
         <source>Waiting for model...</source>
-        <translation>稍等片刻</translation>
+        <translation>等待模型...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="388"/>
         <source>Switching context...</source>
-        <translation>切换上下文</translation>
+        <translation>切换上下文...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="390"/>
         <source>Choose a model...</source>
-        <translation>选择模型</translation>
+        <translation>选择模型...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="392"/>
@@ -1190,22 +1190,22 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1095"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>旧版提示模板需要在设置中&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;更新&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1099"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>未配置&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;对话模板&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1102"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;对话模板&lt;/a&gt;不能为空。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1105"/>
         <source>Legacy system prompt needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>旧系统提示需要在设置中&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;更新&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1293"/>
@@ -1215,7 +1215,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="924"/>
         <source>Erase and reset chat session</source>
-        <translation>擦除并重置聊天会话</translation>
+        <translation>清空并重置聊天会话</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="942"/>
@@ -1266,12 +1266,12 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="92"/>
         <location filename="../qml/ChatView.qml" line="112"/>
         <source>Erase conversation?</source>
-        <translation type="unfinished"></translation>
+        <translation>清空对话？</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="93"/>
         <source>Changing the model will erase the current conversation.</source>
-        <translation type="unfinished"></translation>
+        <translation>更换模型将清除当前对话。</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="394"/>
@@ -1297,7 +1297,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1243"/>
         <source>Load a model to continue...</source>
-        <translation>选择模型并继续</translation>
+        <translation>选择模型并继续...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1246"/>
@@ -1372,12 +1372,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="42"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>好</translation>
     </message>
     <message>
         <location filename="../qml/ConfirmationDialog.qml" line="49"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -1443,7 +1443,7 @@ model to get started</source>
     <message>
         <location filename="../qml/HomeView.qml" line="82"/>
         <source>Chat with any LLM</source>
-        <translation>大预言模型聊天</translation>
+        <translation>大语言模型聊天</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="92"/>
@@ -1876,50 +1876,50 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <source>%1 system message?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1系统消息？</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="20"/>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>重置</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>The system message will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>系统消息将被%1。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <source>removed</source>
-        <translation type="unfinished"></translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="21"/>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>reset to the default</source>
-        <translation type="unfinished"></translation>
+        <translation>重置为初始状态</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>%1 chat template?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 对话模板？</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>对话模板将被%1。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>erased</source>
-        <translation type="unfinished"></translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="57"/>
@@ -1949,47 +1949,47 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="190"/>
         <source>System Message</source>
-        <translation type="unfinished"></translation>
+        <translation>系统消息</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
         <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>用于设定上下文或引导模型行为的消息。若无则留空。注意：自GPT4All 3.5版本开始，此信息中不应包含控制符。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="218"/>
         <source>System message is not &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;plain text&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>系统消息不是&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;纯文本&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="288"/>
         <source>Chat Template</source>
-        <translation type="unfinished"></translation>
+        <translation>对话模板</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>该Jinja模板会将聊天内容转换为模型的输入。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>未配置&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;对话模板&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;对话模板&lt;/a&gt;不能为空。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="379"/>
         <source>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Syntax error&lt;/a&gt;: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;语法错误&lt;/a&gt;: %1</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="383"/>
         <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>对话模板不是&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja格式&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="409"/>
@@ -2243,7 +2243,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="237"/>
         <location filename="../qml/ModelsView.qml" line="271"/>
         <source>Install</source>
-        <translation>按照</translation>
+        <translation>安装</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="272"/>
@@ -2253,12 +2253,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/ModelsView.qml" line="282"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;错误&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="301"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告：不推荐用于您的硬件。模型需要的内存（%1 GB）超过了您系统的可用内存（%2）&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="399"/>
@@ -2413,12 +2413,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsLabel.qml" line="53"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>重置</translation>
     </message>
 </context>
 <context>
@@ -2426,12 +2426,12 @@ NOTE: Does not take effect until you reload the model.</source>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="24"/>
         <source>Restore defaults?</source>
-        <translation type="unfinished"></translation>
+        <translation>恢复初始化？</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="25"/>
         <source>This page of settings will be reset to the defaults.</source>
-        <translation type="unfinished"></translation>
+        <translation>该页面的设置项将重置为默认值。</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="69"/>
@@ -2641,7 +2641,7 @@ model release that uses your data!</source>
     <message>
         <location filename="../qml/StartupDialog.qml" line="118"/>
         <source>Opt-in to anonymous usage analytics used to improve GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>选择加入匿名使用分析，以帮助改进GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="124"/>
@@ -2679,13 +2679,13 @@ model release that uses your data!</source>
     <message>
         <location filename="../qml/StartupDialog.qml" line="232"/>
         <source>Opt-in to anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>选择匿名共享聊天记录到GPT4All数据池</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="238"/>
         <location filename="../qml/StartupDialog.qml" line="265"/>
         <source>Opt-in for network</source>
-        <translation>加入网络</translation>
+        <translation>选择加入网络</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="239"/>
@@ -2700,12 +2700,12 @@ model release that uses your data!</source>
     <message>
         <location filename="../qml/StartupDialog.qml" line="307"/>
         <source>Opt-out for network</source>
-        <translation>取消网络</translation>
+        <translation>选择退出网络</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="308"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>允许选择退出将聊天匿名共享至 GPT4All 数据湖</translation>
+        <translation>允许选择退出将聊天匿名共享至 GPT4All 数据池</translation>
     </message>
 </context>
 <context>
@@ -2751,12 +2751,12 @@ model release that uses your data!</source>
     <message>
         <location filename="../main.qml" line="47"/>
         <source>Restore</source>
-        <translation type="unfinished"></translation>
+        <translation>恢复</translation>
     </message>
     <message>
         <location filename="../main.qml" line="51"/>
         <source>Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>退出</translation>
     </message>
     <message>
         <location filename="../main.qml" line="149"/>
