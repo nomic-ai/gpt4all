@@ -266,6 +266,7 @@ qt_add_qml_module(chat
       qml/AddModelView.qml
       qml/AddGPT4AllModelView.qml
       qml/AddHFModelView.qml
+      qml/AddRemoteModelView.qml
       qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
       qml/ChatCollapsibleItem.qml
@@ -314,6 +315,7 @@ qt_add_qml_module(chat
       qml/MyTextField.qml
       qml/MyToolButton.qml
       qml/MyWelcomeButton.qml
+      qml/RemoteModelCard.qml
     RESOURCES
       icons/antenna_1.svg
       icons/antenna_2.svg
@@ -344,6 +346,7 @@ qt_add_qml_module(chat
       icons/gpt4all-48.png
       icons/gpt4all.svg
       icons/gpt4all_transparent.svg
+      icons/groq.svg
       icons/home.svg
       icons/image.svg
       icons/info.svg
@@ -351,12 +354,14 @@ qt_add_qml_module(chat
       icons/left_panel_open.svg
       icons/local-docs.svg
       icons/models.svg
+      icons/mistral.svg
       icons/network.svg
       icons/nomic_logo.svg
       icons/notes.svg
       icons/paperclip.svg
       icons/plus.svg
       icons/plus_circle.svg
+      icons/openai.svg
       icons/recycle.svg
       icons/regenerate.svg
       icons/search.svg
