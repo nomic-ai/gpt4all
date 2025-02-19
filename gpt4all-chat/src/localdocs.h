@@ -2,11 +2,14 @@
 #define LOCALDOCS_H
 
 #include "database.h"
-#include "localdocsmodel.h" // IWYU pragma: keep
+#include "localdocsmodel.h"
 
 #include <QObject>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
+
+// IWYU pragma: no_forward_declare LocalDocsModel
+
 
 class LocalDocs : public QObject
 {

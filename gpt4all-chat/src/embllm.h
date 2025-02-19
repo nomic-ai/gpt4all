@@ -5,16 +5,17 @@
 #include <QMutex>
 #include <QObject>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QThread>
 #include <QVariant>
-#include <QVector>
+#include <QVector> // IWYU pragma: keep
 
 #include <atomic>
 #include <vector>
 
 class LLModel;
 class QNetworkAccessManager;
+
 
 struct EmbeddingChunk {
     QString model; // TODO(jared): use to select model

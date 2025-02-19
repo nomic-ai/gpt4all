@@ -4,19 +4,23 @@
 #include "modellist.h" // IWYU pragma: keep
 
 #include <QDateTime>
-#include <QLatin1StringView>
+#include <QLatin1StringView> // IWYU pragma: keep
 #include <QList>
 #include <QModelIndex>
 #include <QObject>
 #include <QSettings>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QTranslator>
-#include <QVector>
+#include <QVariant>
 
 #include <cstdint>
 #include <memory>
 #include <optional>
+
+// IWYU pragma: no_forward_declare QModelIndex
+class QLocale;
+
 
 namespace MySettingsEnums {
     Q_NAMESPACE

@@ -85,12 +85,12 @@
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="65"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Tutti</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="85"/>
         <source>Reasoning</source>
-        <translation type="unfinished"></translation>
+        <translation>Ragionamento</translation>
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="142"/>
@@ -1137,7 +1137,7 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="113"/>
         <source>generating toolcall ...</source>
-        <translation type="unfinished"></translation>
+        <translation>generazione chiamata strumento ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="545"/>

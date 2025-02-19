@@ -9,9 +9,11 @@
 
 #include <QChar>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
+#include <QEvent>
 #include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
@@ -29,14 +31,15 @@
 #include <QSslConfiguration>
 #include <QSslSocket>
 #include <QStandardPaths>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QTextStream>
 #include <QTimer>
 #include <QUrl>
+#include <QtAssert>
 #include <QtLogging>
+#include <QtPreprocessorSupport>
 
 #include <algorithm>
-#include <cstddef>
 #include <iterator>
 #include <optional>
 #include <string>

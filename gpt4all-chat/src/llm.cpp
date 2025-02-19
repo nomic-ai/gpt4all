@@ -12,6 +12,9 @@
 #include <QSettings>
 #include <QUrl>
 #include <QtLogging>
+#include <QtSystemDetection>
+
+#include <string>
 
 #ifdef GPT4ALL_OFFLINE_INSTALLER
 #   include <QDesktopServices>
@@ -24,6 +27,7 @@
 #endif
 
 using namespace Qt::Literals::StringLiterals;
+
 
 class MyLLM: public LLM { };
 Q_GLOBAL_STATIC(MyLLM, llmInstance)

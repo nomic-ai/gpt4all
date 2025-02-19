@@ -2,8 +2,10 @@
 
 #include "tool.h"
 
+#include <QChar>
 #include <QSet>
-#include <QtGlobal>
+#include <QtAssert>
+#include <QtTypes>
 
 #include <stdexcept>
 

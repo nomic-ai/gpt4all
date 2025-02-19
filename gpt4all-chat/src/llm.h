@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QString>
-#include <QtGlobal>
+#include <QtTypes>
+
 
 class LLM : public QObject
 {

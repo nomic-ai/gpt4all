@@ -4,16 +4,18 @@
 #include "database.h"
 
 #include <QAbstractListModel>
-#include <QByteArray>
-#include <QHash>
 #include <QList>
-#include <QObject>
+#include <QObject> // IWYU pragma: keep
 #include <QSortFilterProxyModel>
 #include <QString>
-#include <QVariant>
 #include <Qt>
 
 #include <functional>
+
+class QByteArray;
+class QVariant;
+template <typename Key, typename T> class QHash;
+
 
 class LocalDocsCollectionsModel : public QSortFilterProxyModel
 {

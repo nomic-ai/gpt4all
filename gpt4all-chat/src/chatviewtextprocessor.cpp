@@ -1,29 +1,32 @@
 #include "chatviewtextprocessor.h"
 
+#include <QAbstractTextDocumentLayout>
 #include <QBrush>
 #include <QChar>
 #include <QClipboard>
+#include <QDebug>
+#include <QFlag>
 #include <QFont>
-#include <QFontMetricsF>
 #include <QGuiApplication>
-#include <QList>
-#include <QPainter>
+#include <QList> // IWYU pragma: keep
+#include <QPair>
 #include <QQuickTextDocument>
 #include <QRegularExpression>
-#include <QStringList>
-#include <QTextBlock>
-#include <QTextCharFormat>
+#include <QStringList> // IWYU pragma: keep
+#include <QTextBlock> // IWYU pragma: keep
+#include <QTextCharFormat> // IWYU pragma: keep
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextDocumentFragment>
-#include <QTextFrame>
-#include <QTextFrameFormat>
+#include <QTextFrame> // IWYU pragma: keep
+#include <QTextFrameFormat> // IWYU pragma: keep
 #include <QTextTableCell>
-#include <QVariant>
-#include <Qt>
-#include <QtGlobal>
+#include <QtAssert>
+#include <QtLogging>
 
 #include <algorithm>
+#include <utility>
+
 
 enum Language {
     None,

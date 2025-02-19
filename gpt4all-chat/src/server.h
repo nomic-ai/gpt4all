@@ -8,7 +8,7 @@
 #include <QHttpServerResponse>
 #include <QJsonObject>
 #include <QList>
-#include <QObject>
+#include <QObject> // IWYU pragma: keep
 #include <QString>
 
 #include <memory>

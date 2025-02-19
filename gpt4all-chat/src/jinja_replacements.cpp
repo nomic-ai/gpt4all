@@ -2,6 +2,9 @@
 
 #include "jinja_replacements.h"
 
+#include <utility>
+
+
 // This is a list of prompt templates known to GPT4All and their associated replacements which are automatically used
 // instead when loading the chat template from GGUF. These exist for two primary reasons:
 // - HuggingFace model authors make ugly chat templates because they do not expect the end user to see them;

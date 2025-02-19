@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QGlobalStatic>
 
+
 class MyToolModel: public ToolModel { };
 Q_GLOBAL_STATIC(MyToolModel, toolModelInstance)
 ToolModel *ToolModel::globalInstance()

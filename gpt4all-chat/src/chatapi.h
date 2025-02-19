@@ -3,10 +3,11 @@
 
 #include <gpt4all-backend/llmodel.h>
 
-#include <QByteArray> // IWYU pragma: keep
+#include <QByteArray>
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
+#include <QtPreprocessorSupport>
 
 #include <cstddef>
 #include <cstdint>
@@ -17,9 +18,11 @@
 #include <unordered_map>
 #include <vector>
 
+// IWYU pragma: no_forward_declare QByteArray
+class ChatAPI;
 class QNetworkAccessManager;
 
-class ChatAPI;
+
 class ChatAPIWorker : public QObject {
     Q_OBJECT
 public:

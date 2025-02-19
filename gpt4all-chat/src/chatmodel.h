@@ -4,32 +4,41 @@
 #include "database.h"
 #include "tool.h"
 #include "toolcallparser.h"
-#include "utils.h"
+#include "utils.h" // IWYU pragma: keep
 #include "xlsxtomd.h"
 
 #include <fmt/format.h>
 
-#include <QApplication>
 #include <QAbstractListModel>
 #include <QBuffer>
 #include <QByteArray>
 #include <QClipboard>
 #include <QDataStream>
-#include <QJsonDocument>
+#include <QFileInfo>
+#include <QGuiApplication>
+#include <QIODevice>
 #include <QHash>
 #include <QList>
+#include <QMutex>
+#include <QMutexLocker> // IWYU pragma: keep
 #include <QObject>
-#include <QPair>
+#include <QPair> // IWYU pragma: keep
 #include <QString>
+#include <QStringList> // IWYU pragma: keep
+#include <QUrl>
 #include <QVariant>
-#include <QVector>
 #include <Qt>
-#include <QtGlobal>
+#include <QtAssert>
+#include <QtPreprocessorSupport>
+#include <QtTypes>
 
 #include <algorithm>
 #include <iterator>
+#include <list>
+#include <optional>
 #include <ranges>
 #include <span>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 

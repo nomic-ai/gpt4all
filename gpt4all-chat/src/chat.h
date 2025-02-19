@@ -3,20 +3,25 @@
 
 #include "chatllm.h"
 #include "chatmodel.h"
-#include "database.h" // IWYU pragma: keep
-#include "localdocsmodel.h" // IWYU pragma: keep
+#include "database.h"
+#include "localdocsmodel.h"
 #include "modellist.h"
+#include "tool.h"
 
 #include <QDateTime>
 #include <QList>
 #include <QObject>
-#include <QQmlEngine>
+#include <QQmlEngine> // IWYU pragma: keep
 #include <QString>
 #include <QStringList> // IWYU pragma: keep
-#include <QStringView>
-#include <QtGlobal>
+#include <QUrl>
+#include <QVariant>
+#include <QtTypes>
 
+// IWYU pragma: no_forward_declare LocalDocsCollectionsModel
+// IWYU pragma: no_forward_declare ToolCallInfo
 class QDataStream;
+
 
 class Chat : public QObject
 {

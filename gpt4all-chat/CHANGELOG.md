@@ -11,10 +11,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Substitute prettier default templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B (by [@ThiloteE](https://github.com/ThiloteE) in [#3471](https://github.com/nomic-ai/gpt4all/pull/3471))
+- Build with LLVM Clang 19 on macOS and Ubuntu ([#3500](https://github.com/nomic-ai/gpt4all/pull/3500))
 
 ### Fixed
 - Fix several potential crashes ([#3465](https://github.com/nomic-ai/gpt4all/pull/3465))
 - Fix visual spacing issues with deepseek models ([#3470](https://github.com/nomic-ai/gpt4all/pull/3470))
+- Add missing strings to Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#3496](https://github.com/nomic-ai/gpt4all/pull/3496))
 
 ## [3.9.0] - 2025-02-04
 

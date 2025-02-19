@@ -8,7 +8,6 @@
 #include "localdocsmodel.h"
 #include "modellist.h"
 #include "mysettings.h"
-#include "utils.h"
 
 #include <gpt4all-backend/llmodel.h>
 
@@ -29,7 +28,6 @@
 #include <QSslSocket>
 #include <QSysInfo>
 #include <Qt>
-#include <QtGlobal>
 #include <QtLogging>
 #include <QUrl>
 #include <QUuid>
@@ -48,6 +46,7 @@ using namespace Qt::Literals::StringLiterals;
 
 #define STR_(x) #x
 #define STR(x) STR_(x)
+
 
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
 

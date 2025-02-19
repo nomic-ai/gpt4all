@@ -11,21 +11,26 @@
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QGuiApplication>
-#include <QIODevice>
+#include <QIODevice> // IWYU pragma: keep
 #include <QMap>
 #include <QMetaObject>
 #include <QStandardPaths>
 #include <QThread>
 #include <QUrl>
-#include <QVariant>
 #include <QtLogging>
+#include <QtAssert>
 
 #include <algorithm>
 #include <string>
 #include <thread>
 #include <vector>
 
+#if !(defined(Q_OS_MAC) && defined(__aarch64__))
+    #include <cstring>
+#endif
+
 using namespace Qt::Literals::StringLiterals;
+
 
 // used only for settings serialization, do not translate
 static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };

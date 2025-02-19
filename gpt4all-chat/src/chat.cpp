@@ -7,23 +7,25 @@
 #include "toolcallparser.h"
 #include "toolmodel.h"
 
-#include <QBuffer>
+#include <QByteArray>
 #include <QDataStream>
 #include <QDebug>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
+#include <QFile>
+#include <QFileInfo>
+#include <QIODevice>
 #include <QLatin1String>
 #include <QMap>
 #include <QRegularExpression>
 #include <QString>
-#include <QVariant>
 #include <Qt>
+#include <QtAssert>
 #include <QtLogging>
 
+#include <optional>
 #include <utility>
 
 using namespace ToolEnums;
+
 
 Chat::Chat(QObject *parent)
     : QObject(parent)

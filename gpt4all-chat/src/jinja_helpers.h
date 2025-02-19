@@ -5,7 +5,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include <QtGlobal>
+#include <QtTypes> // IWYU pragma: keep
+
+// IWYU pragma: no_forward_declare MessageItem
+// IWYU pragma: no_forward_declare PromptAttachment
+// IWYU pragma: no_forward_declare ResultInfo
 
 using json = nlohmann::ordered_json;
 

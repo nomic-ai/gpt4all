@@ -9,7 +9,8 @@
 #include <QList>
 #include <QString>
 #include <QVariant>
-#include <QtGlobal>
+#include <QtPreprocessorSupport>
+
 
 class ToolModel : public QAbstractListModel
 {

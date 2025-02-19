@@ -5,10 +5,10 @@
 
 #include <QDateTime>
 #include <QMap>
-#include <QVector>
-#include <QtGlobal>
+#include <QVector> // IWYU pragma: keep
 
 #include <utility>
+
 
 LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
     : QSortFilterProxyModel(parent)

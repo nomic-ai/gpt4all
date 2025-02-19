@@ -7,15 +7,16 @@
 #include <xlsxformat.h>
 #include <xlsxworksheet.h>
 
+#include <QChar>
 #include <QDateTime>
 #include <QDebug>
+#include <QLatin1StringView>
 #include <QList>
 #include <QRegularExpression>
 #include <QString>
-#include <QStringList>
+#include <QStringList> // IWYU pragma: keep
 #include <QStringView>
 #include <QVariant>
-#include <QtGlobal>
 #include <QtLogging>
 
 #include <memory>

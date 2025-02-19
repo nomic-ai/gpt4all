@@ -4,9 +4,10 @@
 #include "chatmodel.h"
 #include "modellist.h"
 #include "mysettings.h"
-#include "utils.h"
+#include "utils.h" // IWYU pragma: keep
 
 #include <fmt/format.h>
+#include <gpt4all-backend/llmodel.h>
 
 #include <QByteArray>
 #include <QCborArray>
@@ -15,32 +16,38 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QHostAddress>
+#include <QHttpHeaders>
 #include <QHttpServer>
+#include <QHttpServerRequest>
 #include <QHttpServerResponder>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QLatin1StringView>
-#include <QPair>
+#include <QPair> // IWYU pragma: keep
+#include <QTcpServer>
 #include <QVariant>
 #include <Qt>
+#include <QtAssert>
 #include <QtCborCommon>
-#include <QtGlobal>
 #include <QtLogging>
+#include <QtMinMax>
+#include <QtPreprocessorSupport>
+#include <QtTypes>
 
 #include <cstdint>
+#include <exception>
 #include <iostream>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-#   include <QTcpServer>
-#endif
+#include <variant>
+#include <vector>
 
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;
@@ -451,23 +458,17 @@ static QJsonObject requestFromJson(const QByteArray &request)
 void Server::start()
 {
     m_server = std::make_unique<QHttpServer>(this);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto *tcpServer = new QTcpServer(m_server.get());
-#else
-    auto *tcpServer = m_server.get();
-#endif
 
     auto port = MySettings::globalInstance()->networkPort();
     if (!tcpServer->listen(QHostAddress::LocalHost, port)) {
         qWarning() << "Server ERROR: Failed to listen on port" << port;
         return;
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     if (!m_server->bind(tcpServer)) {
         qWarning() << "Server ERROR: Failed to HTTP server to socket" << port;
         return;
     }
-#endif
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
         [](const QHttpServerRequest &) {
@@ -607,19 +608,12 @@ void Server::start()
         }
     );
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     m_server->addAfterRequestHandler(this, [](const QHttpServerRequest &req, QHttpServerResponse &resp) {
         Q_UNUSED(req);
         auto headers = resp.headers();
         headers.append("Access-Control-Allow-Origin"_L1, "*"_L1);
         resp.setHeaders(std::move(headers));
     });
-#else
-    m_server->afterRequest([](QHttpServerResponse &&resp) {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        return std::move(resp);
-    });
-#endif
 
     connect(this, &Server::requestResetResponseState, m_chat, &Chat::resetResponseState, Qt::BlockingQueuedConnection);
 }

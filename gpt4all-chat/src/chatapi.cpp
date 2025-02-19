@@ -2,6 +2,9 @@
 
 #include "utils.h"
 
+#include <fmt/format.h>
+
+#include <QAnyStringView>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QGuiApplication>
@@ -9,15 +12,17 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLatin1String>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
+#include <QStringView>
 #include <QThread>
 #include <QUrl>
-#include <QUtf8StringView>
+#include <QUtf8StringView> // IWYU pragma: keep
 #include <QVariant>
 #include <QXmlStreamReader>
 #include <Qt>
-#include <QtGlobal>
+#include <QtAssert>
 #include <QtLogging>
 
 #include <expected>
@@ -28,6 +33,7 @@
 using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
+
 
 ChatAPI::ChatAPI()
     : QObject(nullptr)

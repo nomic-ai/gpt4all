@@ -6,6 +6,7 @@
 #include <QString>
 #include <QtLogging>
 
+
 class Logger {
 public:
     explicit Logger();

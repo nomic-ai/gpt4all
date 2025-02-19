@@ -9,6 +9,8 @@
 #include <QVariant>
 #include <QtGlobal>
 
+class QDataStream;
+
 using json = nlohmann::ordered_json;
 
 
