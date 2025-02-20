@@ -4,9 +4,11 @@ import gpt4all.test.config;
 
 #include <QLatin1StringView>
 
+using gpt4all::backend::LLMProvider;
+
 
 int main()
 {
-    LLMProvider provider { QLatin1StringView(OLLAMA_URL) };
+    LLMProvider provider(OLLAMA_URL);
     fmt::print("Server version: {}", provider.getVersion());
 }

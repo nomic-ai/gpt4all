@@ -1,28 +1,33 @@
 module;
 
-#include <string>
+#include <expected>
+#include <memory>
 
-#include <QLatin1StringView>
+#include <QFuture>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QByteArray>
+#include <QString>
 
-#include <ollama.hpp>
+#include <QCoro/QCoroNetworkReply>
+
+using namespace Qt::Literals::StringLiterals;
 
 module gpt4all.backend.main;
 
 
-LLMProvider::LLMProvider(QLatin1StringView serverUrl)
-    : m_serverUrl(serverUrl.data(), serverUrl.size())
-    , m_ollama(std::make_unique<Ollama>(m_serverUrl))
-    {}
+namespace gpt4all::backend {
 
-LLMProvider::~LLMProvider() = default;
-
-void LLMProvider::setServerUrl(QLatin1StringView serverUrl)
+auto LLMProvider::getVersion() const -> QCoro::Task<DataOrNetErr<QString>>
 {
-    m_serverUrl.assign(serverUrl.data(), serverUrl.size());
-    m_ollama->setServerURL(m_serverUrl);
+    QNetworkAccessManager nam;
+    std::unique_ptr<QNetworkReply> reply(co_await nam.get(QNetworkRequest(m_baseUrl.resolved(u"/api/version"_s))));
+    if (auto err = reply->error())
+        co_return std::unexpected(err);
+
+    // TODO(jared): parse JSON here instead of just returning the data
+    co_return QString::fromUtf8(reply->readAll());
 }
 
-QByteArray LLMProvider::getVersion()
-{
-    return QByteArray(m_ollama->get_version());
-}
+} // namespace gpt4all::backend
