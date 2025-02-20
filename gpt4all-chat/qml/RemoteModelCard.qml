@@ -28,9 +28,10 @@ Rectangle {
     radius: 10
     border.width: 1
     border.color: theme.controlBorder
-    implicitHeight: childrenRect.height + 40
+    implicitHeight: topColumn.height + bottomColumn.height + 60
 
     ColumnLayout {
+        id: topColumn
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -73,6 +74,15 @@ Rectangle {
             id: providerDescLabel
             onLinkActivated: function(link) { Qt.openUrlExternally(link) }
         }
+    }
+
+    ColumnLayout {
+        id: bottomColumn
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 20
+        spacing: 30
 
         ColumnLayout {
             MySettingsLabel {
@@ -113,15 +123,15 @@ Rectangle {
                 color: theme.settingsTitleTextColor
             }
             MyTextField {
-                id: baseUrl
+                id: baseUrlField
                 Layout.fillWidth: true
                 wrapMode: Text.WrapAnywhere
                 function showError() {
                     messageToast.show(qsTr("ERROR: $BASE_URL is empty."));
-                    baseUrl.placeholderTextColor = theme.textErrorColor;
+                    baseUrlField.placeholderTextColor = theme.textErrorColor;
                 }
                 onTextChanged: {
-                    baseUrl.placeholderTextColor = theme.mutedTextColor;
+                    baseUrlField.placeholderTextColor = theme.mutedTextColor;
                 }
                 placeholderText: qsTr("enter $BASE_URL")
                 Accessible.role: Accessible.EditableText

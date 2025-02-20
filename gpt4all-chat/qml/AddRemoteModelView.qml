@@ -47,7 +47,7 @@ ColumnLayout {
             columnSpacing: 20
             RemoteModelCard {
                 Layout.preferredWidth: 600
-                Layout.minimumHeight: implicitHeight
+                Layout.minimumHeight: 700
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 providerBaseUrl: "https://api.groq.com/openai/v1/"
                 providerName: qsTr("Groq")
@@ -56,7 +56,7 @@ ColumnLayout {
             }
             RemoteModelCard {
                 Layout.preferredWidth: 600
-                Layout.minimumHeight: implicitHeight
+                Layout.minimumHeight: 700
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 providerBaseUrl: "https://api.openai.com/v1/"
                 providerName: qsTr("OpenAI")
@@ -65,7 +65,7 @@ ColumnLayout {
             }
             RemoteModelCard {
                 Layout.preferredWidth: 600
-                Layout.minimumHeight: implicitHeight
+                Layout.minimumHeight: 700
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 providerBaseUrl: "https://api.mistral.ai/v1/"
                 providerName: qsTr("Mistral")
@@ -74,7 +74,7 @@ ColumnLayout {
             }
             RemoteModelCard {
                 Layout.preferredWidth: 600
-                Layout.minimumHeight: implicitHeight
+                Layout.minimumHeight: 700
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 providerIsCustom: true
                 providerName: qsTr("Custom")
