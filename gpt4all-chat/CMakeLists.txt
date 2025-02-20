@@ -386,6 +386,7 @@ qt_add_translations(chat
 )
 
 set_target_properties(chat PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
     WIN32_EXECUTABLE TRUE
 )
 
@@ -614,3 +615,7 @@ else()
         cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
     endif()
 endif()
+set_source_files_properties(
+    "chat_autogen/mocs_compilation.cpp"
+    PROPERTIES CXX_SCAN_FOR_MODULES ON
+)

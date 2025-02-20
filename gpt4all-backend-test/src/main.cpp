@@ -1,8 +1,8 @@
+#include <QLatin1StringView>
+
 import fmt;
 import gpt4all.backend.main;
 import gpt4all.test.config;
-
-#include <QLatin1StringView>
 
 using gpt4all::backend::LLMProvider;
 

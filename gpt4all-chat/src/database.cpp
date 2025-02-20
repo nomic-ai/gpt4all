@@ -4,7 +4,6 @@
 #include "utils.h"
 
 #include <duckx/duckx.hpp>
-#include <fmt/format.h>
 #include <usearch/index_plugins.hpp>
 
 #include <QByteArrayView>
@@ -38,6 +37,8 @@
 #   include <fpdf_doc.h>
 #   include <fpdf_text.h>
 #endif
+
+import fmt;
 
 using namespace Qt::Literals::StringLiterals;
 namespace ranges = std::ranges;

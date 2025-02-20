@@ -10,7 +10,7 @@
 	url = https://github.com/nomic-ai/SingleApplication.git
 [submodule "gpt4all-chat/deps/fmt"]
 	path = deps/fmt
-	url = https://github.com/fmtlib/fmt.git
+	url = https://github.com/nomic-ai/fmt.git
 [submodule "gpt4all-chat/deps/DuckX"]
 	path = gpt4all-chat/deps/DuckX
 	url = https://github.com/nomic-ai/DuckX.git

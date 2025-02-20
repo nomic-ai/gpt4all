@@ -2,8 +2,6 @@
 
 #include "utils.h"
 
-#include <fmt/format.h>
-
 #include <QString>
 #include <QUrl>
 
@@ -11,6 +9,8 @@
 #include <map>
 #include <ranges>
 #include <vector>
+
+import fmt;
 
 namespace views  = std::views;
 using json = nlohmann::ordered_json;
