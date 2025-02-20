@@ -146,7 +146,7 @@ configure_file(
 
 add_subdirectory(../deps "${CMAKE_CURRENT_BINARY_DIR}/common_deps")
 add_subdirectory(deps)
-add_subdirectory(../gpt4all-backend llmodel)
+add_subdirectory(../gpt4all-backend-old llmodel)
 
 if (GPT4ALL_TEST)
     enable_testing()

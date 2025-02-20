@@ -13,8 +13,8 @@ target_sources(${TARGET} PUBLIC
 )
 gpt4all_add_warning_options(${TARGET})
 target_link_libraries(${TARGET} PUBLIC
-    Qt6::Core
+    QCoro6::Coro Qt6::Core Qt6::Network
 )
 target_link_libraries(${TARGET} PRIVATE
-    fmt::fmt ollama-hpp
+    QCoro6::Network fmt::fmt
 )

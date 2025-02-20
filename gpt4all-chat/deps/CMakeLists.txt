@@ -3,9 +3,6 @@ include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF)
 
-set(FMT_INSTALL OFF)
-add_subdirectory(fmt)
-
 set(QAPPLICATION_CLASS QApplication)
 add_subdirectory(SingleApplication)
 
@@ -14,6 +11,8 @@ add_subdirectory(DuckX)
 
 set(QT_VERSION_MAJOR 6)
 add_subdirectory(QXlsx/QXlsx)
+
+add_subdirectory(json)  # required by minja
 
 if (NOT GPT4ALL_USING_QTPDF)
     # If we do not use QtPDF, we need to get PDFium.

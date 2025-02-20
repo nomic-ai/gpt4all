@@ -1,3 +1,7 @@
+[submodule "gpt4all-backend-old/deps/llama.cpp-mainline"]
+	path = gpt4all-backend-old/deps/llama.cpp-mainline
+	url = https://github.com/nomic-ai/llama.cpp.git
+    branch = master
 [submodule "gpt4all-chat/usearch"]
 	path = gpt4all-chat/deps/usearch
 	url = https://github.com/nomic-ai/usearch.git
@@ -17,8 +21,8 @@
 	path = gpt4all-chat/deps/minja
 	url = https://github.com/nomic-ai/minja.git
 [submodule "gpt4all-chat/deps/json"]
-	path = deps/json
+	path = gpt4all-chat/deps/json
 	url = https://github.com/nlohmann/json.git
-[submodule "gpt4all-backend/deps/ollama-hpp"]
-	path = gpt4all-backend/deps/ollama-hpp
-	url = github.com:nomic-ai/ollama-hpp.git
+[submodule "gpt4all-backend/deps/qcoro"]
+	path = deps/qcoro
+	url = https://github.com/qcoro/qcoro.git

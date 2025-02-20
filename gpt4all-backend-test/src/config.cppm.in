@@ -1,7 +1,10 @@
 module;
 
-#include <QByteArray>
+#include <QString>
 
 export module gpt4all.test.config;
 
-export inline QByteArray OLLAMA_URL("@G4A_TEST_OLLAMA_URL@");
+using namespace Qt::Literals::StringLiterals;
+
+
+export inline QString OLLAMA_URL = u"@G4A_TEST_OLLAMA_URL@"_s;
