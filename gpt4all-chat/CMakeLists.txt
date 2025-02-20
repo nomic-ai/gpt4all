@@ -386,6 +386,7 @@ qt_add_translations(chat
 )
 
 set_target_properties(chat PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
     WIN32_EXECUTABLE TRUE
 )
 

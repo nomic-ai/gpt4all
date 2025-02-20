@@ -6,8 +6,6 @@
 #include "mysettings.h"
 #include "utils.h"
 
-#include <fmt/format.h>
-
 #include <QByteArray>
 #include <QCborArray>
 #include <QCborMap>
@@ -41,6 +39,8 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #   include <QTcpServer>
 #endif
+
+import fmt;
 
 using namespace std::string_literals;
 using namespace Qt::Literals::StringLiterals;

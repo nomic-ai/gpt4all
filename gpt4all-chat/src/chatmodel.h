@@ -7,8 +7,6 @@
 #include "utils.h"
 #include "xlsxtomd.h"
 
-#include <fmt/format.h>
-
 #include <QApplication>
 #include <QAbstractListModel>
 #include <QBuffer>
@@ -32,6 +30,8 @@
 #include <span>
 #include <utility>
 #include <vector>
+
+import fmt;
 
 using namespace Qt::Literals::StringLiterals;
 namespace ranges = std::ranges;

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <fmt/base.h>
-#include <fmt/format.h>
-
 #include <QByteArray>
 #include <QJsonValue>
 #include <QLatin1StringView>
@@ -14,6 +11,8 @@
 #include <initializer_list>
 #include <string_view>
 #include <utility>
+
+import fmt;
 
 class QJsonObject;
 
