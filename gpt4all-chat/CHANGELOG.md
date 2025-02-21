@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several potential crashes ([#3465](https://github.com/nomic-ai/gpt4all/pull/3465))
 - Fix visual spacing issues with deepseek models ([#3470](https://github.com/nomic-ai/gpt4all/pull/3470))
 - Add missing strings to Italian translation (by [@Harvester62](https://github.com/Harvester62) in [#3496](https://github.com/nomic-ai/gpt4all/pull/3496))
+- Update Simplified Chinese translation (by [@Junior2Ran](https://github.com/Junior2Ran) in [#3467](https://github.com/nomic-ai/pull/3467))
 
 ## [3.9.0] - 2025-02-04
 
