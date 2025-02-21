@@ -62,6 +62,15 @@ ColumnLayout {
                 providerName: qsTr("OpenAI")
                 providerImage: "qrc:/gpt4all/icons/openai.svg"
                 providerDesc: qsTr('OpenAI provides access to advanced AI models, including GPT-4 supporting a wide range of applications, from conversational AI to content generation and code completion.<br><br>Get your API key: <a href="https://platform.openai.com/signup">https://openai.com/</a>')
+                Component.onCompleted: {
+                    filterModels = function(names) {
+                        // Define a whitelist of allowed names
+                        var whitelist = ["gpt-3.5-turbo", "gpt-4o", "gpt-4", "gpt-4-turbo", "gpt-4-32k", "gpt-3.5-turbo-16k"];
+
+                        // Filter names based on the whitelist
+                        return names.filter(name => whitelist.includes(name));
+                    }
+                }
             }
             RemoteModelCard {
                 Layout.preferredWidth: 600
