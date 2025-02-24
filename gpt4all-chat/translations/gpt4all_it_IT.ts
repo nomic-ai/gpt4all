@@ -1080,17 +1080,17 @@
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Thinking</source>
-        <translation type="unfinished">Elaborazione in corso</translation>
+        <translation type="unfinished">Elaborazione</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Analyzing</source>
-        <translation type="unfinished">Analisi in corso</translation>
+        <translation type="unfinished">Analisi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="41"/>
         <source>Thought for %1 %2</source>
-        <translation type="unfinished">Pensato per %1 %2</translation>
+        <translation type="unfinished">Elaborato per %1 %2</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
