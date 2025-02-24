@@ -60,27 +60,28 @@ ComboBox {
         highlighted: comboBox.highlightedIndex === index
     }
     popup: Popup {
-        // FIXME This should be made much nicer to take into account lists that are very long so
-        // that it is scrollable and also sized optimally taking into account the x,y and the content
-        // width and height as well as the window width and height
         y: comboBox.height - 1
         width: comboBox.width
-        implicitHeight: contentItem.implicitHeight + 20
+        implicitHeight: Math.min(window.height - y, contentItem.implicitHeight + 20)
         padding: 0
-
         contentItem: Rectangle {
-            implicitWidth: myListView.contentWidth
+            implicitWidth: comboBox.width
             implicitHeight: myListView.contentHeight
             color: "transparent"
-            ListView {
-                id: myListView
+            radius: 10
+            ScrollView {
                 anchors.fill: parent
                 anchors.margins: 10
                 clip: true
-                implicitHeight: contentHeight
-                model: comboBox.popup.visible ? comboBox.delegateModel : null
-                currentIndex: comboBox.highlightedIndex
-                ScrollIndicator.vertical: ScrollIndicator { }
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ListView {
+                    id: myListView
+                    implicitHeight: contentHeight
+                    model: comboBox.popup.visible ? comboBox.delegateModel : null
+                    currentIndex: comboBox.highlightedIndex
+                    ScrollIndicator.vertical: ScrollIndicator { }
+                }
             }
         }
 
