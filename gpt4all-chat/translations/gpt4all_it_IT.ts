@@ -538,7 +538,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
         <source>Remote Providers</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fornitori Remoti</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="100"/>
