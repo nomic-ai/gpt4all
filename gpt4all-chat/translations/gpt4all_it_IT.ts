@@ -73,7 +73,7 @@
     </message>
     <message>
         <location filename="../qml/AddGPT4AllModelView.qml" line="55"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="389"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="343"/>
         <source>Busy indicator</source>
         <translation>Indicatore di occupato</translation>
     </message>
@@ -143,137 +143,125 @@
         <translation>Rimuovi il modello dal sistema dei file</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="241"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="275"/>
         <source>Install</source>
-        <translation>Installa</translation>
+        <translation type="vanished">Installa</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="276"/>
         <source>Install online model</source>
-        <translation>Installa il modello online</translation>
+        <translation type="vanished">Installa il modello online</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="286"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="240"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
         <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Errore&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="292"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="246"/>
         <source>Describes an error that occurred when downloading</source>
         <translation>Descrive un errore che si è verificato durante lo scaricamento</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="305"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="259"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
         <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVISO: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="311"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="265"/>
         <source>Error for incompatible hardware</source>
         <translation>Errore per hardware incompatibile</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="349"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="303"/>
         <source>Download progressBar</source>
         <translation>Barra di avanzamento dello scaricamento</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="350"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="304"/>
         <source>Shows the progress made in the download</source>
         <translation>Mostra lo stato di avanzamento dello scaricamento</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="360"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="314"/>
         <source>Download speed</source>
         <translation>Velocità di scaricamento</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="361"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="315"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
         <translation>Velocità di scaricamento in byte/kilobyte/megabyte al secondo</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="378"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="332"/>
         <source>Calculating...</source>
         <translation>Calcolo in corso...</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="382"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="412"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="433"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="454"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="336"/>
         <source>Whether the file hash is being calculated</source>
         <translation>Se viene calcolato l&apos;hash del file</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="390"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="344"/>
         <source>Displayed when the file hash is being calculated</source>
         <translation>Visualizzato durante il calcolo dell&apos;hash del file</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="403"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation>ERRORE: $API_KEY è vuoto.</translation>
+        <translation type="vanished">ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="409"/>
         <source>enter $API_KEY</source>
-        <translation>Inserire $API_KEY</translation>
+        <translation type="vanished">Inserire $API_KEY</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="424"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation>ERRORE: $BASE_URL non è valido.</translation>
+        <translation type="vanished">ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="430"/>
         <source>enter $BASE_URL</source>
-        <translation>inserisci $BASE_URL</translation>
+        <translation type="vanished">inserisci $BASE_URL</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="445"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
+        <translation type="vanished">ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="451"/>
         <source>enter $MODEL_NAME</source>
-        <translation>inserisci $MODEL_NAME</translation>
+        <translation type="vanished">inserisci $MODEL_NAME</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="473"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="364"/>
         <source>File size</source>
         <translation>Dimensione del file</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="495"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="386"/>
         <source>RAM required</source>
         <translation>RAM richiesta</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="500"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="391"/>
         <source>%1 GB</source>
         <translation>%1 GB</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="500"/>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="522"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="391"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="413"/>
         <source>?</source>
         <translation>?</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="517"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="408"/>
         <source>Parameters</source>
         <translation>Parametri</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="539"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="430"/>
         <source>Quant</source>
         <translation>Quant</translation>
     </message>
     <message>
-        <location filename="../qml/AddGPT4AllModelView.qml" line="561"/>
+        <location filename="../qml/AddGPT4AllModelView.qml" line="452"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
@@ -549,6 +537,11 @@
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
+        <source>Remote Providers</source>
+        <translation type="unfinished">Fornitori Remoti</translation>
+    </message>
+    <message>
+        <location filename="../qml/AddModelView.qml" line="100"/>
         <source>HuggingFace</source>
         <translation>HuggingFace</translation>
     </message>
@@ -755,6 +748,54 @@
     <message>
         <source>Type</source>
         <translation type="vanished">Tipo</translation>
+    </message>
+</context>
+<context>
+    <name>AddRemoteModelView</name>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="31"/>
+        <source>Various remote model providers that use network resources for inference.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="55"/>
+        <source>Groq</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="57"/>
+        <source>Groq offers a high-performance AI inference engine designed for low-latency and efficient processing. Optimized for real-time applications, Groq’s technology is ideal for users who need fast responses from open large language models and other AI workloads.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="79"/>
+        <source>OpenAI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="81"/>
+        <source>OpenAI provides access to advanced AI models, including GPT-4 supporting a wide range of applications, from conversational AI to content generation and code completion.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="96"/>
+        <source>Mistral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="98"/>
+        <source>Mistral AI specializes in efficient, open-weight language models optimized for various natural language processing tasks. Their models are designed for flexibility and performance, making them a solid option for applications requiring scalable AI solutions.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="141"/>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/AddRemoteModelView.qml" line="143"/>
+        <source>The custom provider option allows users to connect their own OpenAI-compatible AI models or third-party inference services. This is useful for organizations with proprietary models or those leveraging niche AI providers not listed here.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1005,13 +1046,13 @@
 <context>
     <name>Chat</name>
     <message>
-        <location filename="../src/chat.cpp" line="31"/>
-        <location filename="../src/chat.h" line="79"/>
+        <location filename="../src/chat.cpp" line="33"/>
+        <location filename="../src/chat.h" line="84"/>
         <source>New Chat</source>
         <translation>Nuova Chat</translation>
     </message>
     <message>
-        <location filename="../src/chat.cpp" line="44"/>
+        <location filename="../src/chat.cpp" line="46"/>
         <source>Server Chat</source>
         <translation>Chat del server</translation>
     </message>
@@ -1019,14 +1060,52 @@
 <context>
     <name>ChatAPIWorker</name>
     <message>
-        <location filename="../src/chatapi.cpp" line="257"/>
+        <location filename="../src/chatapi.cpp" line="263"/>
         <source>ERROR: Network error occurred while connecting to the API server</source>
         <translation>ERRORE: si è verificato un errore di rete durante la connessione al server API</translation>
     </message>
     <message>
-        <location filename="../src/chatapi.cpp" line="270"/>
+        <location filename="../src/chatapi.cpp" line="276"/>
         <source>ChatAPIWorker::handleFinished got HTTP Error %1 %2</source>
         <translation>ChatAPIWorker::handleFinished ha ricevuto l&apos;errore HTTP %1 %2</translation>
+    </message>
+</context>
+<context>
+    <name>ChatCollapsibleItem</name>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="37"/>
+        <source>Analysis encountered error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
+        <source>Thinking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
+        <source>Analyzing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="41"/>
+        <source>Thought for %1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
+        <source>second</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
+        <source>seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatCollapsibleItem.qml" line="44"/>
+        <source>Analyzed</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1234,7 +1313,7 @@
 <context>
     <name>ChatLLM</name>
     <message>
-        <location filename="../src/chatllm.cpp" line="1039"/>
+        <location filename="../src/chatllm.cpp" line="1047"/>
         <source>Your message was too long and could not be processed (%1 &gt; %2). Please try again with something shorter.</source>
         <translation>Il messaggio era troppo lungo e non è stato possibile elaborarlo (%1 &gt; %2). Riprova con un messaggio più breve.</translation>
     </message>
@@ -1242,34 +1321,57 @@
 <context>
     <name>ChatListModel</name>
     <message>
-        <location filename="../src/chatlistmodel.h" line="91"/>
+        <location filename="../src/chatlistmodel.h" line="94"/>
         <source>TODAY</source>
         <translation>OGGI</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="93"/>
+        <location filename="../src/chatlistmodel.h" line="96"/>
         <source>THIS WEEK</source>
         <translation>QUESTA SETTIMANA</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="95"/>
+        <location filename="../src/chatlistmodel.h" line="98"/>
         <source>THIS MONTH</source>
         <translation>QUESTO MESE</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="97"/>
+        <location filename="../src/chatlistmodel.h" line="100"/>
         <source>LAST SIX MONTHS</source>
         <translation>ULTIMI SEI MESI</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="99"/>
+        <location filename="../src/chatlistmodel.h" line="102"/>
         <source>THIS YEAR</source>
         <translation>QUEST&apos;ANNO</translation>
     </message>
     <message>
-        <location filename="../src/chatlistmodel.h" line="101"/>
+        <location filename="../src/chatlistmodel.h" line="104"/>
         <source>LAST YEAR</source>
         <translation>L&apos;ANNO SCORSO</translation>
+    </message>
+</context>
+<context>
+    <name>ChatTextItem</name>
+    <message>
+        <location filename="../qml/ChatTextItem.qml" line="67"/>
+        <source>Copy</source>
+        <translation type="unfinished">Copia</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatTextItem.qml" line="73"/>
+        <source>Copy Message</source>
+        <translation type="unfinished">Copia messaggio</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatTextItem.qml" line="83"/>
+        <source>Disable markdown</source>
+        <translation type="unfinished">Disabilita Markdown</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatTextItem.qml" line="83"/>
+        <source>Enable markdown</source>
+        <translation type="unfinished">Abilita Markdown</translation>
     </message>
 </context>
 <context>
@@ -1550,6 +1652,19 @@ modello per iniziare</translation>
     </message>
 </context>
 <context>
+    <name>CodeInterpreter</name>
+    <message>
+        <location filename="../src/codeinterpreter.h" line="79"/>
+        <source>Code Interpreter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/codeinterpreter.h" line="80"/>
+        <source>compute javascript code using console.log as output</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CollectionsDrawer</name>
     <message>
         <location filename="../qml/CollectionsDrawer.qml" line="70"/>
@@ -1604,37 +1719,37 @@ modello per iniziare</translation>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../src/download.cpp" line="273"/>
+        <location filename="../src/download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>Il modello &quot;%1&quot; è stato installato correttamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="283"/>
+        <location filename="../src/download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="289"/>
+        <location filename="../src/download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="295"/>
+        <location filename="../src/download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="301"/>
+        <location filename="../src/download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>ERRORE: il modello &quot;%1 (%2)&quot; è in conflitto.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="320"/>
+        <location filename="../src/download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>Il modello &quot;%1 (%2)&quot; è stato installato correttamente.</translation>
     </message>
     <message>
-        <location filename="../src/download.cpp" line="344"/>
+        <location filename="../src/download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>Il modello &quot;%1&quot; è stato rimosso.</translation>
     </message>
@@ -2008,78 +2123,78 @@ modello per iniziare</translation>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../src/modellist.cpp" line="1712"/>
+        <location filename="../src/modellist.cpp" line="1716"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Richiede una chiave API OpenAI personale.&lt;/li&gt;&lt;li&gt;ATTENZIONE: invierà le tue chat a OpenAI!&lt;/li&gt;&lt;li&gt;La tua chiave API verrà archiviata su disco&lt;/li&gt;&lt;li&gt; Verrà utilizzato solo per comunicare con OpenAI&lt;/li&gt;&lt;li&gt;Puoi richiedere una chiave API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;qui.&lt;/a&gt; &lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1731"/>
+        <location filename="../src/modellist.cpp" line="1735"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1760"/>
+        <location filename="../src/modellist.cpp" line="1764"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1792"/>
+        <location filename="../src/modellist.cpp" line="1796"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1818"/>
+        <location filename="../src/modellist.cpp" line="1822"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1845"/>
+        <location filename="../src/modellist.cpp" line="1849"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1745"/>
+        <location filename="../src/modellist.cpp" line="1749"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Anche se paghi OpenAI per ChatGPT-4 questo non garantisce l&apos;accesso alla chiave API. Contatta OpenAI per maggiori informazioni.</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1340"/>
-        <location filename="../src/modellist.cpp" line="1391"/>
+        <location filename="../src/modellist.cpp" line="1344"/>
+        <location filename="../src/modellist.cpp" line="1395"/>
         <source>cannot open &quot;%1&quot;: %2</source>
         <translation>impossibile aprire &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1352"/>
+        <location filename="../src/modellist.cpp" line="1356"/>
         <source>cannot create &quot;%1&quot;: %2</source>
         <translation>impossibile creare &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1402"/>
+        <location filename="../src/modellist.cpp" line="1406"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1403"/>
+        <location filename="../src/modellist.cpp" line="1407"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Modello API compatibile con OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Chiave API: %1&lt;/li&gt;&lt;li&gt;URL di base: %2&lt;/li&gt;&lt;li&gt;Nome modello: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1773"/>
+        <location filename="../src/modellist.cpp" line="1777"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Richiede una chiave API Mistral personale.&lt;/li&gt;&lt;li&gt;ATTENZIONE: invierà le tue chat a Mistral!&lt;/li&gt;&lt;li&gt;La tua chiave API verrà archiviata su disco&lt;/li&gt;&lt;li&gt; Verrà utilizzato solo per comunicare con Mistral&lt;/li&gt;&lt;li&gt;Puoi richiedere una chiave API &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;qui&lt;/a&gt;. &lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1858"/>
+        <location filename="../src/modellist.cpp" line="1862"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Richiede una chiave API personale e l&apos;URL di base dell&apos;API.&lt;/li&gt;&lt;li&gt;ATTENZIONE: invierà le tue chat al server API compatibile con OpenAI che hai specificato!&lt;/li&gt;&lt;li&gt;La tua chiave API verrà archiviata su disco&lt;/li&gt;&lt;li&gt;Verrà utilizzata solo per comunicare con il server API compatibile con OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="1875"/>
+        <location filename="../src/modellist.cpp" line="1879"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Connetti al server API compatibile con OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../src/modellist.cpp" line="2299"/>
+        <location filename="../src/modellist.cpp" line="2303"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Creato da %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Pubblicato il %2.&lt;li&gt;Questo modello ha %3 Mi piace.&lt;li&gt;Questo modello ha %4 download.&lt;li&gt;Altro informazioni possono essere trovate &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;qui.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
@@ -2762,6 +2877,75 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../qml/PopupDialog.qml" line="49"/>
         <source>Displayed when the popup is showing busy</source>
         <translation>Visualizzato quando la finestra a comparsa risulta occupata</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteModelCard</name>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="92"/>
+        <source>API Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="104"/>
+        <source>ERROR: $API_KEY is empty.</source>
+        <translation type="unfinished">ERRORE: $API_KEY è vuoto.</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="117"/>
+        <source>enter $API_KEY</source>
+        <translation type="unfinished">Inserire $API_KEY</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="120"/>
+        <source>Whether the file hash is being calculated</source>
+        <translation type="unfinished">Se viene calcolato l&apos;hash del file</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="127"/>
+        <source>Base Url</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="138"/>
+        <source>ERROR: $BASE_URL is empty.</source>
+        <translation type="unfinished">ERRORE: $BASE_URL non è valido.</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="144"/>
+        <source>enter $BASE_URL</source>
+        <translation type="unfinished">inserisci $BASE_URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="152"/>
+        <source>Model Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="163"/>
+        <source>ERROR: $MODEL_NAME is empty.</source>
+        <translation type="unfinished">ERRORE: $MODEL_NAME è vuoto.</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="169"/>
+        <source>enter $MODEL_NAME</source>
+        <translation type="unfinished">inserisci $MODEL_NAME</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="179"/>
+        <source>Models</source>
+        <translation type="unfinished">Modelli</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="199"/>
+        <location filename="../qml/RemoteModelCard.qml" line="217"/>
+        <source>Install</source>
+        <translation type="unfinished">Installa</translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="218"/>
+        <source>Install remote model</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
