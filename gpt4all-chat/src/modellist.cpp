@@ -502,10 +502,11 @@ bool GPT4AllDownloadableModels::filterAcceptsRow(int sourceRow,
     bool hasDescription = !description.isEmpty();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
     bool isDiscovered = sourceModel()->data(index, ModelList::IsDiscoveredRole).toBool();
+    bool isOnline = sourceModel()->data(index, ModelList::OnlineRole).toBool();
     bool satisfiesKeyword = m_keywords.isEmpty();
     for (const QString &k : m_keywords)
         satisfiesKeyword = description.contains(k) ? true : satisfiesKeyword;
-    return !isDiscovered && hasDescription && !isClone && satisfiesKeyword;
+    return !isOnline && !isDiscovered && hasDescription && !isClone && satisfiesKeyword;
 }
 
 int GPT4AllDownloadableModels::count() const
@@ -2355,4 +2356,57 @@ void ModelList::handleDiscoveryItemErrorOccurred(QNetworkReply::NetworkError cod
 
     qWarning() << u"ERROR: Discovery item failed with error code \"%1-%2\""_s
                       .arg(code).arg(reply->errorString()).toStdString();
+}
+
+QStringList ModelList::remoteModelList(const QString &apiKey, const QUrl &baseUrl)
+{
+    QStringList modelList;
+
+    // Create the request
+    QNetworkRequest request;
+    request.setUrl(baseUrl.resolved(QUrl("models")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    // Add the Authorization header
+    const QString bearerToken = QString("Bearer %1").arg(apiKey);
+    request.setRawHeader("Authorization", bearerToken.toUtf8());
+
+    // Make the GET request
+    QNetworkReply *reply = m_networkManager.get(request);
+
+    // We use a local event loop to wait for the request to complete
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    // Check for errors
+    if (reply->error() == QNetworkReply::NoError) {
+        // Parse the JSON response
+        const QByteArray responseData = reply->readAll();
+        const QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+            QJsonObject rootObj = jsonDoc.object();
+            QJsonValue dataValue = rootObj.value("data");
+
+            if (dataValue.isArray()) {
+                QJsonArray dataArray = dataValue.toArray();
+                for (const QJsonValue &val : dataArray) {
+                    if (val.isObject()) {
+                        QJsonObject obj = val.toObject();
+                        const QString modelId = obj.value("id").toString();
+                        modelList.append(modelId);
+                    }
+                }
+            }
+        }
+    } else {
+        // Handle network error (e.g. print it to qDebug)
+        qWarning() << "Error retrieving models:" << reply->errorString();
+    }
+
+    // Clean up
+    reply->deleteLater();
+
+    return modelList;
 }

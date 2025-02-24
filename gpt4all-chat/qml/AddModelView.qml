@@ -90,6 +90,13 @@ Rectangle {
                 }
             }
             MyTabButton {
+                text: qsTr("Remote Providers")
+                isSelected: remoteModelView.isShown()
+                onPressed: {
+                    remoteModelView.show();
+                }
+            }
+            MyTabButton {
                 text: qsTr("HuggingFace")
                 isSelected: huggingfaceModelView.isShown()
                 onPressed: {
@@ -112,7 +119,20 @@ Rectangle {
                     stackLayout.currentIndex = 0;
                 }
                 function isShown() {
-                    return stackLayout.currentIndex === 0
+                    return stackLayout.currentIndex === 0;
+                }
+            }
+
+            AddRemoteModelView {
+                id: remoteModelView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                function show() {
+                    stackLayout.currentIndex = 1;
+                }
+                function isShown() {
+                    return stackLayout.currentIndex === 1;
                 }
             }
 
@@ -126,10 +146,10 @@ Rectangle {
                 anchors.fill: parent
 
                 function show() {
-                    stackLayout.currentIndex = 1;
+                    stackLayout.currentIndex = 2;
                 }
                 function isShown() {
-                    return stackLayout.currentIndex === 1
+                    return stackLayout.currentIndex === 2;
                 }
             }
         }
