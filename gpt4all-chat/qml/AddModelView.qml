@@ -91,9 +91,9 @@ Rectangle {
             }
             MyTabButton {
                 text: qsTr("Remote Providers")
-                isSelected: removeModelView.isShown()
+                isSelected: remoteModelView.isShown()
                 onPressed: {
-                    removeModelView.show();
+                    remoteModelView.show();
                 }
             }
             MyTabButton {
@@ -124,7 +124,7 @@ Rectangle {
             }
 
             AddRemoteModelView {
-                id: removeModelView
+                id: remoteModelView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
