@@ -989,7 +989,7 @@
     <message numerus="yes">
         <location filename="../qml/ChatItemView.qml" line="283"/>
         <source>%n Source(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n Source</numerusform>
             <numerusform>%n Sources</numerusform>
         </translation>
@@ -1282,13 +1282,6 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1293"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <source>%n Source(s)</source>
-        <translation type="vanished">
-            <numerusform>%n Source</numerusform>
-            <numerusform>%n Sources</numerusform>
-        </translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="924"/>
