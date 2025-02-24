@@ -39,25 +39,26 @@ ColumnLayout {
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
         Layout.fillWidth: true
         Layout.fillHeight: true
+        contentWidth: availableWidth
         clip: true
-        GridLayout {
-            rows: 2
-            columns: 3
-            rowSpacing: 20
-            columnSpacing: 20
+        Flow {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            spacing: 20
+            bottomPadding: 20
+            property int childWidth: 330 * theme.fontScale
+            property int childHeight: 400 + 166 * theme.fontScale
             RemoteModelCard {
-                Layout.preferredWidth: 600
-                Layout.minimumHeight: 700
-                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                width: parent.childWidth
+                height: parent.childHeight
                 providerBaseUrl: "https://api.groq.com/openai/v1/"
                 providerName: qsTr("Groq")
                 providerImage: "qrc:/gpt4all/icons/groq.svg"
                 providerDesc: qsTr('Groq offers a high-performance AI inference engine designed for low-latency and efficient processing. Optimized for real-time applications, Groq’s technology is ideal for users who need fast responses from open large language models and other AI workloads.<br><br>Get your API key: <a href="https://console.groq.com/keys">https://groq.com/</a>')
             }
             RemoteModelCard {
-                Layout.preferredWidth: 600
-                Layout.minimumHeight: 700
-                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                width: parent.childWidth
+                height: parent.childHeight
                 providerBaseUrl: "https://api.openai.com/v1/"
                 providerName: qsTr("OpenAI")
                 providerImage: "qrc:/gpt4all/icons/openai.svg"
@@ -73,18 +74,16 @@ ColumnLayout {
                 }
             }
             RemoteModelCard {
-                Layout.preferredWidth: 600
-                Layout.minimumHeight: 700
-                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                width: parent.childWidth
+                height: parent.childHeight
                 providerBaseUrl: "https://api.mistral.ai/v1/"
                 providerName: qsTr("Mistral")
                 providerImage: "qrc:/gpt4all/icons/mistral.svg"
                 providerDesc: qsTr('Mistral AI specializes in efficient, open-weight language models optimized for various natural language processing tasks. Their models are designed for flexibility and performance, making them a solid option for applications requiring scalable AI solutions.<br><br>Get your API key: <a href="https://mistral.ai/">https://mistral.ai/</a>')
             }
             RemoteModelCard {
-                Layout.preferredWidth: 600
-                Layout.minimumHeight: 700
-                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                width: parent.childWidth
+                height: parent.childHeight
                 providerIsCustom: true
                 providerName: qsTr("Custom")
                 providerImage: "qrc:/gpt4all/icons/antenna_3.svg"

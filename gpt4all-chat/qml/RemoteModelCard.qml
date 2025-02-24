@@ -20,7 +20,7 @@ import localdocs
 Rectangle {
     property alias providerName: providerNameLabel.text
     property alias providerImage: myimage.source
-    property alias providerDesc: providerDescLabel.helpText
+    property alias providerDesc: providerDescLabel.text
     property string providerBaseUrl: ""
     property bool providerIsCustom: false
     property var filterModels: function(names) {
@@ -31,7 +31,7 @@ Rectangle {
     radius: 10
     border.width: 1
     border.color: theme.controlBorder
-    implicitHeight: topColumn.height + bottomColumn.height + 60
+    implicitHeight: topColumn.height + bottomColumn.height + 33 * theme.fontScale
 
     ColumnLayout {
         id: topColumn
@@ -39,30 +39,22 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 20
-        spacing: 30
+        spacing: 15 * theme.fontScale
         RowLayout {
             Layout.alignment: Qt.AlignTop
             spacing: 10
-            Rectangle {
-                id: rec
-                color: "transparent"
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+            Item {
+                Layout.preferredWidth: 27 * theme.fontScale
+                Layout.preferredHeight: 27 * theme.fontScale
                 Layout.alignment: Qt.AlignLeft
+
                 Image {
                     id: myimage
                     anchors.centerIn: parent
-                    sourceSize.width: rec.width
-                    sourceSize.height: rec.height
+                    sourceSize.width: parent.width
+                    sourceSize.height: parent.height
                     mipmap: true
-                    visible: false
                     fillMode: Image.PreserveAspectFit
-
-                }
-
-                ColorOverlay {
-                    anchors.fill: myimage
-                    source: myimage
                 }
             }
 
@@ -73,9 +65,19 @@ Rectangle {
             }
         }
 
-        MySettingsLabel {
+        Label {
             id: providerDescLabel
-            onLinkActivated: function(link) { Qt.openUrlExternally(link) }
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: theme.settingsTitleTextColor
+            font.pixelSize: theme.fontSizeLarge
+            onLinkActivated: function(link) { Qt.openUrlExternally(link); }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton // pass clicks to parent
+                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
         }
     }
 
@@ -98,6 +100,7 @@ Rectangle {
             MyTextField {
                 id: apiKeyField
                 Layout.fillWidth: true
+                font.pixelSize: theme.fontSizeLarge
                 wrapMode: Text.WrapAnywhere
                 function showError() {
                     messageToast.show(qsTr("ERROR: $API_KEY is empty."));
@@ -128,6 +131,7 @@ Rectangle {
             MyTextField {
                 id: baseUrlField
                 Layout.fillWidth: true
+                font.pixelSize: theme.fontSizeLarge
                 wrapMode: Text.WrapAnywhere
                 function showError() {
                     messageToast.show(qsTr("ERROR: $BASE_URL is empty."));
@@ -152,6 +156,7 @@ Rectangle {
             MyTextField {
                 id: modelNameField
                 Layout.fillWidth: true
+                font.pixelSize: theme.fontSizeLarge
                 wrapMode: Text.WrapAnywhere
                 function showError() {
                     messageToast.show(qsTr("ERROR: $MODEL_NAME is empty."))
