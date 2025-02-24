@@ -755,47 +755,47 @@
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="31"/>
         <source>Various remote model providers that use network resources for inference.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vari fornitori di modelli remoti che utilizzano risorse di rete per l'inferenza.</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="55"/>
         <source>Groq</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Groq</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="57"/>
         <source>Groq offers a high-performance AI inference engine designed for low-latency and efficient processing. Optimized for real-time applications, Groq’s technology is ideal for users who need fast responses from open large language models and other AI workloads.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Groq offre un motore di inferenza AI ad alte prestazioni progettato per una latenza ridotta ed elaborazione efficiente. Ottimizzata per applicazioni in tempo reale, la tecnologia di Groq è ideale per utenti che necessitano di risposte rapide da modelli linguistici di grandi dimensioni aperti e altri carichi di lavoro AI.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="79"/>
         <source>OpenAI</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OpenAI</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="81"/>
         <source>OpenAI provides access to advanced AI models, including GPT-4 supporting a wide range of applications, from conversational AI to content generation and code completion.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OpenAI fornisce accesso a modelli AI avanzati, tra cui GPT-4, supportando un&#x27;ampia gamma di applicazioni, dall&#x27;AI conversazionale alla generazione di contenuti e al completamento del codice.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="96"/>
         <source>Mistral</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mistral</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="98"/>
         <source>Mistral AI specializes in efficient, open-weight language models optimized for various natural language processing tasks. Their models are designed for flexibility and performance, making them a solid option for applications requiring scalable AI solutions.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mistral AI è specializzata in modelli linguistici open-weight efficienti, ottimizzati per diverse attività di elaborazione del linguaggio naturale. I loro modelli sono progettati per flessibilità e prestazioni, rendendoli una solida opzione per applicazioni che richiedono soluzioni AI scalabili.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="141"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Personalizzato</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="143"/>
         <source>The custom provider option allows users to connect their own OpenAI-compatible AI models or third-party inference services. This is useful for organizations with proprietary models or those leveraging niche AI providers not listed here.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&#x27;opzione fornitore personalizzato consente agli utenti di connettere i propri modelli AI compatibili con OpenAI o servizi di inferenza di terze parti. Questa funzione è utile per organizzazioni con modelli proprietari o per chi utilizza fornitori AI di nicchia non elencati qui.</translation>
     </message>
 </context>
 <context>
@@ -1075,37 +1075,37 @@
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="37"/>
         <source>Analysis encountered error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Errore durante l'analisi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Thinking</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elaborazione in corso</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Analyzing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Analisi in corso</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="41"/>
         <source>Thought for %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pensato per %1 %2</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>second</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">secondo</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>seconds</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">secondi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="44"/>
         <source>Analyzed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Analisi completata</translation>
     </message>
 </context>
 <context>
@@ -1656,12 +1656,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../src/codeinterpreter.h" line="79"/>
         <source>Code Interpreter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Interprete di codice</translation>
     </message>
     <message>
         <location filename="../src/codeinterpreter.h" line="80"/>
         <source>compute javascript code using console.log as output</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Esegue codice JavaScript utilizzando console.log come output</translation>
     </message>
 </context>
 <context>
@@ -2884,7 +2884,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="92"/>
         <source>API Key</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chiave API</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="104"/>
@@ -2904,7 +2904,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="127"/>
         <source>Base Url</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">URL di base</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="138"/>
@@ -2919,7 +2919,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="152"/>
         <source>Model Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nome modello</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="163"/>
@@ -2945,7 +2945,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="218"/>
         <source>Install remote model</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Installa modello remoto</translation>
     </message>
 </context>
 <context>
