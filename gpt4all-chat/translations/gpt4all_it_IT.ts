@@ -538,7 +538,7 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="93"/>
         <source>Remote Providers</source>
-        <translation type="unfinished">Fornitori Remoti</translation>
+        <translation>Fornitori Remoti</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="100"/>
@@ -755,47 +755,47 @@
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="31"/>
         <source>Various remote model providers that use network resources for inference.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vari fornitori di modelli remoti che utilizzano risorse di rete per l'inferenza.</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="55"/>
         <source>Groq</source>
-        <translation type="unfinished"></translation>
+        <translation>Groq</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="57"/>
         <source>Groq offers a high-performance AI inference engine designed for low-latency and efficient processing. Optimized for real-time applications, Groq’s technology is ideal for users who need fast responses from open large language models and other AI workloads.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Groq offre un motore di inferenza AI ad alte prestazioni progettato per una latenza ridotta ed elaborazione efficiente. Ottimizzata per applicazioni in tempo reale, la tecnologia di Groq è ideale per utenti che necessitano di risposte rapide da modelli linguistici di grandi dimensioni aperti e altri carichi di lavoro AI.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="79"/>
         <source>OpenAI</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenAI</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="81"/>
         <source>OpenAI provides access to advanced AI models, including GPT-4 supporting a wide range of applications, from conversational AI to content generation and code completion.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenAI fornisce accesso a modelli AI avanzati, tra cui GPT-4, supportando un&#x27;ampia gamma di applicazioni, dall&#x27;AI conversazionale alla generazione di contenuti e al completamento del codice.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="96"/>
         <source>Mistral</source>
-        <translation type="unfinished"></translation>
+        <translation>Mistral</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="98"/>
         <source>Mistral AI specializes in efficient, open-weight language models optimized for various natural language processing tasks. Their models are designed for flexibility and performance, making them a solid option for applications requiring scalable AI solutions.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mistral AI è specializzata in modelli linguistici open-weight efficienti, ottimizzati per diverse attività di elaborazione del linguaggio naturale. I loro modelli sono progettati per flessibilità e prestazioni, rendendoli una solida opzione per applicazioni che richiedono soluzioni AI scalabili.&lt;br&gt;&lt;br&gt;Ottieni la tua chiave API: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="141"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Personalizzato</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="143"/>
         <source>The custom provider option allows users to connect their own OpenAI-compatible AI models or third-party inference services. This is useful for organizations with proprietary models or those leveraging niche AI providers not listed here.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&#x27;opzione fornitore personalizzato consente agli utenti di connettere i propri modelli AI compatibili con OpenAI o servizi di inferenza di terze parti. Questa funzione è utile per organizzazioni con modelli proprietari o per chi utilizza fornitori AI di nicchia non elencati qui.</translation>
     </message>
 </context>
 <context>
@@ -1075,37 +1075,37 @@
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="37"/>
         <source>Analysis encountered error</source>
-        <translation type="unfinished"></translation>
+        <translation>Errore durante l'analisi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Thinking</source>
-        <translation type="unfinished"></translation>
+        <translation>Elaborazione</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Analyzing</source>
-        <translation type="unfinished"></translation>
+        <translation>Analisi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="41"/>
         <source>Thought for %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Elaborato per %1 %2</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>second</source>
-        <translation type="unfinished"></translation>
+        <translation>secondo</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>seconds</source>
-        <translation type="unfinished"></translation>
+        <translation>secondi</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="44"/>
         <source>Analyzed</source>
-        <translation type="unfinished"></translation>
+        <translation>Analisi completata</translation>
     </message>
 </context>
 <context>
@@ -1356,22 +1356,22 @@
     <message>
         <location filename="../qml/ChatTextItem.qml" line="67"/>
         <source>Copy</source>
-        <translation type="unfinished">Copia</translation>
+        <translation>Copia</translation>
     </message>
     <message>
         <location filename="../qml/ChatTextItem.qml" line="73"/>
         <source>Copy Message</source>
-        <translation type="unfinished">Copia messaggio</translation>
+        <translation>Copia messaggio</translation>
     </message>
     <message>
         <location filename="../qml/ChatTextItem.qml" line="83"/>
         <source>Disable markdown</source>
-        <translation type="unfinished">Disabilita Markdown</translation>
+        <translation>Disabilita Markdown</translation>
     </message>
     <message>
         <location filename="../qml/ChatTextItem.qml" line="83"/>
         <source>Enable markdown</source>
-        <translation type="unfinished">Abilita Markdown</translation>
+        <translation>Abilita Markdown</translation>
     </message>
 </context>
 <context>
@@ -1656,12 +1656,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../src/codeinterpreter.h" line="79"/>
         <source>Code Interpreter</source>
-        <translation type="unfinished"></translation>
+        <translation>Interprete di codice</translation>
     </message>
     <message>
         <location filename="../src/codeinterpreter.h" line="80"/>
         <source>compute javascript code using console.log as output</source>
-        <translation type="unfinished"></translation>
+        <translation>Esegue codice JavaScript utilizzando console.log come output</translation>
     </message>
 </context>
 <context>
@@ -2884,68 +2884,68 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="92"/>
         <source>API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Chiave API</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="104"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished">ERRORE: $API_KEY è vuoto.</translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="117"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished">Inserire $API_KEY</translation>
+        <translation>Inserire $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="120"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished">Se viene calcolato l&apos;hash del file</translation>
+        <translation>Se viene calcolato l&apos;hash del file</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="127"/>
         <source>Base Url</source>
-        <translation type="unfinished"></translation>
+        <translation>URL di base</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="138"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished">ERRORE: $BASE_URL non è valido.</translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="144"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished">inserisci $BASE_URL</translation>
+        <translation>inserisci $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="152"/>
         <source>Model Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nome modello</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="163"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished">ERRORE: $MODEL_NAME è vuoto.</translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="169"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished">inserisci $MODEL_NAME</translation>
+        <translation>inserisci $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="179"/>
         <source>Models</source>
-        <translation type="unfinished">Modelli</translation>
+        <translation>Modelli</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="199"/>
         <location filename="../qml/RemoteModelCard.qml" line="217"/>
         <source>Install</source>
-        <translation type="unfinished">Installa</translation>
+        <translation>Installa</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="218"/>
         <source>Install remote model</source>
-        <translation type="unfinished"></translation>
+        <translation>Installa modello remoto</translation>
     </message>
 </context>
 <context>

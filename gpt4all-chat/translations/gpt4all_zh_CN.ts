@@ -551,47 +551,47 @@
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="31"/>
         <source>Various remote model providers that use network resources for inference.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">使用网络资源进行推理的各种远程模型提供商。</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="55"/>
         <source>Groq</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Groq</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="57"/>
         <source>Groq offers a high-performance AI inference engine designed for low-latency and efficient processing. Optimized for real-time applications, Groq’s technology is ideal for users who need fast responses from open large language models and other AI workloads.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Groq 提供高性能 AI 推理引擎，专为低延迟和高效处理而设计。其技术经过优化，适用于实时应用，非常适合需要快速响应的大型开源语言模型和其他 AI 任务的用户。&lt;br&gt;&lt;br&gt;获取您的 API 密钥：&lt;a href=&quot;https://console.groq.com/keys&quot;&gt;https://groq.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="79"/>
         <source>OpenAI</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OpenAI</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="81"/>
         <source>OpenAI provides access to advanced AI models, including GPT-4 supporting a wide range of applications, from conversational AI to content generation and code completion.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OpenAI 提供先进的 AI 模型访问权限，包括支持广泛应用的 GPT-4，涵盖对话 AI、内容生成和代码补全等场景。&lt;br&gt;&lt;br&gt;获取您的 API 密钥：&lt;a href=&quot;https://platform.openai.com/signup&quot;&gt;https://openai.com/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="96"/>
         <source>Mistral</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mistral</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="98"/>
         <source>Mistral AI specializes in efficient, open-weight language models optimized for various natural language processing tasks. Their models are designed for flexibility and performance, making them a solid option for applications requiring scalable AI solutions.&lt;br&gt;&lt;br&gt;Get your API key: &lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mistral AI 专注于高效的开源语言模型，针对各种自然语言处理任务进行了优化。其模型具备灵活性和高性能，是需要可扩展 AI 解决方案的应用的理想选择。&lt;br&gt;&lt;br&gt;获取您的 API 密钥：&lt;a href=&quot;https://mistral.ai/&quot;&gt;https://mistral.ai/&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="141"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">自定义</translation>
     </message>
     <message>
         <location filename="../qml/AddRemoteModelView.qml" line="143"/>
         <source>The custom provider option allows users to connect their own OpenAI-compatible AI models or third-party inference services. This is useful for organizations with proprietary models or those leveraging niche AI providers not listed here.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">自定义提供商选项允许用户连接自己的 OpenAI 兼容 AI 模型或第三方推理服务。这对于拥有专有模型的组织，或使用此处未列出的特定 AI 提供商的用户非常有用。</translation>
     </message>
 </context>
 <context>
@@ -870,37 +870,37 @@
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="37"/>
         <source>Analysis encountered error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">分析时遇到错误</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Thinking</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">思考中</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="39"/>
         <source>Analyzing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">分析中</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="41"/>
         <source>Thought for %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">思考耗时 %1 %2</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>second</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">秒</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="43"/>
         <source>seconds</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">秒</translation>
     </message>
     <message>
         <location filename="../qml/ChatCollapsibleItem.qml" line="44"/>
         <source>Analyzed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">分析完成</translation>
     </message>
 </context>
 <context>
@@ -1143,17 +1143,17 @@
     <message>
         <location filename="../qml/ChatTextItem.qml" line="73"/>
         <source>Copy Message</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">复制消息</translation>
     </message>
     <message>
         <location filename="../qml/ChatTextItem.qml" line="83"/>
         <source>Disable markdown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">禁用 Markdown</translation>
     </message>
     <message>
         <location filename="../qml/ChatTextItem.qml" line="83"/>
         <source>Enable markdown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">禁用 Markdown</translation>
     </message>
 </context>
 <context>
@@ -1437,12 +1437,12 @@ model to get started</source>
     <message>
         <location filename="../src/codeinterpreter.h" line="79"/>
         <source>Code Interpreter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">代码解释器</translation>
     </message>
     <message>
         <location filename="../src/codeinterpreter.h" line="80"/>
         <source>compute javascript code using console.log as output</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">使用 console.log 计算 JavaScript 代码并输出结果</translation>
     </message>
 </context>
 <context>
@@ -2666,12 +2666,12 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="92"/>
         <source>API Key</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">API 密钥</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="104"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">错误：$API_KEY 为空</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="117"/>
@@ -2686,7 +2686,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="127"/>
         <source>Base Url</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">基础 URL</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="138"/>
@@ -2701,17 +2701,17 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="152"/>
         <source>Model Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">模型名称</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="163"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">错误：$MODEL_NAME为空</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="169"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">输入：$MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="179"/>
@@ -2727,7 +2727,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../qml/RemoteModelCard.qml" line="218"/>
         <source>Install remote model</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">安装远程模型</translation>
     </message>
 </context>
 <context>
