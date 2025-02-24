@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.10.0] - 2025-02-24
 
 ### Added
 - Whitelist Granite (non-MoE) model architecture (by [@ThiloteE](https://github.com/ThiloteE) in [#3487](https://github.com/nomic-ai/gpt4all/pull/3487))
@@ -311,7 +311,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fix several Vulkan resource management issues ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Fix crash/hang when some models stop generating, by showing special tokens ([#2701](https://github.com/nomic-ai/gpt4all/pull/2701))
 
-[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/v3.9.0...HEAD
+[3.10.0]: https://github.com/nomic-ai/gpt4all/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/nomic-ai/gpt4all/compare/v3.8.0...v3.9.0
 [3.8.0]: https://github.com/nomic-ai/gpt4all/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/nomic-ai/gpt4all/compare/v3.6.1...v3.7.0
