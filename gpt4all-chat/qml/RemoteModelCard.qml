@@ -23,9 +23,7 @@ Rectangle {
     property alias providerDesc: providerDescLabel.text
     property string providerBaseUrl: ""
     property bool providerIsCustom: false
-    property var filterModels: function(names) {
-        return names;
-    };
+    property var modelWhitelist: null
 
     color: theme.conversationBackground
     radius: 10
@@ -109,7 +107,10 @@ Rectangle {
                 onTextChanged: {
                     apiKeyField.placeholderTextColor = theme.mutedTextColor;
                     if (!providerIsCustom) {
-                        myModelList.model = filterModels(ModelList.remoteModelList(apiKeyField.text, providerBaseUrl));
+                        let models = ModelList.remoteModelList(apiKeyField.text, providerBaseUrl);
+                        if (modelWhitelist !== null)
+                            models = models.filter(m => modelWhitelist.includes(m));
+                        myModelList.model = models;
                         myModelList.currentIndex = -1;
                     }
                 }
