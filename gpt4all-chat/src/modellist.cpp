@@ -503,11 +503,10 @@ bool GPT4AllDownloadableModels::filterAcceptsRow(int sourceRow,
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
     bool isDiscovered = sourceModel()->data(index, ModelList::IsDiscoveredRole).toBool();
     bool isOnline = sourceModel()->data(index, ModelList::OnlineRole).toBool();
-    bool isCompatibleApi = sourceModel()->data(index, ModelList::CompatibleApiRole).toBool();
     bool satisfiesKeyword = m_keywords.isEmpty();
     for (const QString &k : m_keywords)
         satisfiesKeyword = description.contains(k) ? true : satisfiesKeyword;
-    return !isOnline && !isCompatibleApi && !isDiscovered && hasDescription && !isClone && satisfiesKeyword;
+    return !isOnline && !isDiscovered && hasDescription && !isClone && satisfiesKeyword;
 }
 
 int GPT4AllDownloadableModels::count() const
