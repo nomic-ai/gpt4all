@@ -273,5 +273,10 @@
     "version": "3.9.0",
     "notes": "* **LocalDocs Fix:** LocalDocs no longer shows an error on later messages with reasoning models.\n* **DeepSeek Fix:** DeepSeek-R1 reasoning (in 'think' tags) no longer appears in chat names and follow-up questions.\n* **Windows ARM Improvements:**\n  * Graphical artifacts on some SoCs have been fixed.\n  * A crash when adding a collection of PDFs to LocalDocs has been fixed.\n* **Template Parser Fixes:** Chat templates containing an unclosed comment no longer freeze GPT4All.\n* **New Models:** OLMoE and Granite MoE models are now supported.\n",
     "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* ThiloteE (`@ThiloteE`)"
+  },
+  {
+    "version": "3.10.0",
+    "notes": "* **Remote Models:**\n  * The Add Model page now has a dedicated tab for remote model providers.\n  * Groq, OpenAI, and Mistral remote models are now easier to configure.\n* **CUDA Compatibility:** GPUs with CUDA compute capability 5.0 such as the GTX 750 are now supported by the CUDA backend.\n* **New Model:** The non-MoE Granite model is now supported.\n* **Translation Updates:**\n  * The Italian translation has been updated.\n  * The Simplified Chinese translation has been significantly improved.\n* **Better Chat Templates:** The default chat templates for OLMoE 7B 0924/0125 and Granite 3.1 3B/8B have been improved.\n* **Whitespace Fixes:** DeepSeek-R1-based models now have better whitespace behavior in their output.\n* **Crash Fixes:** Several issues that could potentially cause GPT4All to crash have been fixed.\n",
+    "contributors": "* Jared Van Bortel (Nomic AI)\n* Adam Treat (Nomic AI)\n* ThiloteE (`@ThiloteE`)\n* Lil Bob (`@Junior2Ran`)\n* Riccardo Giovanetti (`@Harvester62`)"
   }
 ]
