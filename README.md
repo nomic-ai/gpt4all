@@ -36,6 +36,11 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
   </a> &mdash;
 </p>
 <p>
+  &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-win64-arm.exe">
+    <img src="gpt4all-bindings/python/docs/assets/windows.png" style="height: 1em; width: auto" /> Windows ARM Installer
+  </a> &mdash;
+</p>
+<p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
     <img src="gpt4all-bindings/python/docs/assets/mac.png" style="height: 1em; width: auto" /> macOS Installer
   </a> &mdash;
@@ -46,10 +51,16 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
   </a> &mdash;
 </p>
 <p>
-  Windows and Linux require Intel Core i3 2nd Gen / AMD Bulldozer, or better. x86-64 only, no ARM.
+  The Windows and Linux builds require Intel Core i3 2nd Gen / AMD Bulldozer, or better.
 </p>
 <p>
-  macOS requires Monterey 12.6 or newer. Best results with Apple Silicon M-series processors.
+  The Windows ARM build supports Qualcomm Snapdragon and Microsoft SQ1/SQ2 processors.
+</p>
+<p>
+  The Linux build is x86-64 only (no ARM).
+</p>
+<p>
+  The macOS build requires Monterey 12.6 or newer. Best results with Apple Silicon M-series processors.
 </p>
 
 See the full [System Requirements](gpt4all-chat/system_requirements.md) for more details.
