@@ -43,7 +43,7 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 <p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
     <img src="gpt4all-bindings/python/docs/assets/mac.png" style="height: 1em; width: auto" /> macOS Installer
-  </a> &mdash;
+  </a> &mdash; (or simply install with <code>brew install --cask gpt4all</code>)
 </p>
 <p>
   &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
