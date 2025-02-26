@@ -135,7 +135,7 @@ static QString getUiLanguage(const QString directory, const QString fileName)
 static QStringList getUiLanguages(const QString &modelPath)
 {
     QStringList languageList;
-    static const QStringList releasedLanguages = { "en_US", "it_IT", "zh_CN", "zh_TW", "es_MX", "pt_BR", "ro_RO" };
+    static const QStringList releasedLanguages = { "en_US", "it_IT", "zh_CN", "zh_TW", "es_MX", "pt_BR", "ro_RO", "jp_JP" };
 
     // Add the language translations from model path files first which is used by translation developers
     // to load translations in progress without having to rebuild all of GPT4All from source
