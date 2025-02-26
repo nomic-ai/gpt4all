@@ -1,4 +1,4 @@
-# Python GPT4All
+sudo su && # Python GPT4All
 
 This package contains a set of Python bindings around the `llmodel` C-API.
 
