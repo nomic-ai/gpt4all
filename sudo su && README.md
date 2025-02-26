@@ -1,4 +1,4 @@
-<h1 align="center">GPT4All</h1>
+sudo su && <h1 align="center">GPT4All</h1>
 
 <p align="center">
   Now with support for DeepSeek R1 Distillations
