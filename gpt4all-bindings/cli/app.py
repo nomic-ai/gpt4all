@@ -5,6 +5,8 @@ The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` pa
 REPL to communicate with a language model similar to the chat GUI application, but more basic.
 """
 
+import time
+import threading
 import importlib.metadata
 import io
 import sys
@@ -42,6 +44,7 @@ CLI_START_MESSAGE = f"""
                                                           
 
 Welcome to the GPT4All CLI! Version {VERSION}
+Type '.<enter>' on its own line to submit a prompt or command
 Type /help for special commands.
                                                     
 """
@@ -129,18 +132,27 @@ def _old_loop(gpt4all_instance):
         )
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
-        print() # newline before next prompt
+        print()  # newline before next prompt
 
 
 def _new_loop(gpt4all_instance):
+    processing_done = threading.Event()
+
     with gpt4all_instance.chat_session():
         while True:
-            message = input(" ⇢  ")
+            loading_thread = threading.Thread(
+                target=display_processing_animation, args=(processing_done,)
+            )
+
+            message = get_prompt()
 
             # Check if special command and take action
             if message in SPECIAL_COMMANDS:
                 SPECIAL_COMMANDS[message](MESSAGES)
+                processing_done.set()
                 continue
+            else:
+                loading_thread.start()
 
             # if regular message, append to messages
             MESSAGES.append({"role": "user", "content": message})
@@ -162,9 +174,20 @@ def _new_loop(gpt4all_instance):
                 streaming=True,
             )
             response = io.StringIO()
+
+            # Consider processing complete when first token is received
+            first = True
             for token in response_generator:
-                print(token, end='', flush=True)
+                if first:
+                    processing_done.set()
+                    loading_thread.join()
+                    first = False
+
+                print(token, end="", flush=True)
                 response.write(token)
+
+            # reset the 'processing' flag ready for next prompt
+            processing_done.clear
 
             # record assistant's response to messages
             response_message = {'role': 'assistant', 'content': response.getvalue()}
@@ -178,6 +201,42 @@ def _new_loop(gpt4all_instance):
 def version():
     """The CLI version command."""
     print(f"gpt4all-cli v{VERSION}")
+
+
+def get_prompt():
+    message = ""
+    print(" ⇢  ")
+    while True:
+        line = input()
+        # Special commands on any line override the entire prompt
+        if line in SPECIAL_COMMANDS:
+            message = line
+            break
+        # /. is a special command that ends and submits the prompt
+        if line.strip() == "/.":
+            break
+        else:
+            message += line
+
+    return message
+
+
+def display_processing_animation(processing_done):
+    processing_animation = ["|", "/", "-", "\\"]
+    display_processing_feedback = True
+    processing_done.clear()
+    a = 0
+    while display_processing_feedback:
+        time.sleep(0.2)
+        a = a + 1
+        print(
+            "\r " + processing_animation[a % len(processing_animation)] + "\r",
+            end="",
+        )
+
+        if processing_done.is_set():
+            display_processing_feedback = False
+            print(" 🤖" + " " * 100, end="\n")
 
 
 if __name__ == "__main__":
