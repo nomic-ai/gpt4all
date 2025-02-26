@@ -121,6 +121,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return item.embeddingModel;
         case UpdatingRole:
             return item.indexing || item.currentEmbeddingsToIndex != 0;
+        case OutOfDateRole:
+            return item.outOfDate;
     }
 
     return QVariant();
@@ -149,6 +151,7 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     roles[FileCurrentlyProcessingRole] = "fileCurrentlyProcessing";
     roles[EmbeddingModelRole] = "embeddingModel";
     roles[UpdatingRole] = "updating";
+    roles[OutOfDateRole] = "outOfDate";
     return roles;
 }
 
@@ -200,6 +203,8 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             changed.append(FileCurrentlyProcessingRole);
         if (stored.embeddingModel != item.embeddingModel)
             changed.append(EmbeddingModelRole);
+        if (stored.outOfDate != item.outOfDate)
+            changed.append(OutOfDateRole);
 
         // preserve collection name as we ignore it for matching
         QString collection = stored.collection;

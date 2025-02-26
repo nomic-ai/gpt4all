@@ -72,7 +72,8 @@ public:
         LastUpdateRole,
         FileCurrentlyProcessingRole,
         EmbeddingModelRole,
-        UpdatingRole
+        UpdatingRole,
+        OutOfDateRole
     };
 
     explicit LocalDocsModel(QObject *parent = nullptr);
