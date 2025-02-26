@@ -1,0 +1,51 @@
+# Serves as the entrypoint for all of Gpt4All's GHA CI workflows
+# all other workflows should either be a manual trigger job independent
+# of PR context (see close_issues.yml) or should be dispatched by this
+# workflow
+
+
+name: gpt4all-ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      core: ${{ steps.changes.outputs.core }}
+      chat: ${{ steps.changes.outputs.chat }}
+      python: ${{ steps.changes.outputs.python }}
+      typescript: ${{ steps.changes.outputs.typescript }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch_depth: 0
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            core:
+            - '.github/workflows/**'
+            - 'gpt4all-backend/**'
+            chat:
+            - 'gpt4all-chat/**'
+            python:
+            - 'gpt4all-bindings/python/**'
+            typescript:
+            - 'gpt4all-bindings/typescript/**'
+  spellcheck:
+    uses: ./.github/workflows/codespell.yml
+    secrets: inherit
+  build-chat:
+    name: "Build Gpt4All chat"
+    needs: [changes]
+    if: ${{ needs.changes.outputs.core || needs.changes.outputs.chat }}
+    uses: ./.github/workflows/build-chat.yml
+
+

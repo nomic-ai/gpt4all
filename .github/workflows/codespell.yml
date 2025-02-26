@@ -2,16 +2,12 @@
 name: Codespell
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call
 
 jobs:
   codespell:
     name: Check for spelling errors
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -1,0 +1,130 @@
+on:
+  workflow_call:
+
+jobs:
+  build-chat-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Cache Vulkan
+        id: cache_vulkan
+        uses: actions/cache@v3
+        with:
+            path: C:\VulkanSDK
+            key: ${{ runner.os }}-build-vulkan-${{ hashFiles('C:\VulkanSDK\**') }}
+            restore-keys: |
+              ${{ runner.os }}-build-vulkan-
+      - if: ${{ steps.cache_vulkan.outputs.cache-hit != 'true' }}
+        name: Install Vulkan
+        run: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+            echo "VULKAN_SDK=C:\VulkanSDK\1.3.261.1" >> $Env:GITHUB_ENV
+            echo "C:\VulkanSDK\1.3.261.1\bin" >> $Env:GITHUB_PATH
+      - name: Install CUDA
+        run: |
+            Invoke-WebRequest -Uri  https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
+            .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: C:\Qt
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('C:\Qt\**') }}
+            restore-keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
+        run: |
+            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $Env:QT_EMAIL --password $Env:QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              echo "Qt6_DIR=C:/Qt/6.5.1/msvc2019_64" >> $Env:GITHUB_ENV
+      - name: Build Chat
+        shell: powershell -ExecutionPolicy Bypass -c "&{Import-Module """C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"""; Enter-VsDevShell eb4dc59a}"; {0}
+        run: |
+           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
+           ninja -C build
+  build-chat-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Setup XCode
+        run: sudo xcode-select -s '/Applications/Xcode_14.3.1.app'
+      - name: Install Rosetta
+        run: |
+            softwareupdate --install-rosetta --agree-to-license
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: "~/Qt"
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('~/Qt/**') }}
+            restore-keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
+        run: |
+            curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+            hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
+            /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            echo "Qt6_DIR=$HOME/Qt/6.5.1/macos/lib/cmake/Qt6" >> $GITHUB_ENV
+      - name: Build Chat
+        run: |
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
+            cmake --build build --target all
+  build-chat-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Install Vulkan + Cuda
+        run: |
+            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
+            echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: "/Qt"
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('/Qt/**') }}
+            restore-keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
+        run: |
+            wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+            chmod +x qt-unified-linux-x64-4.6.0-online.run
+            ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+            echo "Qt6_DIR=/Qt/6.5.1/gcc_64/lib/cmake" >> $GITHUB_ENV
+      - name: Build Chat
+        run: |
+            cmake -GNinja -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
+            cmake --build build --target all
+
+
+
