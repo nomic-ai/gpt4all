@@ -1,0 +1,8 @@
+    .global _data_start_gpt4all_installer
+    .global _data_stop_gpt4all_installer
+_data_start_gpt4all_installer:
+    .incbin "@GPT4ALL_INSTALLER_PATH@"
+_data_stop_gpt4all_installer:
+    .global _gpt4all_installer_size
+_gpt4all_installer_size:
+    .int _data_stop_gpt4all_installer - _data_start_gpt4all_installer
