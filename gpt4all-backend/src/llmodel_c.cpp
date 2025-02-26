@@ -34,11 +34,11 @@ llmodel_model llmodel_model_create(const char *model_path)
     return fres;
 }
 
-static void llmodel_set_error(const char **errptr, const char *message)
+static void llmodel_set_error(const char **errptr, std::string message)
 {
     thread_local static std::string last_error_message;
     if (errptr) {
-        last_error_message = message;
+        last_error_message = std::move(message);
         *errptr = last_error_message.c_str();
     }
 }
@@ -317,4 +317,16 @@ void llmodel_model_foreach_special_token(llmodel_model model, llmodel_special_to
     auto *wrapper = static_cast<const LLModelWrapper *>(model);
     for (auto &[name, token] : wrapper->llModel->specialTokens())
         callback(name.c_str(), token.c_str());
+}
+
+const char *llmodel_model_chat_template(const char *model_path, const char **error)
+{
+    static std::string s_chatTemplate;
+    auto res = LLModel::Implementation::chatTemplate(model_path);
+    if (res) {
+        s_chatTemplate = *res;
+        return s_chatTemplate.c_str();
+    }
+    llmodel_set_error(error, std::move(res.error()));
+    return nullptr;
 }

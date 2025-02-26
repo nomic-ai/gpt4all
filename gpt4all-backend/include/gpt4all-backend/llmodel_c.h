@@ -312,6 +312,8 @@ int32_t llmodel_count_prompt_tokens(llmodel_model model, const char *prompt, con
 
 void llmodel_model_foreach_special_token(llmodel_model model, llmodel_special_token_callback callback);
 
+const char *llmodel_model_chat_template(const char *model_path, const char **error);
+
 #ifdef __cplusplus
 }
 #endif
