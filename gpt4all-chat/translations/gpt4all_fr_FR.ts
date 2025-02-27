@@ -632,7 +632,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="137"/>
         <source>The size of text in the application.</source>
-        <translation>La taille du texte de l&apos;application</translation>
+        <translation type="unfinished">La taille du texte de l&apos;application.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="151"/>
@@ -1514,17 +1514,17 @@ model to get started</source>
     <message>
         <location filename="../qml/HomeView.qml" line="56"/>
         <source>The privacy-first LLM chat application</source>
-        <translation>L&apos;application de chat LLM respectueux de votre vie privée.</translation>
+        <translation type="unfinished">L&apos;application de chat LLM respectueux de votre vie privée</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="66"/>
         <source>Start chatting</source>
-        <translation>Commencer à chatter.</translation>
+        <translation type="unfinished">Commencer à chatter</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="81"/>
         <source>Start Chatting</source>
-        <translation>Commencer à chatter.</translation>
+        <translation type="unfinished">Commencer à chatter</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="82"/>
@@ -2051,7 +2051,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation>Ce gabarit Jinja transforme le chat en input pour le modèle</translation>
+        <translation type="unfinished">Ce gabarit Jinja transforme le chat en input pour le modèle.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
