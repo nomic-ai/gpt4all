@@ -16,7 +16,7 @@
     <message>
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Ajouter un dossier contenant des fichiers texte, PDF ou Markdown. Configurez d&apos;autres extensions dans Réglages.</translation>
+        <translation>Ajoutez un dossier contenant des fichiers texte, PDF ou Markdown. Configurez d&apos;autres extensions dans Réglages.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="99"/>
@@ -672,7 +672,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="224"/>
         <source>The compute device used for text generation.</source>
-        <translation>Le dispositif de calcul utilisé pour la génération de texte.</translation>
+        <translation>Le composant à utiliser pour la génération de texte.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="242"/>
@@ -803,7 +803,7 @@
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="588"/>
         <source>Updates</source>
-        <translation>Mises à jour</translation>
+        <translation>Mettre à jour</translation>
     </message>
 </context>
 <context>
@@ -964,7 +964,7 @@
     <message>
         <location filename="../qml/ChatItemView.qml" line="110"/>
         <source>processing ...</source>
-        <translation>traitement ...</translation>
+        <translation>réfléchit ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatItemView.qml" line="111"/>
@@ -1261,17 +1261,17 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1095"/>
         <source>Legacy prompt template needs to be &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;updated&lt;/a&gt; in Settings.</source>
-        <translation>Le gabarit de prompt (Legacy) doit être &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;mis à jour&lt;/a&gt; dans les réglages.</translation>
+        <translation>Le template de prompt (Legacy) doit être &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;mis à jour&lt;/a&gt; dans les réglages.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1099"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation>Aucun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;gabarit de chat&lt;/a&gt; configuré.</translation>
+        <translation>Aucun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;template de chat&lt;/a&gt; configuré.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1102"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation>Le &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;gabarit de chat&lt;/a&gt; ne peut pas être vierge.</translation>
+        <translation>Le &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;template de chat&lt;/a&gt; ne peut pas être vierge.</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1105"/>
@@ -1363,7 +1363,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1243"/>
         <source>Send a message...</source>
-        <translation>Envoyer un message...</translation>
+        <translation>Message...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1243"/>
@@ -1398,7 +1398,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ChatView.qml" line="1375"/>
         <source>Sends the message/prompt contained in textfield to the model</source>
-        <translation>Envoie le message/prompt du champ de texte au modèle</translation>
+        <translation>Envoyer le message/prompt du champ de texte au modèle</translation>
     </message>
 </context>
 <context>
@@ -1450,7 +1450,7 @@ model to get started</source>
     <message>
         <location filename="../qml/CollectionsDrawer.qml" line="137"/>
         <source>Select a collection to make it available to the chat model.</source>
-        <translation>Sélectionner une collection pour la rendre disponible au modèle dans le chat.</translation>
+        <translation>Sélectionnez une collection pour la rendre disponible au modèle dans le chat.</translation>
     </message>
 </context>
 <context>
@@ -1514,17 +1514,17 @@ model to get started</source>
     <message>
         <location filename="../qml/HomeView.qml" line="56"/>
         <source>The privacy-first LLM chat application</source>
-        <translation>L&apos;application de chat LLM respectueux de votre vie privée</translation>
+        <translation>L&apos;application de chat LLM respectueuse de votre vie privée</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="66"/>
         <source>Start chatting</source>
-        <translation>Commencer à chatter</translation>
+        <translation>Commencez à chatter</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="81"/>
         <source>Start Chatting</source>
-        <translation>Commencer à chatter</translation>
+        <translation>Commencez à chatter</translation>
     </message>
     <message>
         <location filename="../qml/HomeView.qml" line="82"/>
@@ -1657,7 +1657,7 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <source>The compute device used for embeddings. Requires restart.</source>
-        <translation>Le dispositif de calcul utilisé pour les intégrations. Nécessite de redémarrer.</translation>
+        <translation>Le composant à utiliser pour les intégrations. Nécessite de redémarrer.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="176"/>
@@ -1687,12 +1687,12 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
         <source>Warning: Advanced usage only.</source>
-        <translation>Attention: pour usage avancé uniquement.</translation>
+        <translation>Avertissement: usage avancé uniquement.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="259"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Des valeurs trop grandes peuvent causer des problèmes LocalDocs, des réponses extrêmement lentes ou aucune réponse du tout. En gros, les {N signes x N fragments} sont ajoutés à la fenêtre contextuelle du modèle. Plus d&apos;infos &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;ici&lt;/a&gt;.</translation>
+        <translation>Des valeurs trop grandes peuvent causer des problèmes LocalDocs, des réponses extrêmement lentes ou pas de réponse du tout. En gros, les {N signes x N fragments} sont ajoutés à la fenêtre contextuelle du modèle. Plus d&apos;infos &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;ici&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="267"/>
@@ -1991,12 +1991,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="30"/>
         <source>%1 chat template?</source>
-        <translation>%1 gabarit de chat?</translation>
+        <translation>%1 template de chat?</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
         <source>The chat template will be %1.</source>
-        <translation>Le gabarit de chat sera %1.</translation>
+        <translation>Le template de chat sera %1.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="31"/>
@@ -2036,7 +2036,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="191"/>
         <source>A message to set the context or guide the behavior of the model. Leave blank for none. NOTE: Since GPT4All 3.5, this should not contain control tokens.</source>
-        <translation>Un message pour définir le contexte ou guider la conduite du modèle. Laissez vide pour ne pas en mettre. NOTE: Depuis GPT4All 3.5, ceci ne doit pas contenir de tokens de contrôle.</translation>
+        <translation>Un message pour définir le contexte ou guider la conduite du modèle. Peut être laissé vide. NOTE: Depuis GPT4All 3.5, ce message ne doit pas contenir de tokens de contrôle.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="218"/>
@@ -2046,22 +2046,22 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="288"/>
         <source>Chat Template</source>
-        <translation>Gabarit de chat</translation>
+        <translation>Template de chat</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="289"/>
         <source>This Jinja template turns the chat into input for the model.</source>
-        <translation>Ce gabarit Jinja transforme le chat en input pour le modèle.</translation>
+        <translation>Ce template Jinja transforme le chat en input pour le modèle.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="371"/>
         <source>No &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; configured.</source>
-        <translation>Aucun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;gabarit de chat&lt;/a&gt; configuré.</translation>
+        <translation>Aucun &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;template de chat&lt;/a&gt; configuré.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="375"/>
         <source>The &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;chat template&lt;/a&gt; cannot be blank.</source>
-        <translation>Le &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;gabarit de chat&lt;/a&gt; ne peut pas être vierge.</translation>
+        <translation>Le &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;template de chat&lt;/a&gt; ne peut pas être vierge.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="379"/>
@@ -2071,12 +2071,12 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="383"/>
         <source>Chat template is not in &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;Jinja format&lt;/a&gt;.</source>
-        <translation>Le gabarit de chat n&apos;est pas &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;au format Jinja&lt;/a&gt;.</translation>
+        <translation>Le template de chat n&apos;est pas &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/chat_templates.html&quot;&gt;au format Jinja&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="409"/>
         <source>Chat Name Prompt</source>
-        <translation>Prompt de titre du chat</translation>
+        <translation>Titre du chat</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="410"/>
@@ -2091,7 +2091,7 @@ model to get started</source>
     <message>
         <location filename="../qml/ModelSettings.qml" line="453"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation>Prompt utilisé pour générer des questions supplémentaires de suivi.</translation>
+        <translation>Prompt à utiliser pour suggérer des questions complémentaires.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="506"/>
