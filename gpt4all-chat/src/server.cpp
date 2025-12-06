@@ -147,60 +147,63 @@ public:
 
 protected:
     virtual void parseImpl(QCborMap &request)
-    {
-        using enum Type;
+   {
+    using enum Type;
 
-        auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
-        QCborValue value;
+    static constexpr int32_t MAX_MAX_TOKENS = 4096;
+    static constexpr qint64  MAX_N = 8;
 
-        this->model = reqValue("model", String, /*required*/ true).toString();
+    auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
+    QCborValue value;
 
-        value = reqValue("frequency_penalty", Number, false, /*min*/ -2, /*max*/ 2);
-        if (value.isDouble() || value.toInteger() != 0)
-            throw InvalidRequestError("'frequency_penalty' is not supported");
+    this->model = reqValue("model", String, /*required*/ true).toString();
 
-        value = reqValue("max_tokens", Integer, false, /*min*/ 1);
-        if (!value.isNull())
-            this->max_tokens = int32_t(qMin(value.toInteger(), INT32_MAX));
+    value = reqValue("frequency_penalty", Number, false, /*min*/ -2, /*max*/ 2);
+    if (value.isDouble() || value.toInteger() != 0)
+        throw InvalidRequestError("'frequency_penalty' is not supported");
 
-        value = reqValue("n", Integer, false, /*min*/ 1);
-        if (!value.isNull())
-            this->n = value.toInteger();
+    value = reqValue("max_tokens", Integer, false, /*min*/ 1, /*max*/ MAX_MAX_TOKENS);
+    if (!value.isNull())
+        this->max_tokens = int32_t(value.toInteger());
 
-        value = reqValue("presence_penalty", Number);
-        if (value.isDouble() || value.toInteger() != 0)
-            throw InvalidRequestError("'presence_penalty' is not supported");
+    value = reqValue("n", Integer, false, /*min*/ 1, /*max*/ MAX_N);
+    if (!value.isNull())
+        this->n = value.toInteger();
 
-        value = reqValue("seed", Integer);
-        if (!value.isNull())
-            throw InvalidRequestError("'seed' is not supported");
+    value = reqValue("presence_penalty", Number);
+    if (value.isDouble() || value.toInteger() != 0)
+        throw InvalidRequestError("'presence_penalty' is not supported");
 
-        value = reqValue("stop");
-        if (!value.isNull())
-            throw InvalidRequestError("'stop' is not supported");
+    value = reqValue("seed", Integer);
+    if (!value.isNull())
+        throw InvalidRequestError("'seed' is not supported");
 
-        value = reqValue("stream", Boolean);
-        if (value.isTrue())
-            throw InvalidRequestError("'stream' is not supported");
+    value = reqValue("stop");
+    if (!value.isNull())
+        throw InvalidRequestError("'stop' is not supported");
 
-        value = reqValue("stream_options", Object);
-        if (!value.isNull())
-            throw InvalidRequestError("'stream_options' is not supported");
+    value = reqValue("stream", Boolean);
+    if (value.isTrue())
+        throw InvalidRequestError("'stream' is not supported");
 
-        value = reqValue("temperature", Number, false, /*min*/ 0, /*max*/ 2);
-        if (!value.isNull())
-            this->temperature = float(value.toDouble());
+    value = reqValue("stream_options", Object);
+    if (!value.isNull())
+        throw InvalidRequestError("'stream_options' is not supported");
 
-        value = reqValue("top_p", Number, false, /*min*/ 0, /*max*/ 1);
-        if (!value.isNull())
-            this->top_p = float(value.toDouble());
+    value = reqValue("temperature", Number, false, /*min*/ 0, /*max*/ 2);
+    if (!value.isNull())
+        this->temperature = float(value.toDouble());
 
-        value = reqValue("min_p", Number, false, /*min*/ 0, /*max*/ 1);
-        if (!value.isNull())
-            this->min_p = float(value.toDouble());
+    value = reqValue("top_p", Number, false, /*min*/ 0, /*max*/ 1);
+    if (!value.isNull())
+        this->top_p = float(value.toDouble());
 
-        reqValue("user", String); // validate but don't use
-    }
+    value = reqValue("min_p", Number, false, /*min*/ 0, /*max*/ 1);
+    if (!value.isNull())
+        this->min_p = float(value.toDouble());
+
+    reqValue("user", String); 
+}
 
     enum class Type : uint8_t {
         Boolean,
