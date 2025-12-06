@@ -150,6 +150,9 @@ protected:
     {
         using enum Type;
 
+        static constexpr int32_t MAX_MAX_TOKENS = 4096;
+        static constexpr qint64  MAX_N = 8;
+
         auto reqValue = [&request](auto &&...args) { return takeValue(request, args...); };
         QCborValue value;
 
@@ -159,11 +162,11 @@ protected:
         if (value.isDouble() || value.toInteger() != 0)
             throw InvalidRequestError("'frequency_penalty' is not supported");
 
-        value = reqValue("max_tokens", Integer, false, /*min*/ 1);
+        value = reqValue("max_tokens", Integer, false, /*min*/ 1, /*max*/ MAX_MAX_TOKENS);
         if (!value.isNull())
-            this->max_tokens = int32_t(qMin(value.toInteger(), INT32_MAX));
+            this->max_tokens = int32_t(value.toInteger());
 
-        value = reqValue("n", Integer, false, /*min*/ 1);
+        value = reqValue("n", Integer, false, /*min*/ 1, /*max*/ MAX_N);
         if (!value.isNull())
             this->n = value.toInteger();
 
@@ -201,6 +204,7 @@ protected:
 
         reqValue("user", String); // validate but don't use
     }
+
 
     enum class Type : uint8_t {
         Boolean,
