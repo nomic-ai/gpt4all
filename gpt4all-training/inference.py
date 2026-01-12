@@ -68,8 +68,14 @@ def inference(config):
     )
 
 
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
-                                                    trust_remote_code=True,
+    # Security: trust_remote_code allows arbitrary code execution from model repos.
+    # Only enable this for models you explicitly trust.
+    trust_remote = config.get("trust_remote_code", False)
+    if trust_remote:
+        rank0_print("WARNING: trust_remote_code=True enables arbitrary code execution from the model repository")
+
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"],
+                                                    trust_remote_code=trust_remote,
                                                     torch_dtype=torch.bfloat16,
                                                     ) 
     model.to(f"cuda:{local_rank}")
