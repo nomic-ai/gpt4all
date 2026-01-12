@@ -55,9 +55,15 @@ def train(accelerator, config):
 
     checkpoint = config["gradient_checkpointing"]
 
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
+    # Security: trust_remote_code allows arbitrary code execution from model repos.
+    # Only enable this for models you explicitly trust.
+    trust_remote = config.get("trust_remote_code", False)
+    if trust_remote:
+        accelerator.print("WARNING: trust_remote_code=True enables arbitrary code execution from the model repository")
+
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"],
                                                     use_cache=False if checkpoint else True,
-                                                    trust_remote_code=True) 
+                                                    trust_remote_code=trust_remote) 
     if checkpoint:
         model.gradient_checkpointing_enable()
 
