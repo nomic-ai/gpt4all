@@ -143,7 +143,7 @@ Rectangle {
                 // FIXME: This generates a warning and should not be used inside a layout, but without
                 // it the text field inside this qml does not display at full width so it looks like
                 // a bug in stacklayout
-                anchors.fill: parent
+                // anchors.fill: parent
 
                 function show() {
                     stackLayout.currentIndex = 2;

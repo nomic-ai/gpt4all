@@ -97,41 +97,50 @@ ColumnLayout {
             function sendDiscovery() {
                 ModelList.huggingFaceDownloadableModels.discoverAndFilter(discoverField.text);
             }
-            RowLayout {
-                spacing: 0
-                anchors.right: discoverField.right
-                anchors.verticalCenter: discoverField.verticalCenter
+
+            Item {
+                id: buttons
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
                 anchors.rightMargin: 15
-                visible: !ModelList.discoverInProgress
-                MyMiniButton {
-                    id: clearDiscoverButton
-                    backgroundColor: theme.textColor
-                    backgroundColorHovered: theme.iconBackgroundDark
-                    visible: discoverField.text !== ""
-                    source: "qrc:/gpt4all/icons/close.svg"
-                    onClicked: {
-                        discoverField.text = ""
-                        discoverField.sendDiscovery() // should clear results
+
+                implicitWidth: buttonsRowLayout.implicitWidth
+                implicitHeight: buttonsRowLayout.implicitHeight
+
+                RowLayout {
+                    id: buttonsRowLayout
+                    spacing: 0
+                    visible: !ModelList.discoverInProgress
+                    MyMiniButton {
+                        id: clearDiscoverButton
+                        backgroundColor: theme.textColor
+                        backgroundColorHovered: theme.iconBackgroundDark
+                        visible: discoverField.text !== ""
+                        source: "qrc:/gpt4all/icons/close.svg"
+                        onClicked: {
+                            discoverField.text = ""
+                            discoverField.sendDiscovery() // should clear results
+                        }
                     }
-                }
-                MyMiniButton {
-                    backgroundColor: theme.textColor
-                    backgroundColorHovered: theme.iconBackgroundDark
-                    source: "qrc:/gpt4all/icons/settings.svg"
-                    onClicked: {
-                        discoveryTools.visible = !discoveryTools.visible
+                    MyMiniButton {
+                        backgroundColor: theme.textColor
+                        backgroundColorHovered: theme.iconBackgroundDark
+                        source: "qrc:/gpt4all/icons/settings.svg"
+                        onClicked: {
+                            discoveryTools.visible = !discoveryTools.visible
+                        }
                     }
-                }
-                MyMiniButton {
-                    id: sendButton
-                    enabled: !ModelList.discoverInProgress
-                    backgroundColor: theme.textColor
-                    backgroundColorHovered: theme.iconBackgroundDark
-                    source: "qrc:/gpt4all/icons/send_message.svg"
-                    Accessible.name: qsTr("Initiate model discovery and filtering")
-                    Accessible.description: qsTr("Triggers discovery and filtering of models")
-                    onClicked: {
-                        discoverField.sendDiscovery()
+                    MyMiniButton {
+                        id: sendButton
+                        enabled: !ModelList.discoverInProgress
+                        backgroundColor: theme.textColor
+                        backgroundColorHovered: theme.iconBackgroundDark
+                        source: "qrc:/gpt4all/icons/send_message.svg"
+                        Accessible.name: qsTr("Initiate model discovery and filtering")
+                        Accessible.description: qsTr("Triggers discovery and filtering of models")
+                        onClicked: {
+                            discoverField.sendDiscovery()
+                        }
                     }
                 }
             }
