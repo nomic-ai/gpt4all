@@ -21,6 +21,7 @@
     "gpt4all-backend/**/*"
   ],
   "dependencies": {
+    "cross-spawn": "^7.0.5",
     "md5-file": "^5.0.0",
     "node-addon-api": "^6.1.0",
     "node-gyp-build": "^4.6.0"
