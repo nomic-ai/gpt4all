@@ -95,8 +95,9 @@ with model.chat_session():
 ## Integrations
 
 :parrot::link: [Langchain](https://python.langchain.com/v0.2/docs/integrations/providers/gpt4all/)
-:card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
-:telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) - [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
+:card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) · [Module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
+:telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) · [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
+:mag: [WFGY ProblemMap](https://github.com/onestardao/WFGY/blob/main/ProblemMap/README.md)
 
 ## Release History
 - **July 2nd, 2024**: V3.0.0 Release
