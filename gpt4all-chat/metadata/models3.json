@@ -125,6 +125,21 @@
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
     "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>",
     "chatTemplate": "{{- bos_token }}\n{%- set date_string = strftime_now('%d %b %Y') %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] | trim %}\n    {%- set loop_start = 1 %}\n{%- else %}\n    {%- set system_message = '' %}\n    {%- set loop_start = 0 %}\n{%- endif %}\n\n{#- System message #}\n{{- '<|start_header_id|>system<|end_header_id|>\\n\\n' }}\n{{- 'Cutting Knowledge Date: December 2023\\n' }}\n{{- 'Today Date: ' + date_string + '\\n\\n' }}\n{{- system_message }}\n{{- '<|eot_id|>' }}\n\n{%- for message in messages %}\n    {%- if loop.index0 >= loop_start %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + message['content'] | trim + '<|eot_id|>' }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}"
+   },
+   {
+    "order": "c1",
+    "md5sum": "",
+    "name": "Qwen3 8B",
+    "filename": "Qwen3-8B-Q4_0.gguf",
+    "filesize": "4944000000",
+    "requires": "3.10.0",
+    "ramrequired": "8",
+    "parameters": "8 billion",
+    "quant": "q4_0",
+    "type": "Qwen3",
+    "description": "<p>Qwen3-8B is Alibaba's latest generation language model with improved reasoning and instruction following. <ul><li>License: <a href=\"https://huggingface.co/Qwen/Qwen3-8B/blob/main/LICENSE\">Apache 2.0</a></li><li>No restrictions on commercial use</li></ul></p>",
+    "url": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_0.gguf",
+    "chatTemplate": "{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = '' %}\n{%- endif %}\n{%- if system_message %}\n    {{- '<|im_start|>system\\n' + system_message + '<|im_end|>\\n' }}\n{%- endif %}\n{%- for message in messages %}\n    {{- '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
   },
   {
     "order": "d",
