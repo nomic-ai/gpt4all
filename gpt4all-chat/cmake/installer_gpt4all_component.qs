@@ -38,12 +38,32 @@ Component.prototype.createOperations = function() {
             component.addOperation("Execute", "ln", "-s", gpt4allAppPath, symlinkPath);
         } else { // linux
             var homeDir = installer.environmentVariable("HOME");
+            var desktopEntryContent = "Type=Application\n" +
+                "Terminal=false\n" +
+                "Exec=\"" + targetDirectory + "/bin/chat\"\n" +
+                "Name=GPT4All\n" +
+                "Comment=Run open-source large language models locally\n" +
+                "GenericName=ChatBot\n" +
+                "Keywords=gpt;gpt4all;llm;ai;chatbot\n" +
+                "Icon=" + targetDirectory + "/gpt4all-48.png\n" +
+                "Categories=Office;Chat;\n" +
+                "Name[en_US]=GPT4All\n" +
+                "StartupNotify=true";
+
+            // Desktop shortcut
             if (!installer.fileExists(homeDir + "/Desktop/GPT4All.desktop")) {
                 component.addOperation("CreateDesktopEntry",
                     homeDir + "/Desktop/GPT4All.desktop",
-                    "Type=Application\nTerminal=false\nExec=\"" + targetDirectory +
-                    "/bin/chat\"\nName=GPT4All\nIcon=" + targetDirectory +
-                    "/gpt4all-48.png\nName[en_US]=GPT4All");
+                    desktopEntryContent);
+            }
+
+            // XDG application menu entry (~/.local/share/applications/)
+            // so GPT4All appears in the system start menu / application launcher
+            var appsDir = homeDir + "/.local/share/applications";
+            if (!installer.fileExists(appsDir + "/GPT4All.desktop")) {
+                component.addOperation("CreateDesktopEntry",
+                    appsDir + "/GPT4All.desktop",
+                    desktopEntryContent);
             }
         }
     } catch (e) {
