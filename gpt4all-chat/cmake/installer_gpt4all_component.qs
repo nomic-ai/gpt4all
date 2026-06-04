@@ -61,6 +61,7 @@ Component.prototype.createOperations = function() {
             // so GPT4All appears in the system start menu / application launcher
             var appsDir = homeDir + "/.local/share/applications";
             if (!installer.fileExists(appsDir + "/GPT4All.desktop")) {
+                component.addOperation("Mkdir", appsDir);
                 component.addOperation("CreateDesktopEntry",
                     appsDir + "/GPT4All.desktop",
                     desktopEntryContent);
