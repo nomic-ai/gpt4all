@@ -207,7 +207,7 @@ void ChatAPI::prompt(
     connect(&worker, &ChatAPIWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
     connect(this, &ChatAPI::request, &worker, &ChatAPIWorker::request, Qt::QueuedConnection);
     workerThread.start();
-    emit request(m_apiKey, doc.toJson(QJsonDocument::Compact));
+    emit request(m_apiKey, doc.toJson(QJsonDocument::Compact), m_customHeaders);
     workerThread.wait();
 
     m_responseCallback = nullptr;
@@ -227,17 +227,35 @@ bool ChatAPI::callResponse(int32_t token, const std::string& string)
     return m_responseCallback(token, string);
 }
 
-void ChatAPIWorker::request(const QString &apiKey, const QByteArray &array)
+void ChatAPIWorker::request(const QString &apiKey, const QByteArray &array, const QString &customHeaders)
 {
     QUrl apiUrl(m_chat->url());
     const QString authorization = u"Bearer %1"_s.arg(apiKey).trimmed();
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
+
+    // Apply custom headers
+    if (!customHeaders.isEmpty()) {
+        QJsonDocument headerDoc = QJsonDocument::fromJson(customHeaders.toUtf8());
+        if (!headerDoc.isNull() && headerDoc.isArray()) {
+            QJsonArray headersArray = headerDoc.array();
+            for (const QJsonValue &headerVal : headersArray) {
+                QJsonObject headerObj = headerVal.toObject();
+                QString name = headerObj.value("key").toString();
+                QString value = headerObj.value("value").toString();
+                if (!name.isEmpty() && !value.isEmpty()) {
+                    request.setRawHeader(name.toUtf8(), value.toUtf8());
+                }
+            }
+        }
+    }
+
 #if defined(DEBUG)
     qDebug() << "ChatAPI::request"
              << "API URL: " << apiUrl.toString()
-             << "Authorization: " << authorization.toUtf8();
+             << "Authorization: " << authorization.toUtf8()
+             << "Custom Headers:" << customHeaders;
 #endif
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);

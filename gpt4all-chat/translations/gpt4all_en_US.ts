@@ -2685,6 +2685,31 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <source>Install remote model</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="196"/>
+        <source>Custom Headers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="206"/>
+        <source>Header Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="212"/>
+        <source>Header Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="230"/>
+        <source>Add Header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/RemoteModelCard.qml" line="221"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsView</name>

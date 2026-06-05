@@ -281,7 +281,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
 }
 
-void Download::installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl)
+void Download::installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl, const QString &customHeaders)
 {
     Q_ASSERT(!modelName.isEmpty());
     if (modelName.isEmpty()) {
@@ -316,6 +316,17 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
         obj.insert("apiKey", apiKey);
         obj.insert("modelName", modelName);
         obj.insert("baseUrl", apiBaseUrl.toString());
+
+        // Parse and store custom headers
+        QJsonArray headersArray;
+        if (!customHeaders.isEmpty()) {
+            QJsonDocument headerDoc = QJsonDocument::fromJson(customHeaders.toUtf8());
+            if (!headerDoc.isNull() && headerDoc.isArray()) {
+                headersArray = headerDoc.array();
+            }
+        }
+        obj.insert("customHeaders", headersArray);
+
         QJsonDocument doc(obj);
 
         QTextStream stream(&file);

@@ -3,18 +3,7 @@ include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF)
 
-set(FMT_INSTALL OFF)
-add_subdirectory(fmt)
-
-set(QAPPLICATION_CLASS QApplication)
-add_subdirectory(SingleApplication)
-
-set(DUCKX_INSTALL OFF)
-add_subdirectory(DuckX)
-
-set(QT_VERSION_MAJOR 6)
-add_subdirectory(QXlsx/QXlsx)
-
+# PDFium needs to be fetched first (uses FetchContent)
 if (NOT GPT4ALL_USING_QTPDF)
     # If we do not use QtPDF, we need to get PDFium.
     set(GPT4ALL_PDFIUM_TAG "chromium/6996")
@@ -48,4 +37,40 @@ if (NOT GPT4ALL_USING_QTPDF)
 
     FetchContent_MakeAvailable(pdfium)
     find_package(PDFium REQUIRED PATHS "${pdfium_SOURCE_DIR}" NO_DEFAULT_PATH)
+endif()
+
+set(FMT_INSTALL OFF)
+add_subdirectory(fmt)
+
+set(QAPPLICATION_CLASS QApplication)
+add_subdirectory(SingleApplication)
+
+set(DUCKX_INSTALL OFF)
+add_subdirectory(DuckX)
+
+# Use system QXlsx on Linux (both submodule and system package are incompatible with Qt 6.8+ due to GuiPrivate)
+# Manually create the target using system library and headers
+if (CMAKE_SYSTEM_NAME MATCHES Linux AND NOT DEFINED ENV{GPT4ALL_USE_SUBMODULE_QXLSX})
+    if(NOT TARGET QXlsx)
+        add_library(QXlsx SHARED IMPORTED)
+        set_target_properties(QXlsx PROPERTIES
+            IMPORTED_LOCATION "/usr/lib/libQXlsxQt6.so"
+            IMPORTED_NO_SONAME ON
+            INTERFACE_COMPILE_DEFINITIONS "QXlsx_SHAREDLIB"
+            INTERFACE_COMPILE_FEATURES "cxx_std_11"
+            INTERFACE_INCLUDE_DIRECTORIES "/usr/include/QXlsxQt6"
+        )
+    endif()
+    
+    # Add the Qt dependencies to QXlsx since system package references removed GuiPrivate
+    if(TARGET QXlsx)
+        get_target_property(_existing_libs QXlsx INTERFACE_LINK_LIBRARIES)
+        if(NOT _existing_libs)
+            set_property(TARGET QXlsx APPEND PROPERTY INTERFACE_LINK_LIBRARIES Qt6::Core)
+            set_property(TARGET QXlsx APPEND PROPERTY INTERFACE_LINK_LIBRARIES Qt6::Gui)
+        endif()
+    endif()
+else()
+    set(QT_VERSION_MAJOR 6)
+    add_subdirectory(QXlsx/QXlsx)
 endif()

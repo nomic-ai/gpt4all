@@ -457,6 +457,14 @@ else()
 endif()
 target_link_libraries(chat
     PRIVATE llmodel SingleApplication fmt::fmt duckx::duckx QXlsx)
+
+# Add QXlsx include path - system package uses QXlsxQt6, submodule uses local path
+if (CMAKE_SYSTEM_NAME MATCHES Linux AND NOT DEFINED ENV{GPT4ALL_USE_SUBMODULE_QXLSX})
+    target_include_directories(chat PRIVATE /usr/include/QXlsxQt6)
+else()
+    target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/QXlsx/QXlsx/header)
+endif()
+
 target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include)
 target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/json/include/nlohmann)
 target_include_directories(chat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/minja/include)
