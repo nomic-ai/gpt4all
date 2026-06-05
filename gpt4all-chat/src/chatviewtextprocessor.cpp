@@ -846,7 +846,21 @@ CodeColors ChatViewTextProcessor::codeColors() const
 
 void ChatViewTextProcessor::setCodeColors(const CodeColors &colors)
 {
-    m_syntaxHighlighter->setCodeColors(colors);
+    CodeColors resolvedColors = colors;
+    resolvedColors.preprocessorColor = colors.keywordColor;
+    resolvedColors.typeColor = colors.numberColor;
+    resolvedColors.arrowColor = colors.functionColor;
+    resolvedColors.commandColor = colors.functionCallColor;
+    resolvedColors.variableColor = colors.numberColor;
+    resolvedColors.keyColor = colors.functionColor;
+    resolvedColors.valueColor = colors.stringColor;
+    resolvedColors.parameterColor = colors.stringColor;
+    resolvedColors.attributeNameColor = colors.numberColor;
+    resolvedColors.attributeValueColor = colors.stringColor;
+    resolvedColors.specialCharacterColor = colors.functionColor;
+    resolvedColors.doctypeColor = colors.commentColor;
+
+    m_syntaxHighlighter->setCodeColors(resolvedColors);
     emit codeColorsChanged();
 }
 
@@ -910,7 +924,7 @@ void ChatViewTextProcessor::handleCodeBlocks()
 
     QTextCharFormat textFormat;
     textFormat.setFontFamilies(QStringList() << "Monospace");
-    textFormat.setForeground(QColor("white"));
+    textFormat.setForeground(codeColors().defaultColor);
 
     QTextFrameFormat frameFormatBase;
     frameFormatBase.setBackground(codeColors().backgroundColor);
