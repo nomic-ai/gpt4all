@@ -25,6 +25,11 @@ Rectangle {
     property bool providerIsCustom: false
     property var modelWhitelist: null
 
+    // Custom headers storage as ListModel with "key" and "value" roles
+    ListModel {
+        id: customHeadersModel
+    }
+
     color: theme.conversationBackground
     radius: 10
     border.width: 1
@@ -193,6 +198,61 @@ Rectangle {
             }
         }
 
+        // Custom Headers Section
+        ColumnLayout {
+            MySettingsLabel {
+                text: qsTr("Custom Headers")
+                font.bold: true
+                font.pixelSize: theme.fontSizeLarge
+                color: theme.settingsTitleTextColor
+            }
+
+            ListView {
+                id: customHeadersView
+                Layout.fillWidth: true
+                implicitHeight: Math.max(model.count * 45, 30)
+                model: customHeadersModel
+
+                delegate: RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 5
+
+                    MyTextField {
+                        id: headerKeyField
+                        Layout.fillWidth: true
+                        font.pixelSize: theme.fontSizeLarge
+                        placeholderText: qsTr("Header Name")
+                        text: model.headerKey || ""
+                    }
+
+                    MyTextField {
+                        id: headerValueField
+                        Layout.fillWidth: true
+                        font.pixelSize: theme.fontSizeLarge
+                        placeholderText: qsTr("Header Value")
+                        text: model.headerValue || ""
+                    }
+
+                    MyButton {
+                        Layout.preferredWidth: contentItem.implicitWidth
+                        text: qsTr("Remove")
+                        font.pixelSize: theme.fontSizeLarge
+                        onClicked: customHeadersModel.remove(index)
+                    }
+                }
+
+                ScrollIndicator.horizontal: ScrollIndicator {}
+            }
+
+            MyButton {
+                id: addHeaderButton
+                Layout.alignment: Qt.AlignRight
+                text: qsTr("Add Header")
+                font.pixelSize: theme.fontSizeLarge
+                onClicked: customHeadersModel.append({headerKey: "", headerValue: ""})
+            }
+        }
+
         MySettingsButton {
             id: installButton
             Layout.alignment: Qt.AlignRight
@@ -202,6 +262,16 @@ Rectangle {
             property string apiKeyText: apiKeyField.text.trim()
             property string baseUrlText: providerIsCustom ? baseUrlField.text.trim() : providerBaseUrl.trim()
             property string modelNameText: providerIsCustom ? modelNameField.text.trim() : myModelList.currentText.trim()
+            property string customHeadersText: {
+                var headersArray = []
+                for (var i = 0; i < customHeadersModel.count; i++) {
+                    var item = customHeadersModel.get(i)
+                    if ((item.headerKey || "").trim() !== "") {
+                        headersArray.push({key: (item.headerKey || "").trim(), value: (item.headerValue || "").trim()})
+                    }
+                }
+                return JSON.stringify(headersArray)
+            }
 
             enabled: apiKeyText !== "" && baseUrlText !== "" && modelNameText !== ""
 
@@ -210,7 +280,7 @@ Rectangle {
                             modelNameText,
                             apiKeyText,
                             baseUrlText,
-                            );
+                            customHeadersText);
                 myModelList.currentIndex = -1;
             }
             Accessible.role: Accessible.Button

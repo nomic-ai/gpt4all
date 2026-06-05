@@ -2358,7 +2358,7 @@ void ModelList::handleDiscoveryItemErrorOccurred(QNetworkReply::NetworkError cod
                       .arg(code).arg(reply->errorString()).toStdString();
 }
 
-QStringList ModelList::remoteModelList(const QString &apiKey, const QUrl &baseUrl)
+QStringList ModelList::remoteModelList(const QString &apiKey, const QUrl &baseUrl, const QString &customHeaders)
 {
     QStringList modelList;
 
@@ -2370,6 +2370,22 @@ QStringList ModelList::remoteModelList(const QString &apiKey, const QUrl &baseUr
     // Add the Authorization header
     const QString bearerToken = QString("Bearer %1").arg(apiKey);
     request.setRawHeader("Authorization", bearerToken.toUtf8());
+
+    // Apply custom headers
+    if (!customHeaders.isEmpty()) {
+        QJsonDocument headerDoc = QJsonDocument::fromJson(customHeaders.toUtf8());
+        if (!headerDoc.isNull() && headerDoc.isArray()) {
+            QJsonArray headersArray = headerDoc.array();
+            for (const QJsonValue &headerVal : headersArray) {
+                QJsonObject headerObj = headerVal.toObject();
+                QString name = headerObj.value("key").toString();
+                QString value = headerObj.value("value").toString();
+                if (!name.isEmpty() && !value.isEmpty()) {
+                    request.setRawHeader(name.toUtf8(), value.toUtf8());
+                }
+            }
+        }
+    }
 
     // Make the GET request
     QNetworkReply *reply = m_networkManager.get(request);

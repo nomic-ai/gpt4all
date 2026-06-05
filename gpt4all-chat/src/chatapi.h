@@ -34,7 +34,7 @@ public:
 
     QString currentResponse() const { return m_currentResponse; }
 
-    void request(const QString &apiKey, const QByteArray &array);
+    void request(const QString &apiKey, const QByteArray &array, const QString &customHeaders = "");
 
 Q_SIGNALS:
     void finished();
@@ -87,6 +87,8 @@ public:
     void setRequestURL(const QString &requestURL) { m_requestURL = requestURL; }
     QString url() const { return m_requestURL; }
 
+    void setCustomHeaders(const QString &headersJson) { m_customHeaders = headersJson; }
+
     bool callResponse(int32_t token, const std::string &string);
 
     [[noreturn]]
@@ -97,7 +99,7 @@ public:
     { return {}; }
 
 Q_SIGNALS:
-    void request(const QString &apiKey, const QByteArray &array);
+    void request(const QString &apiKey, const QByteArray &array, const QString &customHeaders = "");
 
 protected:
     // We have to implement these as they are pure virtual in base class, but we don't actually use
@@ -168,6 +170,7 @@ private:
     QString          m_modelName;
     QString          m_apiKey;
     QString          m_requestURL;
+    QString          m_customHeaders;  // JSON string containing array of header objects
 };
 
 #endif // CHATAPI_H

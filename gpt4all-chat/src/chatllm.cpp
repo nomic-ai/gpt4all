@@ -21,6 +21,7 @@
 #include <QFile>
 #include <QGlobalStatic>
 #include <QIODevice> // IWYU pragma: keep
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -440,6 +441,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             QString apiKey;
             QString requestUrl;
             QString modelName;
+            QString customHeaders;
             {
                 QFile file(filePath);
                 bool success = file.open(QIODeviceBase::ReadOnly);
@@ -459,6 +461,12 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     QString suffixPath("%1/chat/completions");
                     apiUrl.setPath(suffixPath.arg(currentPath));
                     requestUrl = apiUrl.toString();
+
+                    // Read custom headers from the .rmodel file
+                    QJsonArray headersArray = obj["customHeaders"].toArray();
+                    if (!headersArray.isEmpty()) {
+                        customHeaders = QJsonDocument(headersArray).toJson(QJsonDocument::Compact);
+                    }
                 } else {
                     requestUrl = modelInfo.url();
                 }
@@ -468,6 +476,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setModelName(modelName);
             model->setRequestURL(requestUrl);
             model->setAPIKey(apiKey);
+            if (!customHeaders.isEmpty()) {
+                model->setCustomHeaders(customHeaders);
+            }
             m_llModelInfo.resetModel(this, model);
         } else if (!loadNewModel(modelInfo, modelLoadProps)) {
             return false; // m_shouldBeLoaded became false
