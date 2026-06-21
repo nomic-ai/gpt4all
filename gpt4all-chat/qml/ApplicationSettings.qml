@@ -592,8 +592,17 @@ MySettingsTab {
             }
         }
 
-        Rectangle {
+        MySettingsLabel {
+            id: creditLabel
+            text: qsTr("About")
+            helpText: qsTr("This application is powered by the open-source GPT4All project.")
             Layout.row: 17
+            Layout.column: 0
+            Layout.columnSpan: 3
+        }
+
+        Rectangle {
+            Layout.row: 18
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true

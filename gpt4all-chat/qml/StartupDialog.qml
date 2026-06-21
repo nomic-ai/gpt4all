@@ -47,7 +47,7 @@ MyDialog {
                 anchors.left: img.right
                 anchors.leftMargin: 10
                 anchors.verticalCenter: img.verticalCenter
-                text: qsTr("Welcome!")
+                text: qsTr("Selamat Datang!")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
             }

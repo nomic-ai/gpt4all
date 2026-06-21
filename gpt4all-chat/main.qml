@@ -21,13 +21,13 @@ Window {
     minimumWidth: 658 + 470 * theme.fontScale
     minimumHeight: 384 + 160 * theme.fontScale
     visible: true
-    title: qsTr("GPT4All v%1").arg(Qt.application.version)
+    title: qsTr("MyChatApp v%1").arg(Qt.application.version)
 
     SystemTrayIcon {
         id: systemTrayIcon
         property bool shouldClose: false
         visible: MySettings.systemTray && !shouldClose
-        icon.source: "qrc:/gpt4all/icons/gpt4all.svg"
+        icon.source: ""
 
         function restore() {
             LLM.showDockIcon();
@@ -536,6 +536,8 @@ Window {
                 }
             }
 
+
+
             Rectangle {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: image.width
@@ -549,7 +551,6 @@ Window {
                     fillMode: Image.PreserveAspectFit
                     mipmap: true
                     visible: false
-                    source: "qrc:/gpt4all/icons/nomic_logo.svg"
                 }
 
                 ColorOverlay {
@@ -558,7 +559,7 @@ Window {
                     color: image.hovered ? theme.mutedDarkTextColorHovered : theme.mutedDarkTextColor
                     TapHandler {
                         onTapped: function(eventPoint, button) {
-                            Qt.openUrlExternally("https://nomic.ai")
+
                         }
                     }
                 }

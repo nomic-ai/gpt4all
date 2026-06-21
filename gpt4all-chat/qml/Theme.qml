@@ -110,17 +110,17 @@ QtObject {
     property color purple900: Qt.hsla(279/360, 1.0, 0.32)
     property color purple950: Qt.hsla(279/360, 1.0, 0.22)
 
-    property color blue0: "#d0d5db"
-    property color blue100: "#8e8ea0"
-    property color blue200: "#7d7d8e"
-    property color blue400: "#444654"
-    property color blue500: "#343541"
-    property color blue600: "#2c2d37"
-    property color blue700: "#26272f"
-    property color blue800: "#232628"
-    property color blue900: "#222527"
-    property color blue950: "#1c1f21"
-    property color blue1000: "#0e1011"
+    property color blue0: "#ffd5b8"
+    property color blue100: "#ffbf92"
+    property color blue200: "#ffa96b"
+    property color blue400: "#ff9345"
+    property color blue500: "#e95420"
+    property color blue600: "#cf4617"
+    property color blue700: "#b5380e"
+    property color blue800: "#9b2a05"
+    property color blue900: "#811c00"
+    property color blue950: "#671400"
+    property color blue1000: "#4d0c00"
 
     property color accentColor: {
         switch (MySettings.chatTheme) {
