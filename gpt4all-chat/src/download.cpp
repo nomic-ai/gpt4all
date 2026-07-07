@@ -158,7 +158,7 @@ bool Download::isFirstStart(bool writeVersion) const
 
 void Download::updateReleaseNotes()
 {
-    QUrl jsonUrl("http://gpt4all.io/meta/release.json");
+    QUrl jsonUrl("https://gpt4all.io/meta/release.json");
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -170,7 +170,7 @@ void Download::updateReleaseNotes()
 
 void Download::updateLatestNews()
 {
-    QUrl url("http://gpt4all.io/meta/latestnews.md");
+    QUrl url("https://gpt4all.io/meta/latestnews.md");
     QNetworkRequest request(url);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -211,7 +211,7 @@ void Download::downloadModel(const QString &modelFile)
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadingRole, true }});
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-    QString url = !info.url().isEmpty() ? info.url() : "http://gpt4all.io/models/gguf/" + modelFile;
+    QString url = !info.url().isEmpty() ? info.url() : "https://gpt4all.io/models/gguf/" + modelFile;
     Network::globalInstance()->trackEvent("download_started", { {"model", modelFile} });
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
