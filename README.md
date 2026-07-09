@@ -134,3 +134,7 @@ If you utilize this repository, models or data in a downstream project, please c
   howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
 }
 ```
+
+---
+
+*[Mukller](https://github.com/Mukller)*
