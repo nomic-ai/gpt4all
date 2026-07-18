@@ -34,6 +34,7 @@
 #include <QtLogging>
 #include <QtMinMax>
 
+#include <chrono>
 #include <compare>
 #include <cstddef>
 #include <utility>
@@ -219,8 +220,16 @@ void Download::downloadModel(const QString &modelFile)
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
+    // Abort the transfer if the server stalls mid-stream without closing the
+    // connection (observed with some HuggingFace mirrors/CDNs): the request then
+    // fails with OperationCanceledError and handleErrorOccurred() resumes it via a
+    // fresh HTTP Range request instead of hanging forever. See issue #3692.
+    request.setTransferTimeout(std::chrono::seconds(30));
     QNetworkReply *modelReply = m_networkManager.get(request);
-    connect(qGuiApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, modelReply, [modelReply] {
+        modelReply->setProperty("cancelledByUser", true);
+        modelReply->abort();
+    });
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
     connect(modelReply, &QNetworkReply::errorOccurred, this, &Download::handleErrorOccurred);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
@@ -239,6 +248,7 @@ void Download::cancelDownload(const QString &modelFile)
             disconnect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
             disconnect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
 
+            modelReply->setProperty("cancelledByUser", true);
             modelReply->abort(); // Abort the download
             modelReply->deleteLater(); // Schedule the reply for deletion
 
@@ -461,8 +471,11 @@ void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
     if (!modelReply)
         return;
 
-    // This occurs when the user explicitly cancels the download
-    if (code == QNetworkReply::OperationCanceledError)
+    // OperationCanceledError also fires when the transfer timeout set in downloadModel()
+    // expires. Only a genuine user cancel or app shutdown marks the reply with this
+    // property; a timeout does not, so let it fall through to the retry logic below and
+    // resume the download via a fresh Range request.
+    if (code == QNetworkReply::OperationCanceledError && modelReply->property("cancelledByUser").toBool())
         return;
 
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
