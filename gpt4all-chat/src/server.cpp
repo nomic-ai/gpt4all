@@ -19,6 +19,7 @@
 #include <QHttpHeaders>
 #include <QHttpServer>
 #include <QHttpServerRequest>
+#include <QUrl>
 #include <QHttpServerResponder>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -609,9 +610,25 @@ void Server::start()
     );
 
     m_server->addAfterRequestHandler(this, [](const QHttpServerRequest &req, QHttpServerResponse &resp) {
-        Q_UNUSED(req);
+        // Do not use Access-Control-Allow-Origin: *. Combined with no API key auth,
+        // a wildcard lets any website call the local API while the server is enabled
+        // (see #3681 / similar to Ollama CVE-2024-39720).
+        // Reflect Origin only for loopback so intentional local UIs still work.
+        const QByteArray origin = req.headers().value("Origin");
+        if (origin.isEmpty())
+            return;
+
+        QString originStr = QString::fromUtf8(origin);
+        QUrl originUrl(originStr);
+        const QString host = originUrl.host();
+        const bool isLoopback =
+            host == u"localhost"_s || host == u"127.0.0.1"_s || host == u"[::1]"_s || host == u"::1"_s;
+        if (!isLoopback)
+            return;
+
         auto headers = resp.headers();
-        headers.append("Access-Control-Allow-Origin"_L1, "*"_L1);
+        headers.append("Access-Control-Allow-Origin"_L1, origin);
+        headers.append("Vary"_L1, "Origin"_L1);
         resp.setHeaders(std::move(headers));
     });
 
