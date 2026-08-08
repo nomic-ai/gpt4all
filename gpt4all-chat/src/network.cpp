@@ -24,8 +24,6 @@
 #include <QScreen>
 #include <QSettings>
 #include <QSize>
-#include <QSslConfiguration>
-#include <QSslSocket>
 #include <QSysInfo>
 #include <Qt>
 #include <QtLogging>
@@ -221,9 +219,6 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
 
     QUrl jsonUrl("https://api.gpt4all.io/v1/ingest/chat");
     QNetworkRequest request(jsonUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
@@ -428,9 +423,6 @@ void Network::sendIpify()
 
     QUrl ipifyUrl("https://api.ipify.org");
     QNetworkRequest request(ipifyUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *reply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
@@ -440,9 +432,6 @@ void Network::sendMixpanel(const QByteArray &json)
 {
     QUrl trackUrl("https://api.mixpanel.com/track");
     QNetworkRequest request(trackUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *trackReply = m_networkManager.post(request, json);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
@@ -513,9 +502,6 @@ void Network::sendHealth()
 {
     QUrl healthUrl("https://api.gpt4all.io/v1/health");
     QNetworkRequest request(healthUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *healthReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);

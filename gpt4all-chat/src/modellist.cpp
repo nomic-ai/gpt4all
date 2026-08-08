@@ -28,8 +28,6 @@
 #include <QObject>
 #include <QRegularExpression>
 #include <QSettings>
-#include <QSslConfiguration>
-#include <QSslSocket>
 #include <QStandardPaths>
 #include <QStringList> // IWYU pragma: keep
 #include <QTextStream>
@@ -1484,13 +1482,10 @@ void ModelList::updateModelsFromJson()
 #if defined(USE_LOCAL_MODELSJSON)
     QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
+    QUrl jsonUrl(u"https://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
 
     QNetworkRequest request(jsonUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     QEventLoop loop;
@@ -1527,13 +1522,10 @@ void ModelList::updateModelsFromJsonAsync()
 #if defined(USE_LOCAL_MODELSJSON)
     QUrl jsonUrl(u"file://%1/dev/large_language_models/gpt4all/gpt4all-chat/metadata/%2"_s.arg(QDir::homePath(), modelsJsonFname));
 #else
-    QUrl jsonUrl(u"http://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
+    QUrl jsonUrl(u"https://gpt4all.io/models/%1"_s.arg(modelsJsonFname));
 #endif
 
     QNetworkRequest request(jsonUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
