@@ -22,8 +22,6 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QSettings>
-#include <QSslConfiguration>
-#include <QSslSocket>
 #include <QStringList> // IWYU pragma: keep
 #include <QTextStream>
 #include <QUrl>
@@ -158,11 +156,8 @@ bool Download::isFirstStart(bool writeVersion) const
 
 void Download::updateReleaseNotes()
 {
-    QUrl jsonUrl("http://gpt4all.io/meta/release.json");
+    QUrl jsonUrl("https://gpt4all.io/meta/release.json");
     QNetworkRequest request(jsonUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Download::handleReleaseJsonDownloadFinished);
@@ -170,11 +165,8 @@ void Download::updateReleaseNotes()
 
 void Download::updateLatestNews()
 {
-    QUrl url("http://gpt4all.io/meta/latestnews.md");
+    QUrl url("https://gpt4all.io/meta/latestnews.md");
     QNetworkRequest request(url);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *reply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &Download::handleLatestNewsDownloadFinished);
@@ -211,14 +203,11 @@ void Download::downloadModel(const QString &modelFile)
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadingRole, true }});
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-    QString url = !info.url().isEmpty() ? info.url() : "http://gpt4all.io/models/gguf/" + modelFile;
+    QString url = !info.url().isEmpty() ? info.url() : "https://gpt4all.io/models/gguf/" + modelFile;
     Network::globalInstance()->trackEvent("download_started", { {"model", modelFile} });
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
     request.setRawHeader("range", u"bytes=%1-"_s.arg(tempFile->pos()).toUtf8());
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
     QNetworkReply *modelReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
