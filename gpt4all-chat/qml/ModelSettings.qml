@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import download
 import modellist
 import mysettings
 import chatlistmodel
@@ -114,10 +115,13 @@ MySettingsTab {
 
             MySettingsDestructiveButton {
                 id: removeButton
-                enabled: root.currentModelInfo.isClone
+                enabled: root.currentModelInfo.isClone || root.currentModelInfo.isCompatibleApi
                 text: qsTr("Remove")
                 onClicked: {
-                    ModelList.removeClone(root.currentModelInfo);
+                    if (root.currentModelInfo.isClone)
+                        ModelList.removeClone(root.currentModelInfo);
+                    else
+                        Download.removeModel(root.currentModelInfo.filename);
                     comboBox.currentIndex = 0;
                 }
             }
