@@ -77,3 +77,48 @@ You can add your API key for remote model providers.
 **Note**: this does not download a model file to your computer to use securely. Instead, this way of interacting with models has your prompts leave your computer to the API provider and returns the response to your computer.
 
 ![Connect APIs](../assets/add_model_gpt4.png)
+
+### Built-in remote providers
+
+In **Models → Add Model**, the remote-provider cards include:
+
+| Provider | Default base URL | Notes |
+|----------|------------------|--------|
+| Groq | `https://api.groq.com/openai/v1/` | Enter API key; pick a listed model |
+| OpenAI | `https://api.openai.com/v1/` | Enter API key; pick a listed model |
+| Mistral | `https://api.mistral.ai/v1/` | Enter API key; pick a listed model |
+| **Custom** | *(you provide)* | Any **OpenAI-compatible** Chat Completions API |
+
+GPT4All talks to remote providers over an **OpenAI-compatible** HTTP API (`/v1/models`, `/v1/chat/completions`). Other protocols a gateway may expose (for example OpenAI Responses or Anthropic Messages) are outside this path.
+
+### Custom OpenAI-compatible base URL
+
+Use the **Custom** card when the provider is not listed above (self-hosted vLLM/LocalAI-style endpoints, multi-model gateways, or third-party OpenAI-compatible APIs).
+
+1. Open **Models** → **+ Add Model**.
+2. Choose the **Custom** remote provider card.
+3. Enter your **API Key**.
+4. Enter the **Base Url** (must include the `/v1` prefix when the provider uses one).
+5. Enter an exact **Model Name** (model ID) that your account/endpoint accepts.
+6. Click **Install**.
+
+Example multi-model gateway (**DaoXE**):
+
+| Field | Value |
+|-------|--------|
+| Base Url | `https://daoxe.com/v1` |
+| API Key | key from your [DaoXE](https://daoxe.com) dashboard |
+| Model Name | an **exact** model ID currently available to **your** account |
+
+```bash
+# Discover account-scoped model IDs (requires your key)
+curl -sS -H "Authorization: Bearer $DAOXE_API_KEY" \
+  https://daoxe.com/v1/models
+```
+
+Notes for Custom / DaoXE-style gateways:
+
+- Prefer model IDs returned by authenticated `GET /v1/models` for **your** account; do not assume a fixed public list.
+- DaoXE is multi-model and multi-protocol; GPT4All uses the **OpenAI-compatible Chat Completions** path only.
+- DaoXE is **not available in mainland China**.
+- Public client examples: [seven7763/DaoXE-AI](https://github.com/seven7763/DaoXE-AI).
